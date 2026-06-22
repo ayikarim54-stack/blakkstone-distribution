@@ -4,222 +4,204 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Blakkstone Distribution</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --bg-main:#0A0B10;--surface:#12141D;--card:#1A1D27;--card2:#222634;
-      --accent:#00E5FF;--accent-dim:#008B9B;--accent-bg:rgba(0,229,255,.1);
-      --text:#FFFFFF;--muted:#8B95A5;--border:#2A2F3E;
-      --danger:#FF3B3B;--success:#00E676;--info:#2979FF;
+      --black:#0A0A0A;--surface:#141414;--card:#1A1A1A;--card2:#222;
+      --gold:#C9A84C;--gold-dim:#7A6030;--gold-bg:rgba(201,168,76,.08);
+      --text:#F0EEE8;--muted:#777;--border:#252525;
+      --danger:#E24B4A;--success:#1D9E75;--info:#378ADD;
     }
-    html,body{height:100%;background:var(--bg-main);color:var(--text);font-family:'Inter',sans-serif}
-    a{color:var(--accent);cursor:pointer;text-decoration:none}
-    a:hover{text-decoration:underline}
-    .btn{font-family:'Inter',sans-serif;font-size:14px;font-weight:600;padding:10px 22px;border-radius:50px;cursor:pointer;border:none;transition:all .2s ease;display:inline-flex;align-items:center;gap:8px;justify-content:center}
-    .btn-accent{background:var(--accent);color:#000}.btn-accent:hover{background:#33ebff;transform:translateY(-1px)}
-    .btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}.btn-outline:hover{background:var(--accent-bg)}
+    html,body{height:100%;background:var(--black);color:var(--text);font-family:'Inter',sans-serif}
+    a{color:var(--gold);cursor:pointer;text-decoration:underline}
+    .btn{font-family:'Inter',sans-serif;font-size:13px;font-weight:500;padding:8px 18px;border-radius:6px;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+    .btn-gold{background:var(--gold);color:#0A0A0A}.btn-gold:hover{background:#e0ba5a}
+    .btn-outline{background:transparent;color:var(--gold);border:1px solid var(--gold)}.btn-outline:hover{background:var(--gold-bg)}
     .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:#444}
-    .btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#ff5c5c}
+    .btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#c73b3a}
     .btn-success{background:var(--success);color:#fff}
-    .btn-sm{padding:6px 16px;font-size:13px}
-    .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .btn-sm{padding:5px 12px;font-size:12px}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
     #app{display:flex;flex-direction:column;min-height:100vh}
     .view{display:none;flex:1;flex-direction:column}
     .view.active{display:flex}
-    nav{background:var(--bg-main);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0}
-    .logo{font-weight:900;font-size:22px;letter-spacing:-0.5px;color:var(--text)}
-    .logo em{color:var(--accent);font-style:normal}
-    .nav-right{display:flex;gap:12px;align-items:center}
-    
+    nav{background:var(--black);border-bottom:2px solid var(--gold);padding:0 2rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--gold)}
+    .logo em{color:var(--text);font-style:normal}
+    .nav-right{display:flex;gap:8px;align-items:center}
     /* LANDING */
-    #landing{background:var(--bg-main);align-items:center;justify-content:center;padding:4rem 1.5rem}
-    .hero{text-align:center;max-width:640px}
-    .hero-eyebrow{font-size:12px;font-weight:600;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:1.25rem}
-    .hero-title{font-weight:900;font-size:68px;letter-spacing:-2px;line-height:1;color:var(--text);margin-bottom:1.25rem}
-    .hero-title span{color:var(--accent)}
-    .hero-sub{font-size:16px;color:var(--muted);line-height:1.75;margin-bottom:2.5rem}
-    .hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:5rem}
-    .plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;width:100%;max-width:600px}
-    .plan-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem}
-    .plan-card.featured{border-color:var(--accent);position:relative}
-    .plan-badge{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#000;background:var(--accent);padding:4px 12px;border-radius:20px;position:absolute;top:-12px;left:50%;transform:translateX(-50%)}
-    .plan-name{font-weight:800;font-size:24px;letter-spacing:-0.5px;color:var(--text);margin-bottom:.5rem}
-    .plan-price{font-size:36px;font-weight:800;color:var(--accent);margin-bottom:.5rem}
-    .plan-price small{font-size:14px;font-weight:500;color:var(--muted)}
-    .plan-features{list-style:none;margin:1.5rem 0 2rem}
-    .plan-features li{font-size:14px;color:var(--text);padding:6px 0;display:flex;align-items:center;gap:10px}
-    .plan-features li i{font-size:16px;color:var(--accent)}
+    #landing{background:var(--black);align-items:center;justify-content:center;padding:3rem 1.5rem}
+    .hero{text-align:center;max-width:560px}
+    .hero-eyebrow{font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:1.25rem}
+    .hero-title{font-family:'Bebas Neue',sans-serif;font-size:62px;line-height:.95;color:var(--text);margin-bottom:1rem}
+    .hero-title span{color:var(--gold)}
+    .hero-sub{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:2.5rem}
+    .hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:4rem}
+    .plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;width:100%;max-width:520px}
+    .plan-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
+    .plan-card.featured{border-color:var(--gold)}
+    .plan-badge{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);background:var(--gold-bg);padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:.75rem}
+    .plan-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text);margin-bottom:.25rem}
+    .plan-price{font-size:30px;font-weight:600;color:var(--gold);margin-bottom:.25rem}
+    .plan-price small{font-size:13px;font-weight:400;color:var(--muted)}
+    .plan-features{list-style:none;margin:1rem 0 1.25rem}
+    .plan-features li{font-size:13px;color:var(--muted);padding:4px 0;display:flex;align-items:center;gap:7px}
+    .plan-features li i{font-size:14px;color:var(--gold)}
     .plan-features li.con i{color:var(--danger)}
-    
     /* AUTH */
     #auth{align-items:center;justify-content:center;padding:2rem 1rem}
-    .auth-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:440px;margin:auto}
-    .auth-card h2{font-weight:800;font-size:28px;letter-spacing:-1px;color:var(--text);margin-bottom:.5rem}
-    .auth-card p{font-size:14px;color:var(--muted);margin-bottom:2rem}
-    
+    .auth-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;width:100%;max-width:420px;margin:auto}
+    .auth-card h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1.5px;color:var(--gold);margin-bottom:.25rem}
+    .auth-card p{font-size:13px;color:var(--muted);margin-bottom:1.75rem}
     /* CONFIRM EMAIL VIEW */
     #confirm{align-items:center;justify-content:center;padding:2rem}
-    .confirm-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:3rem 2rem;max-width:440px;width:100%;text-align:center;margin:auto}
-    .confirm-card i{font-size:54px;color:var(--accent);display:block;margin-bottom:1.5rem}
-    .confirm-card h2{font-weight:800;font-size:26px;letter-spacing:-0.5px;color:var(--text);margin-bottom:1rem}
-    .confirm-card p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:2rem}
-    
+    .confirm-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:3rem 2rem;max-width:420px;width:100%;text-align:center;margin:auto}
+    .confirm-card i{font-size:48px;color:var(--gold);display:block;margin-bottom:1rem}
+    .confirm-card h2{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;color:var(--text);margin-bottom:.75rem}
+    .confirm-card p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:1.5rem}
     /* FORMS */
-    .form-group{margin-bottom:1.25rem}
-    .form-group label{display:block;font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
-    .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border .2s}
-    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+    .form-group{margin-bottom:1rem}
+    .form-group label{display:block;font-size:11px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold)}
     .form-group select option{background:var(--surface)}
-    .form-group textarea{resize:vertical;min-height:90px;line-height:1.5}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .auth-footer{font-size:14px;color:var(--muted);text-align:center;margin-top:1.5rem}
-    
+    .form-group textarea{resize:vertical;min-height:80px;line-height:1.5}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .auth-footer{font-size:13px;color:var(--muted);text-align:center;margin-top:1rem}
     /* DASHBOARD */
     #dashboard{flex-direction:row}
-    .sidebar{width:240px;min-width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
-    .sidebar-logo{font-weight:900;font-size:18px;letter-spacing:-0.5px;color:var(--text);padding:1.5rem;border-bottom:1px solid var(--border)}
-    .sidebar-logo em{color:var(--accent);font-style:normal}
-    .sidebar-nav{flex:1;padding:1rem 0}
-    .nav-item{display:flex;align-items:center;gap:12px;padding:12px 1.5rem;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;border-right:3px solid transparent}
-    .nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
-    .nav-item.active{color:var(--accent);background:var(--accent-bg);border-right-color:var(--accent)}
-    .nav-item i{font-size:18px}
-    .sidebar-bottom{padding:1.5rem;border-top:1px solid var(--border)}
-    .user-chip{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-    .avatar{width:38px;height:38px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text);flex-shrink:0;overflow:hidden;border:1px solid var(--border)}
+    .sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
+    .sidebar-logo{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--gold);padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
+    .sidebar-logo em{color:var(--text);font-style:normal}
+    .sidebar-nav{flex:1;padding:.5rem 0}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 1.25rem;font-size:13px;color:var(--muted);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
+    .nav-item:hover{color:var(--text);background:rgba(255,255,255,.02)}
+    .nav-item.active{color:var(--gold);background:var(--gold-bg);border-left-color:var(--gold)}
+    .nav-item i{font-size:17px}
+    .sidebar-bottom{padding:1rem 1.25rem;border-top:1px solid var(--border)}
+    .user-chip{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .avatar{width:34px;height:34px;border-radius:50%;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text);flex-shrink:0;overflow:hidden}
     .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
     .user-info{overflow:hidden}
-    .user-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .user-plan{font-size:12px;color:var(--muted)}
-    .plan-pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
-    .pill-free{background:rgba(139,149,165,.15);color:var(--muted)}
-    .pill-label{background:var(--accent-bg);color:var(--accent)}
-    .pill-admin{background:rgba(41,121,255,.15);color:var(--info)}
-    .main{flex:1;overflow-y:auto;padding:2.5rem;min-width:0}
+    .user-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .user-plan{font-size:11px;color:var(--muted)}
+    .plan-pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+    .pill-free{background:rgba(119,119,119,.2);color:var(--muted)}
+    .pill-label{background:var(--gold-bg);color:var(--gold)}
+    .pill-admin{background:rgba(55,138,221,.15);color:var(--info)}
+    .main{flex:1;overflow-y:auto;padding:2rem;min-width:0}
     .page{display:none}
     .page.active{display:block}
-    .page-header{margin-bottom:2.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-    .page-header-left h1{font-weight:800;font-size:32px;letter-spacing:-1px;color:var(--text)}
-    .page-header-left p{font-size:15px;color:var(--muted);margin-top:6px}
-    
+    .page-header{margin-bottom:2rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .page-header-left h1{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--text)}
+    .page-header-left p{font-size:14px;color:var(--muted);margin-top:4px}
     /* STATS */
-    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:2.5rem}
-    .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
-    .stat-label{font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--muted);margin-bottom:.75rem}
-    .stat-value{font-size:32px;font-weight:800;color:var(--text)}
-    .stat-value.accent{color:var(--accent)}
-    
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:2rem}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem}
+    .stat-label{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+    .stat-value{font-size:26px;font-weight:600;color:var(--text)}
+    .stat-value.gold{color:var(--gold)}
     /* RELEASES */
-    .releases-list{display:flex;flex-direction:column;gap:12px}
-    .release-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;display:flex;align-items:center;gap:1.25rem}
-    .release-art{width:54px;height:54px;border-radius:8px;background:var(--card2);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
-    .release-art img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-    .release-art i{font-size:24px;color:var(--muted)}
+    .releases-list{display:flex;flex-direction:column;gap:10px}
+    .release-row{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem}
+    .release-art{width:46px;height:46px;border-radius:7px;background:var(--card2);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+    .release-art img{width:100%;height:100%;object-fit:cover;border-radius:7px}
+    .release-art i{font-size:22px;color:var(--gold-dim)}
     .release-info{flex:1;min-width:0}
-    .release-title{font-size:16px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .release-meta{font-size:13px;color:var(--muted);margin-top:4px}
-    .badge{font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;white-space:nowrap}
-    .badge-pending{background:rgba(255,255,255,.1);color:var(--text)}
-    .badge-review{background:rgba(41,121,255,.15);color:var(--info)}
-    .badge-live{background:rgba(0,230,118,.15);color:var(--success)}
-    .badge-rejected{background:rgba(255,59,59,.15);color:var(--danger)}
-    .empty-state{text-align:center;padding:4rem;color:var(--muted);background:var(--card);border:1px dashed var(--border);border-radius:12px}
-    .empty-state i{font-size:48px;color:var(--border);margin-bottom:1.25rem;display:block}
-    .empty-state p{font-size:15px}
-    
+    .release-title{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .release-meta{font-size:12px;color:var(--muted);margin-top:3px}
+    .badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap}
+    .badge-pending{background:rgba(201,168,76,.15);color:var(--gold)}
+    .badge-review{background:rgba(55,138,221,.15);color:var(--info)}
+    .badge-live{background:rgba(29,158,117,.15);color:var(--success)}
+    .badge-rejected{background:rgba(226,75,74,.15);color:var(--danger)}
+    .empty-state{text-align:center;padding:3rem;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:10px}
+    .empty-state i{font-size:40px;color:var(--border);margin-bottom:1rem;display:block}
+    .empty-state p{font-size:14px}
     /* SUBMIT */
-    .submit-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;max-width:680px}
-    .section-divider{margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+    .submit-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:660px}
+    .section-divider{margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
     .section-divider:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-    .section-label{font-weight:800;font-size:16px;color:var(--accent);margin-bottom:1.25rem}
-    .upload-zone{border:1px dashed var(--border);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;background:var(--surface);transition:all .2s}
-    .upload-zone:hover{border-color:var(--accent);background:var(--accent-bg)}
-    .upload-zone i{font-size:32px;color:var(--muted);display:block;margin-bottom:.75rem}
-    .upload-zone p{font-size:14px;color:var(--muted)}
+    .section-label{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;color:var(--gold);margin-bottom:1rem}
+    .upload-zone{border:1px dashed var(--border);border-radius:8px;padding:1.5rem;text-align:center;cursor:pointer;background:var(--surface);transition:all .15s}
+    .upload-zone:hover{border-color:var(--gold);background:var(--gold-bg)}
+    .upload-zone i{font-size:28px;color:var(--gold-dim);display:block;margin-bottom:.5rem}
+    .upload-zone p{font-size:13px;color:var(--muted)}
     .upload-zone.has-file{border-color:var(--success)}
     .upload-zone.has-file p{color:var(--success)}
-    
     /* ANALYTICS */
-    .analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:2.5rem}
-    .analytics-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
-    .analytics-label{font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--muted);margin-bottom:.75rem}
-    .analytics-value{font-size:32px;font-weight:800;color:var(--accent)}
-    .analytics-sub{font-size:13px;color:var(--muted);margin-top:6px}
-    .release-analytics{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
-    .release-analytics-header{padding:1.25rem;display:flex;align-items:center;gap:1.25rem;border-bottom:1px solid var(--border);background:var(--surface)}
-    .release-analytics-body{padding:1.25rem;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
-    .ra-stat{font-size:14px;color:var(--muted)}
-    .ra-stat strong{display:block;font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px}
-    
+    .analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:2rem}
+    .analytics-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+    .analytics-label{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+    .analytics-value{font-size:28px;font-weight:600;color:var(--gold)}
+    .analytics-sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .release-analytics{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px}
+    .release-analytics-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;border-bottom:1px solid var(--border)}
+    .release-analytics-body{padding:1rem 1.25rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .ra-stat{font-size:13px;color:var(--muted)}
+    .ra-stat strong{display:block;font-size:18px;font-weight:600;color:var(--text);margin-bottom:2px}
     /* ROYALTIES */
     .royalty-table{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-    .commission-notice{background:var(--accent-bg);border:1px solid var(--accent-dim);border-radius:10px;padding:1rem 1.5rem;font-size:14px;color:var(--text);margin-bottom:2rem;display:flex;align-items:center;gap:12px}
-    
+    .commission-notice{background:var(--gold-bg);border:1px solid var(--gold-dim);border-radius:8px;padding:.875rem 1.25rem;font-size:13px;color:var(--gold);margin-bottom:1.5rem;display:flex;align-items:center;gap:8px}
     /* UPGRADE PAGE */
-    #page-upgrade{max-width:760px}
-    .upgrade-hero{text-align:center;margin-bottom:4rem}
-    .upgrade-hero h1{font-weight:800;font-size:44px;letter-spacing:-1.5px;color:var(--text);margin-bottom:.75rem}
-    .upgrade-hero p{font-size:16px;color:var(--muted)}
-    .upgrade-plans{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:3rem}
-    .upgrade-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem}
+    #page-upgrade{max-width:700px}
+    .upgrade-hero{text-align:center;margin-bottom:3rem}
+    .upgrade-hero h1{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:1px;color:var(--text);margin-bottom:.5rem}
+    .upgrade-hero p{font-size:15px;color:var(--muted)}
+    .upgrade-plans{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem}
+    .upgrade-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem}
     .upgrade-card.current{border-color:var(--border)}
-    .upgrade-card.featured{border-color:var(--accent);position:relative}
-    .upgrade-card.featured::before{content:'RECOMMENDED';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;font-size:11px;font-weight:800;letter-spacing:1px;padding:5px 16px;border-radius:0 0 10px 10px}
-    .upgrade-plan-name{font-weight:800;font-size:26px;letter-spacing:-0.5px;color:var(--text);margin-bottom:.5rem}
-    .upgrade-price{font-size:42px;font-weight:800;color:var(--accent);margin-bottom:.5rem}
-    .upgrade-price small{font-size:15px;font-weight:500;color:var(--muted)}
-    .upgrade-features{list-style:none;margin:2rem 0 2.5rem}
-    .upgrade-features li{font-size:14px;color:var(--text);padding:8px 0;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+    .upgrade-card.featured{border-color:var(--gold);position:relative}
+    .upgrade-card.featured::before{content:'RECOMMENDED';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0A0A0A;font-size:10px;font-weight:600;letter-spacing:1px;padding:3px 14px;border-radius:0 0 8px 8px}
+    .upgrade-plan-name{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--text);margin-bottom:.25rem}
+    .upgrade-price{font-size:36px;font-weight:700;color:var(--gold);margin-bottom:.25rem}
+    .upgrade-price small{font-size:14px;font-weight:400;color:var(--muted)}
+    .upgrade-features{list-style:none;margin:1.25rem 0 1.5rem}
+    .upgrade-features li{font-size:13px;color:var(--muted);padding:5px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
     .upgrade-features li:last-child{border-bottom:none}
-    .upgrade-features li i{font-size:18px}
+    .upgrade-features li i{font-size:15px}
     .upgrade-features li i.check{color:var(--success)}
     .upgrade-features li i.cross{color:var(--danger)}
-    
     /* PROFILE */
-    .profile-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;max-width:600px}
-    .profile-avatar-section{display:flex;align-items:center;gap:1.5rem;margin-bottom:2.5rem;padding-bottom:2.5rem;border-bottom:1px solid var(--border)}
-    .profile-avatar-big{width:84px;height:84px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:var(--text);flex-shrink:0;overflow:hidden;cursor:pointer;border:2px solid var(--border);transition:border .2s}
-    .profile-avatar-big:hover{border-color:var(--accent)}
+    .profile-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:540px}
+    .profile-avatar-section{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+    .profile-avatar-big{width:72px;height:72px;border-radius:50%;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:var(--text);flex-shrink:0;overflow:hidden;cursor:pointer;border:2px solid var(--border);transition:border .15s}
+    .profile-avatar-big:hover{border-color:var(--gold)}
     .profile-avatar-big img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-    .profile-avatar-hint{font-size:13px;color:var(--muted);margin-top:6px}
-    
+    .profile-avatar-hint{font-size:12px;color:var(--muted);margin-top:4px}
     /* ADMIN TABLE */
     .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
     table{width:100%;border-collapse:collapse}
-    th{font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--muted);padding:14px 16px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface)}
-    td{font-size:14px;color:var(--text);padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+    th{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface)}
+    td{font-size:13px;color:var(--text);padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
     tr:last-child td{border-bottom:none}
-    tr:hover td{background:rgba(255,255,255,.02)}
-    .status-sel{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;cursor:pointer;outline:none}
-    .status-sel:focus{border-color:var(--accent)}
-    
+    tr:hover td{background:rgba(255,255,255,.015)}
+    .status-sel{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:12px;color:var(--text);font-family:'Inter',sans-serif;cursor:pointer;outline:none}
+    .status-sel:focus{border-color:var(--gold)}
     /* MODAL / OVERLAY */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
     .overlay.open{opacity:1;pointer-events:all}
-    .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;max-width:460px;width:90%}
-    .modal h3{font-weight:800;font-size:24px;letter-spacing:-0.5px;color:var(--text);margin-bottom:.75rem}
-    .modal p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:2rem}
-    .billing-toggle{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem}
-    .billing-opt{padding:12px;border:1px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;transition:all .2s;font-size:14px;color:var(--muted)}
-    .billing-opt strong{display:block;font-size:18px;font-weight:800;color:var(--text);margin-top:4px}
-    .billing-opt.selected{border-color:var(--accent);color:var(--text);background:var(--accent-bg)}
-    .billing-opt.selected strong{color:var(--accent)}
-    .modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:2rem}
-    
+    .modal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;max-width:440px;width:90%}
+    .modal h3{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:var(--gold);margin-bottom:.5rem}
+    .modal p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1.5rem}
+    .billing-toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+    .billing-opt{padding:10px;border:1px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;transition:all .15s;font-size:13px;color:var(--muted)}
+    .billing-opt strong{display:block;font-size:16px;color:var(--text);margin-top:2px}
+    .billing-opt.selected{border-color:var(--gold);color:var(--gold);background:var(--gold-bg)}
+    .billing-opt.selected strong{color:var(--gold)}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem}
     /* TOAST */
-    .toast{position:fixed;bottom:2rem;right:2rem;background:var(--card2);border:1px solid var(--accent);border-radius:10px;padding:14px 24px;font-size:14px;font-weight:500;color:var(--text);opacity:0;transform:translateY(12px);transition:all .3s ease;z-index:999;pointer-events:none;max-width:360px}
+    .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--card2);border:1px solid var(--gold);border-radius:8px;padding:11px 18px;font-size:13px;color:var(--text);opacity:0;transform:translateY(8px);transition:all .25s;z-index:999;pointer-events:none;max-width:320px}
     .toast.show{opacity:1;transform:translateY(0)}
     .toast.error{border-color:var(--danger)}
-    .loader{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
-    .btn-accent .loader{border:2px solid rgba(0,0,0,.2);border-top-color:#000}
+    .loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .divider{height:1px;background:var(--border);margin:2rem 0}
-    
-    @media(max-width:768px){
+    .divider{height:1px;background:var(--border);margin:1.5rem 0}
+    @media(max-width:640px){
       .sidebar{display:none}.form-row{grid-template-columns:1fr}
-      .plans-grid,.upgrade-plans{grid-template-columns:1fr}.hero-title{font-size:48px}
+      .plans-grid,.upgrade-plans{grid-template-columns:1fr}.hero-title{font-size:44px}
     }
   </style>
 </head>
@@ -229,19 +211,19 @@
     <div class="logo">BLAKKSTONE <em>DISTRIBUTION</em></div>
     <div class="nav-right" id="nav-right">
       <button class="btn btn-ghost" onclick="showAuth('login')">Log in</button>
-      <button class="btn btn-accent" onclick="showAuth('signup')">Get started</button>
+      <button class="btn btn-gold" onclick="showAuth('signup')">Get started</button>
     </div>
   </nav>
 
   <!-- LANDING -->
   <div class="view active" id="landing">
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem;text-align:center">
       <div class="hero">
         <p class="hero-eyebrow">Independent Music Distribution</p>
         <h1 class="hero-title">YOUR MUSIC.<br><span>YOUR RULES.</span></h1>
         <p class="hero-sub">Distribute to Spotify, Apple Music, Boomplay, Audiomack and every major platform — powered by Blakkstone's label network.</p>
         <div class="hero-ctas">
-          <button class="btn btn-accent" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Start distributing free</button>
+          <button class="btn btn-gold" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Start distributing free</button>
           <button class="btn btn-outline" onclick="document.getElementById('plans').scrollIntoView({behavior:'smooth'})">See plans</button>
         </div>
       </div>
@@ -270,7 +252,7 @@
             <li><i class="ti ti-check"></i> 0% commission</li>
             <li><i class="ti ti-check"></i> Priority support</li>
           </ul>
-          <button class="btn btn-accent" style="width:100%" onclick="openPaystack()">Upgrade to Label</button>
+          <button class="btn btn-gold" style="width:100%" onclick="openPaystack()">Upgrade to Label</button>
         </div>
       </div>
     </div>
@@ -290,7 +272,7 @@
       </div>
       <div class="form-group"><label>Email</label><input id="em" type="email" placeholder="you@email.com"></div>
       <div class="form-group"><label>Password</label><input id="pw" type="password" placeholder="Min. 6 characters"></div>
-      <button class="btn btn-accent" id="auth-btn" style="width:100%" onclick="doAuth()">Create account</button>
+      <button class="btn btn-gold" id="auth-btn" style="width:100%;justify-content:center" onclick="doAuth()">Create account</button>
       <p class="auth-footer" id="auth-foot">Have an account? <a onclick="toggleAuth()">Log in</a></p>
     </div>
   </div>
@@ -301,8 +283,8 @@
       <i class="ti ti-mail-check"></i>
       <h2>CHECK YOUR EMAIL</h2>
       <p>We sent a confirmation link to <strong id="confirm-email" style="color:var(--text)"></strong>.<br>Click the link in the email to activate your account, then come back to log in.</p>
-      <button class="btn btn-accent" style="width:100%" onclick="showAuth('login')">Go to Login</button>
-      <p style="font-size:13px;color:var(--muted);margin-top:1.5rem">Didn't get it? Check your spam folder.</p>
+      <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('login')">Go to Login</button>
+      <p style="font-size:12px;color:var(--muted);margin-top:1rem">Didn't get it? Check your spam folder.</p>
     </div>
   </div>
 
@@ -328,7 +310,7 @@
             <div class="user-plan" id="sb-plan">Solo Plan</div>
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm" style="width:100%" onclick="logout()"><i class="ti ti-logout"></i> Log out</button>
+        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="logout()"><i class="ti ti-logout"></i> Log out</button>
       </div>
     </div>
 
@@ -342,12 +324,12 @@
           </div>
         </div>
         <div class="stats-grid">
-          <div class="stat"><div class="stat-label">Total Releases</div><div class="stat-value accent" id="s-total">—</div></div>
-          <div class="stat"><div class="stat-label">Live on DSPs</div><div class="stat-value accent" id="s-live">—</div></div>
+          <div class="stat"><div class="stat-label">Total Releases</div><div class="stat-value gold" id="s-total">—</div></div>
+          <div class="stat"><div class="stat-label">Live on DSPs</div><div class="stat-value gold" id="s-live">—</div></div>
           <div class="stat"><div class="stat-label">Pending Review</div><div class="stat-value" id="s-pending">—</div></div>
-          <div class="stat"><div class="stat-label">Total Streams</div><div class="stat-value accent" id="s-streams">—</div></div>
+          <div class="stat"><div class="stat-label">Total Streams</div><div class="stat-value gold" id="s-streams">—</div></div>
         </div>
-        <div style="font-weight:800;font-size:18px;letter-spacing:-0.5px;color:var(--text);margin-bottom:1.25rem">Recent Releases</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--text);margin-bottom:1rem">Recent Releases</div>
         <div id="ov-releases"></div>
       </div>
 
@@ -355,7 +337,7 @@
       <div class="page" id="page-releases">
         <div class="page-header">
           <div class="page-header-left"><h1>My Releases</h1><p>All your submitted music and their current status.</p></div>
-          <button class="btn btn-accent" onclick="goPage('submit',document.querySelectorAll('.nav-item')[2])"><i class="ti ti-plus"></i> New Release</button>
+          <button class="btn btn-gold" onclick="goPage('submit',document.querySelectorAll('.nav-item')[2])"><i class="ti ti-plus"></i> New Release</button>
         </div>
         <div id="all-releases"></div>
       </div>
@@ -408,7 +390,7 @@
             <div class="section-label">Admin Notes</div>
             <div class="form-group"><textarea id="r-notes" placeholder="Explicit content, special instructions, or distribution notes..."></textarea></div>
           </div>
-          <button class="btn btn-accent" id="submit-btn" onclick="submitRelease()"><i class="ti ti-send"></i> Submit Release</button>
+          <button class="btn btn-gold" id="submit-btn" onclick="submitRelease()"><i class="ti ti-send"></i> Submit Release</button>
         </div>
       </div>
 
@@ -420,19 +402,19 @@
           <div class="analytics-card"><div class="analytics-label">Total Earnings</div><div class="analytics-value" id="a-earnings">$0.00</div><div class="analytics-sub">Before commission</div></div>
           <div class="analytics-card"><div class="analytics-label">Your Payout</div><div class="analytics-value" id="a-payout">$0.00</div><div class="analytics-sub" id="a-payout-sub">After 15% commission</div></div>
         </div>
-        <div style="font-weight:800;font-size:18px;letter-spacing:-0.5px;color:var(--text);margin-bottom:1.25rem">Per Release</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--text);margin-bottom:1rem">Per Release</div>
         <div id="analytics-releases"></div>
       </div>
 
       <!-- ROYALTIES -->
       <div class="page" id="page-royalties">
         <div class="page-header"><div class="page-header-left"><h1>Royalties</h1><p>Your earnings summary.</p></div></div>
-        <div id="commission-notice" class="commission-notice"></div>
-        <div class="stats-grid" style="margin-bottom:2rem">
-          <div class="stat"><div class="stat-label">Gross Earnings</div><div class="stat-value accent" id="r-gross">$0.00</div></div>
+        <div id="commission-notice"></div>
+        <div class="stats-grid" style="margin-bottom:1.5rem">
+          <div class="stat"><div class="stat-label">Gross Earnings</div><div class="stat-value gold" id="r-gross">$0.00</div></div>
           <div class="stat"><div class="stat-label">Commission</div><div class="stat-value" id="r-commission" style="color:var(--danger)">$0.00</div></div>
-          <div class="stat"><div class="stat-label">Your Payout</div><div class="stat-value accent" id="r-payout">$0.00</div></div>
-          <div class="stat"><div class="stat-label">Last Updated</div><div class="stat-value" style="font-size:20px" id="r-updated">—</div></div>
+          <div class="stat"><div class="stat-label">Your Payout</div><div class="stat-value gold" id="r-payout">$0.00</div></div>
+          <div class="stat"><div class="stat-label">Last Updated</div><div class="stat-value" style="font-size:15px" id="r-updated">—</div></div>
         </div>
         <div class="royalty-table">
           <table>
@@ -461,7 +443,7 @@
               <li><i class="ti ti-x cross"></i> Multiple artist profiles</li>
               <li><i class="ti ti-x cross"></i> Priority support</li>
             </ul>
-            <button class="btn btn-ghost" style="width:100%" disabled id="current-plan-btn">Current Plan</button>
+            <button class="btn btn-ghost" style="width:100%;justify-content:center" disabled id="current-plan-btn">Current Plan</button>
           </div>
           <div class="upgrade-card featured">
             <div class="upgrade-plan-name">Label</div>
@@ -475,54 +457,35 @@
               <li><i class="ti ti-check check"></i> Multiple artist profiles</li>
               <li><i class="ti ti-check check"></i> Priority support</li>
             </ul>
-            <button class="btn btn-accent" style="width:100%" onclick="openPaystack()" id="upgrade-cta-btn"><i class="ti ti-crown"></i> Upgrade to Label</button>
+            <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="openPaystack()" id="upgrade-cta-btn"><i class="ti ti-crown"></i> Upgrade to Label</button>
           </div>
         </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;font-size:14px;color:var(--muted);line-height:1.7">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem;font-size:13px;color:var(--muted);line-height:1.7">
           <strong style="color:var(--text)">About the 15% commission:</strong> On the free Solo plan, Blakkstone retains 15% of your reported royalties to cover distribution and platform costs. Upgrade to Label to keep 100% of your earnings.
         </div>
       </div>
 
       <!-- PROFILE SETTINGS -->
       <div class="page" id="page-profile">
-        <div class="page-header"><div class="page-header-left"><h1>Profile Settings</h1><p>Update your account information and payout details.</p></div></div>
+        <div class="page-header"><div class="page-header-left"><h1>Profile Settings</h1><p>Update your account information.</p></div></div>
         <div class="profile-card">
           <div class="profile-avatar-section">
             <div class="profile-avatar-big" id="profile-avatar-big" onclick="document.getElementById('avatar-input').click()">
               <span id="profile-avatar-initials">--</span>
             </div>
             <div>
-              <div style="font-size:16px;font-weight:600;color:var(--text)" id="profile-display-name">--</div>
+              <div style="font-size:14px;font-weight:500;color:var(--text)" id="profile-display-name">--</div>
               <div class="profile-avatar-hint">Click avatar to change photo</div>
               <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
             </div>
           </div>
-          <div class="section-label">Personal Info</div>
           <div class="form-row">
             <div class="form-group"><label>First Name</label><input id="p-fn" type="text" placeholder="First name"></div>
             <div class="form-group"><label>Last Name</label><input id="p-ln" type="text" placeholder="Last name"></div>
           </div>
           <div class="form-group"><label>Artist / Label Name</label><input id="p-an" type="text" placeholder="Artist name"></div>
           <div class="form-group"><label>Email</label><input id="p-em" type="email" placeholder="Email" disabled style="opacity:.5;cursor:not-allowed"></div>
-          
-          <div class="divider"></div>
-          <div class="section-label">Payout Details</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Network / Bank</label>
-              <select id="p-payout-network">
-                <option value="">Select payout method...</option>
-                <option value="mtn">MTN MoMo</option>
-                <option value="telecel">Telecel Cash</option>
-                <option value="airteltigo">AirtelTigo Money</option>
-                <option value="bank">Bank Account</option>
-              </select>
-            </div>
-            <div class="form-group"><label>Account Number</label><input id="p-payout-number" type="text" placeholder="e.g. 024XXXXXXX"></div>
-          </div>
-
-          <button class="btn btn-accent" id="save-profile-btn" onclick="saveProfile()" style="margin-top: 1rem;"><i class="ti ti-device-floppy"></i> Save Changes</button>
-          
+          <button class="btn btn-gold" id="save-profile-btn" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Changes</button>
           <div class="divider"></div>
           <div class="section-label">Change Password</div>
           <div class="form-group"><label>New Password</label><input id="p-pw" type="password" placeholder="Min. 6 characters"></div>
@@ -551,12 +514,12 @@
       <p>Manage 2+ artists, keep 100% of your royalties, and get priority support. Secure payments via Paystack.</p>
       <div class="billing-toggle">
         <div class="billing-opt selected" id="b-monthly" onclick="setBilling('monthly')">Monthly<strong>$9.99</strong></div>
-        <div class="billing-opt" id="b-yearly" onclick="setBilling('yearly')">Yearly <small style="font-size:11px;color:var(--success)">Save 25%</small><strong>$89.99</strong></div>
+        <div class="billing-opt" id="b-yearly" onclick="setBilling('yearly')">Yearly <small style="font-size:10px;color:var(--success)">Save 25%</small><strong>$89.99</strong></div>
       </div>
       <div class="form-group"><label>Email</label><input id="pay-em" type="email" placeholder="you@email.com"></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closePaystack()">Cancel</button>
-        <button class="btn btn-accent" id="pay-btn" onclick="doPaystack()"><i class="ti ti-lock"></i> Pay with Paystack</button>
+        <button class="btn btn-gold" id="pay-btn" onclick="doPaystack()"><i class="ti ti-lock"></i> Pay with Paystack</button>
       </div>
     </div>
   </div>
@@ -565,8 +528,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<!-- V2 Paystack API is required for modern inline functionality -->
-<script src="https://js.paystack.co/v2/inline.js"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
 const SUPABASE_URL = 'https://rzfnocgqcompyddlzdjy.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6Zm5vY2dxY29tcHlkZGx6ZGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODg3OTcsImV4cCI6MjA5NzY2NDc5N30.mtYUXicTAfRo_GqN5R-zbJj8x12aItFAk0hE6Sb3crU';
@@ -618,6 +580,7 @@ async function doAuth(){
       });
       if(error) throw error;
       if(data.user && !data.session){
+        // Email confirmation required
         document.getElementById('confirm-email').textContent = email;
         showView('confirm');
         btn.disabled = false; btn.textContent = 'Create account'; return;
@@ -651,7 +614,7 @@ async function logout(){
   user = null; profile = null;
   document.getElementById('nav-right').innerHTML = `
     <button class="btn btn-ghost" onclick="showAuth('login')">Log in</button>
-    <button class="btn btn-accent" onclick="showAuth('signup')">Get started</button>`;
+    <button class="btn btn-gold" onclick="showAuth('signup')">Get started</button>`;
   showView('landing');
   toast('Logged out');
 }
@@ -667,31 +630,30 @@ function enterDashboard(){
   document.getElementById('upgrade-nav').style.display = (isAdmin||isLabel) ? 'none' : 'flex';
   document.getElementById('welcome-h').textContent = 'Welcome, ' + name.split(' ')[0];
   document.getElementById('nav-right').innerHTML = `<button class="btn btn-ghost btn-sm" onclick="logout()"><i class="ti ti-logout"></i> Log out</button>`;
+  // Avatar
   setAvatarDisplay(initials, profile?.avatar_url);
-  
+  // Profile fields
   if(profile){
     const parts = (profile.full_name||'').split(' ');
     document.getElementById('p-fn').value = parts[0]||'';
     document.getElementById('p-ln').value = parts.slice(1).join(' ')||'';
     document.getElementById('p-an').value = profile.artist_name||'';
     document.getElementById('p-em').value = profile.email||user.email;
-    document.getElementById('p-payout-network').value = profile.payout_network || '';
-    document.getElementById('p-payout-number').value = profile.payout_number || '';
     document.getElementById('profile-display-name').textContent = profile.artist_name || profile.full_name || '';
     document.getElementById('profile-avatar-initials').textContent = initials;
   }
-  
+  // Upgrade page
   if(isLabel||isAdmin){
     const btn = document.getElementById('upgrade-cta-btn');
     if(btn){ btn.textContent = 'Current Plan'; btn.disabled = true; btn.className = 'btn btn-ghost'; }
     const curBtn = document.getElementById('current-plan-btn');
     if(curBtn){ curBtn.textContent = 'Free Plan'; }
   }
-  
+  // Commission notice
   const notice = document.getElementById('commission-notice');
   if(notice){
     if(!isLabel && !isAdmin){
-      notice.innerHTML = `<i class="ti ti-info-circle"></i> You're on the <strong>Solo plan</strong> — Blakkstone retains <strong>15%</strong> of your royalties. <a onclick="goPage('upgrade',null)" style="color:var(--accent);font-weight:600;text-decoration:underline;margin-left:8px">Upgrade to keep 100%</a>`;
+      notice.innerHTML = `<i class="ti ti-info-circle"></i> You're on the <strong>Solo plan</strong> — Blakkstone retains <strong>15%</strong> of your royalties. <a onclick="goPage('upgrade',null)" style="color:var(--gold)">Upgrade to keep 100%</a>`;
       notice.style.display = 'flex';
     } else {
       notice.style.display = 'none';
@@ -835,7 +797,7 @@ async function loadAnalytics(){
         <div class="ra-stat"><strong>${(r.streams||0).toLocaleString()}</strong>Total Streams</div>
         <div class="ra-stat"><strong>$${(r.earnings||0).toFixed(2)}</strong>Gross Earnings</div>
         <div class="ra-stat"><strong style="color:var(--danger)">-$${comm.toFixed(2)}</strong>Commission (${isLabel?'0':'15'}%)</div>
-        <div class="ra-stat"><strong style="color:var(--accent)">$${rPayout.toFixed(2)}</strong>Your Payout</div>
+        <div class="ra-stat"><strong style="color:var(--gold)">$${rPayout.toFixed(2)}</strong>Your Payout</div>
       </div>
     </div>`;
   }).join('');
@@ -866,7 +828,7 @@ async function loadRoyalties(){
       <td>${(r.streams||0).toLocaleString()}</td>
       <td>$${(r.earnings||0).toFixed(2)}</td>
       <td style="color:var(--danger)">-$${rComm.toFixed(2)}</td>
-      <td style="color:var(--accent)"><strong>$${rPay.toFixed(2)}</strong></td>
+      <td style="color:var(--gold)"><strong>$${rPay.toFixed(2)}</strong></td>
     </tr>`;
   }).join('');
 }
@@ -877,27 +839,17 @@ async function saveProfile(){
   const ln = document.getElementById('p-ln').value.trim();
   const fullName = (fn+' '+ln).trim();
   const artistName = document.getElementById('p-an').value.trim();
-  const pNet = document.getElementById('p-payout-network').value;
-  const pNum = document.getElementById('p-payout-number').value.trim();
-  
   const btn = document.getElementById('save-profile-btn');
-  btn.disabled = true; btn.innerHTML = '<span class="loader" style="border-top-color:#000"></span>';
-  
-  const { error } = await sb.from('profiles').update({ 
-    full_name: fullName, 
-    artist_name: artistName,
-    payout_network: pNet,
-    payout_number: pNum
-  }).eq('id', user.id);
-  
+  btn.disabled = true; btn.innerHTML = '<span class="loader"></span>';
+  const { error } = await sb.from('profiles').update({ full_name: fullName, artist_name: artistName }).eq('id', user.id);
   if(error){ toast('Save failed: '+error.message, true); }
   else {
-    profile = { ...profile, full_name: fullName, artist_name: artistName, payout_network: pNet, payout_number: pNum };
+    profile = { ...profile, full_name: fullName, artist_name: artistName };
     document.getElementById('sb-name').textContent = fullName||artistName;
     document.getElementById('profile-display-name').textContent = artistName||fullName;
     const initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     if(!profile.avatar_url){ document.getElementById('sb-avatar').textContent = initials; document.getElementById('profile-avatar-initials').textContent = initials; }
-    toast('Profile and payout details saved!');
+    toast('Profile saved!');
   }
   btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Changes';
 }
@@ -949,8 +901,8 @@ async function loadAdminReleases(){
         <option value="live" ${r.status==='live'?'selected':''}>Live</option>
         <option value="rejected" ${r.status==='rejected'?'selected':''}>Rejected</option>
       </select></td>
-      <td><input type="number" value="${r.streams||0}" min="0" style="width:80px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:13px" onchange="updateAnalytics('${r.id}','streams',this.value)"></td>
-      <td><input type="number" value="${r.earnings||0}" min="0" step="0.01" style="width:80px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:13px" onchange="updateAnalytics('${r.id}','earnings',this.value)"></td>
+      <td><input type="number" value="${r.streams||0}" min="0" style="width:80px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:3px 6px;color:var(--text);font-size:12px" onchange="updateAnalytics('${r.id}','streams',this.value)"></td>
+      <td><input type="number" value="${r.earnings||0}" min="0" step="0.01" style="width:80px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:3px 6px;color:var(--text);font-size:12px" onchange="updateAnalytics('${r.id}','earnings',this.value)"></td>
       <td><button class="btn btn-danger btn-sm" onclick="deleteRelease('${r.id}')"><i class="ti ti-trash"></i></button></td>
     </tr>`;
   }).join('');
@@ -976,7 +928,7 @@ async function deleteRelease(id){
   toast('Release removed'); loadAdminReleases(); loadReleases();
 }
 
-// ── PAYSTACK (UPDATED V2) ─────────────────────────────
+// ── PAYSTACK ──────────────────────────────────────────
 function openPaystack(){ document.getElementById('pay-overlay').classList.add('open'); if(user) document.getElementById('pay-em').value=user.email||''; }
 function closePaystack(){ document.getElementById('pay-overlay').classList.remove('open'); }
 function setBilling(cycle){
@@ -988,28 +940,18 @@ function doPaystack(){
   const email = document.getElementById('pay-em').value.trim();
   if(!email){ toast('Enter your email to continue', true); return; }
   const amount = billing==='monthly' ? 9.99 : 89.99;
-  
-  const paystackInstance = new PaystackPop();
-  paystackInstance.newTransaction({
-    key: PAYSTACK_KEY, 
-    email: email, 
-    amount: Math.round(amount * 100), 
-    currency: 'USD',
-    onSuccess: async function(transaction){
-      if(user){ 
-        await sb.from('profiles').update({ plan:'label' }).eq('id', user.id); 
-        if(profile) profile.plan='label'; 
-      }
+  const handler = PaystackPop.setup({
+    key: PAYSTACK_KEY, email, amount: Math.round(amount*100), currency:'USD',
+    callback: async function(){
+      if(user){ await sb.from('profiles').update({ plan:'label' }).eq('id', user.id); if(profile) profile.plan='label'; }
       document.getElementById('sb-plan').textContent = 'Label Plan';
       document.getElementById('upgrade-nav').style.display = 'none';
       toast('Payment confirmed! Label plan activated.');
       closePaystack();
-      goPage('overview', document.querySelectorAll('.nav-item')[0]);
     },
-    onCancel: function(){ 
-      toast('Payment cancelled'); 
-    }
+    onClose: function(){ toast('Payment cancelled'); }
   });
+  handler.openIframe();
 }
 
 // ── UTILS ─────────────────────────────────────────────
