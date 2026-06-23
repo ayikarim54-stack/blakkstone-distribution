@@ -1621,50 +1621,70 @@ function updateRateNote(){
   document.getElementById('rate-note').textContent=`≈ GHS ${ghs} at current rate. Charged in GHS via Paystack.`;
 }
 
-async function doPaystack(){
+// Separate async handler — Paystack callback cannot be async
+async function onPaystackSuccess(ref, planKey, billingCycle, usd, pesewas){
+  try{
+    const planLabel=PLANS[planKey]?.label||planKey;
+    if(user){
+      await sb.from('profiles').update({plan:planKey}).eq('id',user.id);
+      if(profile) profile.plan=planKey;
+    }
+    await sb.from('subscriptions').insert({
+      user_id:user?.id, plan:planKey, billing_cycle:billingCycle,
+      amount_usd:usd, amount_ghs:(pesewas/100).toFixed(2),
+      paystack_ref:ref, status:'active'
+    }).catch(()=>{});
+    const upgradeNav=document.getElementById('upgrade-nav');
+    if(upgradeNav) upgradeNav.style.display='none';
+    updateUpgradePage(planKey);
+    updateCommBar(true,false);
+    toast('Payment confirmed! '+planLabel+' plan activated.','ok');
+    closePaystack();
+  }catch(e){
+    console.error('Post-payment error:',e);
+    toast('Plan activated! Refresh the page if dashboard does not update.','ok');
+    closePaystack();
+  }
+}
+
+function doPaystack(){
   const email=document.getElementById('pay-em').value.trim();
   if(!email){toast('Enter your email','err');return;}
   const p=PLANS[selectedPlan];
   const usd=billing==='monthly'?p.monthly:p.yearly;
   const pesewas=Math.round(usd*GHS_RATE*100);
   const btn=document.getElementById('pay-btn');
-  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
-  try{
-    if(typeof PaystackPop==='undefined'){
-      toast('Paystack failed to load. Check your connection and try again.','err');
-      btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';
-      return;
-    }
-    const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-    const handler=PaystackPop.setup({
-      key:PK,email,amount:pesewas,currency:'GHS',ref,
-      metadata:{plan:selectedPlan,billing_cycle:billing},
-      callback:async function(response){
-        try{
-          if(user){
-            await sb.from('profiles').update({plan:selectedPlan}).eq('id',user.id);
-            if(profile)profile.plan=selectedPlan;
-          }
-          await sb.from('subscriptions').insert({
-            user_id:user?.id,plan:selectedPlan,billing_cycle:billing,
-            amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),
-            paystack_ref:response.reference||ref,status:'active'
-          }).catch(()=>{});
-          const upgradeNav=document.getElementById('upgrade-nav');
-          if(upgradeNav) upgradeNav.style.display='none';
-          updateUpgradePage(selectedPlan);
-          updateCommBar(true,false);
-          toast('Payment confirmed! '+p.label+' plan activated.','ok');
-          closePaystack();
-        }catch(e){console.error('Post-payment error:',e);toast('Plan activated! Refresh if dashboard does not update.','ok');closePaystack();}
-      },
-      onClose:function(){toast('Payment cancelled');}
-    });
-  }catch(e){
-    console.error('Paystack error:',e);
-    toast('Payment error: '+e.message,'err');
+  if(typeof PaystackPop==='undefined'){
+    toast('Paystack not loaded. Check your internet connection.','err');
+    return;
   }
-  btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
+  const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+  // Capture plan/billing in closure so callback is synchronous
+  const _plan=selectedPlan, _billing=billing, _usd=usd, _pesewas=pesewas;
+  try{
+    const handler=PaystackPop.setup({
+      key:PK,
+      email:email,
+      amount:pesewas,
+      currency:'GHS',
+      ref:ref,
+      callback:function(response){
+        // Plain sync callback — triggers async handler separately
+        onPaystackSuccess(response.reference||ref, _plan, _billing, _usd, _pesewas);
+      },
+      onClose:function(){
+        toast('Payment cancelled');
+        btn.disabled=false;
+        btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';
+      }
+    });
+    handler.openIframe();
+  }catch(e){
+    console.error('Paystack setup error:',e);
+    toast('Payment error: '+e.message,'err');
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';
+  }
 }
 
 // ── UTILS ─────────────────────────────────────────────
