@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="description" content="Blakkstone Distribution — Ghana's independent music distribution platform. Distribute to Spotify, Apple Music, Boomplay and 150+ platforms. Mobile Money payouts."/>
 <meta name="theme-color" content="#131320"/>
 <meta property="og:title" content="Blakkstone Distribution"/>
@@ -326,7 +326,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* OVERLAY/MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s}
 .overlay.open{opacity:1;pointer-events:all}
-.modal{background:#242424;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:2rem;max-width:640px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto}
+.modal{background:#242424;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:2rem;max-width:640px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal h3{font-size:18px;font-weight:800;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
 .modal h3 button{background:none;border:none;cursor:pointer;font-size:20px;color:rgba(255,255,255,.4);line-height:1}
 .release-detail{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;margin-bottom:.875rem;background:#131320}
@@ -355,11 +355,116 @@ tr:hover td{background:rgba(255,255,255,.02)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .btn-purple{background:#7c3aed;color:#fff}.btn-purple:hover{background:#6d28d9}
 .btn-danger-outline{background:transparent;color:#ef4444;border:1.5px solid #ef4444;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;display:inline-flex;align-items:center;gap:4px}
-@media(max-width:680px){
-  .hero h1{font-size:38px}.plans-grid,.ug-grid,.btog{grid-template-columns:1fr}
-  .frow{grid-template-columns:1fr}.lnav-links{display:none}
-  .rar-body{grid-template-columns:1fr 1fr}.overview-cards{grid-template-columns:1fr 1fr}
-  .dash-topnav-links{gap:0}.tnav-item{padding:8px 10px;font-size:12px}
+/* ── MOBILE BOTTOM NAV ── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#000;border-top:1px solid rgba(255,255,255,.1);z-index:300;padding:.5rem 0 calc(.5rem + env(safe-area-inset-bottom));justify-content:space-around;align-items:center}
+.mob-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:.4rem .75rem;cursor:pointer;color:rgba(255,255,255,.4);transition:color .15s;min-width:48px}
+.mob-nav-item.active{color:#a78bfa}
+.mob-nav-item i{font-size:22px}
+.mob-nav-item span{font-size:10px;font-weight:600}
+
+@media(max-width:768px){
+  /* LANDING */
+  .hero h1{font-size:36px;letter-spacing:-1px}
+  .hero{padding:4rem 1.25rem 3.5rem}
+  .hero-sub{font-size:15px}
+  .plans-grid,.ug-grid,.btog{grid-template-columns:1fr}
+  .frow{grid-template-columns:1fr}
+  .lnav-links{display:none}
+  .stats-bar{gap:0;padding:1.25rem}
+  .stat-item{padding:0 1rem}
+  .stat-div{display:none}
+  .how-grid{flex-direction:column;align-items:center}
+  .how-arrow{transform:rotate(90deg);padding:.5rem 0}
+  .how-card{max-width:100%;width:100%}
+  .testi-grid{grid-template-columns:1fr}
+
+  /* DASHBOARD — hide top nav links, show mobile bottom nav */
+  .dash-topnav-links{display:none}
+  .dash-topnav{padding:0 1rem;height:56px}
+  .dash-topnav-logo{margin-right:0}
+  .dash-topnav-right .dash-user-chip div div:last-child{display:none}/* hide account id */
+  .mobile-nav{display:flex}
+  .dash-body{padding:1rem 1rem 80px;} /* bottom padding for mobile nav */
+
+  /* OVERVIEW */
+  .overview-cards{grid-template-columns:1fr 1fr;gap:.625rem;margin-bottom:1.5rem}
+  .ov-card{padding:1rem;min-height:90px}
+  .ov-card-value{font-size:24px}
+  .ov-card-icon{width:40px;height:40px;display:none}/* hide icons on mobile to save space */
+  .ph h1{font-size:24px}
+  .ph{margin-bottom:1rem}
+  .quick-actions{gap:8px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .quick-actions::-webkit-scrollbar{display:none}
+  .qa-btn{flex-shrink:0;padding:9px 14px;font-size:12px}
+  .releases-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.625rem}
+  .rg-title{font-size:12px}
+
+  /* RELEASES LIST */
+  .rr{padding:.75rem}
+  .r-art{width:38px;height:38px}
+
+  /* SUBMIT WIZARD */
+  #page-submit .wizard-panel>div[style*="grid-template-columns:1fr 280px"]{grid-template-columns:1fr!important}
+  #page-submit>div:first-child{margin:-1rem -1rem 1.5rem;padding:0 1rem}
+  .wizard-step{padding:.75rem .5rem}
+  .ws-label{display:none}
+  .ws-num{width:28px;height:28px;font-size:12px}
+
+  /* PAYOUT */
+  #page-payout>div[style*="grid-template-columns:1fr 340px"]{grid-template-columns:1fr!important}
+  .pmethod-card{display:none}/* hide saved methods card on mobile */
+
+  /* ROYALTIES */
+  .roy-hero-grid{grid-template-columns:1fr 1fr}
+  .roy-hero-val{font-size:22px}
+  #page-royalties>div[style*="grid-template-columns:1fr 320px"]{grid-template-columns:1fr!important}
+
+  /* ANALYTICS */
+  .an-hero-stats{flex-direction:column;gap:1rem;padding:1.25rem}
+  .an-hero-val{font-size:40px}
+  .an-hero-side{width:100%;justify-content:space-between}
+  .an-mini-stat{flex:1;min-width:0}
+  #page-analytics>div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+
+  /* ADMIN */
+  .adm-stats-grid{grid-template-columns:1fr 1fr}
+  .admin-tabs{gap:6px}
+  .atab{padding:6px 10px;font-size:11px}
+  .tw{font-size:11px}
+  td,th{padding:8px 10px}
+  #page-admin>div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+  #page-admin>div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr!important}
+  .adm-topbar{flex-direction:column;align-items:flex-start;gap:.75rem}
+
+  /* MODALS */
+  .modal{width:96%!important;padding:1.25rem}
+  .pay-modal{width:96%!important;padding:1.25rem}
+
+  /* AUTH */
+  .auth-wrap{flex-direction:column}
+  .auth-l{padding:1.5rem;display:none}/* hide left panel on mobile */
+  .auth-r{padding:1.75rem}
+
+  /* UPGRADE */
+  .ug-grid{max-width:100%}
+
+  /* PROFILE */
+  .profcard{max-width:100%}
+
+  /* HOW GRID */
+  .adm-stats-grid{grid-template-columns:1fr 1fr}
+
+  /* MESSAGES LAYOUT */
+  #admin-messages>div[style*="grid-template-columns:1fr 380px"]{grid-template-columns:1fr!important}
+  #admin-broadcast>div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+  #admin-reports>div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+}
+
+@media(max-width:420px){
+  .overview-cards{grid-template-columns:1fr 1fr}
+  .ov-card-value{font-size:20px}
+  .hero h1{font-size:30px}
+  .roy-hero-grid{grid-template-columns:1fr 1fr}
 }
 
 /* ── WIZARD ── */
@@ -1015,6 +1120,28 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
     <button onclick="document.getElementById('announcement-banner').style.display='none'" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.6);font-size:16px;flex-shrink:0">×</button>
   </div>
+  <!-- MOBILE BOTTOM NAV -->
+  <div class="mobile-nav" id="mobile-nav">
+    <div class="mob-nav-item active" id="mob-overview" onclick="goPage('overview',null);setMobNav('mob-overview')">
+      <i class="ti ti-layout-dashboard"></i><span>Home</span>
+    </div>
+    <div class="mob-nav-item" id="mob-music" onclick="goPage('releases',null);setMobNav('mob-music')">
+      <i class="ti ti-music"></i><span>Music</span>
+    </div>
+    <div class="mob-nav-item" id="mob-submit" onclick="goPage('submit',null);setMobNav('mob-submit')" style="background:none">
+      <div style="width:44px;height:44px;background:#7c3aed;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:-2px">
+        <i class="ti ti-plus" style="font-size:22px;color:#fff"></i>
+      </div>
+      <span>Add</span>
+    </div>
+    <div class="mob-nav-item" id="mob-royalties" onclick="goPage('royalties',null);setMobNav('mob-royalties')">
+      <i class="ti ti-coin"></i><span>Royalties</span>
+    </div>
+    <div class="mob-nav-item" id="mob-profile" onclick="goPage('profile',null);setMobNav('mob-profile')">
+      <i class="ti ti-user"></i><span>Profile</span>
+    </div>
+  </div>
+
   <div class="dash-body">
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
@@ -1929,6 +2056,51 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- RELEASE DETAIL MODAL -->
+<div class="overlay" id="release-overlay" onclick="if(event.target===this)closeReleaseModal()">
+  <div class="modal" style="max-width:560px;width:94%">
+    <div style="display:flex;gap:1.25rem;margin-bottom:1.5rem">
+      <div id="rel-modal-art" style="width:100px;height:100px;border-radius:10px;background:#333;flex-shrink:0;overflow:hidden"></div>
+      <div style="flex:1;min-width:0">
+        <div id="rel-modal-title" style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px"></div>
+        <div id="rel-modal-artist" style="font-size:14px;color:rgba(255,255,255,.5);margin-bottom:8px"></div>
+        <div id="rel-modal-status-badge"></div>
+      </div>
+      <button onclick="closeReleaseModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px;line-height:1;padding:0;flex-shrink:0;align-self:flex-start">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem">
+      <div style="background:#191919;border-radius:9px;padding:.875rem">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:4px">Streams</div>
+        <div id="rel-modal-streams" style="font-size:22px;font-weight:800;color:#fff">—</div>
+      </div>
+      <div style="background:#191919;border-radius:9px;padding:.875rem">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:4px">Earnings</div>
+        <div id="rel-modal-earnings" style="font-size:22px;font-weight:800;color:#34d399">—</div>
+      </div>
+      <div style="background:#191919;border-radius:9px;padding:.875rem">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:4px">Genre</div>
+        <div id="rel-modal-genre" style="font-size:14px;font-weight:600;color:#fff">—</div>
+      </div>
+      <div style="background:#191919;border-radius:9px;padding:.875rem">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:4px">Release Date</div>
+        <div id="rel-modal-date" style="font-size:14px;font-weight:600;color:#fff">—</div>
+      </div>
+    </div>
+    <div id="rel-modal-isrc-wrap" style="display:none;background:#191919;border-radius:9px;padding:.875rem;margin-bottom:1.25rem">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:4px">ISRC</div>
+      <div id="rel-modal-isrc" style="font-size:13px;font-weight:600;color:#fff;font-family:monospace">—</div>
+    </div>
+    <div id="rel-modal-notes-wrap" style="display:none;background:#191919;border-radius:9px;padding:.875rem;margin-bottom:1.25rem">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:6px">Distribution Info</div>
+      <div id="rel-modal-notes" style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6">—</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-purple" style="flex:1;justify-content:center" onclick="goPage('analytics',document.querySelectorAll('.tnav-item')[5]);closeReleaseModal()"><i class="ti ti-chart-bar"></i> View Analytics</button>
+      <button class="btn" style="background:#2a2a2a;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1)" onclick="closeReleaseModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- ARTIST DETAIL MODAL -->
 <div class="overlay" id="artist-overlay">
   <div class="modal">
@@ -2170,6 +2342,9 @@ function goPage(id,el){
   if(id==='artists')loadArtists();
   if(id==='profile')loadProfileStats();
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
+  // Sync mobile nav
+  const mobMap={overview:'mob-overview',releases:'mob-music',submit:'mob-submit',royalties:'mob-royalties',profile:'mob-profile'};
+  if(mobMap[id]) setMobNav(mobMap[id]);
 }
 
 // ── RELEASES ──────────────────────────────────────────
@@ -2214,7 +2389,7 @@ function releaseGridCard(r){
   const bc={pending:'rg-badge-pending',review:'rg-badge-review',live:'rg-badge-live',rejected:'rg-badge-rejected'}[r.status]||'rg-badge-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
   const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
-  return `<div class="rg-card">
+  return `<div class="rg-card" onclick='openReleaseModal(${JSON.stringify(r)})'>
     <div class="rg-art">${art}<span class="rg-badge ${bc}">${bl}</span></div>
     <div class="rg-info"><div class="rg-title">${esc(r.title)}</div><div class="rg-meta">${esc(r.artist)}</div></div>
   </div>`;
@@ -2267,7 +2442,12 @@ function releaseRow(r){
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
   const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
   const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
-  return `<div class="rr"><div class="r-art">${art}</div><div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')} · ${d}</div></div><span class="badge ${bc}">${bl}</span></div>`;
+  return `<div class="rr" onclick='openReleaseModal(${JSON.stringify(r)})' style="cursor:pointer">
+    <div class="r-art">${art}</div>
+    <div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')} · ${d}</div></div>
+    <span class="badge ${bc}">${bl}</span>
+    <i class="ti ti-chevron-right" style="color:rgba(255,255,255,.2);font-size:16px;flex-shrink:0"></i>
+  </div>`;
 }
 function emptyState(msg){return `<div class="empty"><i class="ti ti-music-off"></i><p>${msg}</p></div>`;}
 
@@ -2380,6 +2560,33 @@ async function openArtistModal(userId,name){
   document.getElementById('artist-overlay').classList.add('open');
 }
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
+
+function openReleaseModal(r){
+  const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected'}[r.status]||'b-pending';
+  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
+  const artEl=document.getElementById('rel-modal-art');
+  if(artEl) artEl.innerHTML=r.artwork_url?`<img src="${r.artwork_url}" style="width:100%;height:100%;object-fit:cover">`:'<i class="ti ti-music" style="font-size:32px;color:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;width:100%;height:100%"></i>';
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('rel-modal-title',r.title||'—');
+  set('rel-modal-artist',r.artist||'—');
+  set('rel-modal-streams',(r.streams||0).toLocaleString());
+  set('rel-modal-earnings','$'+(r.earnings||0).toFixed(2));
+  set('rel-modal-genre',r.genre||'—');
+  set('rel-modal-date',r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—');
+  // Status badge
+  const sb=document.getElementById('rel-modal-status-badge');
+  if(sb) sb.innerHTML=`<span class="badge ${bc}" style="font-size:12px;padding:4px 12px">${bl}</span>`;
+  // ISRC
+  const isrcWrap=document.getElementById('rel-modal-isrc-wrap');
+  const isrcEl=document.getElementById('rel-modal-isrc');
+  if(isrcWrap&&isrcEl){isrcWrap.style.display=r.isrc?'block':'none';isrcEl.textContent=r.isrc||'';}
+  // Notes
+  const notesWrap=document.getElementById('rel-modal-notes-wrap');
+  const notesEl=document.getElementById('rel-modal-notes');
+  if(notesWrap&&notesEl){notesWrap.style.display=r.notes?'block':'none';notesEl.textContent=r.notes||'';}
+  document.getElementById('release-overlay').classList.add('open');
+}
+function closeReleaseModal(){document.getElementById('release-overlay').classList.remove('open');}
 
 // Close modals on Escape key
 document.addEventListener('keydown',e=>{
@@ -3930,6 +4137,12 @@ function updateWelcomeTime(){
 }
 
 // ── ONBOARDING CHECKLIST ──────────────────────────────
+function setMobNav(activeId){
+  document.querySelectorAll('.mob-nav-item').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById(activeId);
+  if(el) el.classList.add('active');
+}
+
 function updateOnboarding(){
   const card=document.getElementById('onboard-card');
   if(!card)return;
