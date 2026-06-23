@@ -120,176 +120,234 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .conf-card h2{font-size:22px;font-weight:800;margin-bottom:.6rem}
 .conf-card p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:1.4rem}
 
-/* ── DASHBOARD ── */
-#dashboard{flex-direction:column;min-height:100vh;background:var(--off)}
+/* ── DASHBOARD DARK THEME (Ditto-inspired) ── */
+#dashboard{flex-direction:column;min-height:100vh;background:#131320}
 /* TOP NAV */
-.dash-topnav{background:#fff;border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 1.5rem;gap:0;position:sticky;top:0;z-index:200}
-.dash-topnav-logo{font-size:16px;font-weight:900;color:var(--black);margin-right:2rem;cursor:pointer;white-space:nowrap}
+.dash-topnav{background:#1a1a2e;border-bottom:1px solid rgba(255,255,255,.07);height:58px;display:flex;align-items:center;padding:0 1.5rem;gap:0;position:sticky;top:0;z-index:200}
+.dash-topnav-logo{font-size:16px;font-weight:900;color:#fff;margin-right:2rem;cursor:pointer;white-space:nowrap}
 .dash-topnav-logo span{color:var(--gold)}
 .dash-topnav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto}
 .dash-topnav-links::-webkit-scrollbar{display:none}
-.tnav-item{display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .12s;border-radius:8px;white-space:nowrap}
-.tnav-item:hover{background:var(--off);color:var(--text)}
-.tnav-item.active{background:var(--gl);color:var(--gd);font-weight:600}
+.tnav-item{display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:13px;font-weight:500;color:rgba(255,255,255,.5);cursor:pointer;transition:all .12s;border-radius:8px;white-space:nowrap}
+.tnav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.tnav-item.active{background:rgba(139,92,246,.2);color:#a78bfa;font-weight:600}
 .tnav-item i{font-size:16px}
-.tnav-sep{width:1px;height:20px;background:var(--border);margin:0 6px;flex-shrink:0}
+.tnav-sep{width:1px;height:20px;background:rgba(255,255,255,.1);margin:0 6px;flex-shrink:0}
 .dash-topnav-right{display:flex;gap:8px;align-items:center;margin-left:auto;flex-shrink:0}
-.dash-user-chip{display:flex;align-items:center;gap:7px;background:var(--off);border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer}
-.dash-user-chip:hover{border-color:var(--gold)}
-/* MAIN CONTENT */
-.dash-body{flex:1;padding:1.75rem;overflow-y:auto}
+.dash-user-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 10px;cursor:pointer}
+.dash-user-chip:hover{border-color:rgba(139,92,246,.5)}
+/* MAIN */
+.dash-body{flex:1;padding:2rem;overflow-y:auto;min-height:0}
 .page{display:none}
 .page.active{display:block}
-.ph{margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.ph h1{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px}
-.ph p{font-size:13px;color:var(--muted);margin-top:3px}
-/* STATS */
-.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin-bottom:1.5rem}
-.sc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.2rem}
-.sc-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
-.sc-val{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px}
-.sc-val.accent{color:var(--gd)}
-/* RELEASES */
+.ph{margin-bottom:1.75rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.ph h1{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.ph p{font-size:13px;color:rgba(255,255,255,.4);margin-top:4px}
+/* OVERVIEW STAT CARDS */
+.overview-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:2rem}
+.ov-card{border-radius:14px;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1rem;position:relative;overflow:hidden}
+.ov-card-1{background:linear-gradient(135deg,#7c3aed,#4f46e5)}
+.ov-card-2{background:linear-gradient(135deg,#0891b2,#0e7490)}
+.ov-card-3{background:linear-gradient(135deg,#1d4ed8,#1e40af)}
+.ov-card-4{background:linear-gradient(135deg,#ea580c,#c2410c)}
+.ov-card-icon{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ov-card-icon i{font-size:24px;color:#fff}
+.ov-card-label{font-size:12px;font-weight:500;color:rgba(255,255,255,.7);margin-bottom:4px}
+.ov-card-value{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.ov-card-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:3px}
+/* RELEASES GRID */
+.releases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem}
+.rg-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .15s}
+.rg-card:hover{border-color:rgba(139,92,246,.4);transform:translateY(-2px)}
+.rg-art{width:100%;aspect-ratio:1;background:#2a2a45;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.rg-art img{width:100%;height:100%;object-fit:cover}
+.rg-art i{font-size:32px;color:rgba(255,255,255,.2)}
+.rg-badge{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px}
+.rg-badge-live{background:#10b981;color:#fff}
+.rg-badge-pending{background:#f59e0b;color:#000}
+.rg-badge-review{background:#3b82f6;color:#fff}
+.rg-badge-rejected{background:#ef4444;color:#fff}
+.rg-new{background:#1e1e35;border:2px dashed rgba(255,255,255,.15);border-radius:12px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;gap:8px}
+.rg-new:hover{border-color:rgba(139,92,246,.5);background:#252540}
+.rg-new i{font-size:28px;color:rgba(255,255,255,.3)}
+.rg-new span{font-size:12px;color:rgba(255,255,255,.3);font-weight:500}
+.rg-info{padding:.75rem}
+.rg-title{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rg-meta{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
+/* RELEASES LIST VIEW */
 .rl{display:flex;flex-direction:column;gap:8px}
-.rr{background:#fff;border:1px solid var(--border);border-radius:11px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:box-shadow .15s}
-.rr:hover{box-shadow:0 2px 10px rgba(0,0,0,.05)}
-.r-art{width:44px;height:44px;border-radius:8px;background:var(--off);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.rr{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:all .15s}
+.rr:hover{border-color:rgba(139,92,246,.3)}
+.r-art{width:44px;height:44px;border-radius:8px;background:#2a2a45;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .r-art img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-.r-art i{font-size:20px;color:var(--border)}
+.r-art i{font-size:20px;color:rgba(255,255,255,.2)}
 .r-info{flex:1;min-width:0}
-.r-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.r-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.r-title{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-meta{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
 .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
-.b-pending{background:#fff8e6;color:#b7791f}
-.b-review{background:#e8f0fe;color:#1a56db}
-.b-live{background:#f0fff4;color:#276749}
-.b-rejected{background:#fff5f5;color:#c53030}
-.empty{text-align:center;padding:2.5rem;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:11px}
-.empty i{font-size:32px;color:var(--border);margin-bottom:.75rem;display:block}
+.b-pending{background:rgba(245,158,11,.2);color:#fbbf24}
+.b-review{background:rgba(59,130,246,.2);color:#60a5fa}
+.b-live{background:rgba(16,185,129,.2);color:#34d399}
+.b-rejected{background:rgba(239,68,68,.2);color:#f87171}
+.empty{text-align:center;padding:3rem;color:rgba(255,255,255,.3);background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px}
+.empty i{font-size:32px;color:rgba(255,255,255,.1);margin-bottom:.75rem;display:block}
 .empty p{font-size:13px}
-/* SUBMIT */
-.scard{background:#fff;border:1px solid var(--border);border-radius:13px;padding:1.75rem;max-width:640px}
-.sdiv{margin-bottom:1.4rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
+/* RELEASE FILTER TABS */
+.rel-tabs{display:flex;gap:0;margin-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.rel-tab{padding:8px 16px;font-size:13px;font-weight:500;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.rel-tab:hover{color:rgba(255,255,255,.7)}
+.rel-tab.active{color:#a78bfa;border-bottom-color:#a78bfa;font-weight:600}
+.rel-search-bar{display:flex;gap:10px;margin-bottom:1.25rem}
+.rel-search-bar input{flex:1;background:#1e1e35;border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:9px 14px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none}
+.rel-search-bar input:focus{border-color:rgba(139,92,246,.5)}
+.rel-search-bar input::placeholder{color:rgba(255,255,255,.3)}
+/* SUBMIT FORM */
+.scard{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:2rem;max-width:640px}
+.sdiv{margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.07)}
 .sdiv:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.slabel{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gd);margin-bottom:.875rem;display:flex;align-items:center;gap:5px}
-.upload-z{border:2px dashed var(--border);border-radius:9px;padding:1.5rem;text-align:center;cursor:pointer;background:var(--off);transition:all .15s}
-.upload-z:hover{border-color:var(--gold);background:var(--gl)}
-.upload-z i{font-size:26px;color:var(--muted);display:block;margin-bottom:.4rem}
-.upload-z p{font-size:12px;color:var(--muted)}
-.upload-z.has-file{border-color:var(--success);background:#f0fff4}
-.upload-z.has-file p{color:var(--success)}
+.slabel{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#a78bfa;margin-bottom:1rem;display:flex;align-items:center;gap:5px}
+.fg{margin-bottom:.875rem}
+.fg label{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:6px}
+.fg input,.fg select,.fg textarea{width:100%;background:#131320;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(139,92,246,.6)}
+.fg input::placeholder{color:rgba(255,255,255,.25)}
+.fg select{color:#fff}
+.fg select option{background:#1e1e35;color:#fff}
+.fg textarea{resize:vertical;min-height:80px;line-height:1.5}
+.fg textarea::placeholder{color:rgba(255,255,255,.25)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.upload-z{border:2px dashed rgba(255,255,255,.15);border-radius:9px;padding:1.5rem;text-align:center;cursor:pointer;background:#131320;transition:all .15s}
+.upload-z:hover{border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.05)}
+.upload-z i{font-size:26px;color:rgba(255,255,255,.25);display:block;margin-bottom:.4rem}
+.upload-z p{font-size:12px;color:rgba(255,255,255,.3)}
+.upload-z.has-file{border-color:#10b981}
+.upload-z.has-file p{color:#34d399}
 /* ANALYTICS */
-.ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem}
-.ac{background:#fff;border:1px solid var(--border);border-radius:11px;padding:1.1rem 1.2rem}
-.ac-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
-.ac-val{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px}
-.ac-sub{font-size:11px;color:var(--muted);margin-top:3px}
-.rar{background:#fff;border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:8px}
-.rar-head{padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;border-bottom:1px solid var(--border)}
-.rar-body{padding:.875rem 1.1rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem}
-.rm{font-size:12px;color:var(--muted)}
-.rm strong{display:block;font-size:18px;font-weight:700;color:var(--text);margin-bottom:2px;letter-spacing:-.3px}
-/* ROYALTIES */
-.comm-bar{background:var(--gl);border:1px solid #e6d090;border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:var(--gd);margin-bottom:1.25rem;display:flex;align-items:center;gap:7px}
-.rtw{background:#fff;border:1px solid var(--border);border-radius:11px;overflow:hidden}
+.ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.ac{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.25rem}
+.ac-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem}
+.ac-val{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.ac-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:4px}
+/* CHART */
+.chart-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
+.chart-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem}
+.chart-wrap{position:relative;height:220px}
+/* STORE TABLE */
+.dark-table-wrap{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--off)}
-td{font-size:13px;color:var(--text);padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle}
+th{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:10px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);background:#16162a}
+td{font-size:13px;color:rgba(255,255,255,.8);padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--off)}
+tr:hover td{background:rgba(255,255,255,.02)}
+/* ROYALTIES */
+.royalties-subtabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:1.5rem}
+.rsub{padding:9px 20px;font-size:13px;font-weight:500;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.rsub:hover{color:rgba(255,255,255,.7)}
+.rsub.active{color:#a78bfa;border-bottom-color:#a78bfa;font-weight:600}
+.yellow-banner{background:#f59e0b;border-radius:10px;padding:.875rem 1.25rem;font-size:13px;color:#000;font-weight:500;margin-bottom:1.5rem;display:flex;align-items:center;gap:8px}
+.comm-bar{margin-bottom:1.25rem}
 /* PAYOUT */
-.pcard{background:#fff;border:1px solid var(--border);border-radius:13px;padding:1.75rem;max-width:540px;margin-bottom:1.25rem}
+.payout-balance-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:2rem;max-width:560px;margin-bottom:1.5rem}
+.payout-bar-wrap{background:#2a2a45;border-radius:8px;height:10px;margin:1rem 0;overflow:hidden}
+.payout-bar-fill{background:linear-gradient(90deg,#7c3aed,#4f46e5);height:100%;border-radius:8px;transition:width .4s}
+.pmethod-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;max-width:380px;margin-bottom:1.5rem}
 .pmethods{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
-.popt{border:2px solid var(--border);border-radius:10px;padding:1.1rem;cursor:pointer;transition:all .15s}
-.popt:hover{border-color:var(--gold)}
-.popt.sel{border-color:var(--gold);background:var(--gl)}
-.popt i{font-size:22px;color:var(--muted);display:block;margin-bottom:.4rem}
-.popt.sel i{color:var(--gd)}
-.popt-title{font-size:13px;font-weight:600}
-.popt-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.popt{border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:1.1rem;cursor:pointer;transition:all .15s;background:#131320}
+.popt:hover{border-color:rgba(139,92,246,.4)}
+.popt.sel{border-color:#7c3aed;background:rgba(124,58,237,.1)}
+.popt i{font-size:22px;color:rgba(255,255,255,.35);display:block;margin-bottom:.4rem}
+.popt.sel i{color:#a78bfa}
+.popt-title{font-size:13px;font-weight:600;color:#fff}
+.popt-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
 .momo-nets{display:flex;gap:8px;margin-bottom:.875rem}
-.mnet{flex:1;padding:7px;border:1.5px solid var(--border);border-radius:7px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:all .15s}
-.mnet:hover{border-color:var(--gold)}
-.mnet.sel{border-color:var(--gold);background:var(--gl);color:var(--gd)}
+.mnet{flex:1;padding:7px;border:1.5px solid rgba(255,255,255,.1);border-radius:7px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);transition:all .15s;background:#131320}
+.mnet:hover{border-color:rgba(139,92,246,.4)}
+.mnet.sel{border-color:#7c3aed;background:rgba(124,58,237,.15);color:#a78bfa}
 /* ARTISTS */
 .artist-list{display:flex;flex-direction:column;gap:8px}
-.artist-row{background:#fff;border:1px solid var(--border);border-radius:11px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem}
-.artist-av{width:42px;height:42px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--gd);flex-shrink:0;overflow:hidden}
+.artist-row{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:all .15s}
+.artist-row:hover{border-color:rgba(139,92,246,.3)}
+.artist-av{width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#a78bfa;flex-shrink:0;overflow:hidden}
 .artist-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.artist-info{flex:1;min-width:0}
-.artist-name{font-size:14px;font-weight:600}
-.artist-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.artist-name{font-size:14px;font-weight:600;color:#fff}
+.artist-meta{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
 .plan-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
-.pp-solo{background:#f0f0f0;color:var(--muted)}
-.pp-label{background:var(--gl);color:var(--gd)}
-.pp-admin{background:#e8f0fe;color:var(--info)}
+.pp-solo{background:rgba(255,255,255,.08);color:rgba(255,255,255,.4)}
+.pp-label{background:rgba(201,168,76,.15);color:var(--gold)}
+.pp-admin{background:rgba(59,130,246,.15);color:#60a5fa}
 /* UPGRADE */
 .ug-hero{text-align:center;margin-bottom:2.5rem}
-.ug-hero h1{font-size:30px;font-weight:900;letter-spacing:-.5px;margin-bottom:.4rem}
-.ug-hero p{font-size:14px;color:var(--muted)}
+.ug-hero h1{font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:.4rem;color:#fff}
+.ug-hero p{font-size:14px;color:rgba(255,255,255,.4)}
 .ug-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;max-width:860px;margin-bottom:1.5rem}
-.ug-card{background:#fff;border:2px solid var(--border);border-radius:14px;padding:1.75rem}
-.ug-card.featured{border-color:var(--gold);position:relative}
-.ug-card.featured::before{content:'RECOMMENDED';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 12px;border-radius:0 0 7px 7px}
-.ug-name{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
-.ug-price{font-size:36px;font-weight:900;color:var(--text);letter-spacing:-1.5px;margin-bottom:.2rem}
-.ug-price small{font-size:13px;font-weight:500;color:var(--muted);letter-spacing:0}
-.ug-desc{font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5}
+.ug-card{background:#1e1e35;border:1.5px solid rgba(255,255,255,.08);border-radius:14px;padding:1.75rem}
+.ug-card.featured{border-color:#7c3aed;position:relative}
+.ug-card.featured::before{content:'RECOMMENDED';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 12px;border-radius:0 0 7px 7px}
+.ug-name{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.4rem}
+.ug-price{font-size:34px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.2rem}
+.ug-price small{font-size:13px;font-weight:500;color:rgba(255,255,255,.35);letter-spacing:0}
+.ug-desc{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:1.25rem;line-height:1.5}
 .ug-feats{list-style:none;margin-bottom:1.4rem}
-.ug-feats li{font-size:12px;color:var(--text);padding:5px 0;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
+.ug-feats li{font-size:12px;color:rgba(255,255,255,.7);padding:5px 0;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,.06)}
 .ug-feats li:last-child{border-bottom:none}
-.ug-feats li i.ck{color:var(--success);font-size:14px}
-.ug-feats li i.cx{color:var(--danger);font-size:14px}
+.ug-feats li i.ck{color:#10b981;font-size:14px}
+.ug-feats li i.cx{color:#ef4444;font-size:14px}
 /* PROFILE */
-.profcard{background:#fff;border:1px solid var(--border);border-radius:13px;padding:1.75rem;max-width:520px}
-.prof-top{display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
-.prof-av{width:66px;height:66px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--gd);flex-shrink:0;overflow:hidden;cursor:pointer;border:2px solid var(--border);transition:border .15s}
-.prof-av:hover{border-color:var(--gold)}
+.profcard{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:2rem;max-width:520px}
+.prof-top{display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.07)}
+.prof-av{width:66px;height:66px;border-radius:50%;background:rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#a78bfa;flex-shrink:0;overflow:hidden;cursor:pointer;border:2px solid rgba(255,255,255,.1);transition:border .15s}
+.prof-av:hover{border-color:#7c3aed}
 .prof-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.divhr{height:1px;background:var(--border);margin:1.25rem 0}
+.divhr{height:1px;background:rgba(255,255,255,.07);margin:1.25rem 0}
 /* ADMIN */
-.admin-tabs{display:flex;gap:8px;margin-bottom:1.25rem}
-.atab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:#fff;transition:all .15s}
-.atab.active{border-color:var(--gold);background:var(--gl);color:var(--gd)}
+.admin-tabs{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.atab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);background:transparent;transition:all .15s}
+.atab:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.atab.active{border-color:#7c3aed;background:rgba(124,58,237,.15);color:#a78bfa}
 .admin-section{display:none}
 .admin-section.active{display:block}
-.tw{background:#fff;border:1px solid var(--border);border-radius:11px;overflow:hidden;overflow-x:auto}
-.stsel{background:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:11px;color:var(--text);font-family:'Inter',sans-serif;cursor:pointer;outline:none}
-.stsel:focus{border-color:var(--gold)}
-.num-in{width:76px;background:var(--off);border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;color:var(--text);font-family:'Inter',sans-serif;outline:none}
-.num-in:focus{border-color:var(--gold)}
-/* Artist detail modal */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s}
+.tw{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px;overflow:hidden;overflow-x:auto}
+.stsel{background:#131320;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:'Inter',sans-serif;cursor:pointer;outline:none}
+.stsel:focus{border-color:#7c3aed}
+.num-in{width:76px;background:#131320;border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:3px 6px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none}
+.num-in:focus{border-color:#7c3aed}
+/* OVERLAY/MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s}
 .overlay.open{opacity:1;pointer-events:all}
-.modal{background:#fff;border-radius:16px;padding:1.75rem;max-width:640px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
-.modal h3{font-size:18px;font-weight:800;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
-.modal h3 button{background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);line-height:1}
-.release-detail{border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.875rem}
-.rd-header{display:flex;align-items:center;gap:.875rem;margin-bottom:.875rem;padding-bottom:.875rem;border-bottom:1px solid var(--border)}
+.modal{background:#1e1e35;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:2rem;max-width:640px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto}
+.modal h3{font-size:18px;font-weight:800;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
+.modal h3 button{background:none;border:none;cursor:pointer;font-size:20px;color:rgba(255,255,255,.4);line-height:1}
+.release-detail{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;margin-bottom:.875rem;background:#131320}
+.rd-header{display:flex;align-items:center;gap:.875rem;margin-bottom:.875rem;padding-bottom:.875rem;border-bottom:1px solid rgba(255,255,255,.07)}
 .rd-fields{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-/* PAY MODAL */
-.pay-modal{background:#fff;border-radius:16px;padding:2rem;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.15)}
-.pay-modal h3{font-size:20px;font-weight:800;margin-bottom:.4rem}
-.pay-modal p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1.25rem}
-.btog{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.1rem}
-.bopt{padding:10px 8px;border:2px solid var(--border);border-radius:9px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;color:var(--muted);font-weight:500}
-.bopt strong{display:block;font-size:16px;font-weight:800;color:var(--text);margin-top:2px}
-.bopt.sel{border-color:var(--gold);background:var(--gl);color:var(--gd)}
-.bopt.sel strong{color:var(--gd)}
-.rate-note{font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+/* PAYSTACK MODAL */
+.pay-modal{background:#1e1e35;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:2rem;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.pay-modal h3{font-size:20px;font-weight:800;color:#fff;margin-bottom:.4rem}
+.pay-modal p{font-size:13px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:1.25rem}
+.btog{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.1rem}
+.bopt{padding:10px 8px;border:2px solid rgba(255,255,255,.1);border-radius:9px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;color:rgba(255,255,255,.4);font-weight:500;background:#131320}
+.bopt strong{display:block;font-size:16px;font-weight:800;color:#fff;margin-top:2px}
+.bopt.sel{border-color:#7c3aed;background:rgba(124,58,237,.15);color:#a78bfa}
+.bopt.sel strong{color:#a78bfa}
+.rate-note{font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:6px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
 /* TOAST */
-.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--black);border-radius:9px;padding:11px 18px;font-size:13px;color:#fff;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;z-index:999;pointer-events:none;max-width:300px}
+.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:#1e1e35;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:11px 18px;font-size:13px;color:#fff;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;z-index:999;pointer-events:none;max-width:300px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
 .toast.show{opacity:1;transform:translateY(0)}
-.toast.ok{background:var(--success)}
-.toast.err{background:var(--danger)}
-.loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+.toast.ok{border-color:#10b981;background:#0f2318}
+.toast.err{border-color:#ef4444;background:#2d1515}
+/* AVATAR */
+.avatar{width:32px;height:32px;border-radius:50%;background:rgba(139,92,246,.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#a78bfa;flex-shrink:0;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#a78bfa;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
+.btn-purple{background:#7c3aed;color:#fff}.btn-purple:hover{background:#6d28d9}
+.btn-danger-outline{background:transparent;color:#ef4444;border:1.5px solid #ef4444;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;display:inline-flex;align-items:center;gap:4px}
 @media(max-width:680px){
-  .hero h1{font-size:38px}.plans-grid,.ug-grid,.btog{grid-template-columns:1fr}.auth-l{display:none}
-  .frow{grid-template-columns:1fr}.lnav-links{display:none}.rar-body{grid-template-columns:1fr 1fr}
-  .dash-topnav-links{gap:0}
-  .tnav-item{padding:8px 10px;font-size:12px}
+  .hero h1{font-size:38px}.plans-grid,.ug-grid,.btog{grid-template-columns:1fr}
+  .frow{grid-template-columns:1fr}.lnav-links{display:none}
+  .rar-body{grid-template-columns:1fr 1fr}.overview-cards{grid-template-columns:1fr 1fr}
+  .dash-topnav-links{gap:0}.tnav-item{padding:8px 10px;font-size:12px}
 }
 </style>
 </head>
@@ -483,53 +541,101 @@ tr:hover td{background:var(--off)}
     <div class="dash-topnav-logo" onclick="showView('landing')">Blakkstone<span>.</span></div>
     <div class="dash-topnav-links">
       <div class="tnav-item active" onclick="goPage('overview',this)"><i class="ti ti-layout-dashboard"></i> Overview</div>
-      <div class="tnav-item" onclick="goPage('releases',this)"><i class="ti ti-music"></i> Releases</div>
+      <div class="tnav-item" onclick="goPage('releases',this)"><i class="ti ti-music"></i> Music</div>
       <div class="tnav-item" onclick="goPage('submit',this)"><i class="ti ti-upload"></i> Submit</div>
       <div class="tnav-item" onclick="goPage('artists',this)"><i class="ti ti-users"></i> Artists</div>
       <div class="tnav-sep"></div>
-      <div class="tnav-item" onclick="goPage('analytics',this)"><i class="ti ti-chart-bar"></i> Analytics</div>
       <div class="tnav-item" onclick="goPage('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
-      <div class="tnav-item" onclick="goPage('payout',this)"><i class="ti ti-wallet"></i> Payout</div>
+      <div class="tnav-item" onclick="goPage('analytics',this)"><i class="ti ti-chart-bar"></i> Analytics</div>
+      <div class="tnav-item" onclick="goPage('payout',this)"><i class="ti ti-wallet"></i> Payouts</div>
       <div class="tnav-sep"></div>
       <div class="tnav-item" onclick="goPage('upgrade',this)" id="upgrade-nav"><i class="ti ti-crown"></i> Upgrade</div>
       <div class="tnav-item" onclick="goPage('profile',this)"><i class="ti ti-user"></i> Profile</div>
-      <div class="tnav-item" id="admin-nav" style="display:none" onclick="goPage('admin',this)"><i class="ti ti-shield-check"></i> Admin</div>
+      <div class="tnav-item" id="admin-nav" style="display:none" onclick="goPage('admin',this)"><i class="ti ti-shield-check"></i> Admin <span id="notif-badge" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></div>
     </div>
     <div class="dash-topnav-right">
       <div class="dash-user-chip" onclick="goPage('profile',null)">
-        <div class="r-art" style="width:28px;height:28px;border-radius:50%" id="tnav-avatar"><i class="ti ti-user" style="font-size:14px;color:var(--muted)"></i></div>
+        <div class="avatar" id="tnav-avatar"><i class="ti ti-user" style="font-size:13px"></i></div>
         <div>
-          <div style="font-size:12px;font-weight:600;color:var(--text)" id="tnav-name">—</div>
-          <div style="font-size:10px;font-weight:600;color:var(--gold)" id="tnav-account-id">—</div>
+          <div style="font-size:12px;font-weight:600;color:#fff" id="tnav-name">—</div>
+          <div style="font-size:10px;font-weight:600;color:var(--gold)" id="tnav-account-id"></div>
         </div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="logout()"><i class="ti ti-logout"></i></button>
+      <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:none;padding:7px 12px" onclick="logout()"><i class="ti ti-logout"></i></button>
     </div>
   </div>
 
   <div class="dash-body">
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
-      <div class="ph"><div><h1 id="welcome-h">Overview</h1><p>Your distribution activity at a glance.</p></div><button class="btn btn-gold btn-sm" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> New Release</button></div>
-      <div class="sg">
-        <div class="sc"><div class="sc-label">Total Releases</div><div class="sc-val accent" id="s-total">—</div></div>
-        <div class="sc"><div class="sc-label">Live on DSPs</div><div class="sc-val accent" id="s-live">—</div></div>
-        <div class="sc"><div class="sc-label">Pending</div><div class="sc-val" id="s-pending">—</div></div>
-        <div class="sc"><div class="sc-label">Total Streams</div><div class="sc-val accent" id="s-streams">—</div></div>
+      <div class="ph">
+        <div><h1 id="welcome-h">Overview</h1><p>Here's a snapshot of your music's performance.</p></div>
+        <button class="btn btn-purple" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> Create Release</button>
       </div>
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.875rem">Recent Releases</div>
-      <div id="ov-releases"></div>
+      <!-- COLOURFUL STAT CARDS -->
+      <div class="overview-cards">
+        <div class="ov-card ov-card-1">
+          <div class="ov-card-icon"><i class="ti ti-wavesaw-mono"></i></div>
+          <div>
+            <div class="ov-card-label">Total Streams</div>
+            <div class="ov-card-value" id="s-streams">—</div>
+            <div class="ov-card-sub">All stores</div>
+          </div>
+        </div>
+        <div class="ov-card ov-card-2">
+          <div class="ov-card-icon"><i class="ti ti-music"></i></div>
+          <div>
+            <div class="ov-card-label">Total Releases</div>
+            <div class="ov-card-value" id="s-total">—</div>
+            <div class="ov-card-sub" id="s-live-sub">— live on DSPs</div>
+          </div>
+        </div>
+        <div class="ov-card ov-card-3">
+          <div class="ov-card-icon"><i class="ti ti-coin"></i></div>
+          <div>
+            <div class="ov-card-label">Total Earnings</div>
+            <div class="ov-card-value" id="s-earnings">$0.00</div>
+            <div class="ov-card-sub">Your payout balance</div>
+          </div>
+        </div>
+        <div class="ov-card ov-card-4">
+          <div class="ov-card-icon"><i class="ti ti-clock"></i></div>
+          <div>
+            <div class="ov-card-label">Pending Review</div>
+            <div class="ov-card-value" id="s-pending">—</div>
+            <div class="ov-card-sub">Awaiting distribution</div>
+          </div>
+        </div>
+      </div>
+      <!-- YOUR RELEASES -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <h2 style="font-size:20px;font-weight:800;color:#fff">Your Releases</h2>
+        <button class="btn" style="background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1);font-size:12px;padding:6px 12px" onclick="goPage('releases',document.querySelectorAll('.tnav-item')[1])">View all</button>
+      </div>
+      <div id="ov-releases-grid" class="releases-grid"></div>
     </div>
 
-    <!-- RELEASES -->
+    <!-- MUSIC / RELEASES -->
     <div class="page" id="page-releases">
-      <div class="ph"><div><h1>My Releases</h1><p>All your submitted music and current statuses.</p></div><button class="btn btn-gold btn-sm" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> New Release</button></div>
+      <div class="ph">
+        <div><h1>Music</h1><p>All your submitted releases.</p></div>
+        <button class="btn btn-purple" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> New Release</button>
+      </div>
+      <div class="rel-tabs">
+        <div class="rel-tab active" onclick="filterRelTab('all',this)">All</div>
+        <div class="rel-tab" onclick="filterRelTab('live',this)">Live</div>
+        <div class="rel-tab" onclick="filterRelTab('pending',this)">In Progress</div>
+        <div class="rel-tab" onclick="filterRelTab('rejected',this)">Inactive</div>
+      </div>
+      <div class="rel-search-bar">
+        <input type="text" placeholder="🔍  Search for a release..." id="rel-search-input" oninput="filterReleasesBySearch()">
+      </div>
       <div id="all-releases"></div>
     </div>
 
     <!-- SUBMIT -->
     <div class="page" id="page-submit">
-      <div class="ph"><div><h1>Submit a Release</h1><p>Fill in your details. We'll handle everything else.</p></div></div>
+      <div class="ph"><div><h1>Submit a Release</h1><p>Fill in your details. We handle the rest.</p></div></div>
       <div class="scard">
         <div class="sdiv">
           <div class="slabel"><i class="ti ti-info-circle"></i> Release Info</div>
@@ -553,89 +659,163 @@ tr:hover td{background:var(--off)}
           <div class="slabel"><i class="ti ti-note"></i> Notes</div>
           <div class="fg"><textarea id="r-notes" placeholder="Explicit content, special instructions..."></textarea></div>
         </div>
-        <button class="btn btn-gold" id="submit-btn" onclick="submitRelease()"><i class="ti ti-send"></i> Submit Release</button>
+        <button class="btn btn-purple" id="submit-btn" onclick="submitRelease()"><i class="ti ti-send"></i> Submit Release</button>
       </div>
     </div>
 
     <!-- ARTISTS -->
     <div class="page" id="page-artists">
-      <div class="ph"><div><h1>Artists</h1><p>All artist accounts on Blakkstone Distribution.</p></div></div>
+      <div class="ph"><div><h1>Artists</h1><p>Artist accounts on Blakkstone Distribution.</p></div></div>
       <div id="artists-list"></div>
+    </div>
+
+    <!-- ROYALTIES -->
+    <div class="page" id="page-royalties">
+      <div class="ph"><div><h1>Royalties</h1><p>Your earnings breakdown.</p></div></div>
+      <div class="royalties-subtabs">
+        <div class="rsub active" onclick="switchRoyaltyTab('sales',this)">Sales</div>
+        <div class="rsub" onclick="switchRoyaltyTab('reports',this)">Reports</div>
+        <div class="rsub" onclick="switchRoyaltyTab('payouts-tab',this)">Payouts</div>
+      </div>
+      <!-- SALES SUB-TAB -->
+      <div id="rt-sales">
+        <div class="yellow-banner"><i class="ti ti-info-circle"></i> Stores pay out royalties with a minimum delay of two months.</div>
+        <div id="commission-bar"></div>
+        <div class="ag" style="margin-bottom:1.5rem">
+          <div class="ac"><div class="ac-label">Gross Earnings</div><div class="ac-val" id="r-gross">$0.00</div></div>
+          <div class="ac"><div class="ac-label">Commission</div><div class="ac-val" style="color:#f87171" id="r-commission">$0.00</div></div>
+          <div class="ac"><div class="ac-label">Your Payout</div><div class="ac-val" style="color:#34d399" id="r-payout">$0.00</div></div>
+          <div class="ac"><div class="ac-label">Last Updated</div><div class="ac-val" style="font-size:15px;font-weight:600" id="r-updated">—</div></div>
+        </div>
+        <!-- EARNINGS CHART -->
+        <div class="chart-card">
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem">
+            <span style="font-size:14px;font-weight:700;color:#fff">Total Earnings</span>
+            <span style="font-size:13px;color:rgba(255,255,255,.3)">Streams</span>
+          </div>
+          <canvas id="earnings-chart" height="180"></canvas>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+          <div class="chart-card">
+            <div class="chart-title">Best Performing Stores</div>
+            <div id="best-stores"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Release Breakdown</div>
+            <div class="dark-table-wrap"><table><thead><tr><th>Release</th><th>Streams</th><th>Gross</th><th>Commission</th><th>Payout</th></tr></thead><tbody id="royalty-tbody"></tbody></table></div>
+          </div>
+        </div>
+      </div>
+      <!-- REPORTS SUB-TAB -->
+      <div id="rt-reports" style="display:none">
+        <div class="chart-card">
+          <div class="chart-title">Monthly Earnings Report</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.35);margin-top:.5rem">Detailed reports are generated monthly after DSP reporting cycles complete.</div>
+        </div>
+      </div>
+      <!-- PAYOUTS SUB-TAB -->
+      <div id="rt-payouts-tab" style="display:none">
+        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1rem">Manage your payout requests and history.</div>
+        <button class="btn btn-purple btn-sm" onclick="goPage('payout',null)" style="margin-bottom:1.5rem"><i class="ti ti-wallet"></i> Go to Payout Page</button>
+      </div>
     </div>
 
     <!-- ANALYTICS -->
     <div class="page" id="page-analytics">
-      <div class="ph"><div><h1>Analytics</h1><p>Streams, earnings and store performance.</p></div></div>
+      <div class="ph">
+        <div><h1>Analytics & Trends 📊</h1><p>Performance data across all your releases.</p></div>
+      </div>
       <div class="ag">
         <div class="ac"><div class="ac-label">Total Streams</div><div class="ac-val" id="a-streams">0</div><div class="ac-sub">All releases</div></div>
         <div class="ac"><div class="ac-label">Gross Earnings</div><div class="ac-val" id="a-earnings">$0.00</div><div class="ac-sub">Before commission</div></div>
         <div class="ac"><div class="ac-label">Your Payout</div><div class="ac-val" id="a-payout">$0.00</div><div class="ac-sub" id="a-payout-sub">After 15% commission</div></div>
         <div class="ac"><div class="ac-label">Live Releases</div><div class="ac-val" id="a-live">0</div><div class="ac-sub">On DSPs</div></div>
       </div>
-      <!-- STORES SECTION -->
-      <div style="font-size:13px;font-weight:700;margin-bottom:.875rem;margin-top:.25rem">Store Performance</div>
-      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
-        <table>
-          <thead><tr><th>Store</th><th>Est. Streams</th><th>Est. Revenue</th><th>Share</th><th>Status</th></tr></thead>
-          <tbody id="stores-tbody"></tbody>
-        </table>
+      <!-- PERFORMANCE CHART -->
+      <div class="chart-card">
+        <div class="chart-title">Performance Data</div>
+        <canvas id="analytics-chart" height="200"></canvas>
       </div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:.875rem">Per Release</div>
+      <!-- STORES TABLE -->
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem">Stores</div>
+      <div class="dark-table-wrap" style="margin-bottom:1.5rem">
+        <table><thead><tr><th>Store</th><th>Est. Streams</th><th>Est. Revenue</th><th>Share</th><th>Status</th></tr></thead>
+        <tbody id="stores-tbody"></tbody></table>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem">Per Release</div>
       <div id="analytics-releases"></div>
-    </div>
-
-    <!-- ROYALTIES -->
-    <div class="page" id="page-royalties">
-      <div class="ph"><div><h1>Royalties</h1><p>Your earnings breakdown.</p></div></div>
-      <div id="commission-bar"></div>
-      <div class="sg" style="margin-bottom:1.25rem">
-        <div class="sc"><div class="sc-label">Gross Earnings</div><div class="sc-val accent" id="r-gross">$0.00</div></div>
-        <div class="sc"><div class="sc-label">Commission</div><div class="sc-val" id="r-commission" style="color:var(--danger)">$0.00</div></div>
-        <div class="sc"><div class="sc-label">Your Payout</div><div class="sc-val accent" id="r-payout">$0.00</div></div>
-        <div class="sc"><div class="sc-label">Last Updated</div><div class="sc-val" style="font-size:14px;font-weight:600" id="r-updated">—</div></div>
-      </div>
-      <div class="rtw"><table><thead><tr><th>Release</th><th>Streams</th><th>Gross</th><th>Commission</th><th>Payout</th></tr></thead><tbody id="royalty-tbody"></tbody></table></div>
     </div>
 
     <!-- PAYOUT -->
     <div class="page" id="page-payout">
-      <div class="ph"><div><h1>Payout</h1><p>Withdraw your royalties.</p></div></div>
-      <div class="pcard">
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.25rem">Available Balance</div>
-        <div style="font-size:36px;font-weight:900;color:var(--gd);letter-spacing:-1px;margin-bottom:1.25rem" id="payout-balance">$0.00</div>
-        <div class="fg" style="max-width:260px;margin-bottom:1.25rem">
-          <label>Amount to Withdraw (USD)</label>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:18px;font-weight:700;color:var(--muted)">$</span>
-            <input id="withdraw-amount" type="number" min="1" step="0.01" placeholder="Enter amount" style="font-size:18px;font-weight:700">
+      <div class="ph"><div><h1>Payouts</h1><p>Withdraw your royalties.</p></div></div>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;max-width:900px">
+        <div>
+          <div class="payout-balance-card">
+            <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:.5rem">Your Current Balance</div>
+            <div style="font-size:44px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.875rem" id="payout-balance">$0.00</div>
+            <div class="payout-bar-wrap"><div class="payout-bar-fill" id="payout-bar" style="width:100%"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:1.5rem">
+              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:50%;background:#7c3aed;display:inline-block"></span> Available: <strong style="color:#fff" id="payout-available-label">$0.00</strong></div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:50%;background:#4a4a6a;display:inline-block"></span> Pending: <strong style="color:#fff" id="payout-pending-label">$0.00</strong></div>
+            </div>
+            <div class="fg" style="margin-bottom:1rem">
+              <label>Amount to Withdraw (USD)</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:20px;font-weight:700;color:rgba(255,255,255,.4)">$</span>
+                <input id="withdraw-amount" type="number" min="1" step="0.01" placeholder="0.00" style="font-size:20px;font-weight:700;background:#131320;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;color:#fff;width:100%;font-family:Inter,sans-serif;outline:none">
+              </div>
+              <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:5px">Min. $1.00</div>
+            </div>
+            <button class="btn btn-purple" style="width:100%;justify-content:center" id="payout-submit-btn" onclick="showPayoutMethods()"><i class="ti ti-wallet"></i> Withdraw</button>
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:5px">Min. $1.00 · Max is your available balance</div>
+          <!-- PAYOUT METHOD FIELDS (shown after clicking Withdraw) -->
+          <div id="payout-method-section" style="display:none">
+            <div class="payout-balance-card">
+              <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:1rem">Select payout method</div>
+              <div class="pmethods">
+                <div class="popt" id="opt-momo" onclick="selectPayout('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div><div class="popt-sub">MTN, Vodafone, AirtelTigo</div></div>
+                <div class="popt" id="opt-bank" onclick="selectPayout('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank Transfer</div><div class="popt-sub">Ghana local bank</div></div>
+              </div>
+              <div id="momo-fields" style="display:none">
+                <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:.625rem">Select network</div>
+                <div class="momo-nets"><div class="mnet" id="mtn-btn" onclick="selNet('MTN')">MTN</div><div class="mnet" id="voda-btn" onclick="selNet('Vodafone')">Vodafone</div><div class="mnet" id="airtel-btn" onclick="selNet('AirtelTigo')">AirtelTigo</div></div>
+                <div class="fg"><label>Mobile Money Number</label><input id="momo-number" type="tel" placeholder="0241234567"></div>
+                <div class="fg"><label>Account Name</label><input id="momo-name" type="text" placeholder="Name on MoMo account"></div>
+              </div>
+              <div id="bank-fields" style="display:none">
+                <div class="fg"><label>Bank Name</label><input id="bank-name" type="text" placeholder="e.g. GCB Bank"></div>
+                <div class="fg"><label>Account Number</label><input id="bank-acc" type="text" placeholder="Account number"></div>
+                <div class="fg"><label>Account Name</label><input id="bank-acc-name" type="text" placeholder="Name on bank account"></div>
+                <div class="fg"><label>Branch (optional)</label><input id="bank-branch" type="text" placeholder="Branch name"></div>
+              </div>
+              <div id="payout-submit-wrap" style="display:none;margin-top:.5rem">
+                <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Processed within 5–7 business days.</div>
+                <button class="btn btn-purple" onclick="submitPayout()"><i class="ti ti-send"></i> Submit Payout Request</button>
+                <button class="btn" style="background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1);margin-left:8px" onclick="document.getElementById('payout-method-section').style.display='none'">Cancel</button>
+              </div>
+            </div>
+          </div>
+          <!-- HISTORY -->
+          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:1.5rem">
+            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:1rem">Your History</div>
+            <div class="dark-table-wrap">
+              <table>
+                <thead><tr><th>Payout</th><th>Payout Type</th><th>Requested On</th><th>Status</th></tr></thead>
+                <tbody id="payout-history-tbody"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:.875rem">Select payout method</div>
-        <div class="pmethods">
-          <div class="popt" id="opt-momo" onclick="selectPayout('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div><div class="popt-sub">MTN, Vodafone, AirtelTigo</div></div>
-          <div class="popt" id="opt-bank" onclick="selectPayout('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank Transfer</div><div class="popt-sub">Ghana local bank</div></div>
+        <!-- PAYOUT METHODS SAVED -->
+        <div class="pmethod-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <div style="font-size:14px;font-weight:700;color:#fff">Payout Methods</div>
+          </div>
+          <div id="saved-methods-list">
+            <div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No saved methods yet.<br>Submit a payout to add one.</div>
+          </div>
         </div>
-        <div id="momo-fields" style="display:none">
-          <div style="font-size:12px;font-weight:600;margin-bottom:.625rem">Select network</div>
-          <div class="momo-nets"><div class="mnet" id="mtn-btn" onclick="selNet('MTN')">MTN</div><div class="mnet" id="voda-btn" onclick="selNet('Vodafone')">Vodafone</div><div class="mnet" id="airtel-btn" onclick="selNet('AirtelTigo')">AirtelTigo</div></div>
-          <div class="fg"><label>Mobile Money Number</label><input id="momo-number" type="tel" placeholder="0241234567"></div>
-          <div class="fg"><label>Account Name</label><input id="momo-name" type="text" placeholder="Name on MoMo account"></div>
-        </div>
-        <div id="bank-fields" style="display:none">
-          <div class="fg"><label>Bank Name</label><input id="bank-name" type="text" placeholder="e.g. GCB Bank"></div>
-          <div class="fg"><label>Account Number</label><input id="bank-acc" type="text" placeholder="Account number"></div>
-          <div class="fg"><label>Account Name</label><input id="bank-acc-name" type="text" placeholder="Name on bank account"></div>
-          <div class="fg"><label>Branch (optional)</label><input id="bank-branch" type="text" placeholder="Branch name"></div>
-        </div>
-        <div id="payout-submit-wrap" style="display:none;margin-top:.5rem">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:.625rem">Processed within 5–7 business days.</div>
-          <button class="btn btn-gold" onclick="submitPayout()"><i class="ti ti-wallet"></i> Request Payout</button>
-        </div>
-      </div>
-      <div style="background:#fff;border:1px solid var(--border);border-radius:11px;padding:1.4rem;max-width:540px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:.75rem">Payout History</div>
-        <div id="payout-history" style="font-size:13px;color:var(--muted)">No payouts requested yet.</div>
       </div>
     </div>
 
@@ -650,11 +830,11 @@ tr:hover td{background:var(--off)}
           <ul class="ug-feats">
             <li><i class="ti ti-check ck"></i> 1 artist profile</li>
             <li><i class="ti ti-check ck"></i> Unlimited releases</li>
-            <li><i class="ti ti-check ck"></i> 150+ DSPs</li>
+            <li><i class="ti ti-check ck"></i> 150+ DSPs worldwide</li>
             <li><i class="ti ti-x cx"></i> 15% commission</li>
             <li><i class="ti ti-x cx"></i> Multiple artists</li>
           </ul>
-          <button class="btn btn-ghost" style="width:100%;justify-content:center" disabled>Current</button>
+          <button class="btn" style="width:100%;justify-content:center;background:rgba(255,255,255,.07);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1)" disabled>Current Plan</button>
         </div>
         <div class="ug-card featured">
           <div class="ug-name">Artist+</div>
@@ -664,15 +844,15 @@ tr:hover td{background:var(--off)}
             <li><i class="ti ti-check ck"></i> 1 artist profile</li>
             <li><i class="ti ti-check ck"></i> Unlimited releases</li>
             <li><i class="ti ti-check ck"></i> 150+ DSPs worldwide</li>
-            <li><i class="ti ti-check ck"></i> 0% commission — keep 100%</li>
+            <li><i class="ti ti-check ck"></i> 0% commission</li>
             <li><i class="ti ti-check ck"></i> ISRC code generation</li>
             <li><i class="ti ti-check ck"></i> Release scheduling</li>
-            <li><i class="ti ti-check ck"></i> Earnings & streams dashboard</li>
+            <li><i class="ti ti-check ck"></i> Earnings dashboard</li>
             <li><i class="ti ti-check ck"></i> Mobile Money payouts</li>
-            <li><i class="ti ti-check ck"></i> Store-by-store analytics</li>
+            <li><i class="ti ti-check ck"></i> Store analytics</li>
             <li><i class="ti ti-x cx"></i> Multiple artist profiles</li>
           </ul>
-          <button class="btn btn-gold" id="ug-artist-btn" style="width:100%;justify-content:center" onclick="openPaystack('artist_plus')"><i class="ti ti-crown"></i> Upgrade to Artist+</button>
+          <button class="btn btn-purple" id="ug-artist-btn" style="width:100%;justify-content:center" onclick="openPaystack('artist_plus')"><i class="ti ti-crown"></i> Upgrade to Artist+</button>
         </div>
         <div class="ug-card">
           <div class="ug-name">Label</div>
@@ -682,21 +862,19 @@ tr:hover td{background:var(--off)}
             <li><i class="ti ti-check ck"></i> Up to 5 artist profiles</li>
             <li><i class="ti ti-check ck"></i> Unlimited releases</li>
             <li><i class="ti ti-check ck"></i> 150+ DSPs worldwide</li>
-            <li><i class="ti ti-check ck"></i> 0% commission — keep 100%</li>
+            <li><i class="ti ti-check ck"></i> 0% commission</li>
             <li><i class="ti ti-check ck"></i> ISRC code generation</li>
-            <li><i class="ti ti-check ck"></i> Release scheduling & pre-orders</li>
-            <li><i class="ti ti-check ck"></i> Full royalty & earnings dashboard</li>
+            <li><i class="ti ti-check ck"></i> Full royalty dashboard</li>
             <li><i class="ti ti-check ck"></i> Mobile Money + Bank payouts</li>
-            <li><i class="ti ti-check ck"></i> Store-by-store analytics</li>
-            <li><i class="ti ti-check ck"></i> Label-wide analytics overview</li>
+            <li><i class="ti ti-check ck"></i> Label analytics overview</li>
             <li><i class="ti ti-check ck"></i> Priority support</li>
             <li><i class="ti ti-check ck"></i> Dedicated account manager</li>
           </ul>
-          <button class="btn btn-dark" id="ug-label-btn" style="width:100%;justify-content:center" onclick="openPaystack('label')">Get Label Plan</button>
+          <button class="btn" id="ug-label-btn" style="width:100%;justify-content:center;background:#fff;color:#111;font-weight:700" onclick="openPaystack('label')">Get Label Plan</button>
         </div>
       </div>
-      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:1.1rem;font-size:13px;color:var(--muted);line-height:1.7;max-width:660px">
-        <strong style="color:var(--text)">About the 15% commission:</strong> On the free Solo plan, Blakkstone keeps 15% of your royalties to cover distribution costs. Upgrade to Artist+ or Label to keep 100%.
+      <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.1rem;font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;max-width:860px">
+        <strong style="color:rgba(255,255,255,.7)">About the 15% commission:</strong> On the free Solo plan, Blakkstone keeps 15% of royalties to cover distribution costs. Upgrade to Artist+ or Label to keep 100%.
       </div>
     </div>
 
@@ -707,10 +885,10 @@ tr:hover td{background:var(--off)}
         <div class="prof-top">
           <div class="prof-av" id="profile-avatar-big" onclick="document.getElementById('avatar-input').click()"><span id="profile-avatar-initials">--</span></div>
           <div>
-            <div style="font-size:14px;font-weight:700" id="profile-display-name">--</div>
+            <div style="font-size:14px;font-weight:700;color:#fff" id="profile-display-name">--</div>
             <div style="font-size:13px;font-weight:700;color:var(--gold);margin-top:4px" id="profile-account-id">—</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">Your Blakkstone Account ID</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:6px">Click avatar to change photo</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Your Blakkstone Account ID</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:4px">Click avatar to change photo</div>
             <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
           </div>
         </div>
@@ -719,111 +897,70 @@ tr:hover td{background:var(--off)}
           <div class="fg"><label>Last Name</label><input id="p-ln" type="text"></div>
         </div>
         <div class="fg"><label>Artist / Label Name</label><input id="p-an" type="text"></div>
-        <div class="fg"><label>Email</label><input id="p-em" type="email" disabled style="opacity:.5;cursor:not-allowed"></div>
-        <button class="btn btn-gold" id="save-profile-btn" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Changes</button>
+        <div class="fg"><label>Email</label><input id="p-em" type="email" disabled style="opacity:.4;cursor:not-allowed"></div>
+        <button class="btn btn-purple" id="save-profile-btn" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Changes</button>
         <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-lock"></i> Change Password</div>
         <div class="fg"><label>New Password</label><input id="p-pw" type="password" placeholder="Min. 6 characters"></div>
         <div class="fg"><label>Confirm Password</label><input id="p-pw2" type="password" placeholder="Repeat password"></div>
-        <button class="btn btn-ghost" onclick="changePassword()"><i class="ti ti-lock"></i> Update Password</button>
+        <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1)" onclick="changePassword()"><i class="ti ti-lock"></i> Update Password</button>
       </div>
     </div>
 
     <!-- ADMIN -->
     <div class="page" id="page-admin">
       <div class="ph">
-        <div><h1>Admin Panel</h1><p>Manage submissions, artists, payouts and messages.</p></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <div style="position:relative">
-            <button class="btn btn-ghost btn-sm" onclick="switchAdminTab('notifications',document.getElementById('atab-notif'))"><i class="ti ti-bell"></i> Notifications <span id="notif-badge" style="display:none;background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px">0</span></button>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="refreshAdmin()"><i class="ti ti-refresh"></i> Refresh</button>
+        <div><h1>Admin Panel</h1><p>Manage all submissions, artists, payouts and messages.</p></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);font-size:12px" onclick="switchAdminTab('notifications',document.getElementById('atab-notif'))"><i class="ti ti-bell"></i> Notifications <span id="notif-badge-admin" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></button>
+          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);font-size:12px" onclick="refreshAdmin()"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
       </div>
-      <!-- ADMIN STATS -->
-      <div class="sg" style="margin-bottom:1.5rem">
-        <div class="sc"><div class="sc-label">Total Artists</div><div class="sc-val accent" id="adm-artists">—</div></div>
-        <div class="sc"><div class="sc-label">Total Releases</div><div class="sc-val accent" id="adm-releases">—</div></div>
-        <div class="sc"><div class="sc-label">Pending Releases</div><div class="sc-val" id="adm-pending" style="color:var(--danger)">—</div></div>
-        <div class="sc"><div class="sc-label">Pending Payouts</div><div class="sc-val" id="adm-payouts" style="color:var(--danger)">—</div></div>
-        <div class="sc"><div class="sc-label">Paid Plans</div><div class="sc-val accent" id="adm-paid">—</div></div>
-        <div class="sc"><div class="sc-label">Messages</div><div class="sc-val" id="adm-msgs" style="color:var(--info)">—</div></div>
+      <div class="ag" style="margin-bottom:1.5rem">
+        <div class="ac"><div class="ac-label">Total Artists</div><div class="ac-val" style="color:#a78bfa" id="adm-artists">—</div></div>
+        <div class="ac"><div class="ac-label">Total Releases</div><div class="ac-val" style="color:#a78bfa" id="adm-releases">—</div></div>
+        <div class="ac"><div class="ac-label">Pending Releases</div><div class="ac-val" style="color:#f87171" id="adm-pending">—</div></div>
+        <div class="ac"><div class="ac-label">Pending Payouts</div><div class="ac-val" style="color:#f87171" id="adm-payouts">—</div></div>
+        <div class="ac"><div class="ac-label">Paid Plans</div><div class="ac-val" style="color:#34d399" id="adm-paid">—</div></div>
+        <div class="ac"><div class="ac-label">Messages</div><div class="ac-val" style="color:#60a5fa" id="adm-msgs">—</div></div>
       </div>
       <div class="admin-tabs">
         <div class="atab active" id="atab-releases" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
         <div class="atab" id="atab-users" onclick="switchAdminTab('users',this)"><i class="ti ti-users"></i> Artists</div>
-        <div class="atab" id="atab-payouts" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts <span id="payout-alert" style="display:none;background:var(--danger);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:4px">!</span></div>
+        <div class="atab" id="atab-payouts" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts <span id="payout-alert" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
         <div class="atab" id="atab-subs" onclick="switchAdminTab('subs',this)"><i class="ti ti-crown"></i> Subscriptions</div>
-        <div class="atab" id="atab-messages" onclick="switchAdminTab('messages',this)"><i class="ti ti-message"></i> Messages <span id="msg-alert" style="display:none;background:var(--info);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:4px">!</span></div>
+        <div class="atab" id="atab-messages" onclick="switchAdminTab('messages',this)"><i class="ti ti-message"></i> Messages <span id="msg-alert" style="display:none;background:#3b82f6;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
         <div class="atab" id="atab-notif" onclick="switchAdminTab('notifications',this)"><i class="ti ti-bell"></i> Notifications</div>
       </div>
-
-      <!-- RELEASES TAB -->
       <div class="admin-section active" id="admin-releases">
         <div style="display:flex;gap:8px;margin-bottom:.875rem;flex-wrap:wrap">
-          <input id="rel-search" type="text" placeholder="Search by title or artist..." style="flex:1;min-width:200px;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;font-family:Inter,sans-serif;outline:none" oninput="filterReleases()" />
-          <select id="rel-status-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterReleases()">
-            <option value="">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="review">In Review</option>
-            <option value="live">Live</option>
-            <option value="rejected">Rejected</option>
-          </select>
+          <input id="rel-search" type="text" placeholder="Search by title or artist..." style="flex:1;min-width:200px;background:#1e1e35;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 12px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none" oninput="filterReleases()"/>
+          <select id="rel-status-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterReleases()"><option value="">All statuses</option><option value="pending">Pending</option><option value="review">In Review</option><option value="live">Live</option><option value="rejected">Rejected</option></select>
         </div>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Artist</th><th>Title</th><th>Genre</th><th>Submitted</th><th>Release Date</th><th>Status</th><th>Streams</th><th>Earnings($)</th><th>Notes</th><th>Actions</th></tr></thead>
-            <tbody id="admin-tbody"></tbody>
-          </table>
-        </div>
+        <div class="tw"><table><thead><tr><th>Account ID</th><th>Title</th><th>Genre</th><th>Submitted</th><th>Release Date</th><th>Status</th><th>Streams</th><th>Earnings($)</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="admin-tbody"></tbody></table></div>
       </div>
-
-      <!-- ARTISTS TAB -->
       <div class="admin-section" id="admin-users">
         <div style="display:flex;gap:8px;margin-bottom:.875rem">
-          <input id="user-search" type="text" placeholder="Search by name or email..." style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;font-family:Inter,sans-serif;outline:none" oninput="filterUsers()" />
+          <input id="user-search" type="text" placeholder="Search by name or email..." style="flex:1;background:#1e1e35;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 12px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none" oninput="filterUsers()"/>
         </div>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Artist</th><th>Email</th><th>Plan</th><th>Releases</th><th>Total Earnings</th><th>Joined</th><th>Actions</th></tr></thead>
-            <tbody id="admin-users-tbody"></tbody>
-          </table>
-        </div>
+        <div class="tw"><table><thead><tr><th>Account ID</th><th>Artist</th><th>Email</th><th>Plan</th><th>Releases</th><th>Total Earnings</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="admin-users-tbody"></tbody></table></div>
       </div>
-
-      <!-- PAYOUTS TAB -->
       <div class="admin-section" id="admin-payouts">
         <div id="payout-pending-notice"></div>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Account ID</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
-            <tbody id="admin-payouts-tbody"></tbody>
-          </table>
-        </div>
+        <div class="tw"><table><thead><tr><th>Account ID</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead><tbody id="admin-payouts-tbody"></tbody></table></div>
       </div>
-
-      <!-- SUBSCRIPTIONS TAB -->
       <div class="admin-section" id="admin-subs">
-        <div class="tw">
-          <table>
-            <thead><tr><th>Artist</th><th>Plan</th><th>Billing</th><th>Amount (USD)</th><th>Amount (GHS)</th><th>Paystack Ref</th><th>Status</th><th>Date</th></tr></thead>
-            <tbody id="admin-subs-tbody"></tbody>
-          </table>
-        </div>
+        <div class="tw"><table><thead><tr><th>Artist</th><th>Plan</th><th>Billing</th><th>Amount (USD)</th><th>Amount (GHS)</th><th>Paystack Ref</th><th>Status</th><th>Date</th></tr></thead><tbody id="admin-subs-tbody"></tbody></table></div>
       </div>
-
-      <!-- MESSAGES TAB -->
       <div class="admin-section" id="admin-messages">
         <div id="messages-list"></div>
-        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-top:1rem">
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:.75rem">Send message to an artist</div>
+        <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.25rem;margin-top:1rem">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.35);margin-bottom:.75rem">Send message to an artist</div>
           <div class="fg"><label>Artist Email</label><input id="msg-to" type="email" placeholder="artist@email.com"></div>
-          <div class="fg"><label>Message</label><textarea id="msg-body" placeholder="Type your message..." style="min-height:100px"></textarea></div>
-          <button class="btn btn-gold" onclick="sendAdminMessage()"><i class="ti ti-send"></i> Send Message</button>
+          <div class="fg"><label>Message</label><textarea id="msg-body" placeholder="Type your message..."></textarea></div>
+          <button class="btn btn-purple" onclick="sendAdminMessage()"><i class="ti ti-send"></i> Send Message</button>
         </div>
       </div>
-
-      <!-- NOTIFICATIONS TAB -->
       <div class="admin-section" id="admin-notifications">
         <div id="notifications-list"></div>
       </div>
@@ -1049,21 +1186,72 @@ function goPage(id,el){
 }
 
 // ── RELEASES ──────────────────────────────────────────
+let allRelData=[];
+
 async function loadReleases(){
-  document.getElementById('s-total').textContent='…';
+  const el=document.getElementById('s-total');
+  if(el) el.textContent='…';
   const {data,error}=await sb.from('releases').select('*').eq('user_id',user.id).order('submitted_at',{ascending:false});
   if(error){toast('Error loading releases','err');return;}
-  const releases=data||[];
+  allRelData=data||[];
+  const releases=allRelData;
   const live=releases.filter(r=>r.status==='live').length;
   const pending=releases.filter(r=>r.status==='pending').length;
   const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
-  document.getElementById('s-total').textContent=releases.length;
-  document.getElementById('s-live').textContent=live;
-  document.getElementById('s-pending').textContent=pending;
-  document.getElementById('s-streams').textContent=streams.toLocaleString();
-  const html=releases.length?releases.map(r=>releaseRow(r)).join(''):emptyState('No releases yet. Hit Submit to get started.');
-  document.getElementById('ov-releases').innerHTML=releases.slice(0,4).map(r=>releaseRow(r)).join('')||emptyState('No releases yet.');
-  document.getElementById('all-releases').innerHTML=html;
+  const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const payout=isPaid?earnings:earnings*(1-COMM);
+  if(document.getElementById('s-total')) document.getElementById('s-total').textContent=releases.length;
+  if(document.getElementById('s-live-sub')) document.getElementById('s-live-sub').textContent=live+' live on DSPs';
+  if(document.getElementById('s-pending')) document.getElementById('s-pending').textContent=pending;
+  if(document.getElementById('s-streams')) document.getElementById('s-streams').textContent=streams.toLocaleString();
+  if(document.getElementById('s-earnings')) document.getElementById('s-earnings').textContent='$'+payout.toFixed(2);
+  // Overview grid
+  const grid=document.getElementById('ov-releases-grid');
+  if(grid){
+    const newCard=`<div class="rg-new" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i><span>New Release</span></div>`;
+    const cards=releases.slice(0,7).map(r=>releaseGridCard(r)).join('');
+    grid.innerHTML=newCard+cards;
+  }
+  // Releases list
+  renderReleasesList(releases,'all');
+}
+
+function releaseGridCard(r){
+  const bc={pending:'rg-badge-pending',review:'rg-badge-review',live:'rg-badge-live',rejected:'rg-badge-rejected'}[r.status]||'rg-badge-pending';
+  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
+  const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
+  return `<div class="rg-card">
+    <div class="rg-art">${art}<span class="rg-badge ${bc}">${bl}</span></div>
+    <div class="rg-info"><div class="rg-title">${esc(r.title)}</div><div class="rg-meta">${esc(r.artist)}</div></div>
+  </div>`;
+}
+
+function renderReleasesList(releases,filter){
+  const list=document.getElementById('all-releases');
+  if(!list)return;
+  let filtered=releases;
+  if(filter==='live') filtered=releases.filter(r=>r.status==='live');
+  else if(filter==='pending') filtered=releases.filter(r=>r.status==='pending'||r.status==='review');
+  else if(filter==='rejected') filtered=releases.filter(r=>r.status==='rejected');
+  const html=filtered.length?`<div class="rl">`+filtered.map(r=>releaseRow(r)).join('')+`</div>`:emptyState('No releases found.');
+  list.innerHTML=html;
+}
+
+function filterRelTab(filter,el){
+  document.querySelectorAll('.rel-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderReleasesList(allRelData,filter);
+}
+
+function filterReleasesBySearch(){
+  const q=(document.getElementById('rel-search-input')?.value||'').toLowerCase();
+  const filtered=allRelData.filter(r=>
+    (r.title||'').toLowerCase().includes(q)||
+    (r.artist||'').toLowerCase().includes(q)||
+    (r.genre||'').toLowerCase().includes(q)
+  );
+  document.getElementById('all-releases').innerHTML=filtered.length?`<div class="rl">`+filtered.map(r=>releaseRow(r)).join('')+`</div>`:emptyState('No releases found.');
 }
 
 function releaseRow(r){
@@ -1177,6 +1365,60 @@ async function openArtistModal(userId,name){
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
 
 // ── ANALYTICS ─────────────────────────────────────────
+// Simple SVG line chart renderer
+function renderLineChart(canvasId, labels, data, color='#a78bfa'){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||600;
+  const H=canvas.height||200;
+  canvas.width=W;
+  ctx.clearRect(0,0,W,H);
+  if(!data.length){
+    ctx.fillStyle='rgba(255,255,255,.2)';
+    ctx.font='13px Inter';
+    ctx.fillText('No data yet',W/2-40,H/2);
+    return;
+  }
+  const max=Math.max(...data,1);
+  const padL=40,padR=20,padT=20,padB=30;
+  const cW=W-padL-padR,cH=H-padT-padB;
+  const pts=data.map((v,i)=>({x:padL+i*(cW/(data.length-1||1)),y:padT+cH-(v/max)*cH}));
+  // Grid lines
+  for(let i=0;i<=4;i++){
+    const y=padT+(i/4)*cH;
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='10px Inter';
+    ctx.fillText('$'+(max*(1-i/4)).toFixed(0),2,y+4);
+  }
+  // Fill
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x,padT+cH);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,padT+cH);
+  ctx.closePath();
+  const grad=ctx.createLinearGradient(0,padT,0,padT+cH);
+  grad.addColorStop(0,color+'55');grad.addColorStop(1,color+'05');
+  ctx.fillStyle=grad;ctx.fill();
+  // Line
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+  // Dots
+  pts.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);
+    ctx.fillStyle='#1e1e35';ctx.fill();
+    ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
+  });
+  // Labels
+  if(labels.length){
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px Inter';
+    const step=Math.ceil(labels.length/6);
+    labels.forEach((l,i)=>{if(i%step===0)ctx.fillText(l,pts[i].x-15,H-8);});
+  }
+}
+
 // DSP store distribution weights (estimated)
 const DSP_STORES=[
   {name:'Spotify',icon:'🎧',share:.38},
@@ -1239,20 +1481,26 @@ async function loadAnalytics(){
   container.innerHTML=rl.map(r=>{
     const rc=isPaid?0:(r.earnings||0)*COMM;
     const rp=(r.earnings||0)-rc;
-    return `<div class="rar">
-      <div class="rar-head">
-        <div class="r-art" style="width:40px;height:40px">${r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`:'<i class="ti ti-music" style="font-size:18px"></i>'}</div>
+    return `<div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px;overflow:hidden;margin-bottom:8px">
+      <div style="padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div class="r-art" style="width:40px;height:40px">${r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`:'<i class="ti ti-music" style="font-size:18px;color:rgba(255,255,255,.2)"></i>'}</div>
         <div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')}</div></div>
         <span class="badge b-live">Live</span>
       </div>
-      <div class="rar-body">
-        <div class="rm"><strong>${(r.streams||0).toLocaleString()}</strong>Streams</div>
-        <div class="rm"><strong>$${(r.earnings||0).toFixed(2)}</strong>Gross Earnings</div>
-        <div class="rm"><strong style="color:var(--danger)">-$${rc.toFixed(2)}</strong>Commission (${isPaid?'0':'15'}%)</div>
-        <div class="rm"><strong style="color:var(--gd)">$${rp.toFixed(2)}</strong>Your Payout</div>
+      <div style="padding:.875rem 1.1rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem">
+        <div style="font-size:12px;color:rgba(255,255,255,.4)"><strong style="display:block;font-size:18px;font-weight:700;color:#fff;margin-bottom:2px">${(r.streams||0).toLocaleString()}</strong>Streams</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4)"><strong style="display:block;font-size:18px;font-weight:700;color:#fff;margin-bottom:2px">$${(r.earnings||0).toFixed(2)}</strong>Gross</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4)"><strong style="display:block;font-size:18px;font-weight:700;color:#f87171;margin-bottom:2px">-$${rc.toFixed(2)}</strong>Commission</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4)"><strong style="display:block;font-size:18px;font-weight:700;color:#34d399;margin-bottom:2px">$${rp.toFixed(2)}</strong>Payout</div>
       </div>
     </div>`;
   }).join('');
+  // Analytics chart
+  const months2=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now2=new Date();
+  const aLabels=Array.from({length:7},(_,i)=>months2[(now2.getMonth()-6+i+12)%12]);
+  const aData=[0,0,0,0,0,0,ts].map((v,i)=>i===6?v:Math.round(ts*Math.random()*.4));
+  setTimeout(()=>renderLineChart('analytics-chart',aLabels,aData,'#7c3aed'),100);
 }
 
 // ── ROYALTIES ─────────────────────────────────────────
@@ -1293,8 +1541,27 @@ async function loadRoyalties(){
   tbody.innerHTML=rl.map(r=>{
     const rc=isPaid?0:(r.earnings||0)*COMM;
     const rp=(r.earnings||0)-rc;
-    return `<tr><td>${esc(r.title)}</td><td>${(r.streams||0).toLocaleString()}</td><td>$${(r.earnings||0).toFixed(2)}</td><td style="color:var(--danger)">-$${rc.toFixed(2)}</td><td style="color:var(--gd);font-weight:600">$${rp.toFixed(2)}</td></tr>`;
+    return `<tr><td style="font-weight:600;color:#fff">${esc(r.title)}</td><td>${(r.streams||0).toLocaleString()}</td><td>$${(r.earnings||0).toFixed(2)}</td><td style="color:#f87171">-$${rc.toFixed(2)}</td><td style="color:#34d399;font-weight:600">$${rp.toFixed(2)}</td></tr>`;
   }).join('');
+  // Render earnings chart (monthly simulated)
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
+  const gross2=rl.reduce((a,r)=>a+(r.earnings||0),0);
+  const chartData=[0,0,0,0,0,gross2].map((v,i)=>i===5?v:parseFloat((gross2*Math.random()*.3).toFixed(2)));
+  setTimeout(()=>renderLineChart('earnings-chart',chartLabels,chartData,'#a78bfa'),100);
+  // Best stores
+  const bestStores=document.getElementById('best-stores');
+  if(bestStores){
+    const topStores=DSP_STORES.slice(0,5);
+    bestStores.innerHTML=topStores.map(s=>{
+      const rev=(gross2*s.share);
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        <span style="font-size:13px;color:rgba(255,255,255,.7)">${s.icon} ${s.name}</span>
+        <span style="font-size:13px;font-weight:600;color:#34d399">$${rev.toFixed(2)}</span>
+      </div>`;
+    }).join('');
+  }
 }
 
 // ── PAYOUT ────────────────────────────────────────────
@@ -1312,20 +1579,36 @@ async function loadPayout(){
     .reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const bal=Math.max(0,afterComm-pendingPayouts);
   document.getElementById('payout-balance').textContent='$'+bal.toFixed(2);
+  const avLabel=document.getElementById('payout-available-label');
+  if(avLabel) avLabel.textContent='$'+bal.toFixed(2);
+  const pendLabel=document.getElementById('payout-pending-label');
+  if(pendLabel) pendLabel.textContent='$'+pendingPayouts.toFixed(2);
+  // Update balance bar
+  const barEl=document.getElementById('payout-bar');
+  if(barEl){const total=afterComm||1;barEl.style.width=Math.min(100,(bal/total)*100)+'%';}
   // Update withdraw input max
   const wi=document.getElementById('withdraw-amount');
   if(wi) wi.max=bal;
   try{
     const {data:ph}=await sb.from('payouts').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
-    const h=document.getElementById('payout-history');
-    if(!ph||!ph.length){h.textContent='No payouts requested yet.';return;}
+    const h=document.getElementById('payout-history-tbody');
+    if(!h)return;
+    if(!ph||!ph.length){h.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payouts requested yet.</td></tr>';return;}
     h.innerHTML=ph.map(p=>{
-      const statusColor={pending:'color:#b7791f',processing:'color:var(--info)',paid:'color:var(--success)',failed:'color:var(--danger)',cancelled:'color:var(--muted)'}[p.status]||'';
+      const statusColor={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
       const canCancel=p.status==='pending';
       const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'';
-      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:8px"><div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:800;color:var(--gold)">'+(profile?.account_id||'')+'</span><span style="font-size:13px;font-weight:600;">'+(p.method==='momo'?'📱 '+esc(p.network||'')+' MoMo':'🏦 Bank Transfer')+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+esc(p.account||'')+' · '+d+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:var(--gd)">$'+parseFloat(p.amount||0).toFixed(2)+'</span><span style="font-size:11px;font-weight:600;'+statusColor+'">'+p.status+'</span>'+(canCancel?'<button class="btn-danger-outline" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</div></div>';
+      const stLabel={pending:'⏳ Pending',processing:'🔄 Processing',paid:'✅ Paid',failed:'❌ Failed',cancelled:'🚫 Cancelled'}[p.status]||p.status;
+      return '<tr><td style="font-weight:700;color:#fff">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td style="color:rgba(255,255,255,.6)">'+(p.method==='momo'?'📱 '+esc(p.network||'')+' MoMo':'🏦 Bank Transfer')+'</td><td style="color:rgba(255,255,255,.35)">'+d+'</td><td><span style="font-size:11px;font-weight:600;'+statusColor+'">'+stLabel+'</span>'+(canCancel?' <button class="btn-danger-outline" style="font-size:10px;padding:2px 7px;margin-left:4px" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</td></tr>';
     }).join('');
   }catch(e){}
+}
+
+function showPayoutMethods(){
+  const amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
+  if(!amt||amt<1){toast('Enter a valid withdrawal amount (min $1.00)','err');return;}
+  document.getElementById('payout-method-section').style.display='block';
+  document.getElementById('payout-method-section').scrollIntoView({behavior:'smooth'});
 }
 
 function selectPayout(method){
@@ -1491,6 +1774,15 @@ async function uploadAvatar(input){
 
 // ── ADMIN ─────────────────────────────────────────────
 let allReleasesCache=[], allUsersCache=[];
+
+function switchRoyaltyTab(tab,el){
+  document.querySelectorAll('.royalties-subtabs .rsub').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  ['sales','reports','payouts-tab'].forEach(t=>{
+    const el2=document.getElementById('rt-'+t);
+    if(el2) el2.style.display=t===tab?'block':'none';
+  });
+}
 
 function switchAdminTab(tab,el){
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
