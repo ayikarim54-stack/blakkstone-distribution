@@ -189,7 +189,7 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 /* RELEASES LIST VIEW */
 .rl{display:flex;flex-direction:column;gap:8px}
 .rr{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:all .15s}
-.rr:hover{border-color:rgba(139,92,246,.3)}
+.rr:hover{border-color:rgba(139,92,246,.4);background:#2c2c2c;transform:translateX(2px)}
 .r-art{width:44px;height:44px;border-radius:8px;background:#333;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .r-art img{width:100%;height:100%;object-fit:cover;border-radius:8px}
 .r-art i{font-size:20px;color:rgba(255,255,255,.2)}
@@ -2389,7 +2389,9 @@ function releaseGridCard(r){
   const bc={pending:'rg-badge-pending',review:'rg-badge-review',live:'rg-badge-live',rejected:'rg-badge-rejected'}[r.status]||'rg-badge-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
   const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
-  return `<div class="rg-card" onclick='openReleaseModal(${JSON.stringify(r)})'>
+  // Store release in map, use id as key
+  _releaseMap[r.id]=r;
+  return `<div class="rg-card" onclick="openReleaseById('${r.id}')" style="cursor:pointer">
     <div class="rg-art">${art}<span class="rg-badge ${bc}">${bl}</span></div>
     <div class="rg-info"><div class="rg-title">${esc(r.title)}</div><div class="rg-meta">${esc(r.artist)}</div></div>
   </div>`;
@@ -2442,7 +2444,8 @@ function releaseRow(r){
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
   const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
   const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
-  return `<div class="rr" onclick='openReleaseModal(${JSON.stringify(r)})' style="cursor:pointer">
+  _releaseMap[r.id]=r;
+  return `<div class="rr" onclick="openReleaseById('${r.id}')" style="cursor:pointer">
     <div class="r-art">${art}</div>
     <div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')} · ${d}</div></div>
     <span class="badge ${bc}">${bl}</span>
@@ -2560,6 +2563,13 @@ async function openArtistModal(userId,name){
   document.getElementById('artist-overlay').classList.add('open');
 }
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
+
+// Release lookup map — avoids inline JSON which breaks with special chars
+const _releaseMap={};
+function openReleaseById(id){
+  const r=_releaseMap[id];
+  if(r) openReleaseModal(r);
+}
 
 function openReleaseModal(r){
   const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected'}[r.status]||'b-pending';
