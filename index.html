@@ -389,6 +389,45 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .review-row:last-child{border-bottom:none}
 .review-label{color:rgba(255,255,255,.35)}
 .review-val{color:#fff;font-weight:500;text-align:right;max-width:60%}
+
+/* ── ADVANCED ADMIN ── */
+.adm-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+.adm-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.adm-stat-card{border-radius:14px;padding:1.25rem;position:relative;overflow:hidden}
+.adm-stat-purple{background:linear-gradient(135deg,#7c3aed,#4f46e5)}
+.adm-stat-teal{background:linear-gradient(135deg,#0891b2,#0e7490)}
+.adm-stat-orange{background:linear-gradient(135deg,#ea580c,#c2410c)}
+.adm-stat-green{background:linear-gradient(135deg,#059669,#047857)}
+.adm-stat-red{background:linear-gradient(135deg,#dc2626,#b91c1c)}
+.adm-stat-blue{background:linear-gradient(135deg,#2563eb,#1d4ed8)}
+.adm-stat-icon{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin-bottom:.875rem}
+.adm-stat-icon i{font-size:20px;color:#fff}
+.adm-stat-val{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:2px}
+.adm-stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.8)}
+.adm-stat-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px}
+.adm-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.25rem}
+.adm-card-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
+.adm-card-title i{color:#a78bfa;font-size:16px}
+.adm-btn-sec{background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.1);font-size:12px}
+.adm-btn-sec:hover{background:rgba(255,255,255,.12);color:#fff}
+.adm-search{flex:1;min-width:180px;background:#1e1e35;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 12px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none}
+.adm-search:focus{border-color:rgba(139,92,246,.5)}
+.adm-search::placeholder{color:rgba(255,255,255,.25)}
+.adm-bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.adm-bar-row:last-child{border-bottom:none}
+.adm-bar-label{font-size:12px;color:rgba(255,255,255,.6);width:100px;flex-shrink:0}
+.adm-bar-track{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.adm-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.adm-bar-val{font-size:12px;font-weight:600;color:#fff;width:50px;text-align:right;flex-shrink:0}
+.activity-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.activity-text{color:rgba(255,255,255,.6);line-height:1.5}
+.activity-time{font-size:10px;color:rgba(255,255,255,.25);margin-top:2px}
+.artist-status-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.asb-active{background:rgba(16,185,129,.2);color:#34d399}
+.asb-suspended{background:rgba(239,68,68,.2);color:#f87171}
+.asb-warned{background:rgba(245,158,11,.2);color:#fbbf24}
 </style>
 </head>
 <body>
@@ -1125,58 +1164,228 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- ADMIN -->
     <div class="page" id="page-admin">
-      <div class="ph">
-        <div><h1>Admin Panel</h1><p>Manage all submissions, artists, payouts and messages.</p></div>
-        <div style="display:flex;gap:8px">
-          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);font-size:12px" onclick="switchAdminTab('notifications',document.getElementById('atab-notif'))"><i class="ti ti-bell"></i> Notifications <span id="notif-badge-admin" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></button>
-          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);font-size:12px" onclick="refreshAdmin()"><i class="ti ti-refresh"></i> Refresh</button>
+      <!-- ADMIN TOP BAR -->
+      <div class="adm-topbar">
+        <div>
+          <h1 style="font-size:24px;font-weight:800;color:#fff">Admin Panel</h1>
+          <p style="font-size:13px;color:rgba(255,255,255,.4);margin-top:2px">Blakkstone Distribution — Full Control Center</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn adm-btn-sec" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
+          <button class="btn adm-btn-sec" onclick="refreshAdmin()"><i class="ti ti-refresh"></i> Refresh</button>
+          <button class="btn btn-purple" onclick="switchAdminTab('notifications',document.getElementById('atab-notif'))"><i class="ti ti-bell"></i> Alerts <span id="notif-badge-admin" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></button>
         </div>
       </div>
-      <div class="ag" style="margin-bottom:1.5rem">
-        <div class="ac"><div class="ac-label">Total Artists</div><div class="ac-val" style="color:#a78bfa" id="adm-artists">—</div></div>
-        <div class="ac"><div class="ac-label">Total Releases</div><div class="ac-val" style="color:#a78bfa" id="adm-releases">—</div></div>
-        <div class="ac"><div class="ac-label">Pending Releases</div><div class="ac-val" style="color:#f87171" id="adm-pending">—</div></div>
-        <div class="ac"><div class="ac-label">Pending Payouts</div><div class="ac-val" style="color:#f87171" id="adm-payouts">—</div></div>
-        <div class="ac"><div class="ac-label">Paid Plans</div><div class="ac-val" style="color:#34d399" id="adm-paid">—</div></div>
-        <div class="ac"><div class="ac-label">Messages</div><div class="ac-val" style="color:#60a5fa" id="adm-msgs">—</div></div>
+
+      <!-- ADMIN DASHBOARD STATS -->
+      <div class="adm-stats-grid">
+        <div class="adm-stat-card adm-stat-purple">
+          <div class="adm-stat-icon"><i class="ti ti-users"></i></div>
+          <div class="adm-stat-val" id="adm-artists">—</div>
+          <div class="adm-stat-label">Total Artists</div>
+          <div class="adm-stat-sub" id="adm-artists-sub">— new this month</div>
+        </div>
+        <div class="adm-stat-card adm-stat-teal">
+          <div class="adm-stat-icon"><i class="ti ti-music"></i></div>
+          <div class="adm-stat-val" id="adm-releases">—</div>
+          <div class="adm-stat-label">Total Releases</div>
+          <div class="adm-stat-sub" id="adm-releases-sub">— live on DSPs</div>
+        </div>
+        <div class="adm-stat-card adm-stat-orange">
+          <div class="adm-stat-icon"><i class="ti ti-clock"></i></div>
+          <div class="adm-stat-val" id="adm-pending">—</div>
+          <div class="adm-stat-label">Pending Review</div>
+          <div class="adm-stat-sub">Need your action</div>
+        </div>
+        <div class="adm-stat-card adm-stat-green">
+          <div class="adm-stat-icon"><i class="ti ti-crown"></i></div>
+          <div class="adm-stat-val" id="adm-paid">—</div>
+          <div class="adm-stat-label">Paid Plans</div>
+          <div class="adm-stat-sub" id="adm-revenue-sub">— total revenue</div>
+        </div>
+        <div class="adm-stat-card adm-stat-red">
+          <div class="adm-stat-icon"><i class="ti ti-wallet"></i></div>
+          <div class="adm-stat-val" id="adm-payouts">—</div>
+          <div class="adm-stat-label">Pending Payouts</div>
+          <div class="adm-stat-sub" id="adm-payout-amount">— total pending</div>
+        </div>
+        <div class="adm-stat-card adm-stat-blue">
+          <div class="adm-stat-icon"><i class="ti ti-chart-bar"></i></div>
+          <div class="adm-stat-val" id="adm-streams">—</div>
+          <div class="adm-stat-label">Total Streams</div>
+          <div class="adm-stat-sub" id="adm-msgs">— unread messages</div>
+        </div>
       </div>
-      <div class="admin-tabs">
-        <div class="atab active" id="atab-releases" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
+
+      <!-- ADMIN TABS -->
+      <div class="admin-tabs" style="margin-bottom:1.25rem;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">
+        <div class="atab active" id="atab-dashboard" onclick="switchAdminTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+        <div class="atab" id="atab-releases" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
         <div class="atab" id="atab-users" onclick="switchAdminTab('users',this)"><i class="ti ti-users"></i> Artists</div>
         <div class="atab" id="atab-payouts" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts <span id="payout-alert" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
         <div class="atab" id="atab-subs" onclick="switchAdminTab('subs',this)"><i class="ti ti-crown"></i> Subscriptions</div>
+        <div class="atab" id="atab-reports" onclick="switchAdminTab('reports',this)"><i class="ti ti-file-analytics"></i> Reports</div>
         <div class="atab" id="atab-messages" onclick="switchAdminTab('messages',this)"><i class="ti ti-message"></i> Messages <span id="msg-alert" style="display:none;background:#3b82f6;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
+        <div class="atab" id="atab-broadcast" onclick="switchAdminTab('broadcast',this)"><i class="ti ti-speakerphone"></i> Broadcast</div>
         <div class="atab" id="atab-notif" onclick="switchAdminTab('notifications',this)"><i class="ti ti-bell"></i> Notifications</div>
       </div>
-      <div class="admin-section active" id="admin-releases">
+
+      <!-- ── DASHBOARD TAB ── -->
+      <div class="admin-section active" id="admin-dashboard">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-chart-line"></i> Revenue Overview</div>
+            <canvas id="adm-revenue-chart" height="160"></canvas>
+          </div>
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-users"></i> Artist Growth</div>
+            <canvas id="adm-growth-chart" height="160"></canvas>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem">
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-crown"></i> Plan Distribution</div>
+            <div id="adm-plan-breakdown"></div>
+          </div>
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-music"></i> Release Status</div>
+            <div id="adm-release-breakdown"></div>
+          </div>
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-clock"></i> Recent Activity</div>
+            <div id="adm-recent-activity" style="font-size:12px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RELEASES TAB ── -->
+      <div class="admin-section" id="admin-releases">
         <div style="display:flex;gap:8px;margin-bottom:.875rem;flex-wrap:wrap">
-          <input id="rel-search" type="text" placeholder="Search by title or artist..." style="flex:1;min-width:200px;background:#1e1e35;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 12px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none" oninput="filterReleases()"/>
-          <select id="rel-status-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterReleases()"><option value="">All statuses</option><option value="pending">Pending</option><option value="review">In Review</option><option value="live">Live</option><option value="rejected">Rejected</option></select>
+          <input id="rel-search" type="text" placeholder="Search title, artist..." class="adm-search" oninput="filterReleases()"/>
+          <select id="rel-status-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterReleases()">
+            <option value="">All statuses</option><option value="pending">Pending</option><option value="review">In Review</option><option value="live">Live</option><option value="rejected">Rejected</option>
+          </select>
+          <button class="btn adm-btn-sec btn-sm" onclick="bulkStatusUpdate('live')"><i class="ti ti-check"></i> Bulk Approve</button>
+          <button class="btn adm-btn-sec btn-sm" onclick="bulkStatusUpdate('rejected')" style="color:#f87171;border-color:#f87171"><i class="ti ti-x"></i> Bulk Reject</button>
         </div>
-        <div class="tw"><table><thead><tr><th>Account ID</th><th>Title</th><th>Genre</th><th>Submitted</th><th>Release Date</th><th>Status</th><th>Streams</th><th>Earnings($)</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="admin-tbody"></tbody></table></div>
+        <div class="tw"><table>
+          <thead><tr>
+            <th><input type="checkbox" id="select-all-rel" onchange="toggleSelectAll('rel',this)" style="accent-color:#7c3aed"></th>
+            <th>Account ID</th><th>Artist</th><th>Title</th><th>Genre</th><th>Submitted</th><th>Release Date</th><th>Status</th><th>Streams</th><th>Earnings($)</th><th>Notes</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="admin-tbody"></tbody>
+        </table></div>
       </div>
+
+      <!-- ── ARTISTS TAB ── -->
       <div class="admin-section" id="admin-users">
-        <div style="display:flex;gap:8px;margin-bottom:.875rem">
-          <input id="user-search" type="text" placeholder="Search by name or email..." style="flex:1;background:#1e1e35;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 12px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none" oninput="filterUsers()"/>
+        <div style="display:flex;gap:8px;margin-bottom:.875rem;flex-wrap:wrap">
+          <input id="user-search" type="text" placeholder="Search name, email, account ID..." class="adm-search" oninput="filterUsers()"/>
+          <select id="user-plan-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterUsers()">
+            <option value="">All plans</option><option value="solo">Solo</option><option value="artist_plus">Artist+</option><option value="label">Label</option><option value="admin">Admin</option>
+          </select>
+          <button class="btn adm-btn-sec btn-sm" onclick="exportArtistsCSV()"><i class="ti ti-download"></i> Export</button>
         </div>
-        <div class="tw"><table><thead><tr><th>Account ID</th><th>Artist</th><th>Email</th><th>Plan</th><th>Releases</th><th>Total Earnings</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="admin-users-tbody"></tbody></table></div>
+        <div class="tw"><table>
+          <thead><tr><th>Account ID</th><th>Artist</th><th>Email</th><th>Plan</th><th>Releases</th><th>Streams</th><th>Earnings</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody id="admin-users-tbody"></tbody>
+        </table></div>
       </div>
+
+      <!-- ── PAYOUTS TAB ── -->
       <div class="admin-section" id="admin-payouts">
         <div id="payout-pending-notice"></div>
-        <div class="tw"><table><thead><tr><th>Account ID</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead><tbody id="admin-payouts-tbody"></tbody></table></div>
+        <div style="display:flex;gap:8px;margin-bottom:.875rem">
+          <select id="payout-status-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterPayouts()">
+            <option value="">All statuses</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="cancelled">Cancelled</option>
+          </select>
+          <button class="btn adm-btn-sec btn-sm" onclick="exportPayoutsCSV()"><i class="ti ti-download"></i> Export</button>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Account ID</th><th>Artist</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
+          <tbody id="admin-payouts-tbody"></tbody>
+        </table></div>
       </div>
+
+      <!-- ── SUBSCRIPTIONS TAB ── -->
       <div class="admin-section" id="admin-subs">
-        <div class="tw"><table><thead><tr><th>Artist</th><th>Plan</th><th>Billing</th><th>Amount (USD)</th><th>Amount (GHS)</th><th>Paystack Ref</th><th>Status</th><th>Date</th></tr></thead><tbody id="admin-subs-tbody"></tbody></table></div>
+        <div class="tw"><table>
+          <thead><tr><th>Artist</th><th>Account ID</th><th>Plan</th><th>Billing</th><th>USD</th><th>GHS</th><th>Paystack Ref</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="admin-subs-tbody"></tbody>
+        </table></div>
       </div>
-      <div class="admin-section" id="admin-messages">
-        <div id="messages-list"></div>
-        <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.25rem;margin-top:1rem">
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.35);margin-bottom:.75rem">Send message to an artist</div>
-          <div class="fg"><label>Artist Email</label><input id="msg-to" type="email" placeholder="artist@email.com"></div>
-          <div class="fg"><label>Message</label><textarea id="msg-body" placeholder="Type your message..."></textarea></div>
-          <button class="btn btn-purple" onclick="sendAdminMessage()"><i class="ti ti-send"></i> Send Message</button>
+
+      <!-- ── REPORTS TAB ── -->
+      <div class="admin-section" id="admin-reports">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-coin"></i> Revenue Summary</div>
+            <div id="adm-revenue-summary"></div>
+          </div>
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-chart-bar"></i> Top Artists by Streams</div>
+            <div id="adm-top-artists"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-music"></i> Top Releases</div>
+            <div id="adm-top-releases"></div>
+          </div>
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-file-download"></i> Export Reports</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:.5rem">
+              <button class="btn adm-btn-sec" onclick="exportCSV('releases')"><i class="ti ti-music"></i> Export All Releases (CSV)</button>
+              <button class="btn adm-btn-sec" onclick="exportCSV('artists')"><i class="ti ti-users"></i> Export All Artists (CSV)</button>
+              <button class="btn adm-btn-sec" onclick="exportCSV('payouts')"><i class="ti ti-wallet"></i> Export All Payouts (CSV)</button>
+              <button class="btn adm-btn-sec" onclick="exportCSV('subscriptions')"><i class="ti ti-crown"></i> Export Subscriptions (CSV)</button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- ── MESSAGES TAB ── -->
+      <div class="admin-section" id="admin-messages">
+        <div style="display:grid;grid-template-columns:1fr 380px;gap:1.25rem">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:.875rem">Inbox</div>
+            <div id="messages-list"></div>
+          </div>
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-send"></i> Send Message</div>
+            <div class="fg"><label>To (email)</label><input id="msg-to" type="email" placeholder="artist@email.com"></div>
+            <div class="fg"><label>Subject</label><input id="msg-subject" type="text" placeholder="Message subject"></div>
+            <div class="fg"><label>Message</label><textarea id="msg-body" placeholder="Type your message..." style="min-height:120px"></textarea></div>
+            <button class="btn btn-purple" style="width:100%;justify-content:center" onclick="sendAdminMessage()"><i class="ti ti-send"></i> Send Message</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BROADCAST TAB ── -->
+      <div class="admin-section" id="admin-broadcast">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-speakerphone"></i> Broadcast to All Artists</div>
+            <div class="fg" style="margin-top:.875rem"><label>Subject</label><input id="bc-subject" type="text" placeholder="e.g. Platform Update — New Features"></div>
+            <div class="fg"><label>Message</label><textarea id="bc-body" placeholder="Write your announcement..." style="min-height:140px"></textarea></div>
+            <div class="fg">
+              <label>Send to</label>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:.5rem">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-all" checked style="accent-color:#7c3aed"> All artists</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-solo" style="accent-color:#7c3aed"> Solo plan only</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-paid" style="accent-color:#7c3aed"> Paid plans only</label>
+              </div>
+            </div>
+            <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:.5rem" onclick="sendBroadcast()"><i class="ti ti-speakerphone"></i> Send Broadcast</button>
+          </div>
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-history"></i> Broadcast History</div>
+            <div id="broadcast-history" style="font-size:13px;color:rgba(255,255,255,.35);margin-top:.5rem">No broadcasts sent yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NOTIFICATIONS TAB ── -->
       <div class="admin-section" id="admin-notifications">
         <div id="notifications-list"></div>
       </div>
@@ -1349,7 +1558,7 @@ function enterDashboard(){
     history.replaceState({page:pageToLoad},'',window.location.pathname+'#'+pageToLoad);
     goPage(pageToLoad,matchedNav||document.querySelector('.tnav-item'));
     loadReleases();
-    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();startRealtimeAdmin();requestNotifPermission();}
+    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){
     console.error('enterDashboard error:',e);
     // Force show dashboard even if something else failed
@@ -1404,7 +1613,7 @@ function goPage(id,el){
   if(id==='royalties')loadRoyalties();
   if(id==='payout')loadPayout();
   if(id==='artists')loadArtists();
-  if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();}
+  if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
 }
 
 // ── RELEASES ──────────────────────────────────────────
@@ -2003,95 +2212,160 @@ async function uploadAvatar(input){
 }
 
 // ── ADMIN ─────────────────────────────────────────────
-let allReleasesCache=[], allUsersCache=[];
-
-function switchRoyaltyTab(tab,el){
-  document.querySelectorAll('.royalties-subtabs .rsub').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
-  ['sales','reports','payouts-tab'].forEach(t=>{
-    const el2=document.getElementById('rt-'+t);
-    if(el2) el2.style.display=t===tab?'block':'none';
-  });
-}
+let allReleasesCache=[],allUsersCache=[],allPayoutsCache=[];
 
 function switchAdminTab(tab,el){
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('admin-'+tab).classList.add('active');
+  const sec=document.getElementById('admin-'+tab);
+  if(sec) sec.classList.add('active');
   if(el) el.classList.add('active');
+  if(tab==='reports') loadAdminReports();
+  if(tab==='broadcast') loadBroadcastHistory();
 }
 
 function refreshAdmin(){
   loadAdminReleases();loadAdminUsers();loadAdminPayouts();
   loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();
+  loadAdminDashboard();
   toast('Admin data refreshed','ok');
 }
 
 async function loadAdminStats(){
   try{
-    const [{data:profiles},{data:releases},{data:payouts}]=await Promise.all([
-      sb.from('profiles').select('id,plan'),
-      sb.from('releases').select('id,status'),
-      sb.from('payouts').select('id,status').catch(()=>({data:[]}))
+    const [{data:profiles},{data:releases},{data:payouts},{data:subs}]=await Promise.all([
+      sb.from('profiles').select('id,plan,created_at'),
+      sb.from('releases').select('id,status,streams,earnings'),
+      sb.from('payouts').select('id,status,amount').catch(()=>({data:[]})),
+      sb.from('subscriptions').select('id,amount_usd').catch(()=>({data:[]}))
     ]);
-    const artists=(profiles||[]).length;
-    const totalRel=(releases||[]).length;
+    const now=new Date(),thisMonth=now.getMonth(),thisYear=now.getFullYear();
+    const newThisMonth=(profiles||[]).filter(p=>{const d=new Date(p.created_at);return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;}).length;
+    const liveRel=(releases||[]).filter(r=>r.status==='live').length;
     const pendingRel=(releases||[]).filter(r=>r.status==='pending').length;
-    const pendingPay=(payouts||[]).filter(p=>p.status==='pending').length;
-    const paid=(profiles||[]).filter(p=>p.plan==='artist_plus'||p.plan==='label').length;
-    const el=id=>document.getElementById(id);
-    if(el('adm-artists')) el('adm-artists').textContent=artists;
-    if(el('adm-releases')) el('adm-releases').textContent=totalRel;
-    if(el('adm-pending')) el('adm-pending').textContent=pendingRel;
-    if(el('adm-payouts')) el('adm-payouts').textContent=pendingPay;
-    if(el('adm-paid')) el('adm-paid').textContent=paid;
-    // Show alert badges
-    const pa=el('payout-alert');if(pa) pa.style.display=pendingPay>0?'inline':'none';
-    if(pa) pa.textContent=pendingPay;
-    // Payout notice banner
-    const notice=el('payout-pending-notice');
-    if(notice&&pendingPay>0) notice.innerHTML=`<div style="background:#fff8e6;border:1px solid #e6d090;border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:var(--gd);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><span><i class="ti ti-alert-circle"></i> <strong>${pendingPay} payout request${pendingPay>1?'s':''}</strong> waiting for your action</span><button class="btn btn-ghost btn-sm" onclick="switchAdminTab('payouts',document.getElementById('atab-payouts'))">View Payouts</button></div>`;
-    else if(notice) notice.innerHTML='';
-  }catch(e){}
+    const paidPlans=(profiles||[]).filter(p=>p.plan==='artist_plus'||p.plan==='label').length;
+    const pendingPay=(payouts||[]).filter(p=>p.status==='pending');
+    const pendingAmt=pendingPay.reduce((a,p)=>a+parseFloat(p.amount||0),0);
+    const totalRevenue=(subs||[]).reduce((a,s)=>a+parseFloat(s.amount_usd||0),0);
+    const totalStreams=(releases||[]).reduce((a,r)=>a+(r.streams||0),0);
+    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    set('adm-artists',(profiles||[]).length);
+    set('adm-artists-sub',newThisMonth+' new this month');
+    set('adm-releases',(releases||[]).length);
+    set('adm-releases-sub',liveRel+' live on DSPs');
+    set('adm-pending',pendingRel);
+    set('adm-paid',paidPlans);
+    set('adm-revenue-sub','$'+totalRevenue.toFixed(2)+' total revenue');
+    set('adm-payouts',pendingPay.length);
+    set('adm-payout-amount','$'+pendingAmt.toFixed(2)+' total pending');
+    set('adm-streams',totalStreams.toLocaleString());
+    const pa=document.getElementById('payout-alert');if(pa){pa.style.display=pendingPay.length>0?'inline':'none';pa.textContent=pendingPay.length;}
+    const nb=document.getElementById('notif-badge-admin');if(nb){nb.style.display=(pendingPay.length+pendingRel)>0?'inline':'none';nb.textContent=pendingPay.length+pendingRel;}
+    const nb2=document.getElementById('notif-badge');if(nb2){nb2.style.display=(pendingPay.length+pendingRel)>0?'inline':'none';nb2.textContent=pendingPay.length+pendingRel;}
+  }catch(e){console.warn('loadAdminStats error:',e);}
+}
+
+async function loadAdminDashboard(){
+  try{
+    const [{data:profiles},{data:releases},{data:subs}]=await Promise.all([
+      sb.from('profiles').select('id,plan,created_at'),
+      sb.from('releases').select('id,status,streams,earnings,artist,title,user_id'),
+      sb.from('subscriptions').select('amount_usd,created_at,plan').catch(()=>({data:[]}))
+    ]);
+    // Plan breakdown
+    const plans={solo:0,artist_plus:0,label:0,admin:0};
+    (profiles||[]).forEach(p=>plans[p.plan]=(plans[p.plan]||0)+1);
+    const totalP=(profiles||[]).length||1;
+    const planEl=document.getElementById('adm-plan-breakdown');
+    if(planEl) planEl.innerHTML=[
+      {k:'Solo',v:plans.solo,c:'#6b7280'},
+      {k:'Artist+',v:plans.artist_plus,c:'#7c3aed'},
+      {k:'Label',v:plans.label,c:'#059669'},
+      {k:'Admin',v:plans.admin,c:'#2563eb'}
+    ].map(p=>`<div class="adm-bar-row"><div class="adm-bar-label">${p.k}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round((p.v/totalP)*100)}%;background:${p.c}"></div></div><div class="adm-bar-val">${p.v}</div></div>`).join('');
+    // Release breakdown
+    const statuses={pending:0,review:0,live:0,rejected:0};
+    (releases||[]).forEach(r=>statuses[r.status]=(statuses[r.status]||0)+1);
+    const totalR=(releases||[]).length||1;
+    const relEl=document.getElementById('adm-release-breakdown');
+    if(relEl) relEl.innerHTML=[
+      {k:'Live',v:statuses.live,c:'#10b981'},
+      {k:'Pending',v:statuses.pending,c:'#f59e0b'},
+      {k:'In Review',v:statuses.review,c:'#3b82f6'},
+      {k:'Rejected',v:statuses.rejected,c:'#ef4444'}
+    ].map(p=>`<div class="adm-bar-row"><div class="adm-bar-label">${p.k}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round((p.v/totalR)*100)}%;background:${p.c}"></div></div><div class="adm-bar-val">${p.v}</div></div>`).join('');
+    // Recent activity
+    const actEl=document.getElementById('adm-recent-activity');
+    if(actEl){
+      const recent=[
+        ...(profiles||[]).slice(-3).map(p=>({type:'join',text:'New artist joined',time:p.created_at,color:'#a78bfa'})),
+        ...(releases||[]).filter(r=>r.status==='pending').slice(-3).map(r=>({type:'release',text:'"'+r.title+'" submitted for review',time:r.submitted_at||new Date().toISOString(),color:'#fbbf24'}))
+      ].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,8);
+      actEl.innerHTML=recent.map(a=>`<div class="activity-item"><div class="activity-dot" style="background:${a.color}"></div><div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time?new Date(a.time).toLocaleDateString('en-GB'):''}</div></div></div>`).join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No recent activity</div>';
+    }
+    // Revenue chart
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const now=new Date();
+    const revByMonth=Array(6).fill(0);
+    (subs||[]).forEach(s=>{
+      const d=new Date(s.created_at);
+      const diff=(now.getMonth()-d.getMonth()+12)%12;
+      if(diff<6) revByMonth[5-diff]+=parseFloat(s.amount_usd||0);
+    });
+    const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
+    setTimeout(()=>{
+      renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#a78bfa');
+      const growthData=Array(6).fill(0);
+      (profiles||[]).forEach(p=>{
+        const d=new Date(p.created_at);
+        const diff=(now.getMonth()-d.getMonth()+12)%12;
+        if(diff<6) growthData[5-diff]++;
+      });
+      renderLineChart('adm-growth-chart',chartLabels,growthData,'#34d399');
+    },100);
+  }catch(e){console.warn('loadAdminDashboard error:',e);}
 }
 
 async function loadAdminReleases(){
   const tbody=document.getElementById('admin-tbody');
   if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
-  const {data,error}=await sb.from('releases').select('*, profiles(full_name,artist_name,email)').order('submitted_at',{ascending:false});
-  if(error||!data||!data.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:1.5rem">No submissions yet.</td></tr>';return;}
+  tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
+  const {data,error}=await sb.from('releases').select('*, profiles(full_name,artist_name,email,account_id,status_flag)').order('submitted_at',{ascending:false});
+  if(error||!data){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:#f87171;padding:1.5rem">'+( error?.message||'No data')+'</td></tr>';return;}
   allReleasesCache=data;
   renderAdminReleases(data);
 }
 
 function renderAdminReleases(data){
-  const tbody=document.getElementById('admin-tbody');
-  if(!data.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:1.5rem">No results.</td></tr>';return;}
+  const tbody=document.getElementById('admin-tbody');if(!tbody)return;
+  if(!data.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No releases found.</td></tr>';return;}
   tbody.innerHTML=data.map(r=>{
     const pName=r.profiles?.artist_name||r.profiles?.full_name||'—';
+    const accId=r.profiles?.account_id||'—';
     const sub=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
     const rd=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB'):'—';
     const art=r.artwork_url?`<img src="${r.artwork_url}" alt="" style="width:32px;height:32px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:6px">`:'';
-    const statusColor={pending:'color:#b7791f',review:'color:var(--info)',live:'color:var(--success)',rejected:'color:var(--danger)'}[r.status]||'';
+    const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171'}[r.status]||'';
     return `<tr>
-      <td style="font-weight:600;white-space:nowrap">${esc(pName)}</td>
+      <td><input type="checkbox" class="rel-cb" data-id="${r.id}" style="accent-color:#7c3aed"></td>
+      <td style="font-weight:700;color:#a78bfa;font-size:12px">${esc(accId)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(pName)}</td>
       <td style="white-space:nowrap">${art}${esc(r.title)}</td>
-      <td style="color:var(--muted);font-size:12px">${esc(r.genre||'')}</td>
-      <td style="color:var(--muted);font-size:12px;white-space:nowrap">${sub}</td>
-      <td style="color:var(--muted);font-size:12px;white-space:nowrap">${rd}</td>
-      <td><select class="stsel" style="${statusColor}" onchange="updateStatus('${r.id}',this.value,this)">
-        <option value="pending" ${r.status==='pending'?'selected':''}>Pending</option>
-        <option value="review" ${r.status==='review'?'selected':''}>In Review</option>
-        <option value="live" ${r.status==='live'?'selected':''}>Live</option>
-        <option value="rejected" ${r.status==='rejected'?'selected':''}>Rejected</option>
+      <td style="color:rgba(255,255,255,.4);font-size:12px">${esc(r.genre||'')}</td>
+      <td style="color:rgba(255,255,255,.35);font-size:11px">${sub}</td>
+      <td style="color:rgba(255,255,255,.35);font-size:11px">${rd}</td>
+      <td><select class="stsel" style="${sc};font-weight:600" onchange="updateStatus('${r.id}',this.value,this)">
+        <option value="pending" ${r.status==='pending'?'selected':''}>⏳ Pending</option>
+        <option value="review" ${r.status==='review'?'selected':''}>🔍 In Review</option>
+        <option value="live" ${r.status==='live'?'selected':''}>✅ Live</option>
+        <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ Rejected</option>
       </select></td>
-      <td><input type="number" class="num-in" value="${r.streams||0}" min="0" title="Streams" onchange="updateField('${r.id}','streams',this.value)"></td>
-      <td><input type="number" class="num-in" value="${r.earnings||0}" min="0" step="0.01" title="Earnings in USD" onchange="updateField('${r.id}','earnings',this.value)"></td>
-      <td style="font-size:11px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes||'')}">${r.notes?esc(r.notes.slice(0,40))+(r.notes.length>40?'…':''):'—'}</td>
+      <td><input type="number" class="num-in" value="${r.streams||0}" min="0" onchange="updateField('${r.id}','streams',this.value)"></td>
+      <td><input type="number" class="num-in" value="${r.earnings||0}" min="0" step="0.01" onchange="updateField('${r.id}','earnings',this.value)"></td>
+      <td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes||'')}">${r.notes?esc(r.notes.slice(0,30))+'…':'—'}</td>
       <td style="white-space:nowrap">
-        <button class="btn btn-ghost btn-sm" style="margin-right:4px" onclick="openArtistModal('${r.user_id}','${esc(pName)}')"><i class="ti ti-eye"></i></button>
-        <button class="btn-danger-outline" onclick="deleteRelease('${r.id}')"><i class="ti ti-trash"></i></button>
+        <button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal('${r.user_id}','${esc(pName)}')"><i class="ti ti-eye"></i></button>
+        <button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease('${r.id}')"><i class="ti ti-trash"></i></button>
       </td>
     </tr>`;
   }).join('');
@@ -2106,47 +2380,69 @@ function filterReleases(){
   renderAdminReleases(data);
 }
 
-async function loadAdminUsers(){
-  const tbody=document.getElementById('admin-users-tbody');
-  if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
-  const {data}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
-  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">No artists yet.</td></tr>';return;}
-  const {data:allRel}=await sb.from('releases').select('user_id,earnings');
-  const relCount={};const relEarn={};
-  (allRel||[]).forEach(r=>{relCount[r.user_id]=(relCount[r.user_id]||0)+1;relEarn[r.user_id]=(relEarn[r.user_id]||0)+(r.earnings||0);});
-  allUsersCache=data;
-  renderAdminUsers(data,relCount,relEarn);
+function toggleSelectAll(type,cb){
+  document.querySelectorAll('.'+type+'-cb').forEach(c=>c.checked=cb.checked);
 }
 
-function renderAdminUsers(data,relCount,relEarn){
-  const tbody=document.getElementById('admin-users-tbody');
-  if(!tbody)return;
-  if(!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">No results.</td></tr>';return;}
+async function bulkStatusUpdate(status){
+  const checked=Array.from(document.querySelectorAll('.rel-cb:checked')).map(c=>c.dataset.id);
+  if(!checked.length){toast('Select releases first','err');return;}
+  if(!confirm(`Set ${checked.length} release(s) to "${status}"?`))return;
+  for(const id of checked){
+    await sb.from('releases').update({status}).eq('id',id);
+  }
+  toast(checked.length+' releases updated to '+status,'ok');
+  loadAdminReleases();loadAdminStats();
+}
+
+async function loadAdminUsers(){
+  const tbody=document.getElementById('admin-users-tbody');if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
+  const {data}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+  if(!data){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists yet.</td></tr>';return;}
+  const [{data:allRel},{data:allPayouts}]=await Promise.all([
+    sb.from('releases').select('user_id,streams,earnings'),
+    sb.from('payouts').select('user_id,amount,status').catch(()=>({data:[]}))
+  ]);
+  const relCount={};const relStreams={};const relEarn={};
+  (allRel||[]).forEach(r=>{relCount[r.user_id]=(relCount[r.user_id]||0)+1;relStreams[r.user_id]=(relStreams[r.user_id]||0)+(r.streams||0);relEarn[r.user_id]=(relEarn[r.user_id]||0)+(r.earnings||0);});
+  allUsersCache=data;
+  renderAdminUsers(data,relCount,relStreams,relEarn);
+}
+
+function renderAdminUsers(data,relCount,relStreams,relEarn){
+  const tbody=document.getElementById('admin-users-tbody');if(!tbody)return;
+  if(!data.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists found.</td></tr>';return;}
   tbody.innerHTML=data.map(p=>{
     const name=p.artist_name||p.full_name||p.email;
-    const planLabel=p.plan==='admin'?'Admin':p.plan==='label'?'Label':p.plan==='artist_plus'?'Artist+':'Solo';
-    const planColor=p.plan==='admin'?'color:var(--info)':p.plan==='label'||p.plan==='artist_plus'?'color:var(--gd)':'color:var(--muted)';
+    const planLabel={admin:'Admin',label:'Label',artist_plus:'Artist+',solo:'Solo'}[p.plan]||'Solo';
+    const planColor={admin:'color:#60a5fa',label:'color:#34d399',artist_plus:'color:#a78bfa',solo:'color:rgba(255,255,255,.4)'}[p.plan]||'';
     const joined=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
-    const earn=relEarn[p.id]||0;
+    const statusFlag=p.status_flag||'active';
+    const statusBadge={active:'asb-active',suspended:'asb-suspended',warned:'asb-warned'}[statusFlag]||'asb-active';
     return `<tr>
-      <td>
-        <div style="font-size:12px;font-weight:700;color:var(--gold)">${esc(p.account_id||'—')}</div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-top:1px">${esc(name)}</div>
-      </td>
-      <td style="color:var(--muted);font-size:12px">${esc(p.email||'')}</td>
+      <td style="font-weight:700;color:#a78bfa;font-size:12px">${esc(p.account_id||'—')}</td>
+      <td><div style="font-weight:600;color:#fff">${esc(name)}</div><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px">${esc(p.email||'')}</div></td>
+      <td style="color:rgba(255,255,255,.5);font-size:11px">${esc(p.email||'')}</td>
       <td><select class="stsel" style="${planColor};font-weight:600" onchange="updateUserPlan('${p.id}',this.value)">
         <option value="solo" ${p.plan==='solo'?'selected':''}>Solo</option>
         <option value="artist_plus" ${p.plan==='artist_plus'?'selected':''}>Artist+</option>
         <option value="label" ${p.plan==='label'?'selected':''}>Label</option>
         <option value="admin" ${p.plan==='admin'?'selected':''}>Admin</option>
       </select></td>
-      <td style="text-align:center">${relCount[p.id]||0}</td>
-      <td style="color:var(--gd);font-weight:600">$${earn.toFixed(2)}</td>
-      <td style="color:var(--muted);font-size:12px">${joined}</td>
+      <td style="text-align:center;font-weight:600;color:#fff">${relCount[p.id]||0}</td>
+      <td style="color:rgba(255,255,255,.6)">${(relStreams[p.id]||0).toLocaleString()}</td>
+      <td style="color:#34d399;font-weight:600">$${(relEarn[p.id]||0).toFixed(2)}</td>
+      <td><span class="artist-status-badge ${statusBadge}">${statusFlag}</span></td>
+      <td style="color:rgba(255,255,255,.35);font-size:11px">${joined}</td>
       <td style="white-space:nowrap">
-        <button class="btn btn-ghost btn-sm" style="margin-right:4px" onclick="openArtistModal('${p.id}','${esc(name)}')"><i class="ti ti-eye"></i> View</button>
-        <button class="btn btn-ghost btn-sm" onclick="openMsgTo('${esc(p.email||'')}')"><i class="ti ti-message"></i></button>
+        <button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal('${p.id}','${esc(name)}')"><i class="ti ti-eye"></i></button>
+        <button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openMsgTo('${esc(p.email||'')}')"><i class="ti ti-message"></i></button>
+        <select class="stsel" style="font-size:11px;padding:3px 6px" onchange="updateArtistStatus('${p.id}',this.value)">
+          <option value="active" ${statusFlag==='active'?'selected':''}>Active</option>
+          <option value="warned" ${statusFlag==='warned'?'selected':''}>Warned</option>
+          <option value="suspended" ${statusFlag==='suspended'?'selected':''}>Suspended</option>
+        </select>
       </td>
     </tr>`;
   }).join('');
@@ -2154,132 +2450,169 @@ function renderAdminUsers(data,relCount,relEarn){
 
 function filterUsers(){
   const q=(document.getElementById('user-search')?.value||'').toLowerCase();
-  if(!q){renderAdminUsers(allUsersCache,{},{});loadAdminUsers();return;}
-  const data=allUsersCache.filter(p=>
-    (p.artist_name||'').toLowerCase().includes(q)||
-    (p.full_name||'').toLowerCase().includes(q)||
-    (p.email||'').toLowerCase().includes(q)
-  );
-  renderAdminUsers(data,{},{});
+  const plan=document.getElementById('user-plan-filter')?.value||'';
+  let data=allUsersCache;
+  if(q) data=data.filter(p=>(p.artist_name||'').toLowerCase().includes(q)||(p.full_name||'').toLowerCase().includes(q)||(p.email||'').toLowerCase().includes(q)||(p.account_id||'').toLowerCase().includes(q));
+  if(plan) data=data.filter(p=>p.plan===plan);
+  renderAdminUsers(data,{},{},{});
+}
+
+async function updateArtistStatus(id,status){
+  await sb.from('profiles').update({status_flag:status}).eq('id',id);
+  toast('Artist status updated to '+status,'ok');
 }
 
 async function loadAdminPayouts(){
-  const tbody=document.getElementById('admin-payouts-tbody');
-  if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
+  const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
   try{
-    // Fetch all profiles first, then join manually (bypasses RLS cross-user restriction)
     const [{data:payouts,error:pe},{data:profiles}]=await Promise.all([
       sb.from('payouts').select('*').order('created_at',{ascending:false}),
       sb.from('profiles').select('id,artist_name,full_name,email,account_id')
     ]);
-    if(pe){
-      console.error('Payouts fetch error:',pe);
-      tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--danger);padding:1.5rem">Error: '+pe.message+'<br><small>Run the payouts SQL and admin policy SQL in Supabase.</small></td></tr>';
-      return;
-    }
-    if(!payouts||!payouts.length){
-      tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">No payout requests yet.</td></tr>';
-      return;
-    }
-    // Build profile lookup map
-    const profileMap={};
-    (profiles||[]).forEach(p=>{profileMap[p.id]=p;});
-    const pending=payouts.filter(p=>p.status==='pending').length;
+    if(pe){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#f87171;padding:1.5rem">'+pe.message+'</td></tr>';return;}
+    allPayoutsCache=payouts||[];
+    const profileMap={};(profiles||[]).forEach(p=>{profileMap[p.id]=p;});
+    const pending=(payouts||[]).filter(p=>p.status==='pending').length;
     const notice=document.getElementById('payout-pending-notice');
-    if(notice&&pending>0) notice.innerHTML=`<div style="background:#fff8e6;border:1px solid #e6d090;border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:var(--gd);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><span><i class="ti ti-alert-circle"></i> <strong>${pending} pending payout${pending>1?'s':''}</strong> need processing</span></div>`;
+    if(notice&&pending>0) notice.innerHTML=`<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><span><i class="ti ti-alert-circle"></i> <strong>${pending} pending payout${pending>1?'s':''}</strong> waiting for your action</span></div>`;
     else if(notice) notice.innerHTML='';
-    tbody.innerHTML=payouts.map(p=>{
-      const prof=profileMap[p.user_id]||{};
-      const name=prof.artist_name||prof.full_name||prof.email||'—';
-      const accountId=prof.account_id||'—';
-      const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
-      const stColor={pending:'color:var(--danger)',processing:'color:var(--info)',paid:'color:var(--success)',failed:'color:var(--muted)',cancelled:'color:var(--muted)'}[p.status]||'';
-      return `<tr>
-        <td>
-          <div style="font-size:16px;font-weight:800;color:var(--gold);letter-spacing:.5px">${esc(accountId)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px">${esc(name)}</div>
-        </td>
-        <td>${p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer'}</td>
-        <td style="color:var(--muted)">${esc(p.network||'—')}</td>
-        <td style="font-size:12px;color:var(--muted);max-width:160px">${esc(p.account||'—')}</td>
-        <td style="font-weight:700;color:var(--gd);font-size:16px">$${parseFloat(p.amount||0).toFixed(2)}</td>
-        <td><select class="stsel" style="${stColor};font-weight:600" onchange="updatePayoutStatus('${p.id}',this.value)">
-          <option value="pending" ${p.status==='pending'?'selected':''}>⏳ Pending</option>
-          <option value="processing" ${p.status==='processing'?'selected':''}>🔄 Processing</option>
-          <option value="paid" ${p.status==='paid'?'selected':''}>✅ Paid</option>
-          <option value="failed" ${p.status==='failed'?'selected':''}>❌ Failed</option>
-          <option value="cancelled" ${p.status==='cancelled'?'selected':''}>🚫 Cancelled</option>
-        </select></td>
-        <td style="color:var(--muted);font-size:12px">${d}</td>
-        <td><button class="btn-danger-outline" onclick="deletePayout('${p.id}')"><i class="ti ti-trash"></i></button></td>
-      </tr>`;
-    }).join('');
-  }catch(e){
-    console.error('loadAdminPayouts error:',e);
-    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--danger);padding:1.5rem">'+e.message+'</td></tr>';
-  }
+    if(!payouts||!payouts.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payout requests yet.</td></tr>';return;}
+    renderAdminPayouts(payouts,profileMap);
+  }catch(e){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Run payouts SQL in Supabase first.</td></tr>';}
+}
+
+function renderAdminPayouts(payouts,profileMap){
+  const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
+  tbody.innerHTML=payouts.map(p=>{
+    const prof=profileMap[p.user_id]||{};
+    const name=prof.artist_name||prof.full_name||prof.email||'—';
+    const accId=prof.account_id||'—';
+    const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+    const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
+    return `<tr>
+      <td style="font-weight:700;color:#a78bfa;font-size:13px">${esc(accId)}</td>
+      <td><div style="font-weight:600;color:#fff;font-size:13px">${esc(name)}</div><div style="font-size:11px;color:rgba(255,255,255,.35)">${esc(prof.email||'')}</div></td>
+      <td>${p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer'}</td>
+      <td style="color:rgba(255,255,255,.5)">${esc(p.network||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">${esc(p.account||'—')}</td>
+      <td style="font-weight:700;color:#34d399;font-size:16px">$${parseFloat(p.amount||0).toFixed(2)}</td>
+      <td><select class="stsel" style="${sc};font-weight:600" onchange="updatePayoutStatus('${p.id}',this.value)">
+        <option value="pending" ${p.status==='pending'?'selected':''}>⏳ Pending</option>
+        <option value="processing" ${p.status==='processing'?'selected':''}>🔄 Processing</option>
+        <option value="paid" ${p.status==='paid'?'selected':''}>✅ Paid</option>
+        <option value="failed" ${p.status==='failed'?'selected':''}>❌ Failed</option>
+        <option value="cancelled" ${p.status==='cancelled'?'selected':''}>🚫 Cancelled</option>
+      </select></td>
+      <td style="color:rgba(255,255,255,.35);font-size:12px">${d}</td>
+      <td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout('${p.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterPayouts(){
+  const st=document.getElementById('payout-status-filter')?.value||'';
+  const profileMap={};
+  allUsersCache.forEach(p=>{profileMap[p.id]=p;});
+  let data=allPayoutsCache;
+  if(st) data=data.filter(p=>p.status===st);
+  renderAdminPayouts(data,profileMap);
 }
 
 async function loadAdminSubs(){
-  const tbody=document.getElementById('admin-subs-tbody');
-  if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
+  const tbody=document.getElementById('admin-subs-tbody');if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
   try{
-    const {data}=await sb.from('subscriptions').select('*, profiles(artist_name,full_name,email)').order('created_at',{ascending:false});
-    const el=document.getElementById('adm-msgs');
-    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">No subscriptions yet.</td></tr>';return;}
+    const {data}=await sb.from('subscriptions').select('*, profiles(artist_name,full_name,email,account_id)').order('created_at',{ascending:false});
+    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No subscriptions yet.</td></tr>';return;}
     tbody.innerHTML=data.map(s=>{
       const name=s.profiles?.artist_name||s.profiles?.full_name||s.profiles?.email||'—';
+      const accId=s.profiles?.account_id||'—';
       const d=s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'—';
-      const planLabel=s.plan==='artist_plus'?'Artist+':s.plan==='label'?'Label':s.plan;
+      const planLabel={artist_plus:'Artist+',label:'Label'}[s.plan]||s.plan;
       return `<tr>
-        <td style="font-weight:600">${esc(name)}</td>
-        <td style="color:var(--gd);font-weight:600">${planLabel}</td>
-        <td style="color:var(--muted)">${s.billing_cycle||'monthly'}</td>
-        <td style="font-weight:600">$${parseFloat(s.amount_usd||0).toFixed(2)}</td>
-        <td style="color:var(--muted)">GHS ${parseFloat(s.amount_ghs||0).toFixed(2)}</td>
-        <td style="font-size:11px;color:var(--muted);font-family:monospace">${esc(s.paystack_ref||'—')}</td>
-        <td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${s.status==='active'?'#f0fff4':'#f5f5f5'};color:${s.status==='active'?'var(--success)':'var(--muted)'}">${s.status||'active'}</span></td>
-        <td style="color:var(--muted);font-size:12px">${d}</td>
+        <td style="font-weight:600;color:#fff">${esc(name)}</td>
+        <td style="font-weight:700;color:#a78bfa;font-size:12px">${esc(accId)}</td>
+        <td style="color:#a78bfa;font-weight:600">${planLabel}</td>
+        <td style="color:rgba(255,255,255,.5)">${s.billing_cycle||'annual'}</td>
+        <td style="font-weight:700;color:#34d399">$${parseFloat(s.amount_usd||0).toFixed(2)}</td>
+        <td style="color:rgba(255,255,255,.4)">GHS ${parseFloat(s.amount_ghs||0).toFixed(2)}</td>
+        <td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">${esc(s.paystack_ref||'—')}</td>
+        <td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${s.status==='active'?'rgba(16,185,129,.2)':'rgba(255,255,255,.08)'};color:${s.status==='active'?'#34d399':'rgba(255,255,255,.4)'}">${s.status||'active'}</span></td>
+        <td style="color:rgba(255,255,255,.35);font-size:12px">${d}</td>
       </tr>`;
     }).join('');
-  }catch(e){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">Run subscriptions SQL in Supabase first.</td></tr>';}
+  }catch(e){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Run subscriptions SQL first.</td></tr>';}
+}
+
+async function loadAdminReports(){
+  try{
+    const [{data:releases},{data:profiles}]=await Promise.all([
+      sb.from('releases').select('*, profiles(artist_name,full_name,account_id)').order('streams',{ascending:false}),
+      sb.from('profiles').select('id,artist_name,full_name,account_id,plan')
+    ]);
+    const allRel=releases||[];
+    // Revenue summary
+    const totalEarnings=allRel.reduce((a,r)=>a+(r.earnings||0),0);
+    const totalStreams=allRel.reduce((a,r)=>a+(r.streams||0),0);
+    const totalComm=totalEarnings*0.15;
+    const revEl=document.getElementById('adm-revenue-summary');
+    if(revEl) revEl.innerHTML=`
+      <div class="adm-bar-row"><div class="adm-bar-label">Gross Earnings</div><div class="adm-bar-val" style="color:#34d399;font-size:15px">$${totalEarnings.toFixed(2)}</div></div>
+      <div class="adm-bar-row"><div class="adm-bar-label">15% Commission</div><div class="adm-bar-val" style="color:#a78bfa;font-size:15px">$${totalComm.toFixed(2)}</div></div>
+      <div class="adm-bar-row"><div class="adm-bar-label">Artist Payouts</div><div class="adm-bar-val" style="color:#fbbf24;font-size:15px">$${(totalEarnings-totalComm).toFixed(2)}</div></div>
+      <div class="adm-bar-row"><div class="adm-bar-label">Total Streams</div><div class="adm-bar-val" style="color:#60a5fa;font-size:15px">${totalStreams.toLocaleString()}</div></div>`;
+    // Top artists
+    const artistStreams={};const artistNames={};
+    allRel.forEach(r=>{
+      if(!r.user_id)return;
+      artistStreams[r.user_id]=(artistStreams[r.user_id]||0)+(r.streams||0);
+      artistNames[r.user_id]=r.profiles?.artist_name||r.profiles?.full_name||'—';
+    });
+    const topArtists=Object.entries(artistStreams).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxAS=topArtists[0]?.[1]||1;
+    const taEl=document.getElementById('adm-top-artists');
+    if(taEl) taEl.innerHTML=topArtists.map(([id,streams])=>`<div class="adm-bar-row"><div class="adm-bar-label" style="width:120px">${esc(artistNames[id])}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round((streams/maxAS)*100)}%"></div></div><div class="adm-bar-val">${streams.toLocaleString()}</div></div>`).join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px;margin-top:.5rem">No stream data yet</div>';
+    // Top releases
+    const maxRS=allRel[0]?.streams||1;
+    const trEl=document.getElementById('adm-top-releases');
+    if(trEl) trEl.innerHTML=allRel.slice(0,5).map(r=>`<div class="adm-bar-row"><div class="adm-bar-label" style="width:120px">${esc(r.title)}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round(((r.streams||0)/maxRS)*100)}%"></div></div><div class="adm-bar-val">${(r.streams||0).toLocaleString()}</div></div>`).join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px;margin-top:.5rem">No releases yet</div>';
+  }catch(e){console.warn('loadAdminReports:',e);}
 }
 
 async function loadAdminMessages(){
-  const container=document.getElementById('messages-list');
-  if(!container)return;
+  const container=document.getElementById('messages-list');if(!container)return;
   try{
-    const {data}=await sb.from('messages').select('*, profiles!messages_from_id_fkey(artist_name,full_name,email)').order('created_at',{ascending:false}).limit(50);
+    const {data}=await sb.from('messages').select('*, profiles!messages_from_id_fkey(artist_name,full_name,email,account_id)').order('created_at',{ascending:false}).limit(50);
     const unread=(data||[]).filter(m=>!m.read_at&&m.direction==='in').length;
-    const msgCount=document.getElementById('adm-msgs');
-    if(msgCount) msgCount.textContent=unread||0;
-    const msgAlert=document.getElementById('msg-alert');
-    if(msgAlert){msgAlert.style.display=unread>0?'inline':'none';msgAlert.textContent=unread;}
+    const msgCount=document.getElementById('adm-msgs');if(msgCount) msgCount.textContent=unread||0;
+    const msgAlert=document.getElementById('msg-alert');if(msgAlert){msgAlert.style.display=unread>0?'inline':'none';msgAlert.textContent=unread;}
     if(!data||!data.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
     container.innerHTML=data.map(m=>{
       const name=m.profiles?.artist_name||m.profiles?.full_name||m.profiles?.email||'Unknown';
+      const accId=m.profiles?.account_id||'';
       const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';
       const isIn=m.direction==='in';
-      return `<div style="background:#fff;border:1px solid var(--border);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px;${!m.read_at&&isIn?'border-left:3px solid var(--gold)':''}">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-          <div style="font-size:13px;font-weight:600">${isIn?'📨 From: '+esc(name):'📤 To: '+esc(m.to_email||'')}</div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <span style="font-size:11px;color:var(--muted)">${d}</span>
-            ${isIn&&!m.read_at?`<button class="btn btn-ghost btn-sm" onclick="markRead('${m.id}')">Mark read</button>`:''}
-            ${isIn?`<button class="btn btn-gold btn-sm" onclick="openMsgTo('${esc(m.from_email||'')}')"><i class="ti ti-corner-up-left"></i> Reply</button>`:''}
+      return `<div style="background:#131320;border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px;${!m.read_at&&isIn?'border-left:3px solid #a78bfa':''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#fff">${isIn?'📨 '+esc(name)+(accId?' · '+accId:''):'📤 To: '+esc(m.to_email||'')}</div>
+            ${m.subject?`<div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">${esc(m.subject)}</div>`:''}
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            <span style="font-size:11px;color:rgba(255,255,255,.25)">${d}</span>
+            ${isIn&&!m.read_at?`<button class="btn adm-btn-sec btn-sm" style="padding:3px 8px;font-size:11px" onclick="markRead('${m.id}')">Mark read</button>`:''}
+            ${isIn?`<button class="btn btn-purple btn-sm" style="padding:3px 8px;font-size:11px" onclick="openMsgTo('${esc(m.from_email||'')}')"><i class="ti ti-corner-up-left"></i> Reply</button>`:''}
           </div>
         </div>
-        <div style="font-size:13px;color:var(--text);line-height:1.6">${esc(m.body||'')}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6">${esc(m.body||'')}</div>
       </div>`;
     }).join('');
-  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>Run messages SQL to enable this feature.</p></div>';}
+  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>Run messages SQL to enable.</p></div>';}
 }
 
 async function loadNotifications(){
-  const container=document.getElementById('notifications-list');
-  if(!container)return;
+  const container=document.getElementById('notifications-list');if(!container)return;
   try{
     const [{data:payouts},{data:releases},{data:profList}]=await Promise.all([
       sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
@@ -2288,30 +2621,30 @@ async function loadNotifications(){
     ]);
     const profileMap2={};(profList||[]).forEach(p=>{profileMap2[p.id]=p;});
     const total=(payouts?.length||0)+(releases?.length||0);
-    const badge=document.getElementById('notif-badge');
-    if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
+    const badge=document.getElementById('notif-badge');if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
+    const badge2=document.getElementById('notif-badge-admin');if(badge2){badge2.style.display=total>0?'inline':'none';badge2.textContent=total;}
     let html='';
     if(payouts?.length){
-      html+=`<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.5rem;margin-top:1rem">💸 Pending Payout Requests (${payouts.length})</div>`;
+      html+=`<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem;margin-top:1rem">💸 Pending Payout Requests (${payouts.length})</div>`;
       html+=payouts.map(p=>{
         const prof2=profileMap2[p.user_id]||{};
         const name=prof2.artist_name||prof2.full_name||'—';
+        const accId=prof2.account_id||'';
         const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
-        const pid=profileMap2[p.user_id]?.account_id||'';
-        return `<div style="background:#fff8e6;border:1px solid #e6d090;border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-          <div><div style="font-size:13px;font-weight:600">${pid?'<span style=\'color:var(--gold);font-weight:700\'>'+esc(pid)+'</span> — ':''} ${esc(name)} requested a payout</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${p.method==='momo'?'📱 '+p.network+' MoMo':'🏦 Bank Transfer'} — $${parseFloat(p.amount||0).toFixed(2)} · ${d}</div></div>
-          <button class="btn btn-gold btn-sm" onclick="switchAdminTab('payouts',document.getElementById('atab-payouts'));"><i class="ti ti-arrow-right"></i> Process</button>
+        return `<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600;color:#fff">${accId?`<span style='color:#a78bfa'>${esc(accId)}</span> — `:''}${esc(name)}</div><div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">${p.method==='momo'?'📱 '+p.network+' MoMo':'🏦 Bank Transfer'} — $${parseFloat(p.amount||0).toFixed(2)} · ${d}</div></div>
+          <button class="btn btn-purple btn-sm" onclick="switchAdminTab('payouts',document.getElementById('atab-payouts'))"><i class="ti ti-arrow-right"></i> Process</button>
         </div>`;
       }).join('');
     }
     if(releases?.length){
-      html+=`<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.5rem;margin-top:1rem">🎵 Pending Release Submissions (${releases.length})</div>`;
+      html+=`<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem;margin-top:1rem">🎵 Pending Releases (${releases.length})</div>`;
       html+=releases.map(r=>{
         const name=r.profiles?.artist_name||r.profiles?.full_name||'—';
         const d=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
-        return `<div style="background:#fff;border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-          <div><div style="font-size:13px;font-weight:600">${esc(name)} submitted "${esc(r.title)}"</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${esc(r.genre||'')} · ${d}</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="switchAdminTab('releases',document.getElementById('atab-releases'))"><i class="ti ti-arrow-right"></i> Review</button>
+        return `<div style="background:#1e1e35;border:1px solid rgba(255,255,255,.08);border-left:3px solid #a78bfa;border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600;color:#fff">"${esc(r.title)}" by ${esc(name)}</div><div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">${esc(r.genre||'')} · ${d}</div></div>
+          <button class="btn adm-btn-sec btn-sm" onclick="switchAdminTab('releases',document.getElementById('atab-releases'))"><i class="ti ti-arrow-right"></i> Review</button>
         </div>`;
       }).join('');
     }
@@ -2321,32 +2654,105 @@ async function loadNotifications(){
 }
 
 function openMsgTo(email){
-  const inp=document.getElementById('msg-to');
-  if(inp) inp.value=email;
+  const inp=document.getElementById('msg-to');if(inp) inp.value=email;
   switchAdminTab('messages',document.getElementById('atab-messages'));
 }
 
 async function markRead(id){
   await sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',id);
-  toast('Marked as read','ok');
-  loadAdminMessages();
+  toast('Marked as read','ok');loadAdminMessages();
 }
 
 async function sendAdminMessage(){
   const to=document.getElementById('msg-to').value.trim();
+  const subject=document.getElementById('msg-subject')?.value.trim()||'Message from Blakkstone';
   const body=document.getElementById('msg-body').value.trim();
   if(!to||!body){toast('Fill in email and message','err');return;}
   try{
-    await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,body,direction:'out',read_at:new Date().toISOString()});
+    await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:new Date().toISOString()});
     document.getElementById('msg-body').value='';
-    toast('Message sent to '+to,'ok');
-    loadAdminMessages();
+    toast('Message sent to '+to,'ok');loadAdminMessages();
   }catch(e){toast('Run messages SQL first','err');}
 }
 
+async function sendBroadcast(){
+  const subject=document.getElementById('bc-subject')?.value.trim();
+  const body=document.getElementById('bc-body')?.value.trim();
+  if(!subject||!body){toast('Fill in subject and message','err');return;}
+  const toAll=document.getElementById('bc-all')?.checked;
+  const toSolo=document.getElementById('bc-solo')?.checked;
+  const toPaid=document.getElementById('bc-paid')?.checked;
+  let query=sb.from('profiles').select('id,email,artist_name,full_name,plan');
+  const {data:allProfiles}=await query;
+  let targets=(allProfiles||[]);
+  if(!toAll){
+    targets=targets.filter(p=>{
+      if(toSolo&&p.plan==='solo') return true;
+      if(toPaid&&(p.plan==='artist_plus'||p.plan==='label')) return true;
+      return false;
+    });
+  }
+  if(!targets.length){toast('No artists match selected filters','err');return;}
+  if(!confirm(`Send broadcast to ${targets.length} artist${targets.length!==1?'s':''}?`))return;
+  let sent=0;
+  for(const p of targets){
+    try{
+      await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:new Date().toISOString()});
+      sent++;
+    }catch(e){}
+  }
+  document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
+  toast(`Broadcast sent to ${sent} artist${sent!==1?'s':''}!`,'ok');
+  loadBroadcastHistory();
+}
+
+async function loadBroadcastHistory(){
+  const el=document.getElementById('broadcast-history');if(!el)return;
+  try{
+    const {data}=await sb.from('messages').select('*').eq('direction','out').eq('from_id',user.id).order('created_at',{ascending:false}).limit(10);
+    if(!data||!data.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">No broadcasts sent yet.</div>';return;}
+    el.innerHTML=data.map(m=>`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:600;color:#fff">${esc(m.subject||'No subject')}</div><div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:2px">To: ${esc(m.to_email||'')} · ${m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):''}</div></div>`).join('');
+  }catch(e){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Run messages SQL first.</div>';}
+}
+
+// ── CSV EXPORT ────────────────────────────────────────
+async function exportCSV(type){
+  let data=[],filename='',headers=[];
+  if(type==='artists'||type===undefined){
+    const {data:d}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+    data=d||[];filename='blakkstone-artists.csv';
+    headers=['Account ID','Name','Email','Plan','Created'];
+    data=data.map(p=>[p.account_id||'',p.artist_name||p.full_name||'',p.email||'',p.plan||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);
+  } else if(type==='releases'){
+    const {data:d}=await sb.from('releases').select('*, profiles(artist_name,account_id)').order('submitted_at',{ascending:false});
+    data=d||[];filename='blakkstone-releases.csv';
+    headers=['Account ID','Artist','Title','Genre','Release Date','Status','Streams','Earnings'];
+    data=data.map(r=>[r.profiles?.account_id||'',r.profiles?.artist_name||'',r.title||'',r.genre||'',r.release_date||'',r.status||'',r.streams||0,r.earnings||0]);
+  } else if(type==='payouts'){
+    const {data:d}=await sb.from('payouts').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));
+    data=d||[];filename='blakkstone-payouts.csv';
+    headers=['Account ID','Artist','Method','Network','Account','Amount','Status','Date'];
+    data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.network||'',p.account||'',p.amount||0,p.status||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);
+  } else if(type==='subscriptions'){
+    const {data:d}=await sb.from('subscriptions').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));
+    data=d||[];filename='blakkstone-subscriptions.csv';
+    headers=['Account ID','Artist','Plan','Billing','USD','GHS','Ref','Status','Date'];
+    data=data.map(s=>[s.profiles?.account_id||'',s.profiles?.artist_name||'',s.plan||'',s.billing_cycle||'',s.amount_usd||0,s.amount_ghs||0,s.paystack_ref||'',s.status||'',s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'']);
+  }
+  const csv=[headers,...data].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+  toast('Exported '+filename,'ok');
+}
+
+function exportArtistsCSV(){exportCSV('artists');}
+function exportPayoutsCSV(){exportCSV('payouts');}
+
 async function updateStatus(id,status,sel){
   await sb.from('releases').update({status}).eq('id',id);
-  if(sel){const colors={pending:'color:#b7791f',review:'color:var(--info)',live:'color:var(--success)',rejected:'color:var(--danger)'};sel.style.cssText=colors[status]||'';}
+  if(sel){const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171'};sel.style.cssText=sc[status]||'';}
   toast('Status updated','ok');loadReleases();loadAdminStats();
 }
 async function updateField(id,field,value){
