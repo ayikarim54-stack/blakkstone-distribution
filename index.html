@@ -1635,21 +1635,20 @@ async function doPaystack(){
       btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';
       return;
     }
-    const handler=PaystackPop.newTransaction({
-      key:PK,email,amount:pesewas,currency:'GHS',
-      ref:'BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+    const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    const handler=PaystackPop.setup({
+      key:PK,email,amount:pesewas,currency:'GHS',ref,
       metadata:{plan:selectedPlan,billing_cycle:billing},
-      onSuccess:async function(response){
+      callback:async function(response){
         try{
           if(user){
             await sb.from('profiles').update({plan:selectedPlan}).eq('id',user.id);
             if(profile)profile.plan=selectedPlan;
           }
-          // Log subscription in DB
           await sb.from('subscriptions').insert({
             user_id:user?.id,plan:selectedPlan,billing_cycle:billing,
             amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),
-            paystack_ref:response.reference,status:'active'
+            paystack_ref:response.reference||ref,status:'active'
           }).catch(()=>{});
           const upgradeNav=document.getElementById('upgrade-nav');
           if(upgradeNav) upgradeNav.style.display='none';
@@ -1659,7 +1658,7 @@ async function doPaystack(){
           closePaystack();
         }catch(e){console.error('Post-payment error:',e);toast('Plan activated! Refresh if dashboard does not update.','ok');closePaystack();}
       },
-      onCancel:function(){toast('Payment cancelled');}
+      onClose:function(){toast('Payment cancelled');}
     });
   }catch(e){
     console.error('Paystack error:',e);
