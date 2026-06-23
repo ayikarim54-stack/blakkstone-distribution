@@ -986,10 +986,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <!-- QUICK ACTIONS -->
       <div class="quick-actions">
-        <div class="qa-btn" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-upload"></i> New Release</div>
         <div class="qa-btn" onclick="goPage('payout',document.querySelectorAll('.tnav-item')[6])"><i class="ti ti-wallet"></i> Request Payout</div>
         <div class="qa-btn" onclick="goPage('analytics',document.querySelectorAll('.tnav-item')[5])"><i class="ti ti-chart-bar"></i> View Analytics</div>
         <div class="qa-btn" onclick="goPage('royalties',document.querySelectorAll('.tnav-item')[4])"><i class="ti ti-coin"></i> Royalties</div>
+        <div class="qa-btn" onclick="goPage('releases',document.querySelectorAll('.tnav-item')[1])"><i class="ti ti-music"></i> My Music</div>
         <div class="qa-btn" onclick="goPage('profile',document.querySelectorAll('.tnav-item')[8])"><i class="ti ti-user"></i> Edit Profile</div>
       </div>
       <!-- COLOURFUL STAT CARDS -->
@@ -2031,9 +2031,8 @@ async function loadReleases(){
   // Overview grid
   const grid=document.getElementById('ov-releases-grid');
   if(grid){
-    const newCard=`<div class="rg-new" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i><span>New Release</span></div>`;
-    const cards=releases.slice(0,7).map(r=>releaseGridCard(r)).join('');
-    grid.innerHTML=newCard+cards;
+    const cards=releases.slice(0,8).map(r=>releaseGridCard(r)).join('');
+    grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet. Hit <strong>Create Release</strong> to get started.</p></div>';
   }
   // Releases list
   renderReleasesList(releases,'all');
