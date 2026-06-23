@@ -685,38 +685,101 @@ tr:hover td{background:var(--off)}
 
     <!-- ADMIN -->
     <div class="page" id="page-admin">
-      <div class="ph"><div><h1>Admin Panel</h1><p>Manage all submissions and artist data.</p></div></div>
-      <div class="admin-tabs">
-        <div class="atab active" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
-        <div class="atab" onclick="switchAdminTab('users',this)"><i class="ti ti-users"></i> Artists</div>
-        <div class="atab" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts</div>
+      <div class="ph">
+        <div><h1>Admin Panel</h1><p>Manage submissions, artists, payouts and messages.</p></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="position:relative">
+            <button class="btn btn-ghost btn-sm" onclick="switchAdminTab('notifications',document.getElementById('atab-notif'))"><i class="ti ti-bell"></i> Notifications <span id="notif-badge" style="display:none;background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px">0</span></button>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="refreshAdmin()"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
       </div>
+      <!-- ADMIN STATS -->
+      <div class="sg" style="margin-bottom:1.5rem">
+        <div class="sc"><div class="sc-label">Total Artists</div><div class="sc-val accent" id="adm-artists">—</div></div>
+        <div class="sc"><div class="sc-label">Total Releases</div><div class="sc-val accent" id="adm-releases">—</div></div>
+        <div class="sc"><div class="sc-label">Pending Releases</div><div class="sc-val" id="adm-pending" style="color:var(--danger)">—</div></div>
+        <div class="sc"><div class="sc-label">Pending Payouts</div><div class="sc-val" id="adm-payouts" style="color:var(--danger)">—</div></div>
+        <div class="sc"><div class="sc-label">Paid Plans</div><div class="sc-val accent" id="adm-paid">—</div></div>
+        <div class="sc"><div class="sc-label">Messages</div><div class="sc-val" id="adm-msgs" style="color:var(--info)">—</div></div>
+      </div>
+      <div class="admin-tabs">
+        <div class="atab active" id="atab-releases" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
+        <div class="atab" id="atab-users" onclick="switchAdminTab('users',this)"><i class="ti ti-users"></i> Artists</div>
+        <div class="atab" id="atab-payouts" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts <span id="payout-alert" style="display:none;background:var(--danger);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:4px">!</span></div>
+        <div class="atab" id="atab-subs" onclick="switchAdminTab('subs',this)"><i class="ti ti-crown"></i> Subscriptions</div>
+        <div class="atab" id="atab-messages" onclick="switchAdminTab('messages',this)"><i class="ti ti-message"></i> Messages <span id="msg-alert" style="display:none;background:var(--info);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:4px">!</span></div>
+        <div class="atab" id="atab-notif" onclick="switchAdminTab('notifications',this)"><i class="ti ti-bell"></i> Notifications</div>
+      </div>
+
       <!-- RELEASES TAB -->
       <div class="admin-section active" id="admin-releases">
+        <div style="display:flex;gap:8px;margin-bottom:.875rem;flex-wrap:wrap">
+          <input id="rel-search" type="text" placeholder="Search by title or artist..." style="flex:1;min-width:200px;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;font-family:Inter,sans-serif;outline:none" oninput="filterReleases()" />
+          <select id="rel-status-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterReleases()">
+            <option value="">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="review">In Review</option>
+            <option value="live">Live</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
         <div class="tw">
           <table>
-            <thead><tr><th>Artist</th><th>Title</th><th>Genre</th><th>Date Submitted</th><th>Status</th><th>Streams</th><th>Earnings($)</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Artist</th><th>Title</th><th>Genre</th><th>Submitted</th><th>Release Date</th><th>Status</th><th>Streams</th><th>Earnings($)</th><th>Notes</th><th>Actions</th></tr></thead>
             <tbody id="admin-tbody"></tbody>
           </table>
         </div>
       </div>
+
       <!-- ARTISTS TAB -->
       <div class="admin-section" id="admin-users">
+        <div style="display:flex;gap:8px;margin-bottom:.875rem">
+          <input id="user-search" type="text" placeholder="Search by name or email..." style="flex:1;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;font-family:Inter,sans-serif;outline:none" oninput="filterUsers()" />
+        </div>
         <div class="tw">
           <table>
-            <thead><tr><th>Artist Name</th><th>Email</th><th>Plan</th><th>Releases</th><th>Joined</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Artist</th><th>Email</th><th>Plan</th><th>Releases</th><th>Total Earnings</th><th>Joined</th><th>Actions</th></tr></thead>
             <tbody id="admin-users-tbody"></tbody>
           </table>
         </div>
       </div>
+
       <!-- PAYOUTS TAB -->
       <div class="admin-section" id="admin-payouts">
+        <div id="payout-pending-notice"></div>
         <div class="tw">
           <table>
-            <thead><tr><th>Artist</th><th>Method</th><th>Account</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+            <thead><tr><th>Artist</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
             <tbody id="admin-payouts-tbody"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- SUBSCRIPTIONS TAB -->
+      <div class="admin-section" id="admin-subs">
+        <div class="tw">
+          <table>
+            <thead><tr><th>Artist</th><th>Plan</th><th>Billing</th><th>Amount (USD)</th><th>Amount (GHS)</th><th>Paystack Ref</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="admin-subs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MESSAGES TAB -->
+      <div class="admin-section" id="admin-messages">
+        <div id="messages-list"></div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-top:1rem">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:.75rem">Send message to an artist</div>
+          <div class="fg"><label>Artist Email</label><input id="msg-to" type="email" placeholder="artist@email.com"></div>
+          <div class="fg"><label>Message</label><textarea id="msg-body" placeholder="Type your message..." style="min-height:100px"></textarea></div>
+          <button class="btn btn-gold" onclick="sendAdminMessage()"><i class="ti ti-send"></i> Send Message</button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS TAB -->
+      <div class="admin-section" id="admin-notifications">
+        <div id="notifications-list"></div>
       </div>
     </div>
   </div>
@@ -875,7 +938,7 @@ function enterDashboard(){
     showView('dashboard');
     goPage('overview',document.querySelector('.tnav-item'));
     loadReleases();
-    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();}
+    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();}
   }catch(e){
     console.error('enterDashboard error:',e);
     // Force show dashboard even if something else failed
@@ -924,7 +987,7 @@ function goPage(id,el){
   if(id==='royalties')loadRoyalties();
   if(id==='payout')loadPayout();
   if(id==='artists')loadArtists();
-  if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();}
+  if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();}
 }
 
 // ── RELEASES ──────────────────────────────────────────
@@ -1197,100 +1260,311 @@ async function uploadAvatar(input){
 }
 
 // ── ADMIN ─────────────────────────────────────────────
+let allReleasesCache=[], allUsersCache=[];
+
 function switchAdminTab(tab,el){
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
   document.getElementById('admin-'+tab).classList.add('active');
-  el.classList.add('active');
+  if(el) el.classList.add('active');
+}
+
+function refreshAdmin(){
+  loadAdminReleases();loadAdminUsers();loadAdminPayouts();
+  loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();
+  toast('Admin data refreshed','ok');
+}
+
+async function loadAdminStats(){
+  try{
+    const [{data:profiles},{data:releases},{data:payouts}]=await Promise.all([
+      sb.from('profiles').select('id,plan'),
+      sb.from('releases').select('id,status'),
+      sb.from('payouts').select('id,status').catch(()=>({data:[]}))
+    ]);
+    const artists=(profiles||[]).length;
+    const totalRel=(releases||[]).length;
+    const pendingRel=(releases||[]).filter(r=>r.status==='pending').length;
+    const pendingPay=(payouts||[]).filter(p=>p.status==='pending').length;
+    const paid=(profiles||[]).filter(p=>p.plan==='artist_plus'||p.plan==='label').length;
+    const el=id=>document.getElementById(id);
+    if(el('adm-artists')) el('adm-artists').textContent=artists;
+    if(el('adm-releases')) el('adm-releases').textContent=totalRel;
+    if(el('adm-pending')) el('adm-pending').textContent=pendingRel;
+    if(el('adm-payouts')) el('adm-payouts').textContent=pendingPay;
+    if(el('adm-paid')) el('adm-paid').textContent=paid;
+    // Show alert badges
+    const pa=el('payout-alert');if(pa) pa.style.display=pendingPay>0?'inline':'none';
+    if(pa) pa.textContent=pendingPay;
+    // Payout notice banner
+    const notice=el('payout-pending-notice');
+    if(notice&&pendingPay>0) notice.innerHTML=`<div style="background:#fff8e6;border:1px solid #e6d090;border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:var(--gd);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><span><i class="ti ti-alert-circle"></i> <strong>${pendingPay} payout request${pendingPay>1?'s':''}</strong> waiting for your action</span><button class="btn btn-ghost btn-sm" onclick="switchAdminTab('payouts',document.getElementById('atab-payouts'))">View Payouts</button></div>`;
+    else if(notice) notice.innerHTML='';
+  }catch(e){}
 }
 
 async function loadAdminReleases(){
   const tbody=document.getElementById('admin-tbody');
-  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
+  if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
   const {data,error}=await sb.from('releases').select('*, profiles(full_name,artist_name,email)').order('submitted_at',{ascending:false});
-  if(error||!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">No submissions yet.</td></tr>';return;}
+  if(error||!data||!data.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:1.5rem">No submissions yet.</td></tr>';return;}
+  allReleasesCache=data;
+  renderAdminReleases(data);
+}
+
+function renderAdminReleases(data){
+  const tbody=document.getElementById('admin-tbody');
+  if(!data.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:1.5rem">No results.</td></tr>';return;}
   tbody.innerHTML=data.map(r=>{
     const pName=r.profiles?.artist_name||r.profiles?.full_name||'—';
     const sub=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
-    const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:32px;height:32px;border-radius:5px;object-fit:cover;margin-right:6px;vertical-align:middle">`:'';
+    const rd=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB'):'—';
+    const art=r.artwork_url?`<img src="${r.artwork_url}" alt="" style="width:32px;height:32px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:6px">`:'';
+    const statusColor={pending:'color:#b7791f',review:'color:var(--info)',live:'color:var(--success)',rejected:'color:var(--danger)'}[r.status]||'';
     return `<tr>
-      <td>${esc(pName)}</td>
-      <td>${art}${esc(r.title)}</td>
-      <td style="color:var(--muted)">${esc(r.genre||'')}</td>
-      <td style="color:var(--muted)">${sub}</td>
-      <td><select class="stsel" onchange="updateStatus('${r.id}',this.value)">
+      <td style="font-weight:600;white-space:nowrap">${esc(pName)}</td>
+      <td style="white-space:nowrap">${art}${esc(r.title)}</td>
+      <td style="color:var(--muted);font-size:12px">${esc(r.genre||'')}</td>
+      <td style="color:var(--muted);font-size:12px;white-space:nowrap">${sub}</td>
+      <td style="color:var(--muted);font-size:12px;white-space:nowrap">${rd}</td>
+      <td><select class="stsel" style="${statusColor}" onchange="updateStatus('${r.id}',this.value,this)">
         <option value="pending" ${r.status==='pending'?'selected':''}>Pending</option>
         <option value="review" ${r.status==='review'?'selected':''}>In Review</option>
         <option value="live" ${r.status==='live'?'selected':''}>Live</option>
         <option value="rejected" ${r.status==='rejected'?'selected':''}>Rejected</option>
       </select></td>
-      <td><input type="number" class="num-in" value="${r.streams||0}" min="0" onchange="updateField('${r.id}','streams',this.value)"></td>
-      <td><input type="number" class="num-in" value="${r.earnings||0}" min="0" step="0.01" onchange="updateField('${r.id}','earnings',this.value)"></td>
-      <td><button class="btn-danger-outline" onclick="deleteRelease('${r.id}')"><i class="ti ti-trash"></i></button></td>
+      <td><input type="number" class="num-in" value="${r.streams||0}" min="0" title="Streams" onchange="updateField('${r.id}','streams',this.value)"></td>
+      <td><input type="number" class="num-in" value="${r.earnings||0}" min="0" step="0.01" title="Earnings in USD" onchange="updateField('${r.id}','earnings',this.value)"></td>
+      <td style="font-size:11px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes||'')}">${r.notes?esc(r.notes.slice(0,40))+(r.notes.length>40?'…':''):'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" style="margin-right:4px" onclick="openArtistModal('${r.user_id}','${esc(pName)}')"><i class="ti ti-eye"></i></button>
+        <button class="btn-danger-outline" onclick="deleteRelease('${r.id}')"><i class="ti ti-trash"></i></button>
+      </td>
     </tr>`;
   }).join('');
 }
 
+function filterReleases(){
+  const q=(document.getElementById('rel-search')?.value||'').toLowerCase();
+  const st=document.getElementById('rel-status-filter')?.value||'';
+  let data=allReleasesCache;
+  if(q) data=data.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q)||((r.profiles?.artist_name||r.profiles?.full_name||'')).toLowerCase().includes(q));
+  if(st) data=data.filter(r=>r.status===st);
+  renderAdminReleases(data);
+}
+
 async function loadAdminUsers(){
   const tbody=document.getElementById('admin-users-tbody');
-  tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
+  if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
   const {data}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
-  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.5rem">No artists yet.</td></tr>';return;}
-  // get release counts
-  const {data:allRel}=await sb.from('releases').select('user_id');
-  const relCount={};
-  (allRel||[]).forEach(r=>{relCount[r.user_id]=(relCount[r.user_id]||0)+1;});
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">No artists yet.</td></tr>';return;}
+  const {data:allRel}=await sb.from('releases').select('user_id,earnings');
+  const relCount={};const relEarn={};
+  (allRel||[]).forEach(r=>{relCount[r.user_id]=(relCount[r.user_id]||0)+1;relEarn[r.user_id]=(relEarn[r.user_id]||0)+(r.earnings||0);});
+  allUsersCache=data;
+  renderAdminUsers(data,relCount,relEarn);
+}
+
+function renderAdminUsers(data,relCount,relEarn){
+  const tbody=document.getElementById('admin-users-tbody');
+  if(!tbody)return;
+  if(!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">No results.</td></tr>';return;}
   tbody.innerHTML=data.map(p=>{
     const name=p.artist_name||p.full_name||p.email;
-    const pill=p.plan==='admin'?'pp-admin':p.plan==='label'?'pp-label':p.plan==='artist_plus'?'pp-label':'pp-solo';
     const planLabel=p.plan==='admin'?'Admin':p.plan==='label'?'Label':p.plan==='artist_plus'?'Artist+':'Solo';
+    const planColor=p.plan==='admin'?'color:var(--info)':p.plan==='label'||p.plan==='artist_plus'?'color:var(--gd)':'color:var(--muted)';
     const joined=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+    const earn=relEarn[p.id]||0;
     return `<tr>
       <td style="font-weight:600">${esc(name)}</td>
-      <td style="color:var(--muted)">${esc(p.email||'')}</td>
-      <td><select class="stsel" onchange="updateUserPlan('${p.id}',this.value)">
+      <td style="color:var(--muted);font-size:12px">${esc(p.email||'')}</td>
+      <td><select class="stsel" style="${planColor};font-weight:600" onchange="updateUserPlan('${p.id}',this.value)">
         <option value="solo" ${p.plan==='solo'?'selected':''}>Solo</option>
         <option value="artist_plus" ${p.plan==='artist_plus'?'selected':''}>Artist+</option>
         <option value="label" ${p.plan==='label'?'selected':''}>Label</option>
         <option value="admin" ${p.plan==='admin'?'selected':''}>Admin</option>
       </select></td>
-      <td>${relCount[p.id]||0}</td>
-      <td style="color:var(--muted)">${joined}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="openArtistModal('${p.id}','${esc(name)}')"><i class="ti ti-eye"></i> View</button></td>
+      <td style="text-align:center">${relCount[p.id]||0}</td>
+      <td style="color:var(--gd);font-weight:600">$${earn.toFixed(2)}</td>
+      <td style="color:var(--muted);font-size:12px">${joined}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" style="margin-right:4px" onclick="openArtistModal('${p.id}','${esc(name)}')"><i class="ti ti-eye"></i> View</button>
+        <button class="btn btn-ghost btn-sm" onclick="openMsgTo('${esc(p.email||'')}')"><i class="ti ti-message"></i></button>
+      </td>
     </tr>`;
   }).join('');
 }
 
+function filterUsers(){
+  const q=(document.getElementById('user-search')?.value||'').toLowerCase();
+  if(!q){renderAdminUsers(allUsersCache,{},{});loadAdminUsers();return;}
+  const data=allUsersCache.filter(p=>
+    (p.artist_name||'').toLowerCase().includes(q)||
+    (p.full_name||'').toLowerCase().includes(q)||
+    (p.email||'').toLowerCase().includes(q)
+  );
+  renderAdminUsers(data,{},{});
+}
+
 async function loadAdminPayouts(){
   const tbody=document.getElementById('admin-payouts-tbody');
-  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
+  if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
   try{
     const {data}=await sb.from('payouts').select('*, profiles(artist_name,full_name,email)').order('created_at',{ascending:false});
-    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">No payout requests yet.</td></tr>';return;}
+    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">No payout requests yet.</td></tr>';return;}
+    const pending=data.filter(p=>p.status==='pending').length;
+    const notice=document.getElementById('payout-pending-notice');
+    if(notice&&pending>0) notice.innerHTML=`<div style="background:#fff8e6;border:1px solid #e6d090;border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:var(--gd);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><span><i class="ti ti-alert-circle"></i> <strong>${pending} pending payout${pending>1?'s':''}</strong> need processing</span></div>`;
+    else if(notice) notice.innerHTML='';
     tbody.innerHTML=data.map(p=>{
       const name=p.profiles?.artist_name||p.profiles?.full_name||p.profiles?.email||'—';
       const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+      const stColor={pending:'color:var(--danger)',processing:'color:var(--info)',paid:'color:var(--success)',failed:'color:var(--muted)'}[p.status]||'';
       return `<tr>
         <td style="font-weight:600">${esc(name)}</td>
-        <td>${p.method==='momo'?'📱 MoMo':'🏦 Bank'} ${p.network?'('+p.network+')':''}</td>
-        <td style="color:var(--muted);font-size:12px">${esc(p.account||'')}</td>
+        <td>${p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer'}</td>
+        <td style="color:var(--muted)">${esc(p.network||'—')}</td>
+        <td style="font-size:12px;color:var(--muted);max-width:160px">${esc(p.account||'—')}</td>
         <td style="font-weight:700;color:var(--gd)">$${parseFloat(p.amount||0).toFixed(2)}</td>
-        <td><select class="stsel" onchange="updatePayoutStatus('${p.id}',this.value)">
+        <td><select class="stsel" style="${stColor};font-weight:600" onchange="updatePayoutStatus('${p.id}',this.value)">
           <option value="pending" ${p.status==='pending'?'selected':''}>Pending</option>
           <option value="processing" ${p.status==='processing'?'selected':''}>Processing</option>
-          <option value="paid" ${p.status==='paid'?'selected':''}>Paid</option>
+          <option value="paid" ${p.status==='paid'?'selected':''}>Paid ✓</option>
           <option value="failed" ${p.status==='failed'?'selected':''}>Failed</option>
         </select></td>
-        <td style="color:var(--muted)">${d}</td>
+        <td style="color:var(--muted);font-size:12px">${d}</td>
         <td><button class="btn-danger-outline" onclick="deletePayout('${p.id}')"><i class="ti ti-trash"></i></button></td>
       </tr>`;
     }).join('');
-  }catch(e){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">Run payouts SQL to enable this table.</td></tr>';}
+  }catch(e){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">Run payouts SQL in Supabase first.</td></tr>';}
 }
 
-async function updateStatus(id,status){
+async function loadAdminSubs(){
+  const tbody=document.getElementById('admin-subs-tbody');
+  if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
+  try{
+    const {data}=await sb.from('subscriptions').select('*, profiles(artist_name,full_name,email)').order('created_at',{ascending:false});
+    const el=document.getElementById('adm-msgs');
+    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">No subscriptions yet.</td></tr>';return;}
+    tbody.innerHTML=data.map(s=>{
+      const name=s.profiles?.artist_name||s.profiles?.full_name||s.profiles?.email||'—';
+      const d=s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'—';
+      const planLabel=s.plan==='artist_plus'?'Artist+':s.plan==='label'?'Label':s.plan;
+      return `<tr>
+        <td style="font-weight:600">${esc(name)}</td>
+        <td style="color:var(--gd);font-weight:600">${planLabel}</td>
+        <td style="color:var(--muted)">${s.billing_cycle||'monthly'}</td>
+        <td style="font-weight:600">$${parseFloat(s.amount_usd||0).toFixed(2)}</td>
+        <td style="color:var(--muted)">GHS ${parseFloat(s.amount_ghs||0).toFixed(2)}</td>
+        <td style="font-size:11px;color:var(--muted);font-family:monospace">${esc(s.paystack_ref||'—')}</td>
+        <td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${s.status==='active'?'#f0fff4':'#f5f5f5'};color:${s.status==='active'?'var(--success)':'var(--muted)'}">${s.status||'active'}</span></td>
+        <td style="color:var(--muted);font-size:12px">${d}</td>
+      </tr>`;
+    }).join('');
+  }catch(e){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">Run subscriptions SQL in Supabase first.</td></tr>';}
+}
+
+async function loadAdminMessages(){
+  const container=document.getElementById('messages-list');
+  if(!container)return;
+  try{
+    const {data}=await sb.from('messages').select('*, profiles!messages_from_id_fkey(artist_name,full_name,email)').order('created_at',{ascending:false}).limit(50);
+    const unread=(data||[]).filter(m=>!m.read_at&&m.direction==='in').length;
+    const msgCount=document.getElementById('adm-msgs');
+    if(msgCount) msgCount.textContent=unread||0;
+    const msgAlert=document.getElementById('msg-alert');
+    if(msgAlert){msgAlert.style.display=unread>0?'inline':'none';msgAlert.textContent=unread;}
+    if(!data||!data.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
+    container.innerHTML=data.map(m=>{
+      const name=m.profiles?.artist_name||m.profiles?.full_name||m.profiles?.email||'Unknown';
+      const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';
+      const isIn=m.direction==='in';
+      return `<div style="background:#fff;border:1px solid var(--border);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px;${!m.read_at&&isIn?'border-left:3px solid var(--gold)':''}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+          <div style="font-size:13px;font-weight:600">${isIn?'📨 From: '+esc(name):'📤 To: '+esc(m.to_email||'')}</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:11px;color:var(--muted)">${d}</span>
+            ${isIn&&!m.read_at?`<button class="btn btn-ghost btn-sm" onclick="markRead('${m.id}')">Mark read</button>`:''}
+            ${isIn?`<button class="btn btn-gold btn-sm" onclick="openMsgTo('${esc(m.from_email||'')}')"><i class="ti ti-corner-up-left"></i> Reply</button>`:''}
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6">${esc(m.body||'')}</div>
+      </div>`;
+    }).join('');
+  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>Run messages SQL to enable this feature.</p></div>';}
+}
+
+async function loadNotifications(){
+  const container=document.getElementById('notifications-list');
+  if(!container)return;
+  try{
+    const [{data:payouts},{data:releases}]=await Promise.all([
+      sb.from('payouts').select('*, profiles(artist_name,full_name)').eq('status','pending').order('created_at',{ascending:false}),
+      sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false})
+    ]);
+    const total=(payouts?.length||0)+(releases?.length||0);
+    const badge=document.getElementById('notif-badge');
+    if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
+    let html='';
+    if(payouts?.length){
+      html+=`<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.5rem;margin-top:1rem">💸 Pending Payout Requests (${payouts.length})</div>`;
+      html+=payouts.map(p=>{
+        const name=p.profiles?.artist_name||p.profiles?.full_name||'—';
+        const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+        return `<div style="background:#fff8e6;border:1px solid #e6d090;border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600">${esc(name)} requested a payout</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${p.method==='momo'?'📱 '+p.network+' MoMo':'🏦 Bank Transfer'} — $${parseFloat(p.amount||0).toFixed(2)} · ${d}</div></div>
+          <button class="btn btn-gold btn-sm" onclick="switchAdminTab('payouts',document.getElementById('atab-payouts'));"><i class="ti ti-arrow-right"></i> Process</button>
+        </div>`;
+      }).join('');
+    }
+    if(releases?.length){
+      html+=`<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.5rem;margin-top:1rem">🎵 Pending Release Submissions (${releases.length})</div>`;
+      html+=releases.map(r=>{
+        const name=r.profiles?.artist_name||r.profiles?.full_name||'—';
+        const d=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
+        return `<div style="background:#fff;border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600">${esc(name)} submitted "${esc(r.title)}"</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${esc(r.genre||'')} · ${d}</div></div>
+          <button class="btn btn-ghost btn-sm" onclick="switchAdminTab('releases',document.getElementById('atab-releases'))"><i class="ti ti-arrow-right"></i> Review</button>
+        </div>`;
+      }).join('');
+    }
+    if(!html) html='<div class="empty"><i class="ti ti-check"></i><p>All caught up! No pending actions.</p></div>';
+    container.innerHTML=html;
+  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-bell-off"></i><p>Unable to load notifications.</p></div>';}
+}
+
+function openMsgTo(email){
+  const inp=document.getElementById('msg-to');
+  if(inp) inp.value=email;
+  switchAdminTab('messages',document.getElementById('atab-messages'));
+}
+
+async function markRead(id){
+  await sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',id);
+  toast('Marked as read','ok');
+  loadAdminMessages();
+}
+
+async function sendAdminMessage(){
+  const to=document.getElementById('msg-to').value.trim();
+  const body=document.getElementById('msg-body').value.trim();
+  if(!to||!body){toast('Fill in email and message','err');return;}
+  try{
+    await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,body,direction:'out',read_at:new Date().toISOString()});
+    document.getElementById('msg-body').value='';
+    toast('Message sent to '+to,'ok');
+    loadAdminMessages();
+  }catch(e){toast('Run messages SQL first','err');}
+}
+
+async function updateStatus(id,status,sel){
   await sb.from('releases').update({status}).eq('id',id);
-  toast('Status updated','ok');loadReleases();
+  if(sel){const colors={pending:'color:#b7791f',review:'color:var(--info)',live:'color:var(--success)',rejected:'color:var(--danger)'};sel.style.cssText=colors[status]||'';}
+  toast('Status updated','ok');loadReleases();loadAdminStats();
 }
 async function updateField(id,field,value){
   const val=field==='earnings'?parseFloat(value)||0:parseInt(value)||0;
@@ -1299,21 +1573,21 @@ async function updateField(id,field,value){
 }
 async function updateUserPlan(id,plan){
   await sb.from('profiles').update({plan}).eq('id',id);
-  toast('Plan updated','ok');
+  toast('Plan updated','ok');loadAdminStats();
 }
 async function updatePayoutStatus(id,status){
   await sb.from('payouts').update({status}).eq('id',id);
-  toast('Payout status updated','ok');
+  toast('Payout status updated','ok');loadAdminStats();
 }
 async function deleteRelease(id){
   if(!confirm('Remove this release?'))return;
   await sb.from('releases').delete().eq('id',id);
-  toast('Release removed');loadAdminReleases();loadReleases();
+  toast('Release removed');loadAdminReleases();loadReleases();loadAdminStats();
 }
 async function deletePayout(id){
   if(!confirm('Delete this payout request?'))return;
   await sb.from('payouts').delete().eq('id',id);
-  toast('Payout deleted');loadAdminPayouts();
+  toast('Payout deleted');loadAdminPayouts();loadAdminStats();
 }
 
 // ── PAYSTACK ──────────────────────────────────────────
@@ -1347,30 +1621,51 @@ function updateRateNote(){
   document.getElementById('rate-note').textContent=`≈ GHS ${ghs} at current rate. Charged in GHS via Paystack.`;
 }
 
-function doPaystack(){
+async function doPaystack(){
   const email=document.getElementById('pay-em').value.trim();
   if(!email){toast('Enter your email','err');return;}
   const p=PLANS[selectedPlan];
   const usd=billing==='monthly'?p.monthly:p.yearly;
   const pesewas=Math.round(usd*GHS_RATE*100);
-  if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your internet connection.','err');return;}
-  const handler=PaystackPop.setup({
-    key:PK,email,amount:pesewas,currency:'GHS',
-    metadata:{plan:selectedPlan,billing_cycle:billing},
-    callback:async function(response){
-      if(user){
-        await sb.from('profiles').update({plan:selectedPlan}).eq('id',user.id);
-        if(profile)profile.plan=selectedPlan;
-      }
-      document.getElementById('upgrade-nav').style.display='none';
-      updateUpgradePage(selectedPlan);
-      updateCommBar(true,false);
-      toast('Payment confirmed! '+p.label+' plan activated.','ok');
-      closePaystack();
-    },
-    onClose:function(){toast('Payment cancelled');}
-  });
-  handler.openIframe();
+  const btn=document.getElementById('pay-btn');
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
+  try{
+    if(typeof PaystackPop==='undefined'){
+      toast('Paystack failed to load. Check your connection and try again.','err');
+      btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';
+      return;
+    }
+    const handler=PaystackPop.newTransaction({
+      key:PK,email,amount:pesewas,currency:'GHS',
+      ref:'BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+      metadata:{plan:selectedPlan,billing_cycle:billing},
+      onSuccess:async function(response){
+        try{
+          if(user){
+            await sb.from('profiles').update({plan:selectedPlan}).eq('id',user.id);
+            if(profile)profile.plan=selectedPlan;
+          }
+          // Log subscription in DB
+          await sb.from('subscriptions').insert({
+            user_id:user?.id,plan:selectedPlan,billing_cycle:billing,
+            amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),
+            paystack_ref:response.reference,status:'active'
+          }).catch(()=>{});
+          const upgradeNav=document.getElementById('upgrade-nav');
+          if(upgradeNav) upgradeNav.style.display='none';
+          updateUpgradePage(selectedPlan);
+          updateCommBar(true,false);
+          toast('Payment confirmed! '+p.label+' plan activated.','ok');
+          closePaystack();
+        }catch(e){console.error('Post-payment error:',e);toast('Plan activated! Refresh if dashboard does not update.','ok');closePaystack();}
+      },
+      onCancel:function(){toast('Payment cancelled');}
+    });
+  }catch(e){
+    console.error('Paystack error:',e);
+    toast('Payment error: '+e.message,'err');
+  }
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';
 }
 
 // ── UTILS ─────────────────────────────────────────────
