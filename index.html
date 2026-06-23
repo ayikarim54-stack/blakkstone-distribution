@@ -985,7 +985,14 @@ function enterDashboard(){
     updateUpgradePage(profile?.plan);
     // Always show dashboard last — this is the critical step
     showView('dashboard');
-    goPage('overview',document.querySelector('.tnav-item'));
+    // Restore last visited page from URL hash
+    const validPages=['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','admin'];
+    const hashPage=window.location.hash.replace('#','');
+    const pageToLoad=validPages.includes(hashPage)?hashPage:'overview';
+    const allNavItems=document.querySelectorAll('.tnav-item');
+    let matchedNav=null;
+    allNavItems.forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+pageToLoad+"'"))matchedNav=n;});
+    goPage(pageToLoad,matchedNav||document.querySelector('.tnav-item'));
     loadReleases();
     if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){
@@ -1032,6 +1039,8 @@ function goPage(id,el){
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
   if(el)el.classList.add('active');
+  // Save to URL hash so refresh restores the page
+  window.location.hash=id;
   if(id==='analytics')loadAnalytics();
   if(id==='royalties')loadRoyalties();
   if(id==='payout')loadPayout();
