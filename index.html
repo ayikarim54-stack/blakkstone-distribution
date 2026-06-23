@@ -600,6 +600,14 @@ tr:hover td{background:var(--off)}
       <div class="pcard">
         <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.25rem">Available Balance</div>
         <div style="font-size:36px;font-weight:900;color:var(--gd);letter-spacing:-1px;margin-bottom:1.25rem" id="payout-balance">$0.00</div>
+        <div class="fg" style="max-width:260px;margin-bottom:1.25rem">
+          <label>Amount to Withdraw (USD)</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px;font-weight:700;color:var(--muted)">$</span>
+            <input id="withdraw-amount" type="number" min="1" step="0.01" placeholder="Enter amount" style="font-size:18px;font-weight:700">
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px">Min. $1.00 · Max is your available balance</div>
+        </div>
         <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:.875rem">Select payout method</div>
         <div class="pmethods">
           <div class="popt" id="opt-momo" onclick="selectPayout('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div><div class="popt-sub">MTN, Vodafone, AirtelTigo</div></div>
@@ -1280,6 +1288,16 @@ function selNet(net){
 
 async function submitPayout(){
   if(!payoutMethod){toast('Select a payout method','err');return;}
+  // Get user-entered amount
+  const withdrawInput=document.getElementById('withdraw-amount');
+  const requestedAmount=parseFloat(withdrawInput?.value||0);
+  if(!requestedAmount||requestedAmount<1){toast('Enter a valid withdrawal amount (min $1.00)','err');return;}
+  // Check against available balance
+  const {data:relData}=await sb.from('releases').select('earnings').eq('user_id',user.id);
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
+  const available=isPaid?gross:gross*(1-COMM);
+  if(requestedAmount>available){toast('Amount exceeds your available balance of $'+available.toFixed(2),'err');return;}
   let account='',network='';
   if(payoutMethod==='momo'){
     if(!momoNetwork){toast('Select a Mobile Money network','err');return;}
@@ -1294,18 +1312,24 @@ async function submitPayout(){
     if(!bank||!acc||!accName){toast('Fill in all bank fields','err');return;}
     account=accName+' — '+bank+' ('+acc+')';
   }
-  const {data}=await sb.from('releases').select('earnings').eq('user_id',user.id);
-  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
-  const gross=(data||[]).reduce((a,r)=>a+(r.earnings||0),0);
-  const amount=isPaid?gross:gross*(1-COMM);
-  if(amount<=0){toast('No balance available','err');return;}
   try{
-    await sb.from('payouts').insert({user_id:user.id,method:payoutMethod,network:network||null,account,amount,status:'pending'});
+    const {error}=await sb.from('payouts').insert({
+      user_id:user.id,
+      method:payoutMethod,
+      network:network||null,
+      account,
+      amount:requestedAmount,
+      status:'pending'
+    });
+    if(error) throw error;
+    if(withdrawInput) withdrawInput.value='';
     toast('Payout request submitted! Processing in 5–7 business days.','ok');
-    // Send email notification to admin via Supabase Edge Function (if configured)
-    sendPayoutNotificationEmail(amount, payoutMethod, network, account);
+    sendPayoutNotificationEmail(requestedAmount, payoutMethod, network, account);
     loadPayout();
-  }catch(e){toast('Payout failed — run payouts SQL in Supabase first.','err');}
+  }catch(e){
+    console.error('Payout error:',e);
+    toast('Payout failed: '+e.message,'err');
+  }
 }
 
 // Send admin email notification via Resend (configure RESEND_KEY below)
@@ -1555,33 +1579,53 @@ async function loadAdminPayouts(){
   if(!tbody)return;
   tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
   try{
-    const {data}=await sb.from('payouts').select('*, profiles(artist_name,full_name,email)').order('created_at',{ascending:false});
-    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">No payout requests yet.</td></tr>';return;}
-    const pending=data.filter(p=>p.status==='pending').length;
+    // Fetch all profiles first, then join manually (bypasses RLS cross-user restriction)
+    const [{data:payouts,error:pe},{data:profiles}]=await Promise.all([
+      sb.from('payouts').select('*').order('created_at',{ascending:false}),
+      sb.from('profiles').select('id,artist_name,full_name,email')
+    ]);
+    if(pe){
+      console.error('Payouts fetch error:',pe);
+      tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--danger);padding:1.5rem">Error: '+pe.message+'<br><small>Run the payouts SQL and admin policy SQL in Supabase.</small></td></tr>';
+      return;
+    }
+    if(!payouts||!payouts.length){
+      tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">No payout requests yet.</td></tr>';
+      return;
+    }
+    // Build profile lookup map
+    const profileMap={};
+    (profiles||[]).forEach(p=>{profileMap[p.id]=p;});
+    const pending=payouts.filter(p=>p.status==='pending').length;
     const notice=document.getElementById('payout-pending-notice');
     if(notice&&pending>0) notice.innerHTML=`<div style="background:#fff8e6;border:1px solid #e6d090;border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:var(--gd);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><span><i class="ti ti-alert-circle"></i> <strong>${pending} pending payout${pending>1?'s':''}</strong> need processing</span></div>`;
     else if(notice) notice.innerHTML='';
-    tbody.innerHTML=data.map(p=>{
-      const name=p.profiles?.artist_name||p.profiles?.full_name||p.profiles?.email||'—';
+    tbody.innerHTML=payouts.map(p=>{
+      const prof=profileMap[p.user_id]||{};
+      const name=prof.artist_name||prof.full_name||prof.email||'—';
       const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
-      const stColor={pending:'color:var(--danger)',processing:'color:var(--info)',paid:'color:var(--success)',failed:'color:var(--muted)'}[p.status]||'';
+      const stColor={pending:'color:var(--danger)',processing:'color:var(--info)',paid:'color:var(--success)',failed:'color:var(--muted)',cancelled:'color:var(--muted)'}[p.status]||'';
       return `<tr>
-        <td style="font-weight:600">${esc(name)}</td>
+        <td style="font-weight:600">${esc(name)}<br><span style="font-size:11px;color:var(--muted);font-weight:400">${esc(prof.email||'')}</span></td>
         <td>${p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer'}</td>
         <td style="color:var(--muted)">${esc(p.network||'—')}</td>
         <td style="font-size:12px;color:var(--muted);max-width:160px">${esc(p.account||'—')}</td>
-        <td style="font-weight:700;color:var(--gd)">$${parseFloat(p.amount||0).toFixed(2)}</td>
+        <td style="font-weight:700;color:var(--gd);font-size:16px">$${parseFloat(p.amount||0).toFixed(2)}</td>
         <td><select class="stsel" style="${stColor};font-weight:600" onchange="updatePayoutStatus('${p.id}',this.value)">
-          <option value="pending" ${p.status==='pending'?'selected':''}>Pending</option>
-          <option value="processing" ${p.status==='processing'?'selected':''}>Processing</option>
-          <option value="paid" ${p.status==='paid'?'selected':''}>Paid ✓</option>
-          <option value="failed" ${p.status==='failed'?'selected':''}>Failed</option>
+          <option value="pending" ${p.status==='pending'?'selected':''}>⏳ Pending</option>
+          <option value="processing" ${p.status==='processing'?'selected':''}>🔄 Processing</option>
+          <option value="paid" ${p.status==='paid'?'selected':''}>✅ Paid</option>
+          <option value="failed" ${p.status==='failed'?'selected':''}>❌ Failed</option>
+          <option value="cancelled" ${p.status==='cancelled'?'selected':''}>🚫 Cancelled</option>
         </select></td>
         <td style="color:var(--muted);font-size:12px">${d}</td>
         <td><button class="btn-danger-outline" onclick="deletePayout('${p.id}')"><i class="ti ti-trash"></i></button></td>
       </tr>`;
     }).join('');
-  }catch(e){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">Run payouts SQL in Supabase first.</td></tr>';}
+  }catch(e){
+    console.error('loadAdminPayouts error:',e);
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--danger);padding:1.5rem">'+e.message+'</td></tr>';
+  }
 }
 
 async function loadAdminSubs(){
