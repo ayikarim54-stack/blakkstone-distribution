@@ -349,6 +349,46 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .rar-body{grid-template-columns:1fr 1fr}.overview-cards{grid-template-columns:1fr 1fr}
   .dash-topnav-links{gap:0}.tnav-item{padding:8px 10px;font-size:12px}
 }
+
+/* ── WIZARD ── */
+.wizard-step{display:flex;align-items:center;gap:8px;padding:1rem 1.25rem;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap}
+.wizard-step.active{border-bottom-color:#7c3aed}
+.wizard-step.done{border-bottom-color:#10b981}
+.ws-num{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:rgba(255,255,255,.4);flex-shrink:0}
+.wizard-step.active .ws-num{background:#7c3aed;color:#fff}
+.wizard-step.done .ws-num{background:#10b981;color:#fff}
+.ws-label{font-size:13px;font-weight:500;color:rgba(255,255,255,.35)}
+.wizard-step.active .ws-label{color:#a78bfa;font-weight:600}
+.wizard-step.done .ws-label{color:#34d399}
+.ws-line{flex:1;height:2px;background:rgba(255,255,255,.08);margin:0 4px;align-self:center}
+.ws-line.done{background:#10b981}
+.wizard-panel{display:none}
+.wizard-panel.active{display:block}
+.wiz-drop-zone{border:2px dashed rgba(255,255,255,.15);border-radius:16px;padding:4rem 2rem;cursor:pointer;background:#1e1e35;transition:all .2s}
+.wiz-drop-zone:hover,.wiz-drop-zone.drag-over{border-color:#7c3aed;background:rgba(124,58,237,.08)}
+.track-item{background:#1e1e35;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;margin-bottom:8px}
+.track-num{width:28px;height:28px;border-radius:6px;background:rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#a78bfa;flex-shrink:0}
+.track-name{flex:1;font-size:13px;font-weight:500;color:#fff}
+.track-size{font-size:11px;color:rgba(255,255,255,.3)}
+.track-remove{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:18px;line-height:1;padding:0}
+.track-remove:hover{color:#ef4444}
+.track-isrc{background:#131320;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;width:140px}
+.wiz-toggle{padding:7px 20px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
+.wiz-toggle.active{background:#7c3aed;border-color:#7c3aed;color:#fff}
+.store-chip{background:#131320;border:1.5px solid rgba(255,255,255,.08);border-radius:10px;padding:.625rem .875rem;display:flex;align-items:center;gap:.625rem;cursor:pointer;transition:all .15s}
+.store-chip:hover{border-color:rgba(124,58,237,.4)}
+.store-chip.selected{border-color:#7c3aed;background:rgba(124,58,237,.1)}
+.store-chip-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.store-chip-name{font-size:12px;font-weight:500;color:rgba(255,255,255,.7);flex:1}
+.store-chip-check{width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.store-chip.selected .store-chip-check{background:#7c3aed;border-color:#7c3aed}
+.store-chip.selected .store-chip-check::after{content:'✓';font-size:9px;color:#fff;font-weight:700}
+.store-filter-btn{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
+.store-filter-btn.active{background:rgba(124,58,237,.2);border-color:#7c3aed;color:#a78bfa}
+.review-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.review-row:last-child{border-bottom:none}
+.review-label{color:rgba(255,255,255,.35)}
+.review-val{color:#fff;font-weight:500;text-align:right;max-width:60%}
 </style>
 </head>
 <body>
@@ -538,7 +578,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <div class="view" id="dashboard">
   <!-- TOP NAV -->
   <div class="dash-topnav">
-    <div class="dash-topnav-logo" onclick="showView('landing')">Blakkstone<span>.</span></div>
+    <div class="dash-topnav-logo" style="cursor:default">Blakkstone<span>.</span></div>
     <div class="dash-topnav-links">
       <div class="tnav-item active" onclick="goPage('overview',this)"><i class="ti ti-layout-dashboard"></i> Overview</div>
       <div class="tnav-item" onclick="goPage('releases',this)"><i class="ti ti-music"></i> Music</div>
@@ -633,33 +673,209 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div id="all-releases"></div>
     </div>
 
-    <!-- SUBMIT -->
+    <!-- SUBMIT - 5 STEP WIZARD -->
     <div class="page" id="page-submit">
-      <div class="ph"><div><h1>Submit a Release</h1><p>Fill in your details. We handle the rest.</p></div></div>
-      <div class="scard">
-        <div class="sdiv">
-          <div class="slabel"><i class="ti ti-info-circle"></i> Release Info</div>
-          <div class="fg"><label>Release Title *</label><input id="r-title" type="text" placeholder="e.g. Midnight Stories"></div>
-          <div class="frow">
-            <div class="fg"><label>Primary Artist *</label><input id="r-artist" type="text" placeholder="Artist name"></div>
-            <div class="fg"><label>Genre *</label><select id="r-genre"><option value="">Select genre</option><option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option><option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option><option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option><option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option></select></div>
+      <!-- STEP PROGRESS BAR -->
+      <div style="background:#1a1a2e;border-bottom:1px solid rgba(255,255,255,.07);margin:-2rem -2rem 2rem;padding:0 2rem">
+        <div style="display:flex;align-items:stretch;max-width:900px">
+          <div class="wizard-step active" id="wstep-1" onclick="goWizard(1)"><span class="ws-num">1</span><span class="ws-label">Upload</span></div>
+          <div class="ws-line" id="wsline-1"></div>
+          <div class="wizard-step" id="wstep-2" onclick="goWizard(2)"><span class="ws-num">2</span><span class="ws-label">Details</span></div>
+          <div class="ws-line" id="wsline-2"></div>
+          <div class="wizard-step" id="wstep-3" onclick="goWizard(3)"><span class="ws-num">3</span><span class="ws-label">Schedule</span></div>
+          <div class="ws-line" id="wsline-3"></div>
+          <div class="wizard-step" id="wstep-4" onclick="goWizard(4)"><span class="ws-num">4</span><span class="ws-label">Stores</span></div>
+          <div class="ws-line" id="wsline-4"></div>
+          <div class="wizard-step" id="wstep-5" onclick="goWizard(5)"><span class="ws-num">5</span><span class="ws-label">Review</span></div>
+        </div>
+      </div>
+
+      <!-- STEP 1: UPLOAD -->
+      <div class="wizard-panel active" id="wpanel-1">
+        <div style="text-align:center;max-width:600px;margin:0 auto">
+          <h2 style="font-size:32px;font-weight:800;color:#fff;margin-bottom:.75rem">Upload Your Music</h2>
+          <p style="font-size:14px;color:rgba(255,255,255,.4);margin-bottom:2.5rem">Make sure you have high quality audio files. We recommend 16-bit, 44.1kHz stereo WAV, MP3 or FLAC files.</p>
+          <div class="wiz-drop-zone" id="audio-drop-zone" onclick="document.getElementById('audio-input-multi').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleAudioDrop(event)">
+            <i class="ti ti-file-music" style="font-size:56px;color:rgba(255,255,255,.2);display:block;margin-bottom:1rem"></i>
+            <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:.4rem">Drag & Drop Files</div>
+            <div style="font-size:14px;color:rgba(255,255,255,.35)">Drop any audio files, or <span style="color:#a78bfa;text-decoration:underline;cursor:pointer">browse your files</span></div>
           </div>
-          <div class="frow">
-            <div class="fg"><label>Release Date *</label><input id="r-date" type="date"></div>
-            <div class="fg"><label>ISRC (optional)</label><input id="r-isrc" type="text" placeholder="GHABC2500001"></div>
+          <input type="file" id="audio-input-multi" accept=".wav,.mp3,.flac,audio/*" multiple style="display:none" onchange="handleAudioSelect(this)">
+          <div id="track-list" style="margin-top:1.5rem;text-align:left"></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:2rem">
+            <button class="btn btn-purple" onclick="goWizard(2)" id="wiz-next-1">Next: Details <i class="ti ti-arrow-right"></i></button>
           </div>
-          <div class="fg"><label>Featured Artists (optional)</label><input id="r-feat" type="text" placeholder="Separate with commas"></div>
         </div>
-        <div class="sdiv">
-          <div class="slabel"><i class="ti ti-file-upload"></i> Files</div>
-          <div class="fg"><label>Audio File *</label><div class="upload-z" id="audio-zone" onclick="document.getElementById('audio-input').click()"><i class="ti ti-file-music"></i><p id="audio-label">Click to upload — WAV or MP3 (min. 320kbps)</p></div><input type="file" id="audio-input" accept=".wav,.mp3,audio/*" style="display:none" onchange="fileChosen(this,'audio-zone','audio-label')"></div>
-          <div class="fg"><label>Cover Artwork *</label><div class="upload-z" id="art-zone" onclick="document.getElementById('art-input').click()"><i class="ti ti-photo"></i><p id="art-label">Click to upload — JPG or PNG, 3000×3000px</p></div><input type="file" id="art-input" accept=".jpg,.jpeg,.png,image/*" style="display:none" onchange="fileChosen(this,'art-zone','art-label')"></div>
+      </div>
+
+      <!-- STEP 2: DETAILS -->
+      <div class="wizard-panel" id="wpanel-2">
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:2rem;max-width:900px">
+          <div>
+            <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Release Details</h2>
+            <div class="fg"><label>Release Title *</label><input id="r-title" type="text" placeholder="e.g. Midnight Stories"></div>
+            <div class="frow">
+              <div class="fg"><label>© Copyright Holder</label><input id="r-copyright" type="text" placeholder="Name"></div>
+              <div class="fg"><label>Copyright Year</label><input id="r-copyright-year" type="number" placeholder="2025" value="2025"></div>
+            </div>
+            <div class="frow">
+              <div class="fg"><label>℗ Copyright Holder</label><input id="r-pcopyright" type="text" placeholder="Name"></div>
+              <div class="fg"><label>Production Year</label><input id="r-prod-year" type="number" placeholder="2025" value="2025"></div>
+            </div>
+            <div class="fg"><label>Record Label</label><input id="r-label" type="text" placeholder="Independent"></div>
+            <div class="frow">
+              <div class="fg"><label>Primary Genre *</label>
+                <select id="r-genre"><option value="">Select genre</option><option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option><option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option><option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option><option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option></select>
+              </div>
+              <div class="fg"><label>Secondary Genre</label>
+                <select id="r-genre2"><option value="">Optional</option><option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option><option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option><option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option><option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option></select>
+              </div>
+            </div>
+            <div class="fg"><label>Language</label>
+              <select id="r-language"><option value="English">English</option><option value="French">French</option><option value="Twi">Twi</option><option value="Ga">Ga</option><option value="Hausa">Hausa</option><option value="Yoruba">Yoruba</option><option value="Pidgin">Pidgin</option><option value="Other">Other</option></select>
+            </div>
+            <div class="fg"><label>Artist Type</label>
+              <div style="display:flex;gap:1rem;margin-top:.5rem">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;text-transform:none;letter-spacing:0"><input type="radio" name="artist-type" value="artist" checked style="accent-color:#7c3aed"> Artist / Band</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;text-transform:none;letter-spacing:0"><input type="radio" name="artist-type" value="various" style="accent-color:#7c3aed"> Compilation / Various Artists</label>
+              </div>
+            </div>
+            <div class="fg" style="margin-top:1rem"><label>Primary Artist *</label><input id="r-artist" type="text" placeholder="Artist name"></div>
+            <div style="margin-top:.5rem">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" id="r-has-feat" style="accent-color:#7c3aed" onchange="document.getElementById('r-feat-wrap').style.display=this.checked?'block':'none'"> Add Featured artists</label>
+              <div id="r-feat-wrap" style="display:none;margin-top:.75rem"><div class="fg"><label>Featured Artists</label><input id="r-feat" type="text" placeholder="Separate with commas"></div></div>
+            </div>
+            <div style="margin-top:.5rem">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" id="r-has-remix" style="accent-color:#7c3aed" onchange="document.getElementById('r-remix-wrap').style.display=this.checked?'block':'none'"> Add Remixer artists</label>
+              <div id="r-remix-wrap" style="display:none;margin-top:.75rem"><div class="fg"><label>Remixer Artists</label><input id="r-remixer" type="text" placeholder="Separate with commas"></div></div>
+            </div>
+            <!-- TRACKLIST -->
+            <div style="margin-top:1.75rem;padding-top:1.75rem;border-top:1px solid rgba(255,255,255,.07)">
+              <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:1rem">Tracklist</div>
+              <div id="tracklist-details"></div>
+            </div>
+            <div class="fg" style="margin-top:1.5rem"><label>Admin Notes (optional)</label><textarea id="r-notes" placeholder="Explicit content, special instructions..."></textarea></div>
+          </div>
+          <!-- ARTWORK PREVIEW -->
+          <div>
+            <div style="font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.75rem">Your Preview</div>
+            <div style="background:#2a2a45;border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;overflow:hidden;cursor:pointer;border:2px dashed rgba(255,255,255,.1)" id="artwork-preview-wrap" onclick="document.getElementById('art-input').click()">
+              <div id="artwork-preview-inner" style="text-align:center;padding:1rem">
+                <i class="ti ti-photo-plus" style="font-size:36px;color:rgba(255,255,255,.2);display:block;margin-bottom:.5rem"></i>
+                <div style="font-size:12px;color:rgba(255,255,255,.3)">Click to add artwork</div>
+              </div>
+            </div>
+            <input type="file" id="art-input" accept=".jpg,.jpeg,.png,image/*" style="display:none" onchange="previewArtwork(this)">
+            <div style="font-size:13px;font-weight:600;color:#fff;text-align:center" id="artwork-title-preview">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:3px">3000 × 3000px recommended</div>
+          </div>
         </div>
-        <div class="sdiv">
-          <div class="slabel"><i class="ti ti-note"></i> Notes</div>
-          <div class="fg"><textarea id="r-notes" placeholder="Explicit content, special instructions..."></textarea></div>
+        <div style="display:flex;gap:10px;margin-top:2rem;max-width:900px">
+          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(1)"><i class="ti ti-arrow-left"></i> Back</button>
+          <button class="btn btn-purple" onclick="goWizard(3)">Next: Schedule <i class="ti ti-arrow-right"></i></button>
         </div>
-        <button class="btn btn-purple" id="submit-btn" onclick="submitRelease()"><i class="ti ti-send"></i> Submit Release</button>
+      </div>
+
+      <!-- STEP 3: SCHEDULE -->
+      <div class="wizard-panel" id="wpanel-3">
+        <div style="max-width:640px">
+          <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Plan Your Release</h2>
+          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
+            <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:1.1rem">Choose a <strong style="color:#a78bfa">release date</strong></div>
+            <div class="fg"><input id="r-date" type="date" style="font-size:15px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
+              <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:10px;padding:1.1rem;position:relative">
+                <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">Priority Distro</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:.5rem">LESS THAN 3 DAYS</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.5">Skip the queue to get your music out extra fast.</div>
+                <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-top:.5rem">+$25 <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:400">(add-on)</span></div>
+                <i class="ti ti-bolt" style="position:absolute;top:10px;right:10px;font-size:20px;color:rgba(255,255,255,.3)"></i>
+              </div>
+              <div style="background:#2a2a45;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1.1rem">
+                <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">Standard Distro</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:.5rem">10 DAYS+</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.5">We'll notify you when processed and sent to stores.</div>
+                <div style="font-size:12px;font-weight:600;color:#34d399;margin-top:.5rem">Included ✓</div>
+              </div>
+            </div>
+          </div>
+          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
+            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:1rem">Would you like to add <strong style="color:#fff">country restrictions</strong> and limit the availability of your release?</div>
+            <div style="display:flex;gap:8px">
+              <button class="wiz-toggle active" id="cr-no" onclick="setToggle('country-restrict','no')">No</button>
+              <button class="wiz-toggle" id="cr-yes" onclick="setToggle('country-restrict','yes')">Yes</button>
+            </div>
+            <div id="country-restrict-fields" style="display:none;margin-top:1rem">
+              <div class="fg"><label>Excluded Countries</label><input id="r-countries" type="text" placeholder="e.g. US, UK, CA — separate with commas"></div>
+            </div>
+          </div>
+          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
+            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:1rem">Has this been <strong style="color:#fff">released before</strong>?</div>
+            <div style="display:flex;gap:8px">
+              <button class="wiz-toggle active" id="pr-no" onclick="setToggle('prev-released','no')">No</button>
+              <button class="wiz-toggle" id="pr-yes" onclick="setToggle('prev-released','yes')">Yes</button>
+            </div>
+            <div id="prev-released-fields" style="display:none;margin-top:1rem">
+              <div class="fg"><label>Original Release Date</label><input id="r-orig-date" type="date"></div>
+            </div>
+          </div>
+          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem">
+            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:.5rem">Does this release contain <strong style="color:#fff">explicit content</strong>?</div>
+            <div style="display:flex;gap:8px;margin-top:.75rem">
+              <button class="wiz-toggle active" id="exp-no" onclick="setToggle('explicit','no')">No</button>
+              <button class="wiz-toggle" id="exp-yes" onclick="setToggle('explicit','yes')">Yes — Explicit</button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:2rem">
+          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(2)"><i class="ti ti-arrow-left"></i> Back</button>
+          <button class="btn btn-purple" onclick="goWizard(4)">Next: Stores <i class="ti ti-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- STEP 4: STORES -->
+      <div class="wizard-panel" id="wpanel-4">
+        <div style="max-width:860px">
+          <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:.5rem">Select Your Stores</h2>
+          <p style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1.5rem">Choose which platforms to distribute to. All are selected by default.</p>
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+            <button class="btn btn-purple btn-sm" onclick="selectAllStores(true)"><i class="ti ti-check-all"></i> Select All</button>
+            <button class="btn btn-sm" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="selectAllStores(false)">Deselect All</button>
+            <div style="display:flex;gap:6px;margin-left:auto">
+              <button class="store-filter-btn active" onclick="filterStores('all',this)">All</button>
+              <button class="store-filter-btn" onclick="filterStores('streaming',this)">Streaming</button>
+              <button class="store-filter-btn" onclick="filterStores('download',this)">Download</button>
+            </div>
+          </div>
+          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:1rem">Standard Stores</div>
+            <div id="stores-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:2rem">
+          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(3)"><i class="ti ti-arrow-left"></i> Back</button>
+          <button class="btn btn-purple" onclick="goWizard(5)">Next: Review <i class="ti ti-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- STEP 5: REVIEW -->
+      <div class="wizard-panel" id="wpanel-5">
+        <div style="max-width:680px">
+          <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Review Your Release</h2>
+          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1rem">
+            <div id="review-content"></div>
+          </div>
+          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem">
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0">
+              <input type="checkbox" id="r-terms" style="accent-color:#7c3aed;margin-top:2px;flex-shrink:0">
+              I confirm I own or have the rights to distribute this music and agree to Blakkstone Distribution's terms and conditions.
+            </label>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(4)"><i class="ti ti-arrow-left"></i> Back</button>
+            <button class="btn btn-purple" id="submit-btn" onclick="submitRelease()" style="flex:1;justify-content:center"><i class="ti ti-send"></i> Submit Release</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1179,6 +1395,7 @@ function goPage(id,el){
   // Save to URL hash so refresh restores the page
   window.location.hash=id;
   if(id==='analytics')loadAnalytics();
+  if(id==='submit')initWizard();
   if(id==='royalties')loadRoyalties();
   if(id==='payout')loadPayout();
   if(id==='artists')loadArtists();
@@ -1271,49 +1488,57 @@ function fileChosen(input,zoneId,labelId){
 }
 
 async function submitRelease(){
-  const title=document.getElementById('r-title').value.trim();
-  const artist=document.getElementById('r-artist').value.trim();
-  const genre=document.getElementById('r-genre').value;
-  const date=document.getElementById('r-date').value;
-  const audioFile=document.getElementById('audio-input').files[0];
-  const artFile=document.getElementById('art-input').files[0];
-  if(!title||!artist||!genre||!date){toast('Please fill all required fields','err');return;}
-  if(!audioFile){toast('Please upload an audio file','err');return;}
-  if(!artFile){toast('Please upload cover artwork','err');return;}
+  if(!document.getElementById('r-terms')?.checked){toast('Please agree to the terms and conditions','err');return;}
+  const title=document.getElementById('r-title')?.value.trim();
+  const artist=document.getElementById('r-artist')?.value.trim();
+  const genre=document.getElementById('r-genre')?.value;
+  const date=document.getElementById('r-date')?.value;
+  if(!title||!artist||!genre||!date){toast('Please complete all required fields in Steps 2 & 3','err');return;}
+  if(!wizTracks.length){toast('Please upload at least one audio track in Step 1','err');return;}
+  if(!wizData.artFile){toast('Please upload cover artwork in Step 2','err');return;}
   const btn=document.getElementById('submit-btn');
-  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Uploading...';
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
   try{
-    const audioExt=audioFile.name.split('.').pop();
-    const audioPath=`${user.id}/${Date.now()}-audio.${audioExt}`;
-    const {error:ae}=await sb.storage.from('audio').upload(audioPath,audioFile);
-    if(ae)throw new Error('Audio upload failed: '+ae.message);
-    const artExt=artFile.name.split('.').pop();
-    const artPath=`${user.id}/${Date.now()}-artwork.${artExt}`;
-    const {error:are}=await sb.storage.from('artwork').upload(artPath,artFile);
-    if(are)throw new Error('Artwork upload failed: '+are.message);
+    const artExt=wizData.artFile.name.split('.').pop();
+    const artPath=user.id+'/'+Date.now()+'-artwork.'+artExt;
+    const {error:are}=await sb.storage.from('artwork').upload(artPath,wizData.artFile);
+    if(are) throw new Error('Artwork upload failed: '+are.message);
     const {data:artUrl}=sb.storage.from('artwork').getPublicUrl(artPath);
+    const audioPaths=[];
+    for(const track of wizTracks){
+      const ext=track.file.name.split('.').pop();
+      const ap=user.id+'/'+Date.now()+'-'+track.name.replace(/[^a-z0-9]/gi,'_')+'.'+ext;
+      const {error:ae}=await sb.storage.from('audio').upload(ap,track.file);
+      if(ae) throw new Error('Audio upload failed for '+track.name+': '+ae.message);
+      audioPaths.push(ap);
+    }
+    const extraInfo=[
+      document.getElementById('r-label')?.value?'Label: '+document.getElementById('r-label').value:'',
+      document.getElementById('r-copyright')?.value?'(c) '+document.getElementById('r-copyright').value:'',
+      document.getElementById('r-language')?.value?'Language: '+document.getElementById('r-language').value:'',
+      wizToggleState['explicit']==='yes'?'EXPLICIT CONTENT':'',
+      wizToggleState['country-restrict']==='yes'?'Country restrictions: '+(document.getElementById('r-countries')?.value||''):'',
+      'Stores: '+wizStores.join(', '),
+      document.getElementById('r-notes')?.value||''
+    ].filter(Boolean).join(' | ');
     const {error:dbe}=await sb.from('releases').insert({
       user_id:user.id,title,artist,genre,release_date:date,
-      isrc:document.getElementById('r-isrc').value.trim()||null,
-      featured_artists:document.getElementById('r-feat').value.trim()||null,
-      notes:document.getElementById('r-notes').value.trim()||null,
-      audio_url:audioPath,artwork_url:artUrl.publicUrl,status:'pending',streams:0,earnings:0
+      isrc:wizTracks[0]?.isrc||null,
+      featured_artists:document.getElementById('r-feat')?.value?.trim()||null,
+      notes:extraInfo||null,
+      audio_url:audioPaths[0],artwork_url:artUrl.publicUrl,
+      status:'pending',streams:0,earnings:0
     });
-    if(dbe)throw new Error('Submission failed: '+dbe.message);
-    ['r-title','r-artist','r-isrc','r-feat','r-notes'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('r-genre').value='';document.getElementById('r-date').value='';
-    document.getElementById('audio-input').value='';document.getElementById('art-input').value='';
-    ['audio-zone','art-zone'].forEach(id=>document.getElementById(id).classList.remove('has-file'));
-    document.getElementById('audio-label').textContent='Click to upload — WAV or MP3 (min. 320kbps)';
-    document.getElementById('art-label').textContent='Click to upload — JPG or PNG, 3000×3000px';
-    toast('Release submitted! We\'ll review it shortly.','ok');
+    if(dbe) throw new Error('Submission failed: '+dbe.message);
+    toast('Release submitted! We will review it shortly.','ok');
+    initWizard();
     loadReleases();
     goPage('releases',document.querySelectorAll('.tnav-item')[1]);
   }catch(e){toast(e.message,'err');}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Release';
 }
 
-// ── ARTISTS (user view) ───────────────────────────────
+
 async function loadArtists(){
   const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const container=document.getElementById('artists-list');
@@ -2246,6 +2471,212 @@ function toast(msg,type){
   t.textContent=msg;t.className='toast'+(type==='ok'?' ok':type==='err'?' err':'');
   t.classList.add('show');clearTimeout(t._t);
   t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── WIZARD ──────────────────────────────────────────────
+let wizStep=1;
+let wizTracks=[];
+let wizStores=[];
+let wizData={};
+let wizToggleState={};
+
+const ALL_STORES=[
+  {name:'Spotify',icon:'🎧',type:'streaming'},{name:'Apple Music',icon:'🍎',type:'streaming'},
+  {name:'YouTube Music',icon:'▶️',type:'streaming'},{name:'Audiomack',icon:'🎵',type:'streaming'},
+  {name:'Boomplay',icon:'🔊',type:'streaming'},{name:'Tidal',icon:'🌊',type:'streaming'},
+  {name:'Deezer',icon:'🎶',type:'streaming'},{name:'Amazon Music',icon:'📦',type:'streaming'},
+  {name:'TikTok',icon:'🎵',type:'streaming'},{name:'Instagram/Facebook',icon:'📸',type:'streaming'},
+  {name:'Pandora',icon:'🎸',type:'streaming'},{name:'iHeart Radio',icon:'📻',type:'streaming'},
+  {name:'SoundCloud',icon:'☁️',type:'streaming'},{name:'Shazam',icon:'🔵',type:'streaming'},
+  {name:'Snapchat',icon:'👻',type:'streaming'},{name:'Triller',icon:'📱',type:'streaming'},
+  {name:'Gaana',icon:'🎼',type:'streaming'},{name:'Saavn',icon:'🎙️',type:'streaming'},
+  {name:'Joox',icon:'🎤',type:'streaming'},{name:'Resso',icon:'🎵',type:'streaming'},
+  {name:'Netease',icon:'🌐',type:'streaming'},{name:'QQ Music',icon:'🎵',type:'streaming'},
+  {name:'iTunes',icon:'🎵',type:'download'},{name:'7digital',icon:'7️⃣',type:'download'},
+  {name:'Amazon MP3',icon:'📦',type:'download'},{name:'Beatport',icon:'🎚️',type:'download'},
+];
+
+function initWizard(){
+  wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};
+  renderStoresGrid();
+  goWizard(1);
+}
+
+function goWizard(step){
+  // Validate before advancing
+  if(step>wizStep){
+    if(wizStep===1&&!wizTracks.length){toast('Please upload at least one audio track','err');return;}
+    if(wizStep===2){
+      const title=document.getElementById('r-title')?.value.trim();
+      const artist=document.getElementById('r-artist')?.value.trim();
+      const genre=document.getElementById('r-genre')?.value;
+      if(!title||!artist||!genre){toast('Please fill in Release Title, Artist and Genre','err');return;}
+    }
+    if(wizStep===3){
+      const date=document.getElementById('r-date')?.value;
+      if(!date){toast('Please select a release date','err');return;}
+    }
+  }
+  wizStep=step;
+  document.querySelectorAll('.wizard-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('wpanel-'+step);
+  if(panel){panel.classList.add('active');panel.scrollIntoView({behavior:'smooth',block:'start'});}
+  // Update step indicators
+  for(let i=1;i<=5;i++){
+    const s=document.getElementById('wstep-'+i);
+    const l=document.getElementById('wsline-'+i);
+    if(s){s.classList.toggle('active',i===step);s.classList.toggle('done',i<step);}
+    if(l) l.classList.toggle('done',i<step);
+  }
+  if(step===5) buildReview();
+  // Update artwork title preview
+  const t=document.getElementById('r-title');
+  const ap=document.getElementById('artwork-title-preview');
+  if(t&&ap) ap.textContent=t.value||'—';
+}
+
+function handleAudioSelect(input){
+  Array.from(input.files).forEach(f=>addTrack(f));
+  input.value='';
+}
+
+function handleAudioDrop(e){
+  e.preventDefault();
+  document.getElementById('audio-drop-zone').classList.remove('drag-over');
+  Array.from(e.dataTransfer.files).forEach(f=>{
+    if(f.type.startsWith('audio/')||f.name.match(/\.(mp3|wav|flac|aiff|m4a)$/i)) addTrack(f);
+  });
+}
+
+function addTrack(file){
+  const id=Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  wizTracks.push({id,file,name:file.name.replace(/\.[^.]+$/,''),size:file.size});
+  renderTrackList();
+  renderTracklistDetails();
+}
+
+function removeTrack(id){
+  wizTracks=wizTracks.filter(t=>t.id!==id);
+  renderTrackList();
+  renderTracklistDetails();
+}
+
+function renderTrackList(){
+  const el=document.getElementById('track-list');
+  if(!el)return;
+  if(!wizTracks.length){el.innerHTML='';return;}
+  el.innerHTML=wizTracks.map((t,i)=>`
+    <div class="track-item">
+      <div class="track-num">${i+1}</div>
+      <div class="track-name">${esc(t.name)}</div>
+      <div class="track-size">${(t.size/1024/1024).toFixed(1)}MB</div>
+      <button class="track-remove" onclick="removeTrack('${t.id}')">×</button>
+    </div>`).join('');
+}
+
+function renderTracklistDetails(){
+  const el=document.getElementById('tracklist-details');
+  if(!el)return;
+  if(!wizTracks.length){el.innerHTML='<p style="font-size:13px;color:rgba(255,255,255,.3)">No tracks uploaded yet. Go back to Step 1 to upload.</p>';return;}
+  el.innerHTML=wizTracks.map((t,i)=>`
+    <div class="track-item">
+      <div class="track-num">${i+1}</div>
+      <div style="flex:1">
+        <input type="text" value="${esc(t.name)}" style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:500;width:100%;outline:none;font-family:Inter,sans-serif" onchange="wizTracks[${i}].name=this.value">
+      </div>
+      <input class="track-isrc" type="text" placeholder="ISRC (optional)" onchange="wizTracks[${i}].isrc=this.value">
+      <button class="track-remove" onclick="removeTrack('${t.id}')">×</button>
+    </div>`).join('');
+}
+
+function previewArtwork(input){
+  if(!input.files[0])return;
+  wizData.artFile=input.files[0];
+  const url=URL.createObjectURL(input.files[0]);
+  const wrap=document.getElementById('artwork-preview-wrap');
+  if(wrap) wrap.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`;
+  const tp=document.getElementById('artwork-title-preview');
+  const t=document.getElementById('r-title');
+  if(tp&&t) tp.textContent=t.value||'Your Release';
+}
+
+function setToggle(key,val){
+  wizToggleState[key]=val;
+  // Update button states
+  const noBtn=document.getElementById(key.replace('-','').slice(0,2)+'-no')||document.getElementById('cr-no')||document.getElementById('pr-no')||document.getElementById('exp-no');
+  // Simple approach - find by key prefix
+  const prefix={
+    'country-restrict':'cr','prev-released':'pr','explicit':'exp'
+  }[key];
+  if(prefix){
+    document.getElementById(prefix+'-no').classList.toggle('active',val==='no');
+    document.getElementById(prefix+'-yes').classList.toggle('active',val==='yes');
+    const fieldsEl=document.getElementById(key+'-fields');
+    if(fieldsEl) fieldsEl.style.display=val==='yes'?'block':'none';
+  }
+}
+
+function renderStoresGrid(){
+  const grid=document.getElementById('stores-grid');
+  if(!grid)return;
+  grid.innerHTML=ALL_STORES.map(s=>`
+    <div class="store-chip selected" id="store-${s.name.replace(/[^a-z]/gi,'')}" onclick="toggleStore('${s.name.replace(/[^a-z]/gi,'')}','${s.name}')">
+      <div class="store-chip-icon">${s.icon}</div>
+      <div class="store-chip-name">${s.name}</div>
+      <div class="store-chip-check"></div>
+    </div>`).join('');
+}
+
+function toggleStore(id,name){
+  const el=document.getElementById('store-'+id);
+  if(!el)return;
+  el.classList.toggle('selected');
+  if(el.classList.contains('selected')){
+    if(!wizStores.includes(name)) wizStores.push(name);
+  } else {
+    wizStores=wizStores.filter(s=>s!==name);
+  }
+}
+
+function selectAllStores(sel){
+  wizStores=sel?ALL_STORES.map(s=>s.name):[];
+  document.querySelectorAll('.store-chip').forEach(el=>{
+    el.classList.toggle('selected',sel);
+  });
+}
+
+function filterStores(type,btn){
+  document.querySelectorAll('.store-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.store-chip').forEach(el=>{
+    const storeName=el.querySelector('.store-chip-name')?.textContent;
+    const store=ALL_STORES.find(s=>s.name===storeName);
+    if(!store)return;
+    el.style.display=(type==='all'||store.type===type)?'flex':'none';
+  });
+}
+
+function buildReview(){
+  const title=document.getElementById('r-title')?.value||'—';
+  const artist=document.getElementById('r-artist')?.value||'—';
+  const genre=document.getElementById('r-genre')?.value||'—';
+  const date=document.getElementById('r-date')?.value||'—';
+  const label=document.getElementById('r-label')?.value||'Independent';
+  const lang=document.getElementById('r-language')?.value||'English';
+  const el=document.getElementById('review-content');
+  if(!el)return;
+  el.innerHTML=`
+    <div style="display:flex;gap:1.5rem;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="width:80px;height:80px;border-radius:10px;background:#2a2a45;overflow:hidden;flex-shrink:0">${wizData.artFile?`<img src="${URL.createObjectURL(wizData.artFile)}" style="width:100%;height:100%;object-fit:cover">`:''}</div>
+      <div><div style="font-size:18px;font-weight:700;color:#fff">${esc(title)}</div><div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:4px">${esc(artist)}</div><div style="font-size:12px;color:#a78bfa;margin-top:4px">${wizTracks.length} track${wizTracks.length!==1?'s':''}</div></div>
+    </div>
+    <div class="review-row"><span class="review-label">Genre</span><span class="review-val">${esc(genre)}</span></div>
+    <div class="review-row"><span class="review-label">Release Date</span><span class="review-val">${date}</span></div>
+    <div class="review-row"><span class="review-label">Label</span><span class="review-val">${esc(label)}</span></div>
+    <div class="review-row"><span class="review-label">Language</span><span class="review-val">${lang}</span></div>
+    <div class="review-row"><span class="review-label">Stores</span><span class="review-val">${wizStores.length} of ${ALL_STORES.length} selected</span></div>
+    <div class="review-row"><span class="review-label">Tracks</span><span class="review-val">${wizTracks.map(t=>esc(t.name)).join(', ')}</span></div>
+  `;
 }
 
 // ── REAL-TIME SUBSCRIPTIONS ───────────────────────────
