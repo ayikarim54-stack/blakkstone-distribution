@@ -841,45 +841,63 @@ async function logout(){
 }
 
 function enterDashboard(){
-  const name=profile?.full_name||profile?.artist_name||user.email.split('@')[0];
-  const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
-  const isLabel=profile?.plan==='label';
-  const isArtistPlus=profile?.plan==='artist_plus';
-  const isPaid=isLabel||isArtistPlus;
-  document.getElementById('tnav-name').textContent=name.split(' ')[0];
-  setAvatarDisplay(initials,profile?.avatar_url);
-  document.getElementById('admin-nav').style.display=isAdmin?'flex':'none';
-  document.getElementById('upgrade-nav').style.display=(isAdmin||isPaid)?'none':'flex';
-  document.getElementById('welcome-h').textContent='Hi, '+name.split(' ')[0]+' 👋';
-  document.getElementById('lnav-right').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>`;
-  if(profile){
-    const parts=(profile.full_name||'').split(' ');
-    document.getElementById('p-fn').value=parts[0]||'';
-    document.getElementById('p-ln').value=parts.slice(1).join(' ')||'';
-    document.getElementById('p-an').value=profile.artist_name||'';
-    document.getElementById('p-em').value=profile.email||user.email;
-    document.getElementById('profile-display-name').textContent=profile.artist_name||profile.full_name||'';
-    document.getElementById('profile-avatar-initials').textContent=initials;
+  try{
+    const name=profile?.full_name||profile?.artist_name||user.email.split('@')[0];
+    const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+    const isLabel=profile?.plan==='label';
+    const isArtistPlus=profile?.plan==='artist_plus';
+    const isPaid=isLabel||isArtistPlus;
+    // Safe element updates — check element exists before setting
+    const tnavName=document.getElementById('tnav-name');
+    if(tnavName) tnavName.textContent=name.split(' ')[0];
+    setAvatarDisplay(initials,profile?.avatar_url);
+    const adminNav=document.getElementById('admin-nav');
+    if(adminNav) adminNav.style.display=isAdmin?'flex':'none';
+    const upgradeNav=document.getElementById('upgrade-nav');
+    if(upgradeNav) upgradeNav.style.display=(isAdmin||isPaid)?'none':'flex';
+    const welcomeH=document.getElementById('welcome-h');
+    if(welcomeH) welcomeH.textContent='Hi, '+name.split(' ')[0]+' 👋';
+    const lnavRight=document.getElementById('lnav-right');
+    if(lnavRight) lnavRight.innerHTML=`<button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>`;
+    if(profile){
+      const parts=(profile.full_name||'').split(' ');
+      const pfn=document.getElementById('p-fn');if(pfn) pfn.value=parts[0]||'';
+      const pln=document.getElementById('p-ln');if(pln) pln.value=parts.slice(1).join(' ')||'';
+      const pan=document.getElementById('p-an');if(pan) pan.value=profile.artist_name||'';
+      const pem=document.getElementById('p-em');if(pem) pem.value=profile.email||user.email;
+      const pdn=document.getElementById('profile-display-name');if(pdn) pdn.textContent=profile.artist_name||profile.full_name||'';
+      const pai=document.getElementById('profile-avatar-initials');if(pai) pai.textContent=initials;
+    }
+    updateCommBar(isPaid,isAdmin);
+    updateUpgradePage(profile?.plan);
+    // Always show dashboard last — this is the critical step
+    showView('dashboard');
+    goPage('overview',document.querySelector('.tnav-item'));
+    loadReleases();
+    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();}
+  }catch(e){
+    console.error('enterDashboard error:',e);
+    // Force show dashboard even if something else failed
+    showView('dashboard');
+    goPage('overview',document.querySelector('.tnav-item'));
+    loadReleases();
   }
-  updateCommBar(isPaid,isAdmin);
-  updateUpgradePage(profile?.plan);
-  showView('dashboard');
-  goPage('overview',document.querySelector('.tnav-item'));
-  loadReleases();
-  if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();}
 }
 
 function setAvatarDisplay(initials,url){
-  const ta=document.getElementById('tnav-avatar');
-  const ba=document.getElementById('profile-avatar-big');
-  if(url){
-    ta.innerHTML=`<img src="${url}" alt="a" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    ba.innerHTML=`<img src="${url}" alt="a">`;
-  } else {
-    ta.innerHTML=`<span style="font-size:11px;font-weight:700;color:var(--gd)">${initials}</span>`;
-    document.getElementById('profile-avatar-initials').textContent=initials;
-  }
+  try{
+    const ta=document.getElementById('tnav-avatar');
+    const ba=document.getElementById('profile-avatar-big');
+    if(url){
+      if(ta) ta.innerHTML=`<img src="${url}" alt="a" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      if(ba) ba.innerHTML=`<img src="${url}" alt="a">`;
+    } else {
+      if(ta) ta.innerHTML=`<span style="font-size:11px;font-weight:700;color:var(--gd)">${initials}</span>`;
+      const pai=document.getElementById('profile-avatar-initials');
+      if(pai) pai.textContent=initials;
+    }
+  }catch(e){ console.warn('setAvatarDisplay error:',e); }
 }
 
 function updateCommBar(isPaid,isAdmin){
