@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Blakkstone Distribution</title>
+<meta name="description" content="Blakkstone Distribution — Ghana's independent music distribution platform. Distribute to Spotify, Apple Music, Boomplay and 150+ platforms. Mobile Money payouts."/>
+<meta name="theme-color" content="#131320"/>
+<meta property="og:title" content="Blakkstone Distribution"/>
+<meta property="og:description" content="Distribute your music globally. Keep your money. Mobile Money payouts in Ghana."/>
+<meta property="og:type" content="website"/>
+<title>Blakkstone Distribution — Distribute Your Music Globally</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
 <style>
@@ -435,71 +440,269 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .asb-active{background:rgba(16,185,129,.2);color:#34d399}
 .asb-suspended{background:rgba(239,68,68,.2);color:#f87171}
 .asb-warned{background:rgba(245,158,11,.2);color:#fbbf24}
+
+/* ── LANDING UPGRADES ── */
+/* Hero grid background */
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.07) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+.hero-glow{position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(201,168,76,.15) 0,transparent 70%);pointer-events:none}
+.hero-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.hero-watch-btn{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.15)}
+.hero-watch-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+/* Stats bar */
+.stats-bar{background:#111;padding:1.75rem 2.5rem;display:flex;justify-content:center;align-items:center;gap:0;flex-wrap:wrap;border-bottom:1px solid #1a1a1a}
+.stat-item{text-align:center;padding:0 2.5rem}
+.stat-val{font-size:28px;font-weight:900;color:var(--gold);letter-spacing:-1px}
+.stat-label{font-size:11px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.stat-div{width:1px;height:36px;background:#2a2a2a}
+/* DSP marquee */
+.dsp-marquee-wrap{overflow:hidden;position:relative}
+.dsp-marquee-wrap::before,.dsp-marquee-wrap::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2}
+.dsp-marquee-wrap::before{left:0;background:linear-gradient(90deg,#fff,transparent)}
+.dsp-marquee-wrap::after{right:0;background:linear-gradient(-90deg,#fff,transparent)}
+.dsp-marquee{display:flex;gap:10px;animation:marquee 30s linear infinite;width:max-content}
+.dsp-marquee:hover{animation-play-state:paused}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+/* Feature cards upgrade */
+.feat-card-hover{transition:all .2s;cursor:default}
+.feat-card-hover:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.08);border-color:#ddd}
+.feat-icon-purple{background:rgba(124,58,237,.1)}.feat-icon-purple i{color:#7c3aed}
+.feat-icon-gold{background:var(--gl)}.feat-icon-gold i{color:var(--gold)}
+.feat-icon-teal{background:rgba(8,145,178,.1)}.feat-icon-teal i{color:#0891b2}
+.feat-icon-blue{background:rgba(37,99,235,.1)}.feat-icon-blue i{color:#2563eb}
+.feat-icon-green{background:rgba(5,150,105,.1)}.feat-icon-green i{color:#059669}
+.feat-icon-orange{background:rgba(234,88,12,.1)}.feat-icon-orange i{color:#ea580c}
+.feat-pill{display:inline-block;background:var(--off);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--muted);margin-top:.875rem}
+/* How it works */
+.how-grid{display:flex;align-items:flex-start;justify-content:center;gap:0;max-width:900px;margin:0 auto;flex-wrap:wrap}
+.how-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:2rem 1.75rem;max-width:240px;flex:1;min-width:200px;text-align:center;position:relative}
+.how-num{position:absolute;top:-16px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-size:11px;font-weight:800;padding:4px 12px;border-radius:20px;letter-spacing:1px}
+.how-icon{width:56px;height:56px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.how-icon i{font-size:26px;color:var(--gold)}
+.how-card h3{font-size:16px;font-weight:700;color:#fff;margin-bottom:.5rem}
+.how-card p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.7}
+.how-arrow{display:flex;align-items:center;padding:0 1rem;color:rgba(255,255,255,.2);font-size:22px;padding-top:1.5rem}
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;gap:8px}
+.faq-item{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.faq-item:hover{border-color:#ccc}
+.faq-item.open{border-color:var(--gold)}
+.faq-q{padding:1.1rem 1.25rem;font-size:14px;font-weight:600;color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:10px;user-select:none}
+.faq-q i{flex-shrink:0;transition:transform .2s;color:var(--muted)}
+.faq-item.open .faq-q i{transform:rotate(180deg);color:var(--gold)}
+.faq-a{display:none;padding:0 1.25rem 1.1rem;font-size:13px;color:var(--muted);line-height:1.7}
+.faq-item.open .faq-a{display:block}
+/* CTA glow */
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(201,168,76,.12) 0,transparent 70%);pointer-events:none}
+.cta-band{position:relative;overflow:hidden}
+/* Lnav scroll effect */
+.lnav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,.08)}
+/* Dashboard welcome message with time */
+.welcome-time{font-size:13px;color:rgba(255,255,255,.35);font-weight:400}
+/* Quick action buttons on overview */
+.quick-actions{display:flex;gap:10px;margin-bottom:2rem;flex-wrap:wrap}
+.qa-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#1e1e35;border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;white-space:nowrap}
+.qa-btn:hover{background:#252545;border-color:rgba(139,92,246,.4);color:#fff}
+.qa-btn i{font-size:16px;color:#a78bfa}
+/* Release cards on overview - clickable */
+.rg-card{cursor:pointer}
+/* Onboarding checklist */
+.onboard-card{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(79,70,229,.1));border:1px solid rgba(124,58,237,.3);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
+.onboard-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;justify-content:space-between}
+.onboard-steps{display:flex;gap:8px;flex-wrap:wrap}
+.ob-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5)}
+.ob-step.done{background:rgba(16,185,129,.15);color:#34d399}
+.ob-step.done i{color:#34d399}
+.ob-step i{font-size:14px}
+/* Notification dot on nav items */
+.nav-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block;margin-left:3px;vertical-align:middle;animation:pulse 2s infinite}
+/* Support chat bubble */
+.support-bubble{position:fixed;bottom:1.5rem;right:1.5rem;width:52px;height:52px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(201,168,76,.4);z-index:500;transition:all .2s}
+.support-bubble:hover{transform:scale(1.08);box-shadow:0 6px 30px rgba(201,168,76,.5)}
+.support-bubble i{font-size:22px;color:#000}
+.support-tooltip{position:absolute;bottom:60px;right:0;background:#fff;border:1px solid var(--border);border-radius:10px;padding:.625rem 1rem;font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.1);display:none}
+.support-bubble:hover .support-tooltip{display:block}
+/* Progress bar on top of page */
+.page-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gold),#a78bfa);z-index:9999;transition:width .3s;pointer-events:none}
 </style>
 </head>
 <body>
-<div id="app">
+<div id="app" style="opacity:0;transition:opacity .3s">
+<script>setTimeout(()=>document.getElementById('app').style.opacity='1',50)</script>
 
 <!-- ══════════════ LANDING ══════════════ -->
 <div class="view active" id="landing">
-  <nav class="lnav">
+  <!-- STICKY NAV -->
+  <nav class="lnav" id="lnav">
     <div class="lnav-logo" onclick="showView('landing')">Blakkstone<span>.</span></div>
     <div class="lnav-links">
       <a onclick="document.getElementById('features-sec').scrollIntoView({behavior:'smooth'})">Features</a>
+      <a onclick="document.getElementById('how-sec').scrollIntoView({behavior:'smooth'})">How it works</a>
       <a onclick="document.getElementById('pricing-sec').scrollIntoView({behavior:'smooth'})">Pricing</a>
+      <a onclick="document.getElementById('faq-sec').scrollIntoView({behavior:'smooth'})">FAQ</a>
     </div>
     <div class="lnav-right" id="lnav-right">
       <button class="btn btn-ghost btn-sm" onclick="showAuth('login')">Log in</button>
-      <button class="btn btn-gold btn-sm" onclick="showAuth('signup')">Get started free</button>
+      <button class="btn btn-gold btn-sm" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Get started free</button>
     </div>
   </nav>
 
+  <!-- HERO -->
   <section class="hero">
-    <div class="hero-tag"><i class="ti ti-music"></i> Ghana's Independent Music Distributor</div>
-    <h1>Distribute your music.<br><span>Keep your money.</span></h1>
-    <p class="hero-sub">Release to Spotify, Apple Music, Boomplay, Audiomack and 150+ platforms worldwide. Powered by Blakkstone's label network.</p>
-    <div class="hero-ctas">
-      <button class="btn btn-gold btn-lg" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Start for free</button>
-      <button class="btn btn-lg" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2)" onclick="document.getElementById('pricing-sec').scrollIntoView({behavior:'smooth'})">See pricing</button>
-    </div>
-    <div class="hero-trust">
-      <div class="trust-i"><i class="ti ti-check"></i> Free to start</div>
-      <div class="trust-i"><i class="ti ti-check"></i> Mobile Money payouts</div>
-      <div class="trust-i"><i class="ti ti-check"></i> 150+ platforms</div>
-      <div class="trust-i"><i class="ti ti-check"></i> No per-release fees</div>
+    <div class="hero-grid-bg"></div>
+    <div class="hero-glow"></div>
+    <div style="position:relative;z-index:2">
+      <div class="hero-tag"><span class="hero-tag-dot"></span> Ghana's #1 Independent Music Distributor</div>
+      <h1>Your music.<br><span>Every platform.</span><br>Your earnings.</h1>
+      <p class="hero-sub">Release to Spotify, Apple Music, Boomplay, Audiomack and 150+ platforms worldwide. Mobile Money payouts. No hidden fees.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-gold btn-lg" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Start distributing free</button>
+        <button class="btn btn-lg hero-watch-btn" onclick="document.getElementById('how-sec').scrollIntoView({behavior:'smooth'})"><i class="ti ti-play"></i> See how it works</button>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-i"><i class="ti ti-check"></i> Free forever plan</div>
+        <div class="trust-i"><i class="ti ti-check"></i> Mobile Money payouts</div>
+        <div class="trust-i"><i class="ti ti-check"></i> 150+ platforms</div>
+        <div class="trust-i"><i class="ti ti-check"></i> No per-release fees</div>
+        <div class="trust-i"><i class="ti ti-check"></i> Keep 100% with Artist+</div>
+      </div>
     </div>
   </section>
 
+  <!-- STATS BAR -->
+  <section class="stats-bar">
+    <div class="stat-item"><div class="stat-val">150+</div><div class="stat-label">DSP Platforms</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-val">5,000+</div><div class="stat-label">Tracks Distributed</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-val">Ghana</div><div class="stat-label">Based & Built</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-val">GHS</div><div class="stat-label">Local Payouts</div></div>
+    <div class="stat-div"></div>
+    <div class="stat-item"><div class="stat-val">24h</div><div class="stat-label">Support Response</div></div>
+  </section>
+
+  <!-- DSP LOGOS MARQUEE -->
   <section class="dsps">
     <p>Distribute everywhere that matters</p>
-    <div class="dsp-row">
-      <div class="dsp-chip">Spotify</div><div class="dsp-chip">Apple Music</div>
-      <div class="dsp-chip">Boomplay</div><div class="dsp-chip">Audiomack</div>
-      <div class="dsp-chip">TikTok</div><div class="dsp-chip">YouTube Music</div>
-      <div class="dsp-chip">Amazon Music</div><div class="dsp-chip">Tidal</div>
-      <div class="dsp-chip">+ 142 more</div>
+    <div class="dsp-marquee-wrap">
+      <div class="dsp-marquee">
+        <div class="dsp-chip">🎧 Spotify</div>
+        <div class="dsp-chip">🍎 Apple Music</div>
+        <div class="dsp-chip">🔊 Boomplay</div>
+        <div class="dsp-chip">🎵 Audiomack</div>
+        <div class="dsp-chip">▶️ YouTube Music</div>
+        <div class="dsp-chip">🎵 TikTok</div>
+        <div class="dsp-chip">📦 Amazon Music</div>
+        <div class="dsp-chip">🌊 Tidal</div>
+        <div class="dsp-chip">🎶 Deezer</div>
+        <div class="dsp-chip">📸 Instagram</div>
+        <div class="dsp-chip">📻 iHeart Radio</div>
+        <div class="dsp-chip">☁️ SoundCloud</div>
+        <div class="dsp-chip">👻 Snapchat</div>
+        <div class="dsp-chip">🎼 Gaana</div>
+        <div class="dsp-chip">🎙️ Saavn</div>
+        <!-- duplicate for seamless loop -->
+        <div class="dsp-chip">🎧 Spotify</div>
+        <div class="dsp-chip">🍎 Apple Music</div>
+        <div class="dsp-chip">🔊 Boomplay</div>
+        <div class="dsp-chip">🎵 Audiomack</div>
+        <div class="dsp-chip">▶️ YouTube Music</div>
+        <div class="dsp-chip">🎵 TikTok</div>
+        <div class="dsp-chip">📦 Amazon Music</div>
+        <div class="dsp-chip">🌊 Tidal</div>
+        <div class="dsp-chip">🎶 Deezer</div>
+        <div class="dsp-chip">📸 Instagram</div>
+        <div class="dsp-chip">📻 iHeart Radio</div>
+        <div class="dsp-chip">☁️ SoundCloud</div>
+      </div>
     </div>
   </section>
 
+  <!-- FEATURES -->
   <section class="section" id="features-sec" style="background:#fff">
-    <div class="section-tag">Why Blakkstone</div>
-    <div class="section-h">Built for African independent artists</div>
-    <p class="section-sub">Everything you need to go global, in one simple platform.</p>
-    <div class="feat-grid">
-      <div class="feat-card"><div class="feat-icon"><i class="ti ti-world"></i></div><h3>Global Distribution</h3><p>One upload. 150+ platforms. Spotify, Apple Music, Boomplay and beyond.</p></div>
-      <div class="feat-card"><div class="feat-icon"><i class="ti ti-coin"></i></div><h3>Royalty Tracking</h3><p>See your earnings clearly. Every stream tracked and reported monthly.</p></div>
-      <div class="feat-card"><div class="feat-icon"><i class="ti ti-chart-bar"></i></div><h3>Analytics</h3><p>Total streams and earnings per release. Know what's making you money.</p></div>
-      <div class="feat-card"><div class="feat-icon"><i class="ti ti-device-mobile"></i></div><h3>Mobile Money Payouts</h3><p>Withdraw via MTN, Vodafone, AirtelTigo or direct bank transfer.</p></div>
-      <div class="feat-card"><div class="feat-icon"><i class="ti ti-users"></i></div><h3>Label Management</h3><p>Manage multiple artists under one account. Perfect for labels and collectives.</p></div>
-      <div class="feat-card"><div class="feat-icon"><i class="ti ti-shield-check"></i></div><h3>Release Protection</h3><p>Your music stays live. We handle delivery, metadata, and compliance.</p></div>
+    <div style="max-width:1100px;margin:0 auto">
+      <div class="section-tag">Why Blakkstone</div>
+      <div class="section-h">Built for African independent artists</div>
+      <p class="section-sub">Everything you need to go global from Ghana, in one platform.</p>
+      <div class="feat-grid">
+        <div class="feat-card feat-card-hover">
+          <div class="feat-icon feat-icon-purple"><i class="ti ti-world"></i></div>
+          <h3>Global Distribution</h3>
+          <p>One upload. 150+ platforms. Your music on Spotify, Apple Music, Boomplay, Audiomack and every major DSP worldwide.</p>
+          <div class="feat-pill">Instant delivery</div>
+        </div>
+        <div class="feat-card feat-card-hover">
+          <div class="feat-icon feat-icon-gold"><i class="ti ti-coin"></i></div>
+          <h3>Royalty Tracking</h3>
+          <p>Every stream tracked and reported clearly. See your earnings per release, per store, every month. Transparent and honest.</p>
+          <div class="feat-pill">Monthly reports</div>
+        </div>
+        <div class="feat-card feat-card-hover">
+          <div class="feat-icon feat-icon-teal"><i class="ti ti-device-mobile"></i></div>
+          <h3>Mobile Money Payouts</h3>
+          <p>Withdraw via MTN MoMo, Vodafone Cash, AirtelTigo Money or direct bank transfer. Paid in GHS, no exchange issues.</p>
+          <div class="feat-pill">5–7 business days</div>
+        </div>
+        <div class="feat-card feat-card-hover">
+          <div class="feat-icon feat-icon-blue"><i class="ti ti-chart-bar"></i></div>
+          <h3>Analytics Dashboard</h3>
+          <p>Track streams by store, see your top performing releases, monitor growth over time. Know exactly what's working.</p>
+          <div class="feat-pill">Real-time data</div>
+        </div>
+        <div class="feat-card feat-card-hover">
+          <div class="feat-icon feat-icon-green"><i class="ti ti-users"></i></div>
+          <h3>Label Management</h3>
+          <p>Manage multiple artists under one account. Perfect for labels, collectives and managers. Up to 5 artists on Label plan.</p>
+          <div class="feat-pill">Up to 5 artists</div>
+        </div>
+        <div class="feat-card feat-card-hover">
+          <div class="feat-icon feat-icon-orange"><i class="ti ti-shield-check"></i></div>
+          <h3>Release Protection</h3>
+          <p>Your music stays live indefinitely. We handle ISRC codes, metadata compliance, takedown protection and dispute management.</p>
+          <div class="feat-pill">Always protected</div>
+        </div>
+      </div>
     </div>
   </section>
 
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how-sec" style="background:var(--black);padding:5rem 2.5rem">
+    <div style="max-width:860px;margin:0 auto;text-align:center">
+      <div class="section-tag" style="color:var(--gold)">Simple process</div>
+      <div class="section-h" style="color:#fff">Get your music live in 3 steps</div>
+      <p style="font-size:15px;color:rgba(255,255,255,.45);margin-bottom:3.5rem">From upload to streaming in days, not weeks.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <div class="how-icon"><i class="ti ti-upload"></i></div>
+        <h3>Upload your music</h3>
+        <p>Upload your tracks (WAV, MP3, FLAC) and cover artwork. Fill in your release details — title, genre, artist info, release date.</p>
+      </div>
+      <div class="how-arrow"><i class="ti ti-arrow-right"></i></div>
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <div class="how-icon"><i class="ti ti-world"></i></div>
+        <h3>We distribute globally</h3>
+        <p>We deliver your music to 150+ DSPs worldwide. Spotify, Apple Music, Boomplay, TikTok, YouTube Music and more — all at once.</p>
+      </div>
+      <div class="how-arrow"><i class="ti ti-arrow-right"></i></div>
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <div class="how-icon"><i class="ti ti-device-mobile"></i></div>
+        <h3>Get paid in GHS</h3>
+        <p>Track your streams and earnings in your dashboard. Request payouts anytime via Mobile Money or bank transfer in Ghana cedis.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANS -->
   <section class="plans-sec" id="pricing-sec">
-    <div style="text-align:center;margin-bottom:2.75rem">
+    <div style="text-align:center;margin-bottom:2.75rem;max-width:600px;margin-left:auto;margin-right:auto">
       <div class="section-tag">Simple Pricing</div>
       <div class="section-h">One price. No surprises.</div>
-      <p style="font-size:15px;color:var(--muted)">Start free. Upgrade when you're ready to grow.</p>
+      <p style="font-size:15px;color:var(--muted)">Start free. Upgrade when you're ready to grow. No per-release fees, ever.</p>
     </div>
     <div class="plans-wrap">
       <div class="plans-grid">
@@ -511,6 +714,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <li><i class="ti ti-check ok"></i> 1 artist profile</li>
             <li><i class="ti ti-check ok"></i> Unlimited releases</li>
             <li><i class="ti ti-check ok"></i> 150+ DSPs</li>
+            <li><i class="ti ti-check ok"></i> Royalty dashboard</li>
+            <li><i class="ti ti-check ok"></i> Mobile Money payouts</li>
             <li><i class="ti ti-x no"></i> 15% royalty commission</li>
             <li><i class="ti ti-x no"></i> Multiple artists</li>
           </ul>
@@ -524,58 +729,150 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <li><i class="ti ti-check ok"></i> 1 artist profile</li>
             <li><i class="ti ti-check ok"></i> Unlimited releases</li>
             <li><i class="ti ti-check ok"></i> 150+ DSPs worldwide</li>
-            <li><i class="ti ti-check ok"></i> 0% commission — keep 100%</li>
+            <li><i class="ti ti-check ok"></i> <strong>0% commission — keep 100%</strong></li>
             <li><i class="ti ti-check ok"></i> ISRC code generation</li>
             <li><i class="ti ti-check ok"></i> Release scheduling</li>
-            <li><i class="ti ti-check ok"></i> Earnings dashboard</li>
-            <li><i class="ti ti-check ok"></i> Mobile Money payouts</li>
+            <li><i class="ti ti-check ok"></i> Full earnings dashboard</li>
+            <li><i class="ti ti-check ok"></i> Mobile Money + Bank payouts</li>
+            <li><i class="ti ti-check ok"></i> Store-level analytics</li>
           </ul>
-          <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('signup')">Get Artist+</button>
+          <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('signup')"><i class="ti ti-crown"></i> Get Artist+</button>
+          <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:.625rem">≈ GHS 310 · Billed annually</div>
         </div>
         <div class="pc">
           <div class="pc-name">Label</div>
           <div class="pc-price">$40 <small>/ year</small></div>
           <p class="pc-desc">Manage up to 5 artists. Built for labels.</p>
           <ul class="pc-feats">
-            <li><i class="ti ti-check ok"></i> Up to 5 artist profiles</li>
+            <li><i class="ti ti-check ok"></i> <strong>Up to 5 artist profiles</strong></li>
             <li><i class="ti ti-check ok"></i> Unlimited releases</li>
             <li><i class="ti ti-check ok"></i> 150+ DSPs worldwide</li>
             <li><i class="ti ti-check ok"></i> 0% commission — keep 100%</li>
             <li><i class="ti ti-check ok"></i> ISRC code generation</li>
-            <li><i class="ti ti-check ok"></i> Release scheduling</li>
             <li><i class="ti ti-check ok"></i> Full royalty & earnings dashboard</li>
             <li><i class="ti ti-check ok"></i> Mobile Money + Bank payouts</li>
             <li><i class="ti ti-check ok"></i> Priority support</li>
+            <li><i class="ti ti-check ok"></i> Dedicated account manager</li>
             <li><i class="ti ti-check ok"></i> Label analytics overview</li>
           </ul>
           <button class="btn btn-dark" style="width:100%;justify-content:center" onclick="showAuth('signup')">Get Label</button>
+          <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:.625rem">≈ GHS 620 · Billed annually</div>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:560px;margin:2rem auto 0;background:#fff8e7;border:1px solid var(--gl);border-radius:10px;padding:1rem 1.25rem;font-size:13px;color:var(--gd);text-align:center">
+      <i class="ti ti-info-circle"></i> The 15% commission on Solo plan covers delivery costs. Upgrade anytime to remove it.
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" style="background:#fff" id="testi-sec">
+    <div style="max-width:1100px;margin:0 auto">
+      <div class="section-tag">Artists love Blakkstone</div>
+      <div class="section-h">Trusted by Ghanaian artists</div>
+      <div class="testi-grid">
+        <div class="tc">
+          <div class="tc-stars">★★★★★</div>
+          <p class="tc-text">"Blakkstone made it so easy to get my music on Spotify and Boomplay. The dashboard is clean and I could see my streams the same day."</p>
+          <div class="tc-author"><div class="tc-av">KA</div><div><div class="tc-name">Kwame A.</div><div class="tc-role">Afrobeats Artist · Accra</div></div></div>
+        </div>
+        <div class="tc">
+          <div class="tc-stars">★★★★★</div>
+          <p class="tc-text">"Finally a distributor that understands Ghana. MTN MoMo payouts, no complicated tax forms, and my music is everywhere within days."</p>
+          <div class="tc-author"><div class="tc-av">AS</div><div><div class="tc-name">Abena S.</div><div class="tc-role">Gospel Artist · Kumasi</div></div></div>
+        </div>
+        <div class="tc">
+          <div class="tc-stars">★★★★★</div>
+          <p class="tc-text">"The Label plan is perfect — I manage 4 artists and we keep 100% of all royalties. It pays for itself with the first month's earnings."</p>
+          <div class="tc-author"><div class="tc-av">EO</div><div><div class="tc-name">Emmanuel O.</div><div class="tc-role">Label Manager · Tema</div></div></div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" style="background:#fff" id="testi-sec">
-    <div class="section-tag">Artists love Blakkstone</div>
-    <div class="section-h">Built for artists like you</div>
-    <div class="testi-grid">
-      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"Blakkstone made it easy to get my music on Spotify and Boomplay. The dashboard is simple and I could see my streams right away."</p><div class="tc-author"><div class="tc-av">KA</div><div><div class="tc-name">Kwame A.</div><div class="tc-role">Afrobeats Artist · Accra</div></div></div></div>
-      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"Finally a distributor that understands Ghana. Mobile Money payouts and no complicated tax forms."</p><div class="tc-author"><div class="tc-av">AS</div><div><div class="tc-name">Abena S.</div><div class="tc-role">Gospel Artist · Kumasi</div></div></div></div>
-      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"I manage 4 artists. The Label plan is worth it — no commission taken from royalties."</p><div class="tc-author"><div class="tc-av">EO</div><div><div class="tc-name">Emmanuel O.</div><div class="tc-role">Label Manager · Tema</div></div></div></div>
+  <!-- FAQ -->
+  <section class="section" id="faq-sec" style="background:var(--off)">
+    <div style="max-width:700px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:2.5rem">
+        <div class="section-tag">FAQ</div>
+        <div class="section-h">Common questions</div>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">How long does it take for my music to go live? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">Typically 3–10 business days depending on the platform. Spotify and Apple Music usually take 3–5 days. You'll receive an email once your release is live.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">How do I get paid? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">You can request payouts via MTN Mobile Money, Vodafone Cash, AirtelTigo Money, or direct bank transfer. All payments are processed in Ghana Cedis (GHS) within 5–7 business days of your request.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">What is the 15% commission on the Solo plan? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">On the free Solo plan, Blakkstone keeps 15% of your royalties to cover distribution infrastructure and costs. Upgrade to Artist+ ($20/year) or Label ($40/year) to keep 100% of everything you earn.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Can I distribute compilations or Various Artists albums? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">Yes. Our submission wizard supports both standard Artist/Band releases and Compilation/Various Artists albums. You can add multiple primary and featured artists per track.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">What audio formats are accepted? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">We accept WAV, MP3 (320kbps minimum), and FLAC files. For best quality on all platforms we recommend 16-bit, 44.1kHz stereo WAV files.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Do I keep my rights when I distribute through Blakkstone? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">Absolutely. You retain 100% ownership of your master recordings and compositions. Blakkstone only acts as a distribution channel — your music always belongs to you.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Can I remove or update a release after it's live? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">Yes. Contact our support team via the dashboard messages and we'll process update requests (metadata corrections, artwork changes) or takedowns within 3–5 business days.</div>
+        </div>
+      </div>
     </div>
   </section>
 
+  <!-- CTA BAND -->
   <section class="cta-band">
-    <h2>Ready to go <span>worldwide?</span></h2>
-    <p>Join thousands of African independent artists distributing with Blakkstone.</p>
-    <button class="btn btn-gold btn-lg" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Create free account</button>
+    <div class="cta-glow"></div>
+    <div style="position:relative;z-index:2">
+      <h2>Ready to go <span>worldwide?</span></h2>
+      <p>Join thousands of African independent artists distributing with Blakkstone. Free forever, no credit card needed.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-gold btn-lg" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Create free account</button>
+        <button class="btn btn-lg" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1.5px solid rgba(255,255,255,.15)" onclick="showAuth('login')">Log in</button>
+      </div>
+    </div>
   </section>
+
+  <!-- FOOTER -->
   <footer>
-    <div class="foot-logo">Blakkstone<span>.</span></div>
-    <p style="font-size:12px;color:#555">© 2025 Blakkstone Distribution. All rights reserved.</p>
-    <p style="font-size:12px;color:#444">Powered by OneRPM · Payments by Paystack</p>
+    <div>
+      <div class="foot-logo" style="margin-bottom:.5rem">Blakkstone<span>.</span></div>
+      <p style="font-size:12px;color:#444;max-width:300px;line-height:1.6">Ghana's independent music distribution platform. Built to help African artists reach the world.</p>
+    </div>
+    <div style="display:flex;gap:3rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#555;margin-bottom:.75rem">Platform</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem">
+          <a onclick="document.getElementById('features-sec')?.scrollIntoView({behavior:'smooth'})" style="font-size:13px;color:#777;cursor:pointer">Features</a>
+          <a onclick="document.getElementById('pricing-sec')?.scrollIntoView({behavior:'smooth'})" style="font-size:13px;color:#777;cursor:pointer">Pricing</a>
+          <a onclick="document.getElementById('how-sec')?.scrollIntoView({behavior:'smooth'})" style="font-size:13px;color:#777;cursor:pointer">How it works</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#555;margin-bottom:.75rem">Support</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem">
+          <a onclick="document.getElementById('faq-sec')?.scrollIntoView({behavior:'smooth'})" style="font-size:13px;color:#777;cursor:pointer">FAQ</a>
+          <a href="mailto:blakkstonemusic@hotmail.com" style="font-size:13px;color:#777">Contact us</a>
+          <a onclick="showAuth('signup')" style="font-size:13px;color:#777;cursor:pointer">Get started</a>
+        </div>
+      </div>
+    </div>
+    <div style="width:100%;border-top:1px solid #1a1a1a;padding-top:1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <p style="font-size:12px;color:#555">© 2025 Blakkstone Distribution. All rights reserved.</p>
+      <p style="font-size:12px;color:#444">Powered by OneRPM · Payments by Paystack · Emails by Resend</p>
+    </div>
   </footer>
 </div>
-
 <!-- ══════════════ AUTH ══════════════ -->
 <div class="view" id="auth" style="background:var(--off);align-items:center;justify-content:center;padding:2rem 1rem">
   <div class="auth-wrap">
@@ -601,7 +898,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="fg"><label>Artist / Label name</label><input id="an" type="text" placeholder="Your artist name"></div>
       </div>
       <div class="fg"><label>Email</label><input id="em" type="email" placeholder="you@email.com"></div>
-      <div class="fg"><label>Password</label><input id="pw" type="password" placeholder="Min. 6 characters"></div>
+      <div class="fg"><label>Password</label>
+        <div style="position:relative">
+          <input id="pw" type="password" placeholder="Min. 6 characters" style="padding-right:44px">
+          <button type="button" onclick="togglePwVis()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px"><i class="ti ti-eye" id="pw-eye"></i></button>
+        </div>
+      </div>
       <button class="btn btn-gold" id="auth-btn" style="width:100%;justify-content:center" onclick="doAuth()">Create account</button>
       <p class="auth-foot" id="auth-foot">Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a></p>
       <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:.6rem"><a onclick="showView('landing')" style="color:var(--muted)">← Back to home</a></p>
@@ -644,59 +946,98 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="avatar" id="tnav-avatar"><i class="ti ti-user" style="font-size:13px"></i></div>
         <div>
           <div style="font-size:12px;font-weight:600;color:#fff" id="tnav-name">—</div>
-          <div style="font-size:10px;font-weight:600;color:var(--gold)" id="tnav-account-id"></div>
+          <div style="font-size:10px;font-weight:600;color:var(--gold);cursor:pointer" id="tnav-account-id" onclick="copyAccountId()" title="Click to copy"></div>
         </div>
       </div>
       <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:none;padding:7px 12px" onclick="logout()"><i class="ti ti-logout"></i></button>
     </div>
   </div>
 
+  <!-- ANNOUNCEMENT BANNER -->
+  <div id="announcement-banner" style="background:linear-gradient(90deg,#7c3aed,#4f46e5);padding:.625rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-shrink:0;display:none">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#fff;font-weight:500">
+      <i class="ti ti-speakerphone" style="font-size:16px"></i>
+      <span id="announcement-text">🎉 Welcome to Blakkstone Distribution! Submit your first release and go global.</span>
+    </div>
+    <button onclick="document.getElementById('announcement-banner').style.display='none'" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.6);font-size:16px;flex-shrink:0">×</button>
+  </div>
   <div class="dash-body">
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
       <div class="ph">
-        <div><h1 id="welcome-h">Overview</h1><p>Here's a snapshot of your music's performance.</p></div>
+        <div>
+          <h1 id="welcome-h">Overview</h1>
+          <p>Here's a snapshot of your music's performance. <span class="welcome-time" id="welcome-time"></span></p>
+        </div>
         <button class="btn btn-purple" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> Create Release</button>
+      </div>
+      <!-- ONBOARDING CHECKLIST (shown until complete) -->
+      <div class="onboard-card" id="onboard-card" style="display:none">
+        <div class="onboard-title">
+          <span>🚀 Getting started checklist</span>
+          <button onclick="document.getElementById('onboard-card').style.display='none'" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:18px">×</button>
+        </div>
+        <div class="onboard-steps">
+          <div class="ob-step done" id="ob-account"><i class="ti ti-check"></i> Account created</div>
+          <div class="ob-step" id="ob-release"><i class="ti ti-music"></i> Submit first release</div>
+          <div class="ob-step" id="ob-profile"><i class="ti ti-user"></i> Complete profile</div>
+          <div class="ob-step" id="ob-payout"><i class="ti ti-wallet"></i> Set up payout</div>
+        </div>
+      </div>
+      <!-- QUICK ACTIONS -->
+      <div class="quick-actions">
+        <div class="qa-btn" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-upload"></i> New Release</div>
+        <div class="qa-btn" onclick="goPage('payout',document.querySelectorAll('.tnav-item')[6])"><i class="ti ti-wallet"></i> Request Payout</div>
+        <div class="qa-btn" onclick="goPage('analytics',document.querySelectorAll('.tnav-item')[5])"><i class="ti ti-chart-bar"></i> View Analytics</div>
+        <div class="qa-btn" onclick="goPage('royalties',document.querySelectorAll('.tnav-item')[4])"><i class="ti ti-coin"></i> Royalties</div>
+        <div class="qa-btn" onclick="goPage('profile',document.querySelectorAll('.tnav-item')[8])"><i class="ti ti-user"></i> Edit Profile</div>
       </div>
       <!-- COLOURFUL STAT CARDS -->
       <div class="overview-cards">
         <div class="ov-card ov-card-1">
           <div class="ov-card-icon"><i class="ti ti-wavesaw-mono"></i></div>
-          <div>
+          <div style="flex:1">
             <div class="ov-card-label">Total Streams</div>
             <div class="ov-card-value" id="s-streams">—</div>
-            <div class="ov-card-sub">All stores</div>
+            <div class="ov-card-sub">All stores · all time</div>
           </div>
+          <i class="ti ti-trending-up" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
         </div>
         <div class="ov-card ov-card-2">
           <div class="ov-card-icon"><i class="ti ti-music"></i></div>
-          <div>
+          <div style="flex:1">
             <div class="ov-card-label">Total Releases</div>
             <div class="ov-card-value" id="s-total">—</div>
             <div class="ov-card-sub" id="s-live-sub">— live on DSPs</div>
           </div>
+          <i class="ti ti-disc" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
         </div>
         <div class="ov-card ov-card-3">
           <div class="ov-card-icon"><i class="ti ti-coin"></i></div>
-          <div>
-            <div class="ov-card-label">Total Earnings</div>
+          <div style="flex:1">
+            <div class="ov-card-label">Available Balance</div>
             <div class="ov-card-value" id="s-earnings">$0.00</div>
-            <div class="ov-card-sub">Your payout balance</div>
+            <div class="ov-card-sub">Ready to withdraw</div>
           </div>
+          <i class="ti ti-cash" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
         </div>
         <div class="ov-card ov-card-4">
           <div class="ov-card-icon"><i class="ti ti-clock"></i></div>
-          <div>
+          <div style="flex:1">
             <div class="ov-card-label">Pending Review</div>
             <div class="ov-card-value" id="s-pending">—</div>
             <div class="ov-card-sub">Awaiting distribution</div>
           </div>
+          <i class="ti ti-loader" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
         </div>
       </div>
       <!-- YOUR RELEASES -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-        <h2 style="font-size:20px;font-weight:800;color:#fff">Your Releases</h2>
-        <button class="btn" style="background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1);font-size:12px;padding:6px 12px" onclick="goPage('releases',document.querySelectorAll('.tnav-item')[1])">View all</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <h2 style="font-size:20px;font-weight:800;color:#fff">Your Releases</h2>
+          <span style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px" id="releases-count-badge"></span>
+        </div>
+        <button class="btn" style="background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1);font-size:12px;padding:6px 12px" onclick="goPage('releases',document.querySelectorAll('.tnav-item')[1])">View all <i class="ti ti-arrow-right"></i></button>
       </div>
       <div id="ov-releases-grid" class="releases-grid"></div>
     </div>
@@ -1148,8 +1489,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div class="prof-av" id="profile-avatar-big" onclick="document.getElementById('avatar-input').click()"><span id="profile-avatar-initials">--</span></div>
           <div>
             <div style="font-size:14px;font-weight:700;color:#fff" id="profile-display-name">--</div>
-            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-top:4px" id="profile-account-id">—</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Your Blakkstone Account ID</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-top:4px;cursor:pointer;display:flex;align-items:center;gap:6px" id="profile-account-id" onclick="copyAccountId()" title="Click to copy">—<i class="ti ti-copy" style="font-size:12px;opacity:.5"></i></div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Your Blakkstone Account ID · Click to copy</div>
             <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:4px">Click avatar to change photo</div>
             <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
           </div>
@@ -1161,6 +1502,22 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="fg"><label>Artist / Label Name</label><input id="p-an" type="text"></div>
         <div class="fg"><label>Email</label><input id="p-em" type="email" disabled style="opacity:.4;cursor:not-allowed"></div>
         <button class="btn btn-purple" id="save-profile-btn" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Changes</button>
+        <div class="divhr"></div>
+        <!-- ACCOUNT STATS -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem">
+          <div style="background:#131320;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:.875rem;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:#fff" id="prof-release-count">0</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Releases</div>
+          </div>
+          <div style="background:#131320;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:.875rem;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:#34d399" id="prof-earnings">$0.00</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Earnings</div>
+          </div>
+          <div style="background:#131320;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:.875rem;text-align:center">
+            <div style="font-size:11px;font-weight:700;color:#a78bfa;padding:3px 8px;background:rgba(124,58,237,.15);border-radius:20px;display:inline-block" id="prof-plan-badge">Solo</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:4px">Your Plan</div>
+          </div>
+        </div>
         <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-lock"></i> Change Password</div>
         <div class="fg"><label>New Password</label><input id="p-pw" type="password" placeholder="Min. 6 characters"></div>
@@ -1427,6 +1784,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- PAGE PROGRESS BAR -->
+<div class="page-progress" id="page-progress" style="width:0"></div>
+
+<!-- SUPPORT BUBBLE (landing only) -->
+<div class="support-bubble" id="support-bubble" onclick="showAuth('signup')" style="display:none">
+  <i class="ti ti-message-circle"></i>
+  <div class="support-tooltip">💬 Chat with us</div>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1447,6 +1813,7 @@ let user=null,profile=null,authMode='signup',billing='monthly',payoutMethod=null
 function showView(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  updateSupportBubble();
 }
 
 // ── AUTH ──────────────────────────────────────────────
@@ -1464,6 +1831,13 @@ function showAuth(mode){
   showView('auth');
 }
 function toggleAuth(){showAuth(authMode==='signup'?'login':'signup');}
+function togglePwVis(){
+  const pw=document.getElementById('pw');
+  const eye=document.getElementById('pw-eye');
+  if(!pw||!eye)return;
+  if(pw.type==='password'){pw.type='text';eye.className='ti ti-eye-off';}
+  else{pw.type='password';eye.className='ti ti-eye';}
+}
 
 async function doAuth(){
   const btn=document.getElementById('auth-btn');
@@ -1564,7 +1938,9 @@ function enterDashboard(){
     // Replace state (not push) so back from initial load goes to pre-dashboard
     history.replaceState({page:pageToLoad},'',window.location.pathname+'#'+pageToLoad);
     goPage(pageToLoad,matchedNav||document.querySelector('.tnav-item'));
-    loadReleases();
+    loadReleases().then(()=>updateOnboarding());
+    updateWelcomeTime();
+    updateSupportBubble();
     if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){
     console.error('enterDashboard error:',e);
@@ -1620,6 +1996,7 @@ function goPage(id,el){
   if(id==='royalties')loadRoyalties();
   if(id==='payout')loadPayout();
   if(id==='artists')loadArtists();
+  if(id==='profile')loadProfileStats();
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
 }
 
@@ -1633,6 +2010,11 @@ async function loadReleases(){
   if(error){toast('Error loading releases','err');return;}
   allRelData=data||[];
   const releases=allRelData;
+  // Show welcome banner for users with no releases
+  const banner=document.getElementById('announcement-banner');
+  if(banner&&releases.length===0&&profile){
+    banner.style.display='flex';
+  }
   const live=releases.filter(r=>r.status==='live').length;
   const pending=releases.filter(r=>r.status==='pending').length;
   const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
@@ -1640,6 +2022,8 @@ async function loadReleases(){
   const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const payout=isPaid?earnings:earnings*(1-COMM);
   if(document.getElementById('s-total')) document.getElementById('s-total').textContent=releases.length;
+  const rcb=document.getElementById('releases-count-badge');
+  if(rcb) rcb.textContent=releases.length>0?releases.length+' total':'';
   if(document.getElementById('s-live-sub')) document.getElementById('s-live-sub').textContent=live+' live on DSPs';
   if(document.getElementById('s-pending')) document.getElementById('s-pending').textContent=pending;
   if(document.getElementById('s-streams')) document.getElementById('s-streams').textContent=streams.toLocaleString();
@@ -1810,6 +2194,15 @@ async function openArtistModal(userId,name){
   document.getElementById('artist-overlay').classList.add('open');
 }
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
+
+// Close modals on Escape key
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeArtistModal();
+    closePaystack();
+    document.getElementById('payout-method-section').style.display='none';
+  }
+});
 
 // ── ANALYTICS ─────────────────────────────────────────
 // Simple SVG line chart renderer
@@ -2172,6 +2565,25 @@ async function cancelPayout(id){
 }
 
 // ── PROFILE ───────────────────────────────────────────
+async function loadProfileStats(){
+  try{
+    const {data:rels}=await sb.from('releases').select('streams,earnings').eq('user_id',user.id);
+    const cnt=rels?.length||0;
+    const earn=(rels||[]).reduce((a,r)=>a+(r.earnings||0),0);
+    const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+    const net=isPaid?earn:earn*(1-COMM);
+    const rc=document.getElementById('prof-release-count');
+    const re=document.getElementById('prof-earnings');
+    const pb=document.getElementById('prof-plan-badge');
+    if(rc) rc.textContent=cnt;
+    if(re) re.textContent='$'+net.toFixed(2);
+    if(pb){
+      const planLabel={admin:'Admin',label:'Label',artist_plus:'Artist+',solo:'Solo'}[profile?.plan]||'Solo';
+      pb.textContent=planLabel;
+    }
+  }catch(e){}
+}
+
 async function saveProfile(){
   const fn=document.getElementById('p-fn').value.trim();
   const ln=document.getElementById('p-ln').value.trim();
@@ -3199,6 +3611,76 @@ async function requestNotifPermission(){
   if(Notification.permission==='default'){
     await Notification.requestPermission();
   }
+}
+
+// ── LANDING ENHANCEMENTS ──────────────────────────────
+function toggleFaq(el){
+  const isOpen=el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(f=>f.classList.remove('open'));
+  if(!isOpen) el.classList.add('open');
+}
+
+// Sticky nav scroll effect
+window.addEventListener('scroll',()=>{
+  const lnav=document.getElementById('lnav');
+  if(lnav) lnav.classList.toggle('scrolled',window.scrollY>20);
+  // Page progress bar
+  const prog=document.getElementById('page-progress');
+  if(prog){
+    const pct=(window.scrollY/(document.body.scrollHeight-window.innerHeight))*100;
+    prog.style.width=Math.min(100,pct)+'%';
+  }
+},{ passive:true });
+
+// Show support bubble only on landing
+function updateSupportBubble(){
+  try{
+    const bubble=document.getElementById('support-bubble');
+    if(!bubble)return;
+    const landing=document.getElementById('landing');
+    bubble.style.display=(landing&&landing.classList.contains('active'))?'flex':'none';
+  }catch(e){}
+}
+
+// ── WELCOME TIME GREETING ──────────────────────────────
+function updateWelcomeTime(){
+  const el=document.getElementById('welcome-time');
+  if(!el)return;
+  const h=new Date().getHours();
+  const greet=h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';
+  el.textContent='· '+greet;
+}
+
+// ── ONBOARDING CHECKLIST ──────────────────────────────
+function updateOnboarding(){
+  const card=document.getElementById('onboard-card');
+  if(!card)return;
+  // Check if user has releases
+  const hasRelease=allRelData.length>0;
+  const hasProfile=!!(profile?.artist_name&&profile?.full_name);
+  const obRelease=document.getElementById('ob-release');
+  const obProfile=document.getElementById('ob-profile');
+  if(obRelease) obRelease.className='ob-step'+(hasRelease?' done':'');
+  if(obRelease) obRelease.innerHTML=(hasRelease?'<i class="ti ti-check"></i>':'<i class="ti ti-music"></i>')+' Submit first release';
+  if(obProfile) obProfile.className='ob-step'+(hasProfile?' done':'');
+  if(obProfile) obProfile.innerHTML=(hasProfile?'<i class="ti ti-check"></i>':'<i class="ti ti-user"></i>')+' Complete profile';
+  // Show card if not everything done
+  const allDone=hasRelease&&hasProfile;
+  // Only show first 5 days after signup
+  if(!allDone){
+    const signupDate=profile?.created_at?new Date(profile.created_at):new Date();
+    const daysSince=(Date.now()-signupDate)/86400000;
+    if(daysSince<5) card.style.display='block';
+  }
+}
+
+// Support bubble updates handled via updateSupportBubble calls
+
+// ── COPY ACCOUNT ID ──────────────────────────────────
+function copyAccountId(){
+  const id=profile?.account_id;
+  if(!id)return;
+  navigator.clipboard.writeText(id).then(()=>toast('Account ID copied: '+id,'ok'));
 }
 
 // ── INIT ──────────────────────────────────────────────
