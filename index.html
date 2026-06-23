@@ -2368,7 +2368,7 @@ document.addEventListener('keydown',e=>{
 
 // ── ANALYTICS ─────────────────────────────────────────
 // Simple SVG line chart renderer
-function renderLineChart(canvasId, labels, data, color='#a78bfa'){
+function renderLineChart(canvasId, labels, data, color='#a78bfa', prefix='$'){
   const canvas=document.getElementById(canvasId);
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
@@ -2383,7 +2383,7 @@ function renderLineChart(canvasId, labels, data, color='#a78bfa'){
     return;
   }
   const max=Math.max(...data,1);
-  const padL=40,padR=20,padT=20,padB=30;
+  const padL=44,padR=20,padT=20,padB=30;
   const cW=W-padL-padR,cH=H-padT-padB;
   const pts=data.map((v,i)=>({x:padL+i*(cW/(data.length-1||1)),y:padT+cH-(v/max)*cH}));
   // Grid lines
@@ -2392,7 +2392,9 @@ function renderLineChart(canvasId, labels, data, color='#a78bfa'){
     ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
     ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='10px Inter';
-    ctx.fillText('$'+(max*(1-i/4)).toFixed(0),2,y+4);
+    const val=max*(1-i/4);
+    const label=prefix==='$'?'$'+val.toFixed(0):val>=1000?(val/1000).toFixed(1)+'k':val.toFixed(0);
+    ctx.fillText(label,2,y+4);
   }
   // Fill
   ctx.beginPath();
@@ -2532,7 +2534,7 @@ async function loadAnalytics(){
   const now=new Date();
   const labels=Array.from({length:7},(_,i)=>months[(now.getMonth()-6+i+12)%12]);
   const chartData=[0,0,0,0,0,0,ts].map((v,i)=>i===6?v:Math.round(ts*Math.random()*.4));
-  setTimeout(()=>renderLineChart('analytics-chart',labels,chartData,'#7c3aed'),100);
+  setTimeout(()=>renderLineChart('analytics-chart',labels,chartData,'#7c3aed',''),100);
 }
 
 
