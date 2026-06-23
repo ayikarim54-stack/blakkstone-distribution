@@ -1248,28 +1248,64 @@ async function loadAnalytics(){
 
 // ── ROYALTIES ─────────────────────────────────────────
 async function loadRoyalties(){
-  const {data}=await sb.from('releases').select('*').eq('user_id',user.id);
-  const rl=(data||[]).filter(r=>(r.earnings||0)>0);
+  // Fetch releases AND pending/processing payouts together
+  const [{data:relData},{data:payoutData}]=await Promise.all([
+    sb.from('releases').select('*').eq('user_id',user.id),
+    sb.from('payouts').select('amount,status').eq('user_id',user.id)
+  ]);
+  const rl=(relData||[]).filter(r=>(r.earnings||0)>0);
   const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
   const comm=isPaid?0:gross*COMM;
-  const payout=gross-comm;
+  const totalPayout=gross-comm;
+  // Deduct any pending or processing payout requests
+  const pendingPayouts=(payoutData||[])
+    .filter(p=>p.status==='pending'||p.status==='processing')
+    .reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const available=Math.max(0,totalPayout-pendingPayouts);
   document.getElementById('r-gross').textContent='$'+gross.toFixed(2);
   document.getElementById('r-commission').textContent=isPaid?'$0.00':'-$'+comm.toFixed(2);
-  document.getElementById('r-payout').textContent='$'+payout.toFixed(2);
+  document.getElementById('r-payout').textContent='$'+available.toFixed(2);
   document.getElementById('r-updated').textContent=rl.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';
+  // Show pending payout deduction notice if any
+  const commBar=document.getElementById('commission-bar');
+  if(commBar&&pendingPayouts>0){
+    const existing=commBar.querySelector('.payout-deduct-notice');
+    if(!existing){
+      const notice=document.createElement('div');
+      notice.className='payout-deduct-notice';
+      notice.style.cssText='background:#ebf4ff;border:1px solid #bdd7f5;border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:var(--info);margin-bottom:1rem;display:flex;align-items:center;gap:7px';
+      notice.innerHTML='<i class="ti ti-clock"></i> <strong>$'+pendingPayouts.toFixed(2)+'</strong> is pending payout processing and has been deducted from your available balance.';
+      commBar.insertAdjacentElement('afterend',notice);
+    }
+  }
   const tbody=document.getElementById('royalty-tbody');
   if(!rl.length){tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">No royalty data yet.</td></tr>`;return;}
-  tbody.innerHTML=rl.map(r=>{const rc=isPaid?0:(r.earnings||0)*COMM;const rp=(r.earnings||0)-rc;return `<tr><td>${esc(r.title)}</td><td>${(r.streams||0).toLocaleString()}</td><td>$${(r.earnings||0).toFixed(2)}</td><td style="color:var(--danger)">-$${rc.toFixed(2)}</td><td style="color:var(--gd);font-weight:600">$${rp.toFixed(2)}</td></tr>`;}).join('');
+  tbody.innerHTML=rl.map(r=>{
+    const rc=isPaid?0:(r.earnings||0)*COMM;
+    const rp=(r.earnings||0)-rc;
+    return `<tr><td>${esc(r.title)}</td><td>${(r.streams||0).toLocaleString()}</td><td>$${(r.earnings||0).toFixed(2)}</td><td style="color:var(--danger)">-$${rc.toFixed(2)}</td><td style="color:var(--gd);font-weight:600">$${rp.toFixed(2)}</td></tr>`;
+  }).join('');
 }
 
 // ── PAYOUT ────────────────────────────────────────────
 async function loadPayout(){
-  const {data}=await sb.from('releases').select('earnings').eq('user_id',user.id);
+  const [{data:relData},{data:payoutData}]=await Promise.all([
+    sb.from('releases').select('earnings').eq('user_id',user.id),
+    sb.from('payouts').select('amount,status').eq('user_id',user.id)
+  ]);
   const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
-  const gross=(data||[]).reduce((a,r)=>a+(r.earnings||0),0);
-  const bal=isPaid?gross:gross*(1-COMM);
+  const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
+  const afterComm=isPaid?gross:gross*(1-COMM);
+  // Deduct pending/processing payouts from available balance
+  const pendingPayouts=(payoutData||[])
+    .filter(p=>p.status==='pending'||p.status==='processing')
+    .reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const bal=Math.max(0,afterComm-pendingPayouts);
   document.getElementById('payout-balance').textContent='$'+bal.toFixed(2);
+  // Update withdraw input max
+  const wi=document.getElementById('withdraw-amount');
+  if(wi) wi.max=bal;
   try{
     const {data:ph}=await sb.from('payouts').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
     const h=document.getElementById('payout-history');
@@ -1305,10 +1341,17 @@ async function submitPayout(){
   const requestedAmount=parseFloat(withdrawInput?.value||0);
   if(!requestedAmount||requestedAmount<1){toast('Enter a valid withdrawal amount (min $1.00)','err');return;}
   // Check against available balance
-  const {data:relData}=await sb.from('releases').select('earnings').eq('user_id',user.id);
+  const [{data:relData},{data:existingPayouts}]=await Promise.all([
+    sb.from('releases').select('earnings').eq('user_id',user.id),
+    sb.from('payouts').select('amount,status').eq('user_id',user.id)
+  ]);
   const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
-  const available=isPaid?gross:gross*(1-COMM);
+  const afterComm=isPaid?gross:gross*(1-COMM);
+  const pendingTotal=(existingPayouts||[])
+    .filter(p=>p.status==='pending'||p.status==='processing')
+    .reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const available=Math.max(0,afterComm-pendingTotal);
   if(requestedAmount>available){toast('Amount exceeds your available balance of $'+available.toFixed(2),'err');return;}
   let account='',network='';
   if(payoutMethod==='momo'){
@@ -1597,7 +1640,7 @@ async function loadAdminPayouts(){
     // Fetch all profiles first, then join manually (bypasses RLS cross-user restriction)
     const [{data:payouts,error:pe},{data:profiles}]=await Promise.all([
       sb.from('payouts').select('*').order('created_at',{ascending:false}),
-      sb.from('profiles').select('id,artist_name,full_name,email')
+      sb.from('profiles').select('id,artist_name,full_name,email,account_id')
     ]);
     if(pe){
       console.error('Payouts fetch error:',pe);
