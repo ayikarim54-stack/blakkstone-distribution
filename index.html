@@ -796,7 +796,7 @@ tr:hover td{background:var(--off)}
         <div id="payout-pending-notice"></div>
         <div class="tw">
           <table>
-            <thead><tr><th>Artist</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
+            <thead><tr><th>Account ID</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
             <tbody id="admin-payouts-tbody"></tbody>
           </table>
         </div>
@@ -1278,7 +1278,7 @@ async function loadPayout(){
       const statusColor={pending:'color:#b7791f',processing:'color:var(--info)',paid:'color:var(--success)',failed:'color:var(--danger)',cancelled:'color:var(--muted)'}[p.status]||'';
       const canCancel=p.status==='pending';
       const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'';
-      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:8px"><div><div style="font-size:13px;font-weight:600">'+(p.method==='momo'?'📱 '+esc(p.network||'')+' MoMo':'🏦 Bank Transfer')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+esc(p.account||'')+' · '+d+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:var(--gd)">$'+parseFloat(p.amount||0).toFixed(2)+'</span><span style="font-size:11px;font-weight:600;'+statusColor+'">'+p.status+'</span>'+(canCancel?'<button class="btn-danger-outline" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</div></div>';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:8px"><div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:800;color:var(--gold)">'+(profile?.account_id||'')+'</span><span style="font-size:13px;font-weight:600;">'+(p.method==='momo'?'📱 '+esc(p.network||'')+' MoMo':'🏦 Bank Transfer')+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+esc(p.account||'')+' · '+d+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:var(--gd)">$'+parseFloat(p.amount||0).toFixed(2)+'</span><span style="font-size:11px;font-weight:600;'+statusColor+'">'+p.status+'</span>'+(canCancel?'<button class="btn-danger-outline" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</div></div>';
     }).join('');
   }catch(e){}
 }
@@ -1623,9 +1623,8 @@ async function loadAdminPayouts(){
       const stColor={pending:'color:var(--danger)',processing:'color:var(--info)',paid:'color:var(--success)',failed:'color:var(--muted)',cancelled:'color:var(--muted)'}[p.status]||'';
       return `<tr>
         <td>
-          <div style="font-size:13px;font-weight:700;color:var(--gold)">${esc(accountId)}</div>
-          <div style="font-size:12px;font-weight:600;color:var(--text);margin-top:1px">${esc(name)}</div>
-          <div style="font-size:11px;color:var(--muted)">${esc(prof.email||'')}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--gold);letter-spacing:.5px">${esc(accountId)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${esc(name)}</div>
         </td>
         <td>${p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer'}</td>
         <td style="color:var(--muted)">${esc(p.network||'—')}</td>
