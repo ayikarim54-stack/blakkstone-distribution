@@ -374,27 +374,35 @@ tr:hover td{background:var(--off)}
         </div>
         <div class="pc featured">
           <div class="pc-name">Artist+</div>
-          <div class="pc-price">$20 <small>/ month</small></div>
+          <div class="pc-price">$20 <small>/ year</small></div>
           <p class="pc-desc">Keep 100% of your royalties. For serious artists.</p>
           <ul class="pc-feats">
             <li><i class="ti ti-check ok"></i> 1 artist profile</li>
             <li><i class="ti ti-check ok"></i> Unlimited releases</li>
-            <li><i class="ti ti-check ok"></i> 150+ DSPs</li>
-            <li><i class="ti ti-check ok"></i> 0% commission</li>
-            <li><i class="ti ti-x no"></i> Multiple artists</li>
+            <li><i class="ti ti-check ok"></i> 150+ DSPs worldwide</li>
+            <li><i class="ti ti-check ok"></i> 0% commission — keep 100%</li>
+            <li><i class="ti ti-check ok"></i> ISRC code generation</li>
+            <li><i class="ti ti-check ok"></i> Release scheduling</li>
+            <li><i class="ti ti-check ok"></i> Earnings dashboard</li>
+            <li><i class="ti ti-check ok"></i> Mobile Money payouts</li>
           </ul>
           <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('signup')">Get Artist+</button>
         </div>
         <div class="pc">
           <div class="pc-name">Label</div>
-          <div class="pc-price">$40 <small>/ month</small></div>
+          <div class="pc-price">$40 <small>/ year</small></div>
           <p class="pc-desc">Manage up to 5 artists. Built for labels.</p>
           <ul class="pc-feats">
-            <li><i class="ti ti-check ok"></i> Up to 5 artists</li>
+            <li><i class="ti ti-check ok"></i> Up to 5 artist profiles</li>
             <li><i class="ti ti-check ok"></i> Unlimited releases</li>
-            <li><i class="ti ti-check ok"></i> 150+ DSPs</li>
-            <li><i class="ti ti-check ok"></i> 0% commission</li>
+            <li><i class="ti ti-check ok"></i> 150+ DSPs worldwide</li>
+            <li><i class="ti ti-check ok"></i> 0% commission — keep 100%</li>
+            <li><i class="ti ti-check ok"></i> ISRC code generation</li>
+            <li><i class="ti ti-check ok"></i> Release scheduling</li>
+            <li><i class="ti ti-check ok"></i> Full royalty & earnings dashboard</li>
+            <li><i class="ti ti-check ok"></i> Mobile Money + Bank payouts</li>
             <li><i class="ti ti-check ok"></i> Priority support</li>
+            <li><i class="ti ti-check ok"></i> Label analytics overview</li>
           </ul>
           <button class="btn btn-dark" style="width:100%;justify-content:center" onclick="showAuth('signup')">Get Label</button>
         </div>
@@ -554,11 +562,20 @@ tr:hover td{background:var(--off)}
 
     <!-- ANALYTICS -->
     <div class="page" id="page-analytics">
-      <div class="ph"><div><h1>Analytics</h1><p>Streams and earnings overview.</p></div></div>
+      <div class="ph"><div><h1>Analytics</h1><p>Streams, earnings and store performance.</p></div></div>
       <div class="ag">
         <div class="ac"><div class="ac-label">Total Streams</div><div class="ac-val" id="a-streams">0</div><div class="ac-sub">All releases</div></div>
         <div class="ac"><div class="ac-label">Gross Earnings</div><div class="ac-val" id="a-earnings">$0.00</div><div class="ac-sub">Before commission</div></div>
         <div class="ac"><div class="ac-label">Your Payout</div><div class="ac-val" id="a-payout">$0.00</div><div class="ac-sub" id="a-payout-sub">After 15% commission</div></div>
+        <div class="ac"><div class="ac-label">Live Releases</div><div class="ac-val" id="a-live">0</div><div class="ac-sub">On DSPs</div></div>
+      </div>
+      <!-- STORES SECTION -->
+      <div style="font-size:13px;font-weight:700;margin-bottom:.875rem;margin-top:.25rem">Store Performance</div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem">
+        <table>
+          <thead><tr><th>Store</th><th>Est. Streams</th><th>Est. Revenue</th><th>Share</th><th>Status</th></tr></thead>
+          <tbody id="stores-tbody"></tbody>
+        </table>
       </div>
       <div style="font-size:13px;font-weight:700;margin-bottom:.875rem">Per Release</div>
       <div id="analytics-releases"></div>
@@ -630,29 +647,41 @@ tr:hover td{background:var(--off)}
         </div>
         <div class="ug-card featured">
           <div class="ug-name">Artist+</div>
-          <div class="ug-price">$20 <small>/ month</small></div>
+          <div class="ug-price">$20 <small>/ year</small></div>
           <p class="ug-desc">Keep 100% of your royalties.</p>
           <ul class="ug-feats">
             <li><i class="ti ti-check ck"></i> 1 artist profile</li>
             <li><i class="ti ti-check ck"></i> Unlimited releases</li>
-            <li><i class="ti ti-check ck"></i> 150+ DSPs</li>
-            <li><i class="ti ti-check ck"></i> 0% commission</li>
-            <li><i class="ti ti-x cx"></i> Multiple artists</li>
+            <li><i class="ti ti-check ck"></i> 150+ DSPs worldwide</li>
+            <li><i class="ti ti-check ck"></i> 0% commission — keep 100%</li>
+            <li><i class="ti ti-check ck"></i> ISRC code generation</li>
+            <li><i class="ti ti-check ck"></i> Release scheduling</li>
+            <li><i class="ti ti-check ck"></i> Earnings & streams dashboard</li>
+            <li><i class="ti ti-check ck"></i> Mobile Money payouts</li>
+            <li><i class="ti ti-check ck"></i> Store-by-store analytics</li>
+            <li><i class="ti ti-x cx"></i> Multiple artist profiles</li>
           </ul>
-          <button class="btn btn-gold" id="ug-artist-btn" style="width:100%;justify-content:center" onclick="openPaystack('artist_plus')"><i class="ti ti-crown"></i> Upgrade</button>
+          <button class="btn btn-gold" id="ug-artist-btn" style="width:100%;justify-content:center" onclick="openPaystack('artist_plus')"><i class="ti ti-crown"></i> Upgrade to Artist+</button>
         </div>
         <div class="ug-card">
           <div class="ug-name">Label</div>
-          <div class="ug-price">$40 <small>/ month</small></div>
+          <div class="ug-price">$40 <small>/ year</small></div>
           <p class="ug-desc">Up to 5 artists. For labels and collectives.</p>
           <ul class="ug-feats">
-            <li><i class="ti ti-check ck"></i> Up to 5 artists</li>
+            <li><i class="ti ti-check ck"></i> Up to 5 artist profiles</li>
             <li><i class="ti ti-check ck"></i> Unlimited releases</li>
-            <li><i class="ti ti-check ck"></i> 150+ DSPs</li>
-            <li><i class="ti ti-check ck"></i> 0% commission</li>
+            <li><i class="ti ti-check ck"></i> 150+ DSPs worldwide</li>
+            <li><i class="ti ti-check ck"></i> 0% commission — keep 100%</li>
+            <li><i class="ti ti-check ck"></i> ISRC code generation</li>
+            <li><i class="ti ti-check ck"></i> Release scheduling & pre-orders</li>
+            <li><i class="ti ti-check ck"></i> Full royalty & earnings dashboard</li>
+            <li><i class="ti ti-check ck"></i> Mobile Money + Bank payouts</li>
+            <li><i class="ti ti-check ck"></i> Store-by-store analytics</li>
+            <li><i class="ti ti-check ck"></i> Label-wide analytics overview</li>
             <li><i class="ti ti-check ck"></i> Priority support</li>
+            <li><i class="ti ti-check ck"></i> Dedicated account manager</li>
           </ul>
-          <button class="btn btn-dark" id="ug-label-btn" style="width:100%;justify-content:center" onclick="openPaystack('label')">Get Label</button>
+          <button class="btn btn-dark" id="ug-label-btn" style="width:100%;justify-content:center" onclick="openPaystack('label')">Get Label Plan</button>
         </div>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:1.1rem;font-size:13px;color:var(--muted);line-height:1.7;max-width:660px">
@@ -799,8 +828,8 @@ tr:hover td{background:var(--off)}
     <h3 id="pay-modal-title">Upgrade Plan</h3>
     <p id="pay-modal-desc">Keep 100% of your royalties with Blakkstone.</p>
     <div class="btog" id="billing-toggle">
-      <div class="bopt sel" id="b-monthly" onclick="setBilling('monthly')">Monthly<strong id="b-monthly-price">$20</strong></div>
-      <div class="bopt" id="b-yearly" onclick="setBilling('yearly')">Yearly<strong id="b-yearly-price">$180</strong><small style="font-size:10px;color:var(--success)">Save 25%</small></div>
+      <div class="bopt sel" id="b-monthly" style="pointer-events:none;opacity:.5">Monthly<strong id="b-monthly-price">$20</strong><small style="font-size:10px;color:var(--muted)">Not available</small></div>
+      <div class="bopt sel" id="b-yearly" onclick="setBilling('yearly')">Annual<strong id="b-yearly-price">$20</strong><small style="font-size:10px;color:var(--success)">Best value</small></div>
     </div>
     <div class="fg"><label>Email</label><input id="pay-em" type="email" placeholder="you@email.com"></div>
     <div class="rate-note" id="rate-note"></div>
@@ -823,7 +852,7 @@ const PK='pk_live_cc83d66ba957fe1358d7246e796ab0e81715fdf9';
 const ADMIN_EMAIL='blakkstonemusic@hotmail.com';
 const COMM=0.15;
 const GHS_RATE=15.5;
-const PLANS={artist_plus:{monthly:20,yearly:180,label:'Artist+'},label:{monthly:40,yearly:360,label:'Label'}};
+const PLANS={artist_plus:{monthly:20,yearly:20,label:'Artist+'},label:{monthly:40,yearly:40,label:'Label'}};
 
 const sb=supabase.createClient(SB_URL,SB_KEY);
 let user=null,profile=null,authMode='signup',billing='monthly',payoutMethod=null,momoNetwork=null,selectedPlan='artist_plus';
@@ -1119,9 +1148,23 @@ async function openArtistModal(userId,name){
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
 
 // ── ANALYTICS ─────────────────────────────────────────
+// DSP store distribution weights (estimated)
+const DSP_STORES=[
+  {name:'Spotify',icon:'🎧',share:.38},
+  {name:'Apple Music',icon:'🍎',share:.18},
+  {name:'YouTube Music',icon:'▶️',share:.14},
+  {name:'Audiomack',icon:'🎵',share:.10},
+  {name:'Boomplay',icon:'🔊',share:.09},
+  {name:'Amazon Music',icon:'📦',share:.05},
+  {name:'Tidal',icon:'🌊',share:.03},
+  {name:'Deezer',icon:'🎶',share:.02},
+  {name:'Others',icon:'🌐',share:.01},
+];
+
 async function loadAnalytics(){
   const {data}=await sb.from('releases').select('*').eq('user_id',user.id);
   const rl=(data||[]).filter(r=>r.status==='live');
+  const allRl=data||[];
   const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const ts=rl.reduce((a,r)=>a+(r.streams||0),0);
   const te=rl.reduce((a,r)=>a+(r.earnings||0),0);
@@ -1131,9 +1174,56 @@ async function loadAnalytics(){
   document.getElementById('a-earnings').textContent='$'+te.toFixed(2);
   document.getElementById('a-payout').textContent='$'+payout.toFixed(2);
   document.getElementById('a-payout-sub').textContent=isPaid?'No commission':'After 15% commission';
-  const c=document.getElementById('analytics-releases');
-  if(!rl.length){c.innerHTML=emptyState('No live releases. Analytics appear once music is live.');return;}
-  c.innerHTML=rl.map(r=>{const rc=isPaid?0:(r.earnings||0)*COMM;const rp=(r.earnings||0)-rc;return `<div class="rar"><div class="rar-head"><div class="r-art" style="width:40px;height:40px">${r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`:'<i class="ti ti-music" style="font-size:18px"></i>'}</div><div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)}</div></div><span class="badge b-live">Live</span></div><div class="rar-body"><div class="rm"><strong>${(r.streams||0).toLocaleString()}</strong>Streams</div><div class="rm"><strong>$${(r.earnings||0).toFixed(2)}</strong>Gross</div><div class="rm"><strong style="color:var(--danger)">-$${rc.toFixed(2)}</strong>Commission</div><div class="rm"><strong style="color:var(--gd)">$${rp.toFixed(2)}</strong>Payout</div></div></div>`;}).join('');
+  document.getElementById('a-live').textContent=rl.length;
+
+  // Render store breakdown table
+  const storesTbody=document.getElementById('stores-tbody');
+  if(storesTbody){
+    if(!rl.length){
+      storesTbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">No live releases yet. Store data appears once your music is live.</td></tr>';
+    } else {
+      storesTbody.innerHTML=DSP_STORES.map(s=>{
+        const estStreams=Math.round(ts*s.share);
+        const estRev=(te*s.share);
+        const pct=Math.round(s.share*100);
+        return `<tr>
+          <td><span style="font-size:16px;margin-right:8px">${s.icon}</span><strong>${s.name}</strong></td>
+          <td>${estStreams.toLocaleString()}</td>
+          <td>$${estRev.toFixed(2)}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;height:6px;background:var(--off);border-radius:3px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:var(--gold);border-radius:3px"></div>
+              </div>
+              <span style="font-size:11px;color:var(--muted);width:28px">${pct}%</span>
+            </div>
+          </td>
+          <td><span style="font-size:11px;font-weight:600;color:var(--success);background:#f0fff4;padding:2px 8px;border-radius:20px">Live ✓</span></td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  // Per-release breakdown
+  const container=document.getElementById('analytics-releases');
+  if(!rl.length){container.innerHTML=emptyState('No live releases. Analytics appear once music is live.');return;}
+  container.innerHTML=rl.map(r=>{
+    const rc=isPaid?0:(r.earnings||0)*COMM;
+    const rp=(r.earnings||0)-rc;
+    return `<div class="rar">
+      <div class="rar-head">
+        <div class="r-art" style="width:40px;height:40px">${r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`:'<i class="ti ti-music" style="font-size:18px"></i>'}</div>
+        <div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')}</div></div>
+        <span class="badge b-live">Live</span>
+      </div>
+      <div class="rar-body">
+        <div class="rm"><strong>${(r.streams||0).toLocaleString()}</strong>Streams</div>
+        <div class="rm"><strong>$${(r.earnings||0).toFixed(2)}</strong>Gross Earnings</div>
+        <div class="rm"><strong style="color:var(--danger)">-$${rc.toFixed(2)}</strong>Commission (${isPaid?'0':'15'}%)</div>
+        <div class="rm"><strong style="color:var(--gd)">$${rp.toFixed(2)}</strong>Your Payout</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ── ROYALTIES ─────────────────────────────────────────
@@ -1164,7 +1254,12 @@ async function loadPayout(){
     const {data:ph}=await sb.from('payouts').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
     const h=document.getElementById('payout-history');
     if(!ph||!ph.length){h.textContent='No payouts requested yet.';return;}
-    h.innerHTML=ph.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span>${p.method==='momo'?'📱 '+p.network+' MoMo':'🏦 Bank'} — ${esc(p.account||'')}</span><span style="font-weight:700;color:var(--gd)">$${parseFloat(p.amount||0).toFixed(2)} <span style="color:var(--muted);font-weight:400">(${p.status})</span></span></div>`).join('');
+    h.innerHTML=ph.map(p=>{
+      const statusColor={pending:'color:#b7791f',processing:'color:var(--info)',paid:'color:var(--success)',failed:'color:var(--danger)',cancelled:'color:var(--muted)'}[p.status]||'';
+      const canCancel=p.status==='pending';
+      const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:8px"><div><div style="font-size:13px;font-weight:600">'+(p.method==='momo'?'📱 '+esc(p.network||'')+' MoMo':'🏦 Bank Transfer')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+esc(p.account||'')+' · '+d+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:var(--gd)">$'+parseFloat(p.amount||0).toFixed(2)+'</span><span style="font-size:11px;font-weight:600;'+statusColor+'">'+p.status+'</span>'+(canCancel?'<button class="btn-danger-outline" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</div></div>';
+    }).join('');
   }catch(e){}
 }
 
@@ -1209,6 +1304,14 @@ async function submitPayout(){
     toast('Payout request submitted! Processing in 5–7 business days.','ok');
     loadPayout();
   }catch(e){toast('Payout failed — run payouts SQL in Supabase first.','err');}
+}
+
+async function cancelPayout(id){
+  if(!confirm('Cancel this payout request?'))return;
+  const {error}=await sb.from('payouts').update({status:'cancelled'}).eq('id',id).eq('user_id',user.id);
+  if(error){toast('Could not cancel payout','err');return;}
+  toast('Payout cancelled','ok');
+  loadPayout();
 }
 
 // ── PROFILE ───────────────────────────────────────────
@@ -1600,9 +1703,8 @@ function openPaystack(plan){
     :'Keep 100% of your royalties as a solo artist.';
   document.getElementById('b-monthly-price').textContent='$'+p.monthly;
   document.getElementById('b-yearly-price').textContent='$'+p.yearly;
-  billing='monthly';
-  document.getElementById('b-monthly').classList.add('sel');
-  document.getElementById('b-yearly').classList.remove('sel');
+  billing='yearly';
+  document.getElementById('b-yearly').classList.add('sel');
   if(user)document.getElementById('pay-em').value=user.email||'';
   updateRateNote();
   document.getElementById('pay-overlay').classList.add('open');
