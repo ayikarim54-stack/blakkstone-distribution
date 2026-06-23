@@ -103,11 +103,18 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .auth-r{background:#fff;padding:2.25rem;flex:1}
 .auth-r h3{font-size:20px;font-weight:800;margin-bottom:.2rem}
 .auth-r>p{font-size:13px;color:var(--muted);margin-bottom:1.4rem}
+.auth-r .fg input,.auth-r .fg select,.auth-r .fg textarea{background:var(--off);border:1.5px solid var(--border);color:var(--text)}
+.auth-r .fg input:focus,.auth-r .fg select:focus{border-color:var(--gold);background:#fff}
+.auth-r .fg input::placeholder{color:var(--subtle)}
+.auth-r .fg select option{background:#fff;color:var(--text)}
 .fg{margin-bottom:.875rem}
 .fg label{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
-.fg input,.fg select,.fg textarea{width:100%;background:var(--off);border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border .15s}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);background:#fff}
-.fg select option{background:#fff}
+.fg input,.fg select,.fg textarea{width:100%;background:#131320;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 11px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(139,92,246,.6);background:#1a1a2e}
+.fg input::placeholder{color:rgba(255,255,255,.25)}
+.fg textarea::placeholder{color:rgba(255,255,255,.25)}
+.fg select{color:#fff}
+.fg select option{background:#1e1e35;color:#fff}
 .fg textarea{resize:vertical;min-height:70px;line-height:1.5}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .auth-foot{font-size:12px;color:var(--muted);text-align:center;margin-top:.875rem}
@@ -1757,7 +1764,8 @@ async function loadArtists(){
   const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const container=document.getElementById('artists-list');
   if(isAdmin){
-    const {data}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+    const {data,error:uerr}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+    if(uerr){console.error('profiles error:',uerr);tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#f87171;padding:1.5rem">'+uerr.message+'</td></tr>';return;}
     if(!data||!data.length){container.innerHTML=emptyState('No artists yet.');return;}
     container.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:.875rem">Showing all ${data.length} artist accounts</div>`+data.map(p=>{
       const name=p.artist_name||p.full_name||p.email;
@@ -2330,7 +2338,7 @@ async function loadAdminReleases(){
   const tbody=document.getElementById('admin-tbody');
   if(!tbody)return;
   tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
-  const {data,error}=await sb.from('releases').select('*, profiles(full_name,artist_name,email,account_id,status_flag)').order('submitted_at',{ascending:false});
+  const {data,error}=await sb.from('releases').select('*, profiles(full_name,artist_name,email,account_id)').order('submitted_at',{ascending:false});
   if(error||!data){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:#f87171;padding:1.5rem">'+( error?.message||'No data')+'</td></tr>';return;}
   allReleasesCache=data;
   renderAdminReleases(data);
@@ -2400,10 +2408,11 @@ async function loadAdminUsers(){
   tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
   const {data}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
   if(!data){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists yet.</td></tr>';return;}
-  const [{data:allRel},{data:allPayouts}]=await Promise.all([
+  const [{data:allRel,error:relErr},{data:allPayouts}]=await Promise.all([
     sb.from('releases').select('user_id,streams,earnings'),
     sb.from('payouts').select('user_id,amount,status').catch(()=>({data:[]}))
   ]);
+  if(relErr) console.warn('releases join warn:',relErr.message);
   const relCount={};const relStreams={};const relEarn={};
   (allRel||[]).forEach(r=>{relCount[r.user_id]=(relCount[r.user_id]||0)+1;relStreams[r.user_id]=(relStreams[r.user_id]||0)+(r.streams||0);relEarn[r.user_id]=(relEarn[r.user_id]||0)+(r.earnings||0);});
   allUsersCache=data;
@@ -2411,8 +2420,9 @@ async function loadAdminUsers(){
 }
 
 function renderAdminUsers(data,relCount,relStreams,relEarn){
+  relCount=relCount||{};relStreams=relStreams||{};relEarn=relEarn||{};
   const tbody=document.getElementById('admin-users-tbody');if(!tbody)return;
-  if(!data.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists found.</td></tr>';return;}
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists found.</td></tr>';return;}
   tbody.innerHTML=data.map(p=>{
     const name=p.artist_name||p.full_name||p.email;
     const planLabel={admin:'Admin',label:'Label',artist_plus:'Artist+',solo:'Solo'}[p.plan]||'Solo';
@@ -3116,26 +3126,29 @@ window.addEventListener('popstate', function(e){
 
 // ── REAL-TIME SUBSCRIPTIONS ───────────────────────────
 function startRealtimeAdmin(){
-  // Listen for new payout requests
   sb.channel('admin-payouts')
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'payouts'},payload=>{
       const p=payload.new;
-      showAdminAlert('💸 New Payout Request',''+
-        (p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer')+
-        ' — $'+parseFloat(p.amount||0).toFixed(2));
-      loadAdminStats();
-      loadNotifications();
-      // Reload payouts tab if open
+      const amt='$'+parseFloat(p.amount||0).toFixed(2);
+      const method=p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer';
+      showAdminAlert('💸 New Payout Request',method+' — '+amt);
+      // Update badge immediately
+      const nb=document.getElementById('notif-badge');
+      const nb2=document.getElementById('notif-badge-admin');
+      const pa=document.getElementById('payout-alert');
+      if(nb){nb.style.display='inline';nb.textContent=parseInt(nb.textContent||0)+1;}
+      if(nb2){nb2.style.display='inline';nb2.textContent=parseInt(nb2.textContent||0)+1;}
+      if(pa){pa.style.display='inline';pa.textContent=parseInt(pa.textContent||0)+1;}
+      loadAdminStats();loadNotifications();
       if(document.getElementById('admin-payouts')?.classList.contains('active')) loadAdminPayouts();
     })
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'releases'},payload=>{
       const r=payload.new;
-      showAdminAlert('🎵 New Release Submitted','"'+r.title+'" by '+r.artist);
-      loadAdminStats();
-      loadNotifications();
+      showAdminAlert('🎵 New Release Submitted','"'+(r.title||'Unknown')+'" submitted');
+      loadAdminStats();loadNotifications();
       if(document.getElementById('admin-releases')?.classList.contains('active')) loadAdminReleases();
     })
-    .subscribe();
+    .subscribe((status)=>console.log('Realtime status:',status));
 }
 
 function showAdminAlert(title,body){
@@ -3182,6 +3195,13 @@ async function requestNotifPermission(){
   sb.auth.onAuthStateChange(async(event,session)=>{
     if(event==='SIGNED_IN'&&session?.user&&!user)await loadProfile(session.user);
   });
+  // Poll every 30s for new payout requests as realtime fallback
+  setInterval(async()=>{
+    const isAdmin=profile?.plan==='admin'||user?.email===ADMIN_EMAIL;
+    if(!isAdmin||!user)return;
+    await loadAdminStats();
+    await loadNotifications();
+  },30000);
 })();
 </script>
 </body>
