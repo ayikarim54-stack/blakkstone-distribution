@@ -114,7 +114,7 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .auth-r .fg select option{background:#fff;color:var(--text)}
 .fg{margin-bottom:.875rem}
 .fg label{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
-.fg input,.fg select,.fg textarea{width:100%;background:#131320;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 11px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+.fg input,.fg select,.fg textarea{width:100%;background:#2a2a2a;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 11px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(139,92,246,.6);background:#1a1a2e}
 .fg input::placeholder{color:rgba(255,255,255,.25)}
 .fg textarea::placeholder{color:rgba(255,255,255,.25)}
@@ -133,49 +133,49 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .conf-card p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:1.4rem}
 
 /* ── DASHBOARD DARK THEME (Ditto-inspired) ── */
-#dashboard{flex-direction:column;min-height:100vh;background:#131320}
+#dashboard{flex-direction:column;min-height:100vh;background:#191919}
 /* TOP NAV */
-.dash-topnav{background:#1a1a2e;border-bottom:1px solid rgba(255,255,255,.07);height:58px;display:flex;align-items:center;padding:0 1.5rem;gap:0;position:sticky;top:0;z-index:200}
+.dash-topnav{background:#000;border-bottom:1px solid rgba(255,255,255,.08);height:62px;display:flex;align-items:center;padding:0 2rem;gap:0;position:sticky;top:0;z-index:200}
 .dash-topnav-logo{font-size:16px;font-weight:900;color:#fff;margin-right:2rem;cursor:pointer;white-space:nowrap}
 .dash-topnav-logo span{color:var(--gold)}
 .dash-topnav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto}
 .dash-topnav-links::-webkit-scrollbar{display:none}
-.tnav-item{display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:13px;font-weight:500;color:rgba(255,255,255,.5);cursor:pointer;transition:all .12s;border-radius:8px;white-space:nowrap}
-.tnav-item:hover{background:rgba(255,255,255,.07);color:#fff}
-.tnav-item.active{background:rgba(139,92,246,.2);color:#a78bfa;font-weight:600}
+.tnav-item{display:flex;align-items:center;gap:6px;padding:8px 16px;font-size:14px;font-weight:500;color:rgba(255,255,255,.55);cursor:pointer;transition:all .12s;border-radius:0;white-space:nowrap;border-bottom:2px solid transparent;height:62px;}
+.tnav-item:hover{background:transparent;color:#fff}
+.tnav-item.active{background:transparent;color:#fff;font-weight:600;border-bottom:2px solid #a78bfa;border-radius:0;margin-bottom:-1px}
 .tnav-item i{font-size:16px}
 .tnav-sep{width:1px;height:20px;background:rgba(255,255,255,.1);margin:0 6px;flex-shrink:0}
 .dash-topnav-right{display:flex;gap:8px;align-items:center;margin-left:auto;flex-shrink:0}
-.dash-user-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 10px;cursor:pointer}
+.dash-user-chip{display:flex;align-items:center;gap:8px;background:transparent;border:none;border-radius:8px;padding:5px 8px;cursor:pointer}
 .dash-user-chip:hover{border-color:rgba(139,92,246,.5)}
 /* MAIN */
-.dash-body{flex:1;padding:2rem;overflow-y:auto;min-height:0}
+.dash-body{flex:1;padding:2.5rem;overflow-y:auto;min-height:0;background:#191919}
 .page{display:none}
 .page.active{display:block}
 .ph{margin-bottom:1.75rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.ph h1{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.ph h1{font-size:34px;font-weight:800;color:#fff;letter-spacing:-.5px}
 .ph p{font-size:13px;color:rgba(255,255,255,.4);margin-top:4px}
 /* OVERVIEW STAT CARDS */
-.overview-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:2rem}
-.ov-card{border-radius:14px;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1rem;position:relative;overflow:hidden}
+.overview-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2.5rem}
+.ov-card{border-radius:14px;padding:1.5rem 1.75rem;display:flex;align-items:center;gap:1.25rem;position:relative;overflow:hidden;min-height:110px}
 .ov-card-1{background:linear-gradient(135deg,#7c3aed,#4f46e5)}
 .ov-card-2{background:linear-gradient(135deg,#0891b2,#0e7490)}
 .ov-card-3{background:linear-gradient(135deg,#1d4ed8,#1e40af)}
 .ov-card-4{background:linear-gradient(135deg,#ea580c,#c2410c)}
-.ov-card-icon{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ov-card-icon i{font-size:24px;color:#fff}
-.ov-card-label{font-size:12px;font-weight:500;color:rgba(255,255,255,.7);margin-bottom:4px}
-.ov-card-value{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px}
-.ov-card-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:3px}
+.ov-card-icon{width:52px;height:52px;border-radius:12px;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ov-card-icon i{font-size:26px;color:#fff}
+.ov-card-label{font-size:12px;font-weight:500;color:rgba(255,255,255,.75);margin-bottom:6px;letter-spacing:.2px}
+.ov-card-value{font-size:32px;font-weight:800;color:#fff;letter-spacing:-1px;line-height:1}
+.ov-card-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:5px}
 /* RELEASES GRID */
-.releases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem}
-.rg-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .15s}
-.rg-card:hover{border-color:rgba(139,92,246,.4);transform:translateY(-2px)}
+.releases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.875rem}
+.rg-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s}
+.rg-card:hover{border-color:rgba(255,255,255,.2);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
 .rg-art{width:100%;aspect-ratio:1;background:#2a2a45;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .rg-art img{width:100%;height:100%;object-fit:cover}
 .rg-art i{font-size:32px;color:rgba(255,255,255,.2)}
 .rg-badge{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px}
-.rg-badge-live{background:#10b981;color:#fff}
+.rg-badge-live{background:#10b981;color:#fff;font-weight:700;font-size:11px}
 .rg-badge-pending{background:#f59e0b;color:#000}
 .rg-badge-review{background:#3b82f6;color:#fff}
 .rg-badge-rejected{background:#ef4444;color:#fff}
@@ -183,14 +183,14 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .rg-new:hover{border-color:rgba(139,92,246,.5);background:#252540}
 .rg-new i{font-size:28px;color:rgba(255,255,255,.3)}
 .rg-new span{font-size:12px;color:rgba(255,255,255,.3);font-weight:500}
-.rg-info{padding:.75rem}
+.rg-info{padding:.75rem;background:#242424}
 .rg-title{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rg-meta{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
 /* RELEASES LIST VIEW */
 .rl{display:flex;flex-direction:column;gap:8px}
-.rr{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:all .15s}
+.rr{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:all .15s}
 .rr:hover{border-color:rgba(139,92,246,.3)}
-.r-art{width:44px;height:44px;border-radius:8px;background:#2a2a45;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.r-art{width:44px;height:44px;border-radius:8px;background:#333;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .r-art img{width:100%;height:100%;object-fit:cover;border-radius:8px}
 .r-art i{font-size:20px;color:rgba(255,255,255,.2)}
 .r-info{flex:1;min-width:0}
@@ -199,22 +199,22 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .b-pending{background:rgba(245,158,11,.2);color:#fbbf24}
 .b-review{background:rgba(59,130,246,.2);color:#60a5fa}
-.b-live{background:rgba(16,185,129,.2);color:#34d399}
+.b-live{background:#10b981;color:#fff;font-weight:700}
 .b-rejected{background:rgba(239,68,68,.2);color:#f87171}
-.empty{text-align:center;padding:3rem;color:rgba(255,255,255,.3);background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px}
+.empty{text-align:center;padding:3rem;color:rgba(255,255,255,.3);background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:11px}
 .empty i{font-size:32px;color:rgba(255,255,255,.1);margin-bottom:.75rem;display:block}
 .empty p{font-size:13px}
 /* RELEASE FILTER TABS */
 .rel-tabs{display:flex;gap:0;margin-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,.08)}
-.rel-tab{padding:8px 16px;font-size:13px;font-weight:500;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.rel-tab{padding:10px 18px;font-size:14px;font-weight:500;color:rgba(255,255,255,.45);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
 .rel-tab:hover{color:rgba(255,255,255,.7)}
-.rel-tab.active{color:#a78bfa;border-bottom-color:#a78bfa;font-weight:600}
+.rel-tab.active{color:#fff;border-bottom-color:#a78bfa;font-weight:600}
 .rel-search-bar{display:flex;gap:10px;margin-bottom:1.25rem}
-.rel-search-bar input{flex:1;background:#1e1e35;border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:9px 14px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none}
+.rel-search-bar input{flex:1;background:#2a2a2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 16px 10px 38px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none}
 .rel-search-bar input:focus{border-color:rgba(139,92,246,.5)}
 .rel-search-bar input::placeholder{color:rgba(255,255,255,.3)}
 /* SUBMIT FORM */
-.scard{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:2rem;max-width:640px}
+.scard{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:2rem;max-width:640px}
 .sdiv{margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.07)}
 .sdiv:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
 .slabel{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#a78bfa;margin-bottom:1rem;display:flex;align-items:center;gap:5px}
@@ -236,18 +236,18 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .upload-z.has-file p{color:#34d399}
 /* ANALYTICS */
 .ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
-.ac{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.25rem}
+.ac{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.25rem}
 .ac-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem}
 .ac-val{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px}
 .ac-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:4px}
 /* CHART */
-.chart-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
+.chart-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
 .chart-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem}
 .chart-wrap{position:relative;height:220px}
 /* STORE TABLE */
-.dark-table-wrap{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;overflow-x:auto}
+.dark-table-wrap{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:12px;overflow:hidden;overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:10px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);background:#16162a}
+th{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:10px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);background:#1e1e1e}
 td{font-size:13px;color:rgba(255,255,255,.8);padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.02)}
@@ -259,12 +259,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .yellow-banner{background:#f59e0b;border-radius:10px;padding:.875rem 1.25rem;font-size:13px;color:#000;font-weight:500;margin-bottom:1.5rem;display:flex;align-items:center;gap:8px}
 .comm-bar{margin-bottom:1.25rem}
 /* PAYOUT */
-.payout-balance-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:2rem;max-width:560px;margin-bottom:1.5rem}
+.payout-balance-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:2rem;max-width:560px;margin-bottom:1.5rem}
 .payout-bar-wrap{background:#2a2a45;border-radius:8px;height:10px;margin:1rem 0;overflow:hidden}
 .payout-bar-fill{background:linear-gradient(90deg,#7c3aed,#4f46e5);height:100%;border-radius:8px;transition:width .4s}
-.pmethod-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;max-width:380px;margin-bottom:1.5rem}
+.pmethod-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;max-width:380px;margin-bottom:1.5rem}
 .pmethods{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
-.popt{border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:1.1rem;cursor:pointer;transition:all .15s;background:#131320}
+.popt{border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:1.1rem;cursor:pointer;transition:all .15s;background:#2a2a2a}
 .popt:hover{border-color:rgba(139,92,246,.4)}
 .popt.sel{border-color:#7c3aed;background:rgba(124,58,237,.1)}
 .popt i{font-size:22px;color:rgba(255,255,255,.35);display:block;margin-bottom:.4rem}
@@ -272,12 +272,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .popt-title{font-size:13px;font-weight:600;color:#fff}
 .popt-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
 .momo-nets{display:flex;gap:8px;margin-bottom:.875rem}
-.mnet{flex:1;padding:7px;border:1.5px solid rgba(255,255,255,.1);border-radius:7px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);transition:all .15s;background:#131320}
+.mnet{flex:1;padding:7px;border:1.5px solid rgba(255,255,255,.1);border-radius:7px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);transition:all .15s;background:#2a2a2a}
 .mnet:hover{border-color:rgba(139,92,246,.4)}
 .mnet.sel{border-color:#7c3aed;background:rgba(124,58,237,.15);color:#a78bfa}
 /* ARTISTS */
 .artist-list{display:flex;flex-direction:column;gap:8px}
-.artist-row{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:all .15s}
+.artist-row{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:all .15s}
 .artist-row:hover{border-color:rgba(139,92,246,.3)}
 .artist-av{width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#a78bfa;flex-shrink:0;overflow:hidden}
 .artist-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
@@ -305,7 +305,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .ug-feats li i.ck{color:#10b981;font-size:14px}
 .ug-feats li i.cx{color:#ef4444;font-size:14px}
 /* PROFILE */
-.profcard{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:2rem;max-width:520px}
+.profcard{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:2rem;max-width:520px}
 .prof-top{display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.07)}
 .prof-av{width:66px;height:66px;border-radius:50%;background:rgba(139,92,246,.2);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#a78bfa;flex-shrink:0;overflow:hidden;cursor:pointer;border:2px solid rgba(255,255,255,.1);transition:border .15s}
 .prof-av:hover{border-color:#7c3aed}
@@ -318,15 +318,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .atab.active{border-color:#7c3aed;background:rgba(124,58,237,.15);color:#a78bfa}
 .admin-section{display:none}
 .admin-section.active{display:block}
-.tw{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px;overflow:hidden;overflow-x:auto}
-.stsel{background:#131320;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:'Inter',sans-serif;cursor:pointer;outline:none}
+.tw{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:11px;overflow:hidden;overflow-x:auto}
+.stsel{background:#2a2a2a;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:'Inter',sans-serif;cursor:pointer;outline:none}
 .stsel:focus{border-color:#7c3aed}
-.num-in{width:76px;background:#131320;border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:3px 6px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none}
+.num-in{width:76px;background:#2a2a2a;border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:3px 6px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none}
 .num-in:focus{border-color:#7c3aed}
 /* OVERLAY/MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s}
 .overlay.open{opacity:1;pointer-events:all}
-.modal{background:#1e1e35;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:2rem;max-width:640px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto}
+.modal{background:#242424;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:2rem;max-width:640px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto}
 .modal h3{font-size:18px;font-weight:800;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
 .modal h3 button{background:none;border:none;cursor:pointer;font-size:20px;color:rgba(255,255,255,.4);line-height:1}
 .release-detail{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;margin-bottom:.875rem;background:#131320}
@@ -337,7 +337,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .pay-modal h3{font-size:20px;font-weight:800;color:#fff;margin-bottom:.4rem}
 .pay-modal p{font-size:13px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:1.25rem}
 .btog{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.1rem}
-.bopt{padding:10px 8px;border:2px solid rgba(255,255,255,.1);border-radius:9px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;color:rgba(255,255,255,.4);font-weight:500;background:#131320}
+.bopt{padding:10px 8px;border:2px solid rgba(255,255,255,.1);border-radius:9px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;color:rgba(255,255,255,.4);font-weight:500;background:#2a2a2a}
 .bopt strong{display:block;font-size:16px;font-weight:800;color:#fff;margin-top:2px}
 .bopt.sel{border-color:#7c3aed;background:rgba(124,58,237,.15);color:#a78bfa}
 .bopt.sel strong{color:#a78bfa}
@@ -376,7 +376,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .ws-line.done{background:#10b981}
 .wizard-panel{display:none}
 .wizard-panel.active{display:block}
-.wiz-drop-zone{border:2px dashed rgba(255,255,255,.15);border-radius:16px;padding:4rem 2rem;cursor:pointer;background:#1e1e35;transition:all .2s}
+.wiz-drop-zone{border:2px dashed rgba(255,255,255,.15);border-radius:16px;padding:4rem 2rem;cursor:pointer;background:#242424;transition:all .2s}
 .wiz-drop-zone:hover,.wiz-drop-zone.drag-over{border-color:#7c3aed;background:rgba(124,58,237,.08)}
 .track-item{background:#1e1e35;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;margin-bottom:8px}
 .track-num{width:28px;height:28px;border-radius:6px;background:rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#a78bfa;flex-shrink:0}
@@ -384,10 +384,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .track-size{font-size:11px;color:rgba(255,255,255,.3)}
 .track-remove{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:18px;line-height:1;padding:0}
 .track-remove:hover{color:#ef4444}
-.track-isrc{background:#131320;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;width:140px}
+.track-isrc{background:#2a2a2a;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;width:140px}
 .wiz-toggle{padding:7px 20px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
 .wiz-toggle.active{background:#7c3aed;border-color:#7c3aed;color:#fff}
-.store-chip{background:#131320;border:1.5px solid rgba(255,255,255,.08);border-radius:10px;padding:.625rem .875rem;display:flex;align-items:center;gap:.625rem;cursor:pointer;transition:all .15s}
+.store-chip{background:#2a2a2a;border:1.5px solid rgba(255,255,255,.08);border-radius:10px;padding:.625rem .875rem;display:flex;align-items:center;gap:.625rem;cursor:pointer;transition:all .15s}
 .store-chip:hover{border-color:rgba(124,58,237,.4)}
 .store-chip.selected{border-color:#7c3aed;background:rgba(124,58,237,.1)}
 .store-chip-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
@@ -417,7 +417,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .adm-stat-val{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:2px}
 .adm-stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.8)}
 .adm-stat-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px}
-.adm-card{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.25rem}
+.adm-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.25rem}
 .adm-card-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
 .adm-card-title i{color:#a78bfa;font-size:16px}
 .adm-btn-sec{background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.1);font-size:12px}
@@ -530,7 +530,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .dsp-chip{display:inline-flex;align-items:center;background:var(--off);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--muted)}
 
 /* ── ANALYTICS PAGE ── */
-.an-hero-stats{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.75rem;display:flex;gap:2rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
+.an-hero-stats{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.75rem;display:flex;gap:2rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
 .an-hero-main{flex:1;min-width:200px}
 .an-hero-label{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem}
 .an-hero-val{font-size:52px;font-weight:900;color:#fff;letter-spacing:-2px;line-height:1}
@@ -1018,12 +1018,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="dash-body">
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
-      <div class="ph">
+      <div class="ph" style="margin-bottom:1.5rem">
         <div>
-          <h1 id="welcome-h">Overview</h1>
-          <p>Here's a snapshot of your music's performance. <span class="welcome-time" id="welcome-time"></span></p>
+          <h1 id="welcome-h" style="font-size:38px;font-weight:800;letter-spacing:-.5px">Overview</h1>
+          <p style="font-size:14px;color:rgba(255,255,255,.45);margin-top:6px">Here's a snapshot of your music's performance this week. <span class="welcome-time" id="welcome-time"></span></p>
         </div>
-        <button class="btn btn-purple" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> Create Release</button>
+        <button class="btn btn-purple" style="border-radius:24px;padding:12px 24px;font-size:14px" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> Create Release</button>
       </div>
       <!-- ONBOARDING CHECKLIST (shown until complete) -->
       <div class="onboard-card" id="onboard-card" style="display:none">
@@ -1086,12 +1086,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
       <!-- YOUR RELEASES -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px">
+        <h2 style="font-size:28px;font-weight:800;color:#fff;letter-spacing:-.3px">Your Releases</h2>
         <div style="display:flex;align-items:center;gap:10px">
-          <h2 style="font-size:20px;font-weight:800;color:#fff">Your Releases</h2>
-          <span style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px" id="releases-count-badge"></span>
+          <div style="position:relative">
+            <i class="ti ti-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.35);font-size:15px;pointer-events:none"></i>
+            <input type="text" placeholder="Search for a release..." id="ov-search-input" oninput="filterOvSearch()" style="background:#2a2a2a;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 14px 9px 35px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;width:240px">
+          </div>
+          <button class="btn" style="background:#2a2a2a;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;padding:9px 16px" onclick="goPage('releases',document.querySelectorAll('.tnav-item')[1])">View all <i class="ti ti-arrow-right"></i></button>
         </div>
-        <button class="btn" style="background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1);font-size:12px;padding:6px 12px" onclick="goPage('releases',document.querySelectorAll('.tnav-item')[1])">View all <i class="ti ti-arrow-right"></i></button>
       </div>
       <div id="ov-releases-grid" class="releases-grid"></div>
     </div>
@@ -1109,7 +1112,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="rel-tab" onclick="filterRelTab('rejected',this)">Inactive</div>
       </div>
       <div class="rel-search-bar">
-        <input type="text" placeholder="🔍  Search for a release..." id="rel-search-input" oninput="filterReleasesBySearch()">
+        <div style="position:relative;flex:1">
+          <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.3);font-size:15px;pointer-events:none"></i>
+          <input type="text" placeholder="Search for a release..." id="rel-search-input" oninput="filterReleasesBySearch()" style="padding-left:38px;width:100%">
+        </div>
+        <button class="btn" style="background:#2a2a2a;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;padding:9px 16px;flex-shrink:0">
+          <i class="ti ti-adjustments-horizontal"></i> Filters
+        </button>
       </div>
       <div id="all-releases"></div>
     </div>
@@ -1221,7 +1230,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="wizard-panel" id="wpanel-3">
         <div style="max-width:640px">
           <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Plan Your Release</h2>
-          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
+          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
             <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:1.1rem">Choose a <strong style="color:#a78bfa">release date</strong></div>
             <div class="fg"><input id="r-date" type="date" style="font-size:15px"></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
@@ -1240,7 +1249,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               </div>
             </div>
           </div>
-          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
+          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
             <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:1rem">Would you like to add <strong style="color:#fff">country restrictions</strong> and limit the availability of your release?</div>
             <div style="display:flex;gap:8px">
               <button class="wiz-toggle active" id="cr-no" onclick="setToggle('country-restrict','no')">No</button>
@@ -1250,7 +1259,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <div class="fg"><label>Excluded Countries</label><input id="r-countries" type="text" placeholder="e.g. US, UK, CA — separate with commas"></div>
             </div>
           </div>
-          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
+          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
             <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:1rem">Has this been <strong style="color:#fff">released before</strong>?</div>
             <div style="display:flex;gap:8px">
               <button class="wiz-toggle active" id="pr-no" onclick="setToggle('prev-released','no')">No</button>
@@ -1260,7 +1269,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <div class="fg"><label>Original Release Date</label><input id="r-orig-date" type="date"></div>
             </div>
           </div>
-          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem">
+          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem">
             <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:.5rem">Does this release contain <strong style="color:#fff">explicit content</strong>?</div>
             <div style="display:flex;gap:8px;margin-top:.75rem">
               <button class="wiz-toggle active" id="exp-no" onclick="setToggle('explicit','no')">No</button>
@@ -1288,7 +1297,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <button class="store-filter-btn" onclick="filterStores('download',this)">Download</button>
             </div>
           </div>
-          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem">
+          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem">
             <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:1rem">Standard Stores</div>
             <div id="stores-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px"></div>
           </div>
@@ -1303,10 +1312,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="wizard-panel" id="wpanel-5">
         <div style="max-width:680px">
           <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Review Your Release</h2>
-          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1rem">
+          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1rem">
             <div id="review-content"></div>
           </div>
-          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem">
+          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem">
             <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0">
               <input type="checkbox" id="r-terms" style="accent-color:#7c3aed;margin-top:2px;flex-shrink:0">
               I confirm I own or have the rights to distribute this music and agree to Blakkstone Distribution's terms and conditions.
@@ -1419,7 +1428,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
 
       <!-- REPORTS NOTE -->
-      <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.25rem;display:flex;align-items:flex-start;gap:12px">
+      <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.25rem;display:flex;align-items:flex-start;gap:12px">
         <i class="ti ti-file-analytics" style="font-size:22px;color:#a78bfa;flex-shrink:0;margin-top:2px"></i>
         <div>
           <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">About Royalty Reports</div>
@@ -1563,7 +1572,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             </div>
           </div>
           <!-- HISTORY -->
-          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:1.5rem">
+          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:1.5rem">
             <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:1rem">Your History</div>
             <div class="dark-table-wrap">
               <table>
@@ -1639,7 +1648,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <button class="btn" id="ug-label-btn" style="width:100%;justify-content:center;background:#fff;color:#111;font-weight:700" onclick="openPaystack('label')">Get Label Plan</button>
         </div>
       </div>
-      <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.1rem;font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;max-width:860px">
+      <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.1rem;font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;max-width:860px">
         <strong style="color:rgba(255,255,255,.7)">About the 15% commission:</strong> On the free Solo plan, Blakkstone keeps 15% of royalties to cover distribution costs. Upgrade to Artist+ or Label to keep 100%.
       </div>
     </div>
@@ -2220,6 +2229,21 @@ function renderReleasesList(releases,filter){
   else if(filter==='rejected') filtered=releases.filter(r=>r.status==='rejected');
   const html=filtered.length?`<div class="rl">`+filtered.map(r=>releaseRow(r)).join('')+`</div>`:emptyState('No releases found.');
   list.innerHTML=html;
+}
+
+function filterOvSearch(){
+  const q=(document.getElementById('ov-search-input')?.value||'').toLowerCase();
+  const grid=document.getElementById('ov-releases-grid');
+  if(!grid)return;
+  if(!q){
+    // restore all
+    const cards=allRelData.slice(0,8).map(r=>releaseGridCard(r)).join('');
+    grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet. Hit Create Release to get started.</p></div>';
+    return;
+  }
+  const filtered=allRelData.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
+  const cards=filtered.map(r=>releaseGridCard(r)).join('');
+  grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-search"></i><p>No releases match your search.</p></div>';
 }
 
 function filterRelTab(filter,el){
