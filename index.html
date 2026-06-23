@@ -498,7 +498,10 @@ tr:hover td{background:var(--off)}
     <div class="dash-topnav-right">
       <div class="dash-user-chip" onclick="goPage('profile',null)">
         <div class="r-art" style="width:28px;height:28px;border-radius:50%" id="tnav-avatar"><i class="ti ti-user" style="font-size:14px;color:var(--muted)"></i></div>
-        <span style="font-size:12px;font-weight:600;color:var(--text)" id="tnav-name">—</span>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text)" id="tnav-name">—</div>
+          <div style="font-size:10px;font-weight:600;color:var(--gold)" id="tnav-account-id">—</div>
+        </div>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="logout()"><i class="ti ti-logout"></i></button>
     </div>
@@ -703,7 +706,13 @@ tr:hover td{background:var(--off)}
       <div class="profcard">
         <div class="prof-top">
           <div class="prof-av" id="profile-avatar-big" onclick="document.getElementById('avatar-input').click()"><span id="profile-avatar-initials">--</span></div>
-          <div><div style="font-size:14px;font-weight:700" id="profile-display-name">--</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Click avatar to change photo</div><input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)"></div>
+          <div>
+            <div style="font-size:14px;font-weight:700" id="profile-display-name">--</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-top:4px" id="profile-account-id">—</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Your Blakkstone Account ID</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px">Click avatar to change photo</div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+          </div>
         </div>
         <div class="frow">
           <div class="fg"><label>First Name</label><input id="p-fn" type="text"></div>
@@ -951,6 +960,8 @@ function enterDashboard(){
     // Safe element updates — check element exists before setting
     const tnavName=document.getElementById('tnav-name');
     if(tnavName) tnavName.textContent=name.split(' ')[0];
+    const tnavId=document.getElementById('tnav-account-id');
+    if(tnavId) tnavId.textContent=profile?.account_id||'';
     setAvatarDisplay(initials,profile?.avatar_url);
     const adminNav=document.getElementById('admin-nav');
     if(adminNav) adminNav.style.display=isAdmin?'flex':'none';
@@ -968,6 +979,7 @@ function enterDashboard(){
       const pem=document.getElementById('p-em');if(pem) pem.value=profile.email||user.email;
       const pdn=document.getElementById('profile-display-name');if(pdn) pdn.textContent=profile.artist_name||profile.full_name||'';
       const pai=document.getElementById('profile-avatar-initials');if(pai) pai.textContent=initials;
+      const paid=document.getElementById('profile-account-id');if(paid) paid.textContent=profile.account_id||'Assigning ID...';
     }
     updateCommBar(isPaid,isAdmin);
     updateUpgradePage(profile?.plan);
@@ -1344,7 +1356,7 @@ async function sendPayoutNotificationEmail(amount, method, network, account){
       body:JSON.stringify({
         from:'Blakkstone Distribution <onboarding@resend.dev>',
         to:['Ayikarim54@gmail.com'],
-        subject:'💸 New Payout Request — '+artistName,
+        subject:'💸 New Payout Request — '+(profile?.account_id||'')+' '+artistName,
         html:`
           <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:2rem">
             <div style="background:#0d0d0d;padding:1rem 1.5rem;border-radius:10px 10px 0 0">
@@ -1353,7 +1365,7 @@ async function sendPayoutNotificationEmail(amount, method, network, account){
             <div style="background:#fff;border:1px solid #e8e8e8;border-top:none;padding:1.5rem;border-radius:0 0 10px 10px">
               <h3 style="margin:0 0 1rem;color:#111">New Payout Request</h3>
               <table style="width:100%;border-collapse:collapse;font-size:14px">
-                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Artist</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${artistName}</td></tr>
+                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Account ID</td><td style="padding:8px 0;font-weight:700;color:#C9A84C;border-bottom:1px solid #f0f0f0">${profile?.account_id||'—'}</td></tr><tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Artist</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${artistName}</td></tr>
                 <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Amount</td><td style="padding:8px 0;font-weight:700;color:#8a6420;border-bottom:1px solid #f0f0f0">$${parseFloat(amount).toFixed(2)}</td></tr>
                 <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Method</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${method==='momo'?'📱 '+(network||'')+' Mobile Money':'🏦 Bank Transfer'}</td></tr>
                 <tr><td style="padding:8px 0;color:#666">Account</td><td style="padding:8px 0;font-weight:600">${account}</td></tr>
@@ -1544,7 +1556,10 @@ function renderAdminUsers(data,relCount,relEarn){
     const joined=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     const earn=relEarn[p.id]||0;
     return `<tr>
-      <td style="font-weight:600">${esc(name)}</td>
+      <td>
+        <div style="font-size:12px;font-weight:700;color:var(--gold)">${esc(p.account_id||'—')}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-top:1px">${esc(name)}</div>
+      </td>
       <td style="color:var(--muted);font-size:12px">${esc(p.email||'')}</td>
       <td><select class="stsel" style="${planColor};font-weight:600" onchange="updateUserPlan('${p.id}',this.value)">
         <option value="solo" ${p.plan==='solo'?'selected':''}>Solo</option>
@@ -1603,10 +1618,15 @@ async function loadAdminPayouts(){
     tbody.innerHTML=payouts.map(p=>{
       const prof=profileMap[p.user_id]||{};
       const name=prof.artist_name||prof.full_name||prof.email||'—';
+      const accountId=prof.account_id||'—';
       const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
       const stColor={pending:'color:var(--danger)',processing:'color:var(--info)',paid:'color:var(--success)',failed:'color:var(--muted)',cancelled:'color:var(--muted)'}[p.status]||'';
       return `<tr>
-        <td style="font-weight:600">${esc(name)}<br><span style="font-size:11px;color:var(--muted);font-weight:400">${esc(prof.email||'')}</span></td>
+        <td>
+          <div style="font-size:13px;font-weight:700;color:var(--gold)">${esc(accountId)}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-top:1px">${esc(name)}</div>
+          <div style="font-size:11px;color:var(--muted)">${esc(prof.email||'')}</div>
+        </td>
         <td>${p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer'}</td>
         <td style="color:var(--muted)">${esc(p.network||'—')}</td>
         <td style="font-size:12px;color:var(--muted);max-width:160px">${esc(p.account||'—')}</td>
@@ -1688,10 +1708,12 @@ async function loadNotifications(){
   const container=document.getElementById('notifications-list');
   if(!container)return;
   try{
-    const [{data:payouts},{data:releases}]=await Promise.all([
-      sb.from('payouts').select('*, profiles(artist_name,full_name)').eq('status','pending').order('created_at',{ascending:false}),
-      sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false})
+    const [{data:payouts},{data:releases},{data:profList}]=await Promise.all([
+      sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
+      sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false}),
+      sb.from('profiles').select('id,artist_name,full_name,account_id')
     ]);
+    const profileMap2={};(profList||[]).forEach(p=>{profileMap2[p.id]=p;});
     const total=(payouts?.length||0)+(releases?.length||0);
     const badge=document.getElementById('notif-badge');
     if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
@@ -1699,10 +1721,12 @@ async function loadNotifications(){
     if(payouts?.length){
       html+=`<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.5rem;margin-top:1rem">💸 Pending Payout Requests (${payouts.length})</div>`;
       html+=payouts.map(p=>{
-        const name=p.profiles?.artist_name||p.profiles?.full_name||'—';
+        const prof2=profileMap2[p.user_id]||{};
+        const name=prof2.artist_name||prof2.full_name||'—';
         const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+        const pid=profileMap2[p.user_id]?.account_id||'';
         return `<div style="background:#fff8e6;border:1px solid #e6d090;border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
-          <div><div style="font-size:13px;font-weight:600">${esc(name)} requested a payout</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${p.method==='momo'?'📱 '+p.network+' MoMo':'🏦 Bank Transfer'} — $${parseFloat(p.amount||0).toFixed(2)} · ${d}</div></div>
+          <div><div style="font-size:13px;font-weight:600">${pid?'<span style=\'color:var(--gold);font-weight:700\'>'+esc(pid)+'</span> — ':''} ${esc(name)} requested a payout</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${p.method==='momo'?'📱 '+p.network+' MoMo':'🏦 Bank Transfer'} — $${parseFloat(p.amount||0).toFixed(2)} · ${d}</div></div>
           <button class="btn btn-gold btn-sm" onclick="switchAdminTab('payouts',document.getElementById('atab-payouts'));"><i class="ti ti-arrow-right"></i> Process</button>
         </div>`;
       }).join('');
