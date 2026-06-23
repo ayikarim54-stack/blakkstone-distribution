@@ -1,855 +1,830 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Blakkstone Distribution — Distribute Your Music Worldwide</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --white:#ffffff;--off:#f7f7f7;--light:#f0f0f0;--border:#e5e5e5;
-      --text:#111111;--muted:#666;--subtle:#999;
-      --gold:#C9A84C;--gold-light:#f5ead0;--gold-dark:#9a7535;
-      --black:#0d0d0d;--surface:#1a1a1a;--card-dark:#222;
-      --danger:#e53e3e;--success:#38a169;--info:#3182ce;
-      --dash-bg:#f4f4f4;--dash-card:#ffffff;--dash-border:#e8e8e8;
-    }
-    html,body{height:100%;font-family:'Inter',sans-serif;color:var(--text)}
-    a{color:inherit;text-decoration:none;cursor:pointer}
-    .btn{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;padding:10px 22px;border-radius:8px;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
-    .btn-primary{background:var(--gold);color:#fff}.btn-primary:hover{background:var(--gold-dark)}
-    .btn-outline{background:transparent;color:var(--gold);border:2px solid var(--gold)}.btn-outline:hover{background:var(--gold-light)}
-    .btn-white{background:#fff;color:var(--text)}.btn-white:hover{background:#f0f0f0}
-    .btn-dark{background:var(--black);color:#fff}.btn-dark:hover{background:#333}
-    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:#aaa}
-    .btn-danger{background:var(--danger);color:#fff}
-    .btn-success{background:var(--success);color:#fff}
-    .btn-sm{padding:6px 14px;font-size:12px}
-    .btn-lg{padding:14px 30px;font-size:16px}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    #app{display:flex;flex-direction:column;min-height:100vh}
-    .view{display:none;flex:1;flex-direction:column}
-    .view.active{display:flex}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Blakkstone Distribution</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --w:#fff;--off:#f6f6f6;--border:#e8e8e8;--text:#111;--muted:#666;--subtle:#aaa;
+  --gold:#C9A84C;--gl:#fff8e7;--gd:#8a6420;
+  --black:#0d0d0d;--danger:#dc3545;--success:#198754;--info:#0d6efd;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;color:var(--text);background:var(--off)}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:9px 20px;border-radius:8px;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;text-decoration:none}
+.btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:var(--gd)}
+.btn-outline{background:transparent;color:var(--gold);border:2px solid var(--gold)}.btn-outline:hover{background:var(--gl)}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:#999}
+.btn-dark{background:var(--black);color:#fff}.btn-dark:hover{opacity:.85}
+.btn-danger-outline{background:transparent;color:var(--danger);border:1.5px solid var(--danger);font-size:12px;padding:5px 10px}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-lg{padding:13px 28px;font-size:15px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+#app{min-height:100vh}
+.view{display:none;flex-direction:column;min-height:100vh}
+.view.active{display:flex}
 
-    /* ── LANDING NAV ── */
-    .land-nav{background:#fff;border-bottom:1px solid var(--border);padding:0 3rem;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
-    .land-logo{font-size:18px;font-weight:900;letter-spacing:-0.5px;color:var(--black)}
-    .land-logo span{color:var(--gold)}
-    .land-nav-links{display:flex;gap:2rem;font-size:14px;font-weight:500;color:var(--muted)}
-    .land-nav-links a:hover{color:var(--text)}
-    .land-nav-right{display:flex;gap:10px;align-items:center}
+/* ── LANDING ── */
+.lnav{background:#fff;border-bottom:1px solid var(--border);padding:0 2.5rem;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.lnav-logo{font-size:18px;font-weight:900;letter-spacing:-.5px;color:var(--black);cursor:pointer}
+.lnav-logo span{color:var(--gold)}
+.lnav-links{display:flex;gap:1.75rem;font-size:13px;font-weight:500;color:var(--muted)}
+.lnav-links a{cursor:pointer}.lnav-links a:hover{color:var(--text)}
+.lnav-right{display:flex;gap:8px;align-items:center}
+.hero{background:var(--black);padding:6rem 2.5rem 5rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0,rgba(201,168,76,.2) 0,transparent 70%)}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:1.75rem}
+.hero h1{font-size:66px;font-weight:900;line-height:1;color:#fff;margin-bottom:1.25rem;letter-spacing:-2px}
+.hero h1 span{color:var(--gold)}
+.hero-sub{font-size:17px;color:rgba(255,255,255,.55);max-width:520px;margin:0 auto 2.5rem;line-height:1.75}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}
+.hero-trust{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+.trust-i{display:flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,.4);font-weight:500}
+.trust-i i{font-size:14px;color:var(--gold)}
+.dsps{background:#fff;padding:2.25rem 2.5rem;border-bottom:1px solid var(--border);text-align:center}
+.dsps p{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--subtle);margin-bottom:1.25rem}
+.dsp-row{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
+.dsp-chip{background:var(--off);border:1px solid var(--border);border-radius:7px;padding:6px 16px;font-size:12px;font-weight:600;color:var(--muted)}
+.section{padding:5rem 2.5rem}
+.section-tag{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem}
+.section-h{font-size:38px;font-weight:900;letter-spacing:-1px;color:var(--text);margin-bottom:.75rem}
+.section-sub{font-size:15px;color:var(--muted);max-width:500px;line-height:1.7;margin-bottom:3rem}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem}
+.feat-card{background:var(--off);border:1px solid var(--border);border-radius:14px;padding:1.6rem}
+.feat-icon{width:42px;height:42px;border-radius:10px;background:var(--gl);display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem}
+.feat-icon i{font-size:21px;color:var(--gold)}
+.feat-card h3{font-size:15px;font-weight:700;margin-bottom:.4rem}
+.feat-card p{font-size:13px;color:var(--muted);line-height:1.6}
+/* PLANS */
+.plans-sec{background:var(--off);padding:5rem 2.5rem}
+.plans-wrap{display:flex;justify-content:center}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;max-width:900px;width:100%}
+.pc{background:#fff;border:2px solid var(--border);border-radius:16px;padding:1.75rem;position:relative}
+.pc.featured{border-color:var(--gold)}
+.pc.featured::before{content:'POPULAR';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 14px;border-radius:0 0 8px 8px}
+.pc-name{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.pc-price{font-size:38px;font-weight:900;color:var(--text);letter-spacing:-1.5px;margin-bottom:.2rem}
+.pc-price small{font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0}
+.pc-desc{font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5}
+.pc-feats{list-style:none;margin-bottom:1.5rem}
+.pc-feats li{font-size:13px;color:var(--text);padding:5px 0;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border)}
+.pc-feats li:last-child{border-bottom:none}
+.pc-feats li i.ok{color:var(--success);font-size:15px}
+.pc-feats li i.no{color:var(--danger);font-size:15px}
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin-top:2.5rem}
+.tc{background:var(--off);border:1px solid var(--border);border-radius:14px;padding:1.6rem}
+.tc-stars{color:var(--gold);font-size:13px;margin-bottom:.75rem}
+.tc-text{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:1.1rem;font-style:italic}
+.tc-author{display:flex;align-items:center;gap:9px}
+.tc-av{width:34px;height:34px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gd)}
+.tc-name{font-size:13px;font-weight:600}
+.tc-role{font-size:11px;color:var(--muted)}
+.cta-band{background:var(--black);padding:4.5rem 2.5rem;text-align:center}
+.cta-band h2{font-size:42px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:.75rem}
+.cta-band h2 span{color:var(--gold)}
+.cta-band p{font-size:15px;color:rgba(255,255,255,.45);margin-bottom:1.75rem}
+footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.foot-logo{font-size:15px;font-weight:900;color:#fff}
+.foot-logo span{color:var(--gold)}
 
-    /* ── HERO ── */
-    .hero{background:var(--black);padding:7rem 3rem 5rem;text-align:center;position:relative;overflow:hidden}
-    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(201,168,76,.18) 0%,transparent 70%)}
-    .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:2rem}
-    .hero h1{font-size:72px;font-weight:900;line-height:1;color:#fff;margin-bottom:1.5rem;letter-spacing:-2px}
-    .hero h1 span{color:var(--gold)}
-    .hero-sub{font-size:18px;color:rgba(255,255,255,.6);max-width:560px;margin:0 auto 2.5rem;line-height:1.7}
-    .hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:3rem}
-    .hero-trust{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
-    .trust-item{display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,.45);font-weight:500}
-    .trust-item i{font-size:15px;color:var(--gold)}
+/* ── AUTH ── */
+#auth{background:var(--off);align-items:center;justify-content:center;padding:2rem 1rem}
+.auth-wrap{display:flex;max-width:820px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.1)}
+.auth-l{background:var(--black);padding:2.75rem;flex:1;display:flex;flex-direction:column;justify-content:center}
+.auth-l h2{font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px;margin-bottom:.6rem}
+.auth-l p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.7;margin-bottom:1.75rem}
+.auth-perks{list-style:none;display:flex;flex-direction:column;gap:9px}
+.auth-perks li{display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.55)}
+.auth-perks li i{font-size:15px;color:var(--gold)}
+.auth-r{background:#fff;padding:2.25rem;flex:1}
+.auth-r h3{font-size:20px;font-weight:800;margin-bottom:.2rem}
+.auth-r>p{font-size:13px;color:var(--muted);margin-bottom:1.4rem}
+.fg{margin-bottom:.875rem}
+.fg label{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--off);border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);background:#fff}
+.fg select option{background:#fff}
+.fg textarea{resize:vertical;min-height:70px;line-height:1.5}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.auth-foot{font-size:12px;color:var(--muted);text-align:center;margin-top:.875rem}
 
-    /* ── DSP LOGOS ── */
-    .dsps{background:#fff;padding:2.5rem 3rem;border-bottom:1px solid var(--border);text-align:center}
-    .dsps p{font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--subtle);margin-bottom:1.5rem}
-    .dsp-logos{display:flex;justify-content:center;align-items:center;gap:2rem;flex-wrap:wrap}
-    .dsp-chip{background:var(--off);border:1px solid var(--border);border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;color:var(--muted)}
+/* ── CONFIRM ── */
+#confirm{background:var(--off);align-items:center;justify-content:center;padding:2rem}
+.conf-card{background:#fff;border-radius:16px;padding:2.75rem 2.25rem;max-width:420px;width:100%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.07)}
+.conf-icon{width:60px;height:60px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem}
+.conf-icon i{font-size:28px;color:var(--gold)}
+.conf-card h2{font-size:22px;font-weight:800;margin-bottom:.6rem}
+.conf-card p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:1.4rem}
 
-    /* ── FEATURES ── */
-    .features{background:#fff;padding:6rem 3rem}
-    .section-eyebrow{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
-    .section-title{font-size:42px;font-weight:900;letter-spacing:-1px;color:var(--text);margin-bottom:1rem}
-    .section-sub{font-size:16px;color:var(--muted);max-width:520px;line-height:1.7;margin-bottom:3.5rem}
-    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
-    .feature-card{background:var(--off);border:1px solid var(--border);border-radius:14px;padding:1.75rem}
-    .feature-icon{width:44px;height:44px;border-radius:10px;background:var(--gold-light);display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem}
-    .feature-icon i{font-size:22px;color:var(--gold)}
-    .feature-card h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:.5rem}
-    .feature-card p{font-size:14px;color:var(--muted);line-height:1.6}
-
-    /* ── PLANS ── */
-    .plans-section{background:var(--off);padding:6rem 3rem}
-    .plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:700px;margin:0 auto}
-    .plan-card{background:#fff;border:2px solid var(--border);border-radius:16px;padding:2rem}
-    .plan-card.featured{border-color:var(--gold);position:relative}
-    .plan-card.featured::before{content:'MOST POPULAR';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;padding:4px 16px;border-radius:0 0 10px 10px}
-    .plan-name{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
-    .plan-price{font-size:44px;font-weight:900;color:var(--text);letter-spacing:-2px;margin-bottom:.25rem}
-    .plan-price small{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:0}
-    .plan-desc{font-size:14px;color:var(--muted);margin-bottom:1.5rem;line-height:1.5}
-    .plan-features{list-style:none;margin-bottom:1.75rem}
-    .plan-features li{font-size:14px;color:var(--text);padding:6px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
-    .plan-features li:last-child{border-bottom:none}
-    .plan-features li i.ok{color:var(--success);font-size:16px}
-    .plan-features li i.no{color:var(--danger);font-size:16px}
-
-    /* ── TESTIMONIALS ── */
-    .testimonials{background:#fff;padding:6rem 3rem}
-    .testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:3rem}
-    .testi-card{background:var(--off);border:1px solid var(--border);border-radius:14px;padding:1.75rem}
-    .testi-text{font-size:15px;color:var(--text);line-height:1.7;margin-bottom:1.25rem;font-style:italic}
-    .testi-author{display:flex;align-items:center;gap:10px}
-    .testi-avatar{width:36px;height:36px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold)}
-    .testi-name{font-size:13px;font-weight:600;color:var(--text)}
-    .testi-role{font-size:12px;color:var(--muted)}
-    .stars{color:var(--gold);font-size:14px;margin-bottom:.75rem}
-
-    /* ── CTA BAND ── */
-    .cta-band{background:var(--black);padding:5rem 3rem;text-align:center}
-    .cta-band h2{font-size:48px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:1rem}
-    .cta-band h2 span{color:var(--gold)}
-    .cta-band p{font-size:16px;color:rgba(255,255,255,.5);margin-bottom:2rem}
-
-    /* ── FOOTER ── */
-    footer{background:var(--black);border-top:1px solid #222;padding:2rem 3rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
-    .foot-logo{font-size:16px;font-weight:900;color:#fff}
-    .foot-logo span{color:var(--gold)}
-    footer p{font-size:12px;color:#555}
-
-    /* ── AUTH ── */
-    #auth{background:var(--off);align-items:center;justify-content:center;padding:2rem 1rem}
-    .auth-wrap{display:flex;gap:0;max-width:860px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.1)}
-    .auth-left{background:var(--black);padding:3rem;flex:1;display:flex;flex-direction:column;justify-content:center}
-    .auth-left h2{font-size:32px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:.75rem}
-    .auth-left p{font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:2rem}
-    .auth-perks{list-style:none;display:flex;flex-direction:column;gap:10px}
-    .auth-perks li{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.6)}
-    .auth-perks li i{font-size:16px;color:var(--gold)}
-    .auth-right{background:#fff;padding:2.5rem;flex:1}
-    .auth-right h3{font-size:22px;font-weight:800;color:var(--text);margin-bottom:.25rem}
-    .auth-right p{font-size:13px;color:var(--muted);margin-bottom:1.5rem}
-    .form-group{margin-bottom:1rem}
-    .form-group label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-    .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--off);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border .15s}
-    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold);background:#fff}
-    .form-group select option{background:#fff}
-    .form-group textarea{resize:vertical;min-height:80px;line-height:1.5}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .auth-footer-text{font-size:13px;color:var(--muted);text-align:center;margin-top:1rem}
-
-    /* ── EMAIL CONFIRM ── */
-    #confirm{background:var(--off);align-items:center;justify-content:center;padding:2rem}
-    .confirm-card{background:#fff;border-radius:16px;padding:3rem 2.5rem;max-width:440px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.08)}
-    .confirm-icon{width:64px;height:64px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
-    .confirm-icon i{font-size:30px;color:var(--gold)}
-    .confirm-card h2{font-size:24px;font-weight:800;color:var(--text);margin-bottom:.75rem}
-    .confirm-card p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:1.5rem}
-
-    /* ── DASHBOARD ── */
-    #dashboard{flex-direction:row;background:var(--dash-bg)}
-    .sidebar{width:240px;min-width:240px;background:#fff;border-right:1px solid var(--dash-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
-    .sidebar-logo{padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--dash-border);font-size:16px;font-weight:900;color:var(--black);letter-spacing:-0.5px}
-    .sidebar-logo span{color:var(--gold)}
-    .sidebar-nav{flex:1;padding:.75rem 0}
-    .nav-section{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--subtle);padding:8px 1.5rem 4px;margin-top:.5rem}
-    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 1.5rem;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .12s;border-radius:0;margin:1px 8px;border-radius:8px}
-    .nav-item:hover{background:var(--off);color:var(--text)}
-    .nav-item.active{background:var(--gold-light);color:var(--gold-dark);font-weight:600}
-    .nav-item i{font-size:18px}
-    .sidebar-bottom{padding:1rem 1.25rem;border-top:1px solid var(--dash-border)}
-    .user-chip{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px;background:var(--off);border-radius:10px}
-    .avatar{width:36px;height:36px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold-dark);flex-shrink:0;overflow:hidden}
-    .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-    .user-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .user-plan-label{font-size:11px;color:var(--muted)}
-
-    .main{flex:1;overflow-y:auto;padding:2rem;min-width:0}
-    .dash-nav{background:#fff;border-bottom:1px solid var(--dash-border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;margin:-2rem -2rem 2rem}
-    .dash-nav-title{font-size:15px;font-weight:700;color:var(--text)}
-    .dash-nav-right{display:flex;gap:8px;align-items:center}
-    .page{display:none}
-    .page.active{display:block}
-    .page-header{margin-bottom:2rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-    .page-header h1{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
-    .page-header p{font-size:14px;color:var(--muted);margin-top:4px}
-
-    /* STATS */
-    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:2rem}
-    .stat{background:#fff;border:1px solid var(--dash-border);border-radius:12px;padding:1.25rem}
-    .stat-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
-    .stat-value{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-1px}
-    .stat-value.accent{color:var(--gold-dark)}
-
-    /* RELEASES */
-    .releases-list{display:flex;flex-direction:column;gap:8px}
-    .release-row{background:#fff;border:1px solid var(--dash-border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;transition:box-shadow .15s}
-    .release-row:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
-    .release-art{width:48px;height:48px;border-radius:8px;background:var(--off);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
-    .release-art img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-    .release-art i{font-size:22px;color:var(--border)}
-    .release-info{flex:1;min-width:0}
-    .release-title{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .release-meta{font-size:12px;color:var(--muted);margin-top:2px}
-    .badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
-    .badge-pending{background:#fff8e6;color:#b7791f}
-    .badge-review{background:#ebf4ff;color:#2b6cb0}
-    .badge-live{background:#f0fff4;color:#276749}
-    .badge-rejected{background:#fff5f5;color:#c53030}
-    .empty-state{text-align:center;padding:3rem;color:var(--muted);background:#fff;border:1px solid var(--dash-border);border-radius:12px}
-    .empty-state i{font-size:36px;color:var(--border);margin-bottom:1rem;display:block}
-    .empty-state p{font-size:14px}
-
-    /* SUBMIT */
-    .submit-card{background:#fff;border:1px solid var(--dash-border);border-radius:14px;padding:2rem;max-width:680px}
-    .section-divider{margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--dash-border)}
-    .section-divider:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-    .section-label{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gold-dark);margin-bottom:1rem;display:flex;align-items:center;gap:6px}
-    .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:1.75rem;text-align:center;cursor:pointer;background:var(--off);transition:all .15s}
-    .upload-zone:hover{border-color:var(--gold);background:var(--gold-light)}
-    .upload-zone i{font-size:28px;color:var(--muted);display:block;margin-bottom:.5rem}
-    .upload-zone p{font-size:13px;color:var(--muted)}
-    .upload-zone.has-file{border-color:var(--success);background:#f0fff4}
-    .upload-zone.has-file p{color:var(--success)}
-
-    /* ANALYTICS */
-    .analytics-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
-    .a-card{background:#fff;border:1px solid var(--dash-border);border-radius:12px;padding:1.25rem}
-    .a-card-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
-    .a-card-value{font-size:30px;font-weight:800;color:var(--text);letter-spacing:-1px}
-    .a-card-sub{font-size:12px;color:var(--muted);margin-top:4px}
-    .release-a-row{background:#fff;border:1px solid var(--dash-border);border-radius:12px;overflow:hidden;margin-bottom:10px}
-    .release-a-header{padding:.875rem 1.25rem;display:flex;align-items:center;gap:1rem;border-bottom:1px solid var(--dash-border)}
-    .release-a-body{padding:1rem 1.25rem;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-    .ra-metric{font-size:13px;color:var(--muted)}
-    .ra-metric strong{display:block;font-size:20px;font-weight:700;color:var(--text);margin-bottom:2px;letter-spacing:-0.5px}
-
-    /* ROYALTIES */
-    .commission-bar{background:var(--gold-light);border:1px solid #e6d090;border-radius:10px;padding:.875rem 1.25rem;font-size:13px;color:var(--gold-dark);margin-bottom:1.5rem;display:flex;align-items:center;gap:8px}
-    .royalty-table-wrap{background:#fff;border:1px solid var(--dash-border);border-radius:12px;overflow:hidden}
-    table{width:100%;border-collapse:collapse}
-    th{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:10px 16px;text-align:left;border-bottom:1px solid var(--dash-border);background:var(--off)}
-    td{font-size:13px;color:var(--text);padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle}
-    tr:last-child td{border-bottom:none}
-    tr:hover td{background:var(--off)}
-
-    /* PAYOUT */
-    .payout-card{background:#fff;border:1px solid var(--dash-border);border-radius:14px;padding:2rem;max-width:560px;margin-bottom:1.5rem}
-    .payout-methods{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
-    .payout-opt{border:2px solid var(--border);border-radius:10px;padding:1.25rem;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:6px}
-    .payout-opt:hover{border-color:var(--gold)}
-    .payout-opt.selected{border-color:var(--gold);background:var(--gold-light)}
-    .payout-opt i{font-size:24px;color:var(--muted)}
-    .payout-opt.selected i{color:var(--gold-dark)}
-    .payout-opt-title{font-size:14px;font-weight:600;color:var(--text)}
-    .payout-opt-sub{font-size:12px;color:var(--muted)}
-    .momo-networks{display:flex;gap:10px;margin-bottom:1rem}
-    .momo-btn{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:7px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:all .15s}
-    .momo-btn:hover{border-color:var(--gold)}
-    .momo-btn.selected{border-color:var(--gold);background:var(--gold-light);color:var(--gold-dark)}
-
-    /* UPGRADE */
-    .upgrade-hero{text-align:center;margin-bottom:3rem}
-    .upgrade-hero h1{font-size:36px;font-weight:900;color:var(--text);letter-spacing:-1px;margin-bottom:.5rem}
-    .upgrade-hero p{font-size:15px;color:var(--muted)}
-    .upgrade-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:680px;margin-bottom:2rem}
-    .upgrade-card{background:#fff;border:2px solid var(--dash-border);border-radius:16px;padding:2rem}
-    .upgrade-card.featured{border-color:var(--gold);position:relative}
-    .upgrade-card.featured::before{content:'RECOMMENDED';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 14px;border-radius:0 0 8px 8px}
-    .upgrade-plan-name{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
-    .upgrade-price{font-size:40px;font-weight:900;color:var(--text);letter-spacing:-2px;margin-bottom:.25rem}
-    .upgrade-price small{font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0}
-    .upgrade-features{list-style:none;margin:1.25rem 0 1.5rem}
-    .upgrade-features li{font-size:13px;color:var(--text);padding:6px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--dash-border)}
-    .upgrade-features li:last-child{border-bottom:none}
-    .upgrade-features li i.check{color:var(--success);font-size:15px}
-    .upgrade-features li i.cross{color:var(--danger);font-size:15px}
-
-    /* PROFILE */
-    .profile-card{background:#fff;border:1px solid var(--dash-border);border-radius:14px;padding:2rem;max-width:560px}
-    .profile-top{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid var(--dash-border)}
-    .profile-avatar-big{width:72px;height:72px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--gold-dark);flex-shrink:0;overflow:hidden;cursor:pointer;border:2px solid var(--border);transition:border .15s}
-    .profile-avatar-big:hover{border-color:var(--gold)}
-    .profile-avatar-big img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-    .profile-avatar-hint{font-size:12px;color:var(--muted);margin-top:4px}
-    .divider{height:1px;background:var(--dash-border);margin:1.5rem 0}
-
-    /* ADMIN TABLE */
-    .table-wrap{background:#fff;border:1px solid var(--dash-border);border-radius:12px;overflow:hidden}
-    .status-sel{background:#fff;border:1px solid var(--dash-border);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--text);font-family:'Inter',sans-serif;cursor:pointer;outline:none}
-    .status-sel:focus{border-color:var(--gold)}
-
-    /* PAYSTACK MODAL */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
-    .overlay.open{opacity:1;pointer-events:all}
-    .modal{background:#fff;border-radius:16px;padding:2rem;max-width:460px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.15)}
-    .modal h3{font-size:22px;font-weight:800;color:var(--text);margin-bottom:.5rem}
-    .modal p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1.5rem}
-    .billing-toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
-    .billing-opt{padding:12px;border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;transition:all .15s;font-size:13px;color:var(--muted);font-weight:500}
-    .billing-opt strong{display:block;font-size:18px;font-weight:800;color:var(--text);margin-top:2px}
-    .billing-opt small{font-size:11px;color:var(--success)}
-    .billing-opt.selected{border-color:var(--gold);background:var(--gold-light);color:var(--gold-dark)}
-    .billing-opt.selected strong{color:var(--gold-dark)}
-    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem}
-    .rate-note{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
-
-    /* TOAST */
-    .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--black);border-radius:10px;padding:12px 20px;font-size:13px;color:#fff;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;z-index:999;pointer-events:none;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
-    .toast.show{opacity:1;transform:translateY(0)}
-    .toast.error{background:var(--danger)}
-    .toast.ok{background:var(--success)}
-    .loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @media(max-width:700px){
-      .sidebar{display:none}.hero h1{font-size:42px}.form-row{grid-template-columns:1fr}
-      .plans-grid,.upgrade-grid{grid-template-columns:1fr}.auth-left{display:none}
-      .land-nav-links{display:none}
-    }
-  </style>
+/* ── DASHBOARD ── */
+#dashboard{flex-direction:column;min-height:100vh;background:var(--off)}
+/* TOP NAV */
+.dash-topnav{background:#fff;border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 1.5rem;gap:0;position:sticky;top:0;z-index:200}
+.dash-topnav-logo{font-size:16px;font-weight:900;color:var(--black);margin-right:2rem;cursor:pointer;white-space:nowrap}
+.dash-topnav-logo span{color:var(--gold)}
+.dash-topnav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto}
+.dash-topnav-links::-webkit-scrollbar{display:none}
+.tnav-item{display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .12s;border-radius:8px;white-space:nowrap}
+.tnav-item:hover{background:var(--off);color:var(--text)}
+.tnav-item.active{background:var(--gl);color:var(--gd);font-weight:600}
+.tnav-item i{font-size:16px}
+.tnav-sep{width:1px;height:20px;background:var(--border);margin:0 6px;flex-shrink:0}
+.dash-topnav-right{display:flex;gap:8px;align-items:center;margin-left:auto;flex-shrink:0}
+.dash-user-chip{display:flex;align-items:center;gap:7px;background:var(--off);border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer}
+.dash-user-chip:hover{border-color:var(--gold)}
+/* MAIN CONTENT */
+.dash-body{flex:1;padding:1.75rem;overflow-y:auto}
+.page{display:none}
+.page.active{display:block}
+.ph{margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.ph h1{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px}
+.ph p{font-size:13px;color:var(--muted);margin-top:3px}
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin-bottom:1.5rem}
+.sc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.2rem}
+.sc-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.sc-val{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px}
+.sc-val.accent{color:var(--gd)}
+/* RELEASES */
+.rl{display:flex;flex-direction:column;gap:8px}
+.rr{background:#fff;border:1px solid var(--border);border-radius:11px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:box-shadow .15s}
+.rr:hover{box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.r-art{width:44px;height:44px;border-radius:8px;background:var(--off);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.r-art img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.r-art i{font-size:20px;color:var(--border)}
+.r-info{flex:1;min-width:0}
+.r-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.b-pending{background:#fff8e6;color:#b7791f}
+.b-review{background:#e8f0fe;color:#1a56db}
+.b-live{background:#f0fff4;color:#276749}
+.b-rejected{background:#fff5f5;color:#c53030}
+.empty{text-align:center;padding:2.5rem;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:11px}
+.empty i{font-size:32px;color:var(--border);margin-bottom:.75rem;display:block}
+.empty p{font-size:13px}
+/* SUBMIT */
+.scard{background:#fff;border:1px solid var(--border);border-radius:13px;padding:1.75rem;max-width:640px}
+.sdiv{margin-bottom:1.4rem;padding-bottom:1.4rem;border-bottom:1px solid var(--border)}
+.sdiv:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.slabel{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gd);margin-bottom:.875rem;display:flex;align-items:center;gap:5px}
+.upload-z{border:2px dashed var(--border);border-radius:9px;padding:1.5rem;text-align:center;cursor:pointer;background:var(--off);transition:all .15s}
+.upload-z:hover{border-color:var(--gold);background:var(--gl)}
+.upload-z i{font-size:26px;color:var(--muted);display:block;margin-bottom:.4rem}
+.upload-z p{font-size:12px;color:var(--muted)}
+.upload-z.has-file{border-color:var(--success);background:#f0fff4}
+.upload-z.has-file p{color:var(--success)}
+/* ANALYTICS */
+.ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem}
+.ac{background:#fff;border:1px solid var(--border);border-radius:11px;padding:1.1rem 1.2rem}
+.ac-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.ac-val{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px}
+.ac-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.rar{background:#fff;border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:8px}
+.rar-head{padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;border-bottom:1px solid var(--border)}
+.rar-body{padding:.875rem 1.1rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem}
+.rm{font-size:12px;color:var(--muted)}
+.rm strong{display:block;font-size:18px;font-weight:700;color:var(--text);margin-bottom:2px;letter-spacing:-.3px}
+/* ROYALTIES */
+.comm-bar{background:var(--gl);border:1px solid #e6d090;border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:var(--gd);margin-bottom:1.25rem;display:flex;align-items:center;gap:7px}
+.rtw{background:#fff;border:1px solid var(--border);border-radius:11px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--off)}
+td{font-size:13px;color:var(--text);padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--off)}
+/* PAYOUT */
+.pcard{background:#fff;border:1px solid var(--border);border-radius:13px;padding:1.75rem;max-width:540px;margin-bottom:1.25rem}
+.pmethods{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.popt{border:2px solid var(--border);border-radius:10px;padding:1.1rem;cursor:pointer;transition:all .15s}
+.popt:hover{border-color:var(--gold)}
+.popt.sel{border-color:var(--gold);background:var(--gl)}
+.popt i{font-size:22px;color:var(--muted);display:block;margin-bottom:.4rem}
+.popt.sel i{color:var(--gd)}
+.popt-title{font-size:13px;font-weight:600}
+.popt-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.momo-nets{display:flex;gap:8px;margin-bottom:.875rem}
+.mnet{flex:1;padding:7px;border:1.5px solid var(--border);border-radius:7px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:all .15s}
+.mnet:hover{border-color:var(--gold)}
+.mnet.sel{border-color:var(--gold);background:var(--gl);color:var(--gd)}
+/* ARTISTS */
+.artist-list{display:flex;flex-direction:column;gap:8px}
+.artist-row{background:#fff;border:1px solid var(--border);border-radius:11px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem}
+.artist-av{width:42px;height:42px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--gd);flex-shrink:0;overflow:hidden}
+.artist-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.artist-info{flex:1;min-width:0}
+.artist-name{font-size:14px;font-weight:600}
+.artist-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.plan-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.pp-solo{background:#f0f0f0;color:var(--muted)}
+.pp-label{background:var(--gl);color:var(--gd)}
+.pp-admin{background:#e8f0fe;color:var(--info)}
+/* UPGRADE */
+.ug-hero{text-align:center;margin-bottom:2.5rem}
+.ug-hero h1{font-size:30px;font-weight:900;letter-spacing:-.5px;margin-bottom:.4rem}
+.ug-hero p{font-size:14px;color:var(--muted)}
+.ug-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;max-width:860px;margin-bottom:1.5rem}
+.ug-card{background:#fff;border:2px solid var(--border);border-radius:14px;padding:1.75rem}
+.ug-card.featured{border-color:var(--gold);position:relative}
+.ug-card.featured::before{content:'RECOMMENDED';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 12px;border-radius:0 0 7px 7px}
+.ug-name{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.ug-price{font-size:36px;font-weight:900;color:var(--text);letter-spacing:-1.5px;margin-bottom:.2rem}
+.ug-price small{font-size:13px;font-weight:500;color:var(--muted);letter-spacing:0}
+.ug-desc{font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5}
+.ug-feats{list-style:none;margin-bottom:1.4rem}
+.ug-feats li{font-size:12px;color:var(--text);padding:5px 0;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
+.ug-feats li:last-child{border-bottom:none}
+.ug-feats li i.ck{color:var(--success);font-size:14px}
+.ug-feats li i.cx{color:var(--danger);font-size:14px}
+/* PROFILE */
+.profcard{background:#fff;border:1px solid var(--border);border-radius:13px;padding:1.75rem;max-width:520px}
+.prof-top{display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+.prof-av{width:66px;height:66px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--gd);flex-shrink:0;overflow:hidden;cursor:pointer;border:2px solid var(--border);transition:border .15s}
+.prof-av:hover{border-color:var(--gold)}
+.prof-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.divhr{height:1px;background:var(--border);margin:1.25rem 0}
+/* ADMIN */
+.admin-tabs{display:flex;gap:8px;margin-bottom:1.25rem}
+.atab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:#fff;transition:all .15s}
+.atab.active{border-color:var(--gold);background:var(--gl);color:var(--gd)}
+.admin-section{display:none}
+.admin-section.active{display:block}
+.tw{background:#fff;border:1px solid var(--border);border-radius:11px;overflow:hidden;overflow-x:auto}
+.stsel{background:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:11px;color:var(--text);font-family:'Inter',sans-serif;cursor:pointer;outline:none}
+.stsel:focus{border-color:var(--gold)}
+.num-in{width:76px;background:var(--off);border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;color:var(--text);font-family:'Inter',sans-serif;outline:none}
+.num-in:focus{border-color:var(--gold)}
+/* Artist detail modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:16px;padding:1.75rem;max-width:640px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
+.modal h3{font-size:18px;font-weight:800;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
+.modal h3 button{background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);line-height:1}
+.release-detail{border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.875rem}
+.rd-header{display:flex;align-items:center;gap:.875rem;margin-bottom:.875rem;padding-bottom:.875rem;border-bottom:1px solid var(--border)}
+.rd-fields{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+/* PAY MODAL */
+.pay-modal{background:#fff;border-radius:16px;padding:2rem;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.pay-modal h3{font-size:20px;font-weight:800;margin-bottom:.4rem}
+.pay-modal p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1.25rem}
+.btog{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.1rem}
+.bopt{padding:10px 8px;border:2px solid var(--border);border-radius:9px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;color:var(--muted);font-weight:500}
+.bopt strong{display:block;font-size:16px;font-weight:800;color:var(--text);margin-top:2px}
+.bopt.sel{border-color:var(--gold);background:var(--gl);color:var(--gd)}
+.bopt.sel strong{color:var(--gd)}
+.rate-note{font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+/* TOAST */
+.toast{position:fixed;bottom:1.25rem;right:1.25rem;background:var(--black);border-radius:9px;padding:11px 18px;font-size:13px;color:#fff;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;z-index:999;pointer-events:none;max-width:300px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{background:var(--success)}
+.toast.err{background:var(--danger)}
+.loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:680px){
+  .hero h1{font-size:38px}.plans-grid,.ug-grid,.btog{grid-template-columns:1fr}.auth-l{display:none}
+  .frow{grid-template-columns:1fr}.lnav-links{display:none}.rar-body{grid-template-columns:1fr 1fr}
+  .dash-topnav-links{gap:0}
+  .tnav-item{padding:8px 10px;font-size:12px}
+}
+</style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ── LANDING ── -->
-  <div class="view active" id="landing" style="flex-direction:column">
-    <nav class="land-nav">
-      <div class="land-logo">Blakkstone<span>.</span></div>
-      <div class="land-nav-links">
-        <a onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
-        <a onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</a>
-      </div>
-      <div class="land-nav-right" id="land-nav-right">
-        <button class="btn btn-ghost btn-sm" onclick="showAuth('login')">Log in</button>
-        <button class="btn btn-primary btn-sm" onclick="showAuth('signup')">Get started free</button>
-      </div>
-    </nav>
+<!-- ══════════════ LANDING ══════════════ -->
+<div class="view active" id="landing">
+  <nav class="lnav">
+    <div class="lnav-logo" onclick="showView('landing')">Blakkstone<span>.</span></div>
+    <div class="lnav-links">
+      <a onclick="document.getElementById('features-sec').scrollIntoView({behavior:'smooth'})">Features</a>
+      <a onclick="document.getElementById('pricing-sec').scrollIntoView({behavior:'smooth'})">Pricing</a>
+    </div>
+    <div class="lnav-right" id="lnav-right">
+      <button class="btn btn-ghost btn-sm" onclick="showAuth('login')">Log in</button>
+      <button class="btn btn-gold btn-sm" onclick="showAuth('signup')">Get started free</button>
+    </div>
+  </nav>
 
-    <section class="hero">
-      <div class="hero-eyebrow"><i class="ti ti-music"></i> Ghana's #1 Independent Distributor</div>
-      <h1>Distribute your music.<br><span>Keep your money.</span></h1>
-      <p class="hero-sub">Release to Spotify, Apple Music, Boomplay, Audiomack and 150+ platforms worldwide. Backed by Blakkstone's label network.</p>
-      <div class="hero-ctas">
-        <button class="btn btn-primary btn-lg" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Start for free</button>
-        <button class="btn btn-white btn-lg" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">See pricing</button>
-      </div>
-      <div class="hero-trust">
-        <div class="trust-item"><i class="ti ti-check"></i> Free to start</div>
-        <div class="trust-item"><i class="ti ti-check"></i> No per-release fees</div>
-        <div class="trust-item"><i class="ti ti-check"></i> Paystack & Mobile Money</div>
-        <div class="trust-item"><i class="ti ti-check"></i> 150+ platforms</div>
-      </div>
-    </section>
+  <section class="hero">
+    <div class="hero-tag"><i class="ti ti-music"></i> Ghana's Independent Music Distributor</div>
+    <h1>Distribute your music.<br><span>Keep your money.</span></h1>
+    <p class="hero-sub">Release to Spotify, Apple Music, Boomplay, Audiomack and 150+ platforms worldwide. Powered by Blakkstone's label network.</p>
+    <div class="hero-ctas">
+      <button class="btn btn-gold btn-lg" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Start for free</button>
+      <button class="btn btn-lg" style="background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2)" onclick="document.getElementById('pricing-sec').scrollIntoView({behavior:'smooth'})">See pricing</button>
+    </div>
+    <div class="hero-trust">
+      <div class="trust-i"><i class="ti ti-check"></i> Free to start</div>
+      <div class="trust-i"><i class="ti ti-check"></i> Mobile Money payouts</div>
+      <div class="trust-i"><i class="ti ti-check"></i> 150+ platforms</div>
+      <div class="trust-i"><i class="ti ti-check"></i> No per-release fees</div>
+    </div>
+  </section>
 
-    <section class="dsps">
-      <p>Distribute to every platform that matters</p>
-      <div class="dsp-logos">
-        <div class="dsp-chip">Spotify</div>
-        <div class="dsp-chip">Apple Music</div>
-        <div class="dsp-chip">Boomplay</div>
-        <div class="dsp-chip">Audiomack</div>
-        <div class="dsp-chip">TikTok</div>
-        <div class="dsp-chip">YouTube Music</div>
-        <div class="dsp-chip">Amazon Music</div>
-        <div class="dsp-chip">Tidal</div>
-        <div class="dsp-chip">+ 140 more</div>
-      </div>
-    </section>
+  <section class="dsps">
+    <p>Distribute everywhere that matters</p>
+    <div class="dsp-row">
+      <div class="dsp-chip">Spotify</div><div class="dsp-chip">Apple Music</div>
+      <div class="dsp-chip">Boomplay</div><div class="dsp-chip">Audiomack</div>
+      <div class="dsp-chip">TikTok</div><div class="dsp-chip">YouTube Music</div>
+      <div class="dsp-chip">Amazon Music</div><div class="dsp-chip">Tidal</div>
+      <div class="dsp-chip">+ 142 more</div>
+    </div>
+  </section>
 
-    <section class="features" id="features">
-      <div class="section-eyebrow">Why Blakkstone</div>
-      <div class="section-title">Everything you need to go global</div>
-      <p class="section-sub">Built for African independent artists — with the tools and reach of a major label.</p>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon"><i class="ti ti-world"></i></div>
-          <h3>Global Distribution</h3>
-          <p>Get your music on 150+ platforms worldwide. From Spotify to Boomplay — one upload covers everything.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon"><i class="ti ti-coin"></i></div>
-          <h3>Royalty Tracking</h3>
-          <p>See your earnings in real-time. Every stream, every sale — all tracked and reported clearly in your dashboard.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon"><i class="ti ti-chart-bar"></i></div>
-          <h3>Analytics</h3>
-          <p>Total streams and earnings per release. Know exactly which music is performing and making you money.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon"><i class="ti ti-device-mobile"></i></div>
-          <h3>Mobile Money Payouts</h3>
-          <p>Withdraw your royalties via MTN, Vodafone, AirtelTigo Mobile Money or direct bank transfer.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon"><i class="ti ti-users"></i></div>
-          <h3>Label Management</h3>
-          <p>Manage multiple artists under one account. Perfect for labels, collectives, and producers on the Label plan.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon"><i class="ti ti-shield-check"></i></div>
-          <h3>Release Protection</h3>
-          <p>Your music stays live in stores. We handle delivery, metadata, and compliance so you can focus on creating.</p>
-        </div>
-      </div>
-    </section>
+  <section class="section" id="features-sec" style="background:#fff">
+    <div class="section-tag">Why Blakkstone</div>
+    <div class="section-h">Built for African independent artists</div>
+    <p class="section-sub">Everything you need to go global, in one simple platform.</p>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="feat-icon"><i class="ti ti-world"></i></div><h3>Global Distribution</h3><p>One upload. 150+ platforms. Spotify, Apple Music, Boomplay and beyond.</p></div>
+      <div class="feat-card"><div class="feat-icon"><i class="ti ti-coin"></i></div><h3>Royalty Tracking</h3><p>See your earnings clearly. Every stream tracked and reported monthly.</p></div>
+      <div class="feat-card"><div class="feat-icon"><i class="ti ti-chart-bar"></i></div><h3>Analytics</h3><p>Total streams and earnings per release. Know what's making you money.</p></div>
+      <div class="feat-card"><div class="feat-icon"><i class="ti ti-device-mobile"></i></div><h3>Mobile Money Payouts</h3><p>Withdraw via MTN, Vodafone, AirtelTigo or direct bank transfer.</p></div>
+      <div class="feat-card"><div class="feat-icon"><i class="ti ti-users"></i></div><h3>Label Management</h3><p>Manage multiple artists under one account. Perfect for labels and collectives.</p></div>
+      <div class="feat-card"><div class="feat-icon"><i class="ti ti-shield-check"></i></div><h3>Release Protection</h3><p>Your music stays live. We handle delivery, metadata, and compliance.</p></div>
+    </div>
+  </section>
 
-    <section class="plans-section" id="pricing">
-      <div style="text-align:center;margin-bottom:3rem">
-        <div class="section-eyebrow">Simple Pricing</div>
-        <div class="section-title">One price. No surprises.</div>
-        <p style="font-size:16px;color:var(--muted);max-width:440px;margin:0 auto">Start free as a solo artist. Upgrade when you're ready to grow.</p>
-      </div>
+  <section class="plans-sec" id="pricing-sec">
+    <div style="text-align:center;margin-bottom:2.75rem">
+      <div class="section-tag">Simple Pricing</div>
+      <div class="section-h">One price. No surprises.</div>
+      <p style="font-size:15px;color:var(--muted)">Start free. Upgrade when you're ready to grow.</p>
+    </div>
+    <div class="plans-wrap">
       <div class="plans-grid">
-        <div class="plan-card">
-          <div class="plan-name">Solo</div>
-          <div class="plan-price">Free <small>/ forever</small></div>
-          <p class="plan-desc">Perfect for independent artists just getting started.</p>
-          <ul class="plan-features">
+        <div class="pc">
+          <div class="pc-name">Solo</div>
+          <div class="pc-price">Free <small>/ forever</small></div>
+          <p class="pc-desc">For independent artists just starting out.</p>
+          <ul class="pc-feats">
             <li><i class="ti ti-check ok"></i> 1 artist profile</li>
             <li><i class="ti ti-check ok"></i> Unlimited releases</li>
             <li><i class="ti ti-check ok"></i> 150+ DSPs</li>
-            <li><i class="ti ti-check ok"></i> Release tracking</li>
             <li><i class="ti ti-x no"></i> 15% royalty commission</li>
             <li><i class="ti ti-x no"></i> Multiple artists</li>
           </ul>
           <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="showAuth('signup')">Start free</button>
         </div>
-        <div class="plan-card featured">
-          <div class="plan-name">Label</div>
-          <div class="plan-price">$9.99 <small>/ month</small></div>
-          <p class="plan-desc">For labels and artists serious about growing their business.</p>
-          <ul class="plan-features">
-            <li><i class="ti ti-check ok"></i> 2+ artist profiles</li>
+        <div class="pc featured">
+          <div class="pc-name">Artist+</div>
+          <div class="pc-price">$20 <small>/ month</small></div>
+          <p class="pc-desc">Keep 100% of your royalties. For serious artists.</p>
+          <ul class="pc-feats">
+            <li><i class="ti ti-check ok"></i> 1 artist profile</li>
             <li><i class="ti ti-check ok"></i> Unlimited releases</li>
             <li><i class="ti ti-check ok"></i> 150+ DSPs</li>
-            <li><i class="ti ti-check ok"></i> Full royalty dashboard</li>
-            <li><i class="ti ti-check ok"></i> 0% commission — keep 100%</li>
+            <li><i class="ti ti-check ok"></i> 0% commission</li>
+            <li><i class="ti ti-x no"></i> Multiple artists</li>
+          </ul>
+          <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('signup')">Get Artist+</button>
+        </div>
+        <div class="pc">
+          <div class="pc-name">Label</div>
+          <div class="pc-price">$40 <small>/ month</small></div>
+          <p class="pc-desc">Manage up to 5 artists. Built for labels.</p>
+          <ul class="pc-feats">
+            <li><i class="ti ti-check ok"></i> Up to 5 artists</li>
+            <li><i class="ti ti-check ok"></i> Unlimited releases</li>
+            <li><i class="ti ti-check ok"></i> 150+ DSPs</li>
+            <li><i class="ti ti-check ok"></i> 0% commission</li>
             <li><i class="ti ti-check ok"></i> Priority support</li>
           </ul>
-          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="openPaystack()"><i class="ti ti-crown"></i> Upgrade to Label</button>
+          <button class="btn btn-dark" style="width:100%;justify-content:center" onclick="showAuth('signup')">Get Label</button>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="testimonials">
-      <div style="text-align:center">
-        <div class="section-eyebrow">Artists love Blakkstone</div>
-        <div class="section-title">Built for artists like you</div>
+  <section class="section" style="background:#fff" id="testi-sec">
+    <div class="section-tag">Artists love Blakkstone</div>
+    <div class="section-h">Built for artists like you</div>
+    <div class="testi-grid">
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"Blakkstone made it easy to get my music on Spotify and Boomplay. The dashboard is simple and I could see my streams right away."</p><div class="tc-author"><div class="tc-av">KA</div><div><div class="tc-name">Kwame A.</div><div class="tc-role">Afrobeats Artist · Accra</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"Finally a distributor that understands Ghana. Mobile Money payouts and no complicated tax forms."</p><div class="tc-author"><div class="tc-av">AS</div><div><div class="tc-name">Abena S.</div><div class="tc-role">Gospel Artist · Kumasi</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"I manage 4 artists. The Label plan is worth it — no commission taken from royalties."</p><div class="tc-author"><div class="tc-av">EO</div><div><div class="tc-name">Emmanuel O.</div><div class="tc-role">Label Manager · Tema</div></div></div></div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <h2>Ready to go <span>worldwide?</span></h2>
+    <p>Join thousands of African independent artists distributing with Blakkstone.</p>
+    <button class="btn btn-gold btn-lg" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Create free account</button>
+  </section>
+  <footer>
+    <div class="foot-logo">Blakkstone<span>.</span></div>
+    <p style="font-size:12px;color:#555">© 2025 Blakkstone Distribution. All rights reserved.</p>
+    <p style="font-size:12px;color:#444">Powered by OneRPM · Payments by Paystack</p>
+  </footer>
+</div>
+
+<!-- ══════════════ AUTH ══════════════ -->
+<div class="view" id="auth" style="background:var(--off);align-items:center;justify-content:center;padding:2rem 1rem">
+  <div class="auth-wrap">
+    <div class="auth-l">
+      <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:2rem">Blakkstone<span style="color:var(--gold)">.</span></div>
+      <h2 id="auth-l-title">Distribute your music globally.</h2>
+      <p id="auth-l-sub">Join independent African artists releasing music on every major platform.</p>
+      <ul class="auth-perks">
+        <li><i class="ti ti-check"></i> 150+ streaming platforms</li>
+        <li><i class="ti ti-check"></i> Mobile Money payouts</li>
+        <li><i class="ti ti-check"></i> Real-time analytics</li>
+        <li><i class="ti ti-check"></i> Free to start forever</li>
+      </ul>
+    </div>
+    <div class="auth-r">
+      <h3 id="auth-title">Create your account</h3>
+      <p id="auth-sub">Start distributing for free today.</p>
+      <div id="signup-fields">
+        <div class="frow">
+          <div class="fg"><label>First name</label><input id="fn" type="text" placeholder="Kwame"></div>
+          <div class="fg"><label>Last name</label><input id="ln" type="text" placeholder="Mensah"></div>
+        </div>
+        <div class="fg"><label>Artist / Label name</label><input id="an" type="text" placeholder="Your artist name"></div>
       </div>
-      <div class="testi-grid">
-        <div class="testi-card">
-          <div class="stars">★★★★★</div>
-          <p class="testi-text">"Blakkstone made it easy to get my music on Spotify and Boomplay. The dashboard is simple and I could see my streams right away."</p>
-          <div class="testi-author"><div class="testi-avatar">KA</div><div><div class="testi-name">Kwame A.</div><div class="testi-role">Afrobeats Artist · Accra</div></div></div>
-        </div>
-        <div class="testi-card">
-          <div class="stars">★★★★★</div>
-          <p class="testi-text">"Finally a distributor that understands Ghana. Mobile Money payouts and no complicated tax forms. This is exactly what we needed."</p>
-          <div class="testi-author"><div class="testi-avatar">AS</div><div><div class="testi-name">Abena S.</div><div class="testi-role">Gospel Artist · Kumasi</div></div></div>
-        </div>
-        <div class="testi-card">
-          <div class="stars">★★★★★</div>
-          <p class="testi-text">"I manage 4 artists under my label. The Label plan is worth every pesewa — no commission taken from our royalties."</p>
-          <div class="testi-author"><div class="testi-avatar">EO</div><div><div class="testi-name">Emmanuel O.</div><div class="testi-role">Label Manager · Tema</div></div></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="cta-band">
-      <h2>Ready to go <span>worldwide?</span></h2>
-      <p>Join thousands of African independent artists distributing with Blakkstone.</p>
-      <button class="btn btn-primary btn-lg" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Create free account</button>
-    </section>
-
-    <footer>
-      <div class="foot-logo">Blakkstone<span>.</span></div>
-      <p>© 2025 Blakkstone Distribution. All rights reserved.</p>
-      <p style="color:#444;font-size:12px">Powered by OneRPM · Payments by Paystack</p>
-    </footer>
+      <div class="fg"><label>Email</label><input id="em" type="email" placeholder="you@email.com"></div>
+      <div class="fg"><label>Password</label><input id="pw" type="password" placeholder="Min. 6 characters"></div>
+      <button class="btn btn-gold" id="auth-btn" style="width:100%;justify-content:center" onclick="doAuth()">Create account</button>
+      <p class="auth-foot" id="auth-foot">Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a></p>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:.6rem"><a onclick="showView('landing')" style="color:var(--muted)">← Back to home</a></p>
+    </div>
   </div>
+</div>
 
-  <!-- ── AUTH ── -->
-  <div class="view" id="auth">
-    <div class="auth-wrap">
-      <div class="auth-left">
-        <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:2rem">Blakkstone<span style="color:var(--gold)">.</span></div>
-        <h2 id="auth-left-title">Distribute your music globally.</h2>
-        <p id="auth-left-sub">Join thousands of independent African artists releasing music on every major platform.</p>
-        <ul class="auth-perks">
-          <li><i class="ti ti-check"></i> 150+ streaming platforms</li>
-          <li><i class="ti ti-check"></i> Mobile Money payouts</li>
-          <li><i class="ti ti-check"></i> Real-time analytics</li>
-          <li><i class="ti ti-check"></i> Free to start forever</li>
-        </ul>
+<!-- ══════════════ CONFIRM ══════════════ -->
+<div class="view" id="confirm" style="background:var(--off);align-items:center;justify-content:center;padding:2rem">
+  <div class="conf-card">
+    <div class="conf-icon"><i class="ti ti-mail-check"></i></div>
+    <h2>Check your email</h2>
+    <p>We sent a confirmation link to <strong id="confirm-email"></strong>. Click the link to activate your account, then log in.</p>
+    <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('login')">Go to Login</button>
+    <p style="font-size:11px;color:var(--muted);margin-top:.875rem">Didn't get it? Check your spam folder.</p>
+  </div>
+</div>
+
+<!-- ══════════════ DASHBOARD ══════════════ -->
+<div class="view" id="dashboard">
+  <!-- TOP NAV -->
+  <div class="dash-topnav">
+    <div class="dash-topnav-logo" onclick="showView('landing')">Blakkstone<span>.</span></div>
+    <div class="dash-topnav-links">
+      <div class="tnav-item active" onclick="goPage('overview',this)"><i class="ti ti-layout-dashboard"></i> Overview</div>
+      <div class="tnav-item" onclick="goPage('releases',this)"><i class="ti ti-music"></i> Releases</div>
+      <div class="tnav-item" onclick="goPage('submit',this)"><i class="ti ti-upload"></i> Submit</div>
+      <div class="tnav-item" onclick="goPage('artists',this)"><i class="ti ti-users"></i> Artists</div>
+      <div class="tnav-sep"></div>
+      <div class="tnav-item" onclick="goPage('analytics',this)"><i class="ti ti-chart-bar"></i> Analytics</div>
+      <div class="tnav-item" onclick="goPage('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
+      <div class="tnav-item" onclick="goPage('payout',this)"><i class="ti ti-wallet"></i> Payout</div>
+      <div class="tnav-sep"></div>
+      <div class="tnav-item" onclick="goPage('upgrade',this)" id="upgrade-nav"><i class="ti ti-crown"></i> Upgrade</div>
+      <div class="tnav-item" onclick="goPage('profile',this)"><i class="ti ti-user"></i> Profile</div>
+      <div class="tnav-item" id="admin-nav" style="display:none" onclick="goPage('admin',this)"><i class="ti ti-shield-check"></i> Admin</div>
+    </div>
+    <div class="dash-topnav-right">
+      <div class="dash-user-chip" onclick="goPage('profile',null)">
+        <div class="r-art" style="width:28px;height:28px;border-radius:50%" id="tnav-avatar"><i class="ti ti-user" style="font-size:14px;color:var(--muted)"></i></div>
+        <span style="font-size:12px;font-weight:600;color:var(--text)" id="tnav-name">—</span>
       </div>
-      <div class="auth-right">
-        <h3 id="auth-title">Create your account</h3>
-        <p id="auth-sub">Start distributing for free today.</p>
-        <div id="signup-fields">
-          <div class="form-row">
-            <div class="form-group"><label>First name</label><input id="fn" type="text" placeholder="Kwame"></div>
-            <div class="form-group"><label>Last name</label><input id="ln" type="text" placeholder="Mensah"></div>
-          </div>
-          <div class="form-group"><label>Artist / Label name</label><input id="an" type="text" placeholder="Your artist name"></div>
-        </div>
-        <div class="form-group"><label>Email</label><input id="em" type="email" placeholder="you@email.com"></div>
-        <div class="form-group"><label>Password</label><input id="pw" type="password" placeholder="Min. 6 characters"></div>
-        <button class="btn btn-primary" id="auth-btn" style="width:100%;justify-content:center" onclick="doAuth()">Create account</button>
-        <p class="auth-footer-text" id="auth-foot">Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a></p>
-        <p style="font-size:12px;color:var(--muted);text-align:center;margin-top:.75rem"><a onclick="showView('landing')" style="color:var(--muted)">← Back to home</a></p>
-      </div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()"><i class="ti ti-logout"></i></button>
     </div>
   </div>
 
-  <!-- ── EMAIL CONFIRM ── -->
-  <div class="view" id="confirm" style="background:var(--off)">
-    <div class="confirm-card">
-      <div class="confirm-icon"><i class="ti ti-mail-check"></i></div>
-      <h2>Check your email</h2>
-      <p>We sent a confirmation link to <strong id="confirm-email" style="color:var(--text)"></strong>. Click the link to activate your account, then come back to log in.</p>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="showAuth('login')">Go to Login</button>
-      <p style="font-size:12px;color:var(--muted);margin-top:1rem">Didn't get it? Check your spam folder.</p>
-    </div>
-  </div>
-
-  <!-- ── DASHBOARD ── -->
-  <div class="view" id="dashboard">
-    <div class="sidebar">
-      <div class="sidebar-logo">Blakkstone<span>.</span></div>
-      <div class="sidebar-nav">
-        <div class="nav-section">Main</div>
-        <div class="nav-item active" onclick="goPage('overview',this)"><i class="ti ti-layout-dashboard"></i> Overview</div>
-        <div class="nav-item" onclick="goPage('releases',this)"><i class="ti ti-music"></i> My Releases</div>
-        <div class="nav-item" onclick="goPage('submit',this)"><i class="ti ti-upload"></i> Submit Release</div>
-        <div class="nav-section">Earnings</div>
-        <div class="nav-item" onclick="goPage('analytics',this)"><i class="ti ti-chart-bar"></i> Analytics</div>
-        <div class="nav-item" onclick="goPage('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
-        <div class="nav-item" onclick="goPage('payout',this)"><i class="ti ti-wallet"></i> Payout</div>
-        <div class="nav-section">Account</div>
-        <div class="nav-item" onclick="goPage('upgrade',this)" id="upgrade-nav"><i class="ti ti-crown"></i> Upgrade</div>
-        <div class="nav-item" onclick="goPage('profile',this)"><i class="ti ti-user"></i> Profile</div>
-        <div class="nav-item" id="admin-nav" style="display:none" onclick="goPage('admin',this)"><i class="ti ti-shield-check"></i> Admin Panel</div>
+  <div class="dash-body">
+    <!-- OVERVIEW -->
+    <div class="page active" id="page-overview">
+      <div class="ph"><div><h1 id="welcome-h">Overview</h1><p>Your distribution activity at a glance.</p></div><button class="btn btn-gold btn-sm" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> New Release</button></div>
+      <div class="sg">
+        <div class="sc"><div class="sc-label">Total Releases</div><div class="sc-val accent" id="s-total">—</div></div>
+        <div class="sc"><div class="sc-label">Live on DSPs</div><div class="sc-val accent" id="s-live">—</div></div>
+        <div class="sc"><div class="sc-label">Pending</div><div class="sc-val" id="s-pending">—</div></div>
+        <div class="sc"><div class="sc-label">Total Streams</div><div class="sc-val accent" id="s-streams">—</div></div>
       </div>
-      <div class="sidebar-bottom">
-        <div class="user-chip">
-          <div class="avatar" id="sb-avatar">--</div>
-          <div style="flex:1;min-width:0">
-            <div class="user-name" id="sb-name">--</div>
-            <div class="user-plan-label" id="sb-plan">Solo Plan</div>
-          </div>
-        </div>
-        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="logout()"><i class="ti ti-logout"></i> Log out</button>
-      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.875rem">Recent Releases</div>
+      <div id="ov-releases"></div>
     </div>
 
-    <div class="main">
-      <!-- OVERVIEW -->
-      <div class="page active" id="page-overview">
-        <div class="dash-nav"><div class="dash-nav-title" id="welcome-h">Overview</div><div class="dash-nav-right"><button class="btn btn-primary btn-sm" onclick="goPage('submit',document.querySelectorAll('.nav-item')[2])"><i class="ti ti-plus"></i> New Release</button></div></div>
-        <div class="stats-grid">
-          <div class="stat"><div class="stat-label">Total Releases</div><div class="stat-value accent" id="s-total">—</div></div>
-          <div class="stat"><div class="stat-label">Live on DSPs</div><div class="stat-value accent" id="s-live">—</div></div>
-          <div class="stat"><div class="stat-label">Pending Review</div><div class="stat-value" id="s-pending">—</div></div>
-          <div class="stat"><div class="stat-label">Total Streams</div><div class="stat-value accent" id="s-streams">—</div></div>
-        </div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:1rem">Recent Releases</div>
-        <div id="ov-releases"></div>
-      </div>
+    <!-- RELEASES -->
+    <div class="page" id="page-releases">
+      <div class="ph"><div><h1>My Releases</h1><p>All your submitted music and current statuses.</p></div><button class="btn btn-gold btn-sm" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> New Release</button></div>
+      <div id="all-releases"></div>
+    </div>
 
-      <!-- RELEASES -->
-      <div class="page" id="page-releases">
-        <div class="dash-nav"><div class="dash-nav-title">My Releases</div><div class="dash-nav-right"><button class="btn btn-primary btn-sm" onclick="goPage('submit',document.querySelectorAll('.nav-item')[2])"><i class="ti ti-plus"></i> New Release</button></div></div>
-        <div id="all-releases"></div>
-      </div>
-
-      <!-- SUBMIT -->
-      <div class="page" id="page-submit">
-        <div class="dash-nav"><div class="dash-nav-title">Submit a Release</div></div>
-        <div class="submit-card">
-          <div class="section-divider">
-            <div class="section-label"><i class="ti ti-info-circle"></i> Release Info</div>
-            <div class="form-group"><label>Release Title *</label><input id="r-title" type="text" placeholder="e.g. Midnight Stories"></div>
-            <div class="form-row">
-              <div class="form-group"><label>Primary Artist *</label><input id="r-artist" type="text" placeholder="Artist name"></div>
-              <div class="form-group"><label>Genre *</label>
-                <select id="r-genre">
-                  <option value="">Select genre</option>
-                  <option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option>
-                  <option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option>
-                  <option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option>
-                  <option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>Release Date *</label><input id="r-date" type="date"></div>
-              <div class="form-group"><label>ISRC (optional)</label><input id="r-isrc" type="text" placeholder="e.g. GHABC2500001"></div>
-            </div>
-            <div class="form-group"><label>Featured Artists (optional)</label><input id="r-feat" type="text" placeholder="Separate with commas"></div>
+    <!-- SUBMIT -->
+    <div class="page" id="page-submit">
+      <div class="ph"><div><h1>Submit a Release</h1><p>Fill in your details. We'll handle everything else.</p></div></div>
+      <div class="scard">
+        <div class="sdiv">
+          <div class="slabel"><i class="ti ti-info-circle"></i> Release Info</div>
+          <div class="fg"><label>Release Title *</label><input id="r-title" type="text" placeholder="e.g. Midnight Stories"></div>
+          <div class="frow">
+            <div class="fg"><label>Primary Artist *</label><input id="r-artist" type="text" placeholder="Artist name"></div>
+            <div class="fg"><label>Genre *</label><select id="r-genre"><option value="">Select genre</option><option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option><option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option><option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option><option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option></select></div>
           </div>
-          <div class="section-divider">
-            <div class="section-label"><i class="ti ti-file-upload"></i> Files</div>
-            <div class="form-group">
-              <label>Audio File *</label>
-              <div class="upload-zone" id="audio-zone" onclick="document.getElementById('audio-input').click()">
-                <i class="ti ti-file-music"></i>
-                <p id="audio-label">Click to upload — WAV or MP3 (min. 320kbps)</p>
-              </div>
-              <input type="file" id="audio-input" accept=".wav,.mp3,audio/*" style="display:none" onchange="fileChosen(this,'audio-zone','audio-label')">
-            </div>
-            <div class="form-group">
-              <label>Cover Artwork *</label>
-              <div class="upload-zone" id="art-zone" onclick="document.getElementById('art-input').click()">
-                <i class="ti ti-photo"></i>
-                <p id="art-label">Click to upload — JPG or PNG, 3000×3000px</p>
-              </div>
-              <input type="file" id="art-input" accept=".jpg,.jpeg,.png,image/*" style="display:none" onchange="fileChosen(this,'art-zone','art-label')">
-            </div>
+          <div class="frow">
+            <div class="fg"><label>Release Date *</label><input id="r-date" type="date"></div>
+            <div class="fg"><label>ISRC (optional)</label><input id="r-isrc" type="text" placeholder="GHABC2500001"></div>
           </div>
-          <div class="section-divider">
-            <div class="section-label"><i class="ti ti-note"></i> Admin Notes</div>
-            <div class="form-group"><textarea id="r-notes" placeholder="Explicit content, special instructions, or distribution notes..."></textarea></div>
-          </div>
-          <button class="btn btn-primary" id="submit-btn" onclick="submitRelease()"><i class="ti ti-send"></i> Submit Release</button>
+          <div class="fg"><label>Featured Artists (optional)</label><input id="r-feat" type="text" placeholder="Separate with commas"></div>
+        </div>
+        <div class="sdiv">
+          <div class="slabel"><i class="ti ti-file-upload"></i> Files</div>
+          <div class="fg"><label>Audio File *</label><div class="upload-z" id="audio-zone" onclick="document.getElementById('audio-input').click()"><i class="ti ti-file-music"></i><p id="audio-label">Click to upload — WAV or MP3 (min. 320kbps)</p></div><input type="file" id="audio-input" accept=".wav,.mp3,audio/*" style="display:none" onchange="fileChosen(this,'audio-zone','audio-label')"></div>
+          <div class="fg"><label>Cover Artwork *</label><div class="upload-z" id="art-zone" onclick="document.getElementById('art-input').click()"><i class="ti ti-photo"></i><p id="art-label">Click to upload — JPG or PNG, 3000×3000px</p></div><input type="file" id="art-input" accept=".jpg,.jpeg,.png,image/*" style="display:none" onchange="fileChosen(this,'art-zone','art-label')"></div>
+        </div>
+        <div class="sdiv">
+          <div class="slabel"><i class="ti ti-note"></i> Notes</div>
+          <div class="fg"><textarea id="r-notes" placeholder="Explicit content, special instructions..."></textarea></div>
+        </div>
+        <button class="btn btn-gold" id="submit-btn" onclick="submitRelease()"><i class="ti ti-send"></i> Submit Release</button>
+      </div>
+    </div>
+
+    <!-- ARTISTS -->
+    <div class="page" id="page-artists">
+      <div class="ph"><div><h1>Artists</h1><p>All artist accounts on Blakkstone Distribution.</p></div></div>
+      <div id="artists-list"></div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="page" id="page-analytics">
+      <div class="ph"><div><h1>Analytics</h1><p>Streams and earnings overview.</p></div></div>
+      <div class="ag">
+        <div class="ac"><div class="ac-label">Total Streams</div><div class="ac-val" id="a-streams">0</div><div class="ac-sub">All releases</div></div>
+        <div class="ac"><div class="ac-label">Gross Earnings</div><div class="ac-val" id="a-earnings">$0.00</div><div class="ac-sub">Before commission</div></div>
+        <div class="ac"><div class="ac-label">Your Payout</div><div class="ac-val" id="a-payout">$0.00</div><div class="ac-sub" id="a-payout-sub">After 15% commission</div></div>
+      </div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:.875rem">Per Release</div>
+      <div id="analytics-releases"></div>
+    </div>
+
+    <!-- ROYALTIES -->
+    <div class="page" id="page-royalties">
+      <div class="ph"><div><h1>Royalties</h1><p>Your earnings breakdown.</p></div></div>
+      <div id="commission-bar"></div>
+      <div class="sg" style="margin-bottom:1.25rem">
+        <div class="sc"><div class="sc-label">Gross Earnings</div><div class="sc-val accent" id="r-gross">$0.00</div></div>
+        <div class="sc"><div class="sc-label">Commission</div><div class="sc-val" id="r-commission" style="color:var(--danger)">$0.00</div></div>
+        <div class="sc"><div class="sc-label">Your Payout</div><div class="sc-val accent" id="r-payout">$0.00</div></div>
+        <div class="sc"><div class="sc-label">Last Updated</div><div class="sc-val" style="font-size:14px;font-weight:600" id="r-updated">—</div></div>
+      </div>
+      <div class="rtw"><table><thead><tr><th>Release</th><th>Streams</th><th>Gross</th><th>Commission</th><th>Payout</th></tr></thead><tbody id="royalty-tbody"></tbody></table></div>
+    </div>
+
+    <!-- PAYOUT -->
+    <div class="page" id="page-payout">
+      <div class="ph"><div><h1>Payout</h1><p>Withdraw your royalties.</p></div></div>
+      <div class="pcard">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:.25rem">Available Balance</div>
+        <div style="font-size:36px;font-weight:900;color:var(--gd);letter-spacing:-1px;margin-bottom:1.25rem" id="payout-balance">$0.00</div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:.875rem">Select payout method</div>
+        <div class="pmethods">
+          <div class="popt" id="opt-momo" onclick="selectPayout('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div><div class="popt-sub">MTN, Vodafone, AirtelTigo</div></div>
+          <div class="popt" id="opt-bank" onclick="selectPayout('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank Transfer</div><div class="popt-sub">Ghana local bank</div></div>
+        </div>
+        <div id="momo-fields" style="display:none">
+          <div style="font-size:12px;font-weight:600;margin-bottom:.625rem">Select network</div>
+          <div class="momo-nets"><div class="mnet" id="mtn-btn" onclick="selNet('MTN')">MTN</div><div class="mnet" id="voda-btn" onclick="selNet('Vodafone')">Vodafone</div><div class="mnet" id="airtel-btn" onclick="selNet('AirtelTigo')">AirtelTigo</div></div>
+          <div class="fg"><label>Mobile Money Number</label><input id="momo-number" type="tel" placeholder="0241234567"></div>
+          <div class="fg"><label>Account Name</label><input id="momo-name" type="text" placeholder="Name on MoMo account"></div>
+        </div>
+        <div id="bank-fields" style="display:none">
+          <div class="fg"><label>Bank Name</label><input id="bank-name" type="text" placeholder="e.g. GCB Bank"></div>
+          <div class="fg"><label>Account Number</label><input id="bank-acc" type="text" placeholder="Account number"></div>
+          <div class="fg"><label>Account Name</label><input id="bank-acc-name" type="text" placeholder="Name on bank account"></div>
+          <div class="fg"><label>Branch (optional)</label><input id="bank-branch" type="text" placeholder="Branch name"></div>
+        </div>
+        <div id="payout-submit-wrap" style="display:none;margin-top:.5rem">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:.625rem">Processed within 5–7 business days.</div>
+          <button class="btn btn-gold" onclick="submitPayout()"><i class="ti ti-wallet"></i> Request Payout</button>
         </div>
       </div>
-
-      <!-- ANALYTICS -->
-      <div class="page" id="page-analytics">
-        <div class="dash-nav"><div class="dash-nav-title">Analytics</div></div>
-        <div class="analytics-cards">
-          <div class="a-card"><div class="a-card-label">Total Streams</div><div class="a-card-value" id="a-streams">0</div><div class="a-card-sub">Across all releases</div></div>
-          <div class="a-card"><div class="a-card-label">Gross Earnings</div><div class="a-card-value" id="a-earnings">$0.00</div><div class="a-card-sub">Before commission</div></div>
-          <div class="a-card"><div class="a-card-label">Your Payout</div><div class="a-card-value" id="a-payout">$0.00</div><div class="a-card-sub" id="a-payout-sub">After 15% commission</div></div>
-        </div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:1rem">Per Release</div>
-        <div id="analytics-releases"></div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:11px;padding:1.4rem;max-width:540px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:.75rem">Payout History</div>
+        <div id="payout-history" style="font-size:13px;color:var(--muted)">No payouts requested yet.</div>
       </div>
+    </div>
 
-      <!-- ROYALTIES -->
-      <div class="page" id="page-royalties">
-        <div class="dash-nav"><div class="dash-nav-title">Royalties</div></div>
-        <div id="commission-bar"></div>
-        <div class="stats-grid" style="margin-bottom:1.5rem">
-          <div class="stat"><div class="stat-label">Gross Earnings</div><div class="stat-value accent" id="r-gross">$0.00</div></div>
-          <div class="stat"><div class="stat-label">Commission</div><div class="stat-value" id="r-commission" style="color:var(--danger)">$0.00</div></div>
-          <div class="stat"><div class="stat-label">Your Payout</div><div class="stat-value accent" id="r-payout">$0.00</div></div>
-          <div class="stat"><div class="stat-label">Last Updated</div><div class="stat-value" style="font-size:15px;font-weight:600" id="r-updated">—</div></div>
+    <!-- UPGRADE -->
+    <div class="page" id="page-upgrade">
+      <div class="ug-hero"><h1>Upgrade your plan</h1><p>Remove commission, unlock more artists, get priority support.</p></div>
+      <div class="ug-grid">
+        <div class="ug-card">
+          <div class="ug-name">Solo — Current</div>
+          <div class="ug-price">Free <small>/ forever</small></div>
+          <p class="ug-desc">For independent artists just starting out.</p>
+          <ul class="ug-feats">
+            <li><i class="ti ti-check ck"></i> 1 artist profile</li>
+            <li><i class="ti ti-check ck"></i> Unlimited releases</li>
+            <li><i class="ti ti-check ck"></i> 150+ DSPs</li>
+            <li><i class="ti ti-x cx"></i> 15% commission</li>
+            <li><i class="ti ti-x cx"></i> Multiple artists</li>
+          </ul>
+          <button class="btn btn-ghost" style="width:100%;justify-content:center" disabled>Current</button>
         </div>
-        <div class="royalty-table-wrap">
+        <div class="ug-card featured">
+          <div class="ug-name">Artist+</div>
+          <div class="ug-price">$20 <small>/ month</small></div>
+          <p class="ug-desc">Keep 100% of your royalties.</p>
+          <ul class="ug-feats">
+            <li><i class="ti ti-check ck"></i> 1 artist profile</li>
+            <li><i class="ti ti-check ck"></i> Unlimited releases</li>
+            <li><i class="ti ti-check ck"></i> 150+ DSPs</li>
+            <li><i class="ti ti-check ck"></i> 0% commission</li>
+            <li><i class="ti ti-x cx"></i> Multiple artists</li>
+          </ul>
+          <button class="btn btn-gold" id="ug-artist-btn" style="width:100%;justify-content:center" onclick="openPaystack('artist_plus')"><i class="ti ti-crown"></i> Upgrade</button>
+        </div>
+        <div class="ug-card">
+          <div class="ug-name">Label</div>
+          <div class="ug-price">$40 <small>/ month</small></div>
+          <p class="ug-desc">Up to 5 artists. For labels and collectives.</p>
+          <ul class="ug-feats">
+            <li><i class="ti ti-check ck"></i> Up to 5 artists</li>
+            <li><i class="ti ti-check ck"></i> Unlimited releases</li>
+            <li><i class="ti ti-check ck"></i> 150+ DSPs</li>
+            <li><i class="ti ti-check ck"></i> 0% commission</li>
+            <li><i class="ti ti-check ck"></i> Priority support</li>
+          </ul>
+          <button class="btn btn-dark" id="ug-label-btn" style="width:100%;justify-content:center" onclick="openPaystack('label')">Get Label</button>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:1.1rem;font-size:13px;color:var(--muted);line-height:1.7;max-width:660px">
+        <strong style="color:var(--text)">About the 15% commission:</strong> On the free Solo plan, Blakkstone keeps 15% of your royalties to cover distribution costs. Upgrade to Artist+ or Label to keep 100%.
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="page" id="page-profile">
+      <div class="ph"><div><h1>Profile Settings</h1><p>Manage your account.</p></div></div>
+      <div class="profcard">
+        <div class="prof-top">
+          <div class="prof-av" id="profile-avatar-big" onclick="document.getElementById('avatar-input').click()"><span id="profile-avatar-initials">--</span></div>
+          <div><div style="font-size:14px;font-weight:700" id="profile-display-name">--</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Click avatar to change photo</div><input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)"></div>
+        </div>
+        <div class="frow">
+          <div class="fg"><label>First Name</label><input id="p-fn" type="text"></div>
+          <div class="fg"><label>Last Name</label><input id="p-ln" type="text"></div>
+        </div>
+        <div class="fg"><label>Artist / Label Name</label><input id="p-an" type="text"></div>
+        <div class="fg"><label>Email</label><input id="p-em" type="email" disabled style="opacity:.5;cursor:not-allowed"></div>
+        <button class="btn btn-gold" id="save-profile-btn" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Changes</button>
+        <div class="divhr"></div>
+        <div class="slabel"><i class="ti ti-lock"></i> Change Password</div>
+        <div class="fg"><label>New Password</label><input id="p-pw" type="password" placeholder="Min. 6 characters"></div>
+        <div class="fg"><label>Confirm Password</label><input id="p-pw2" type="password" placeholder="Repeat password"></div>
+        <button class="btn btn-ghost" onclick="changePassword()"><i class="ti ti-lock"></i> Update Password</button>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="page" id="page-admin">
+      <div class="ph"><div><h1>Admin Panel</h1><p>Manage all submissions and artist data.</p></div></div>
+      <div class="admin-tabs">
+        <div class="atab active" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
+        <div class="atab" onclick="switchAdminTab('users',this)"><i class="ti ti-users"></i> Artists</div>
+        <div class="atab" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts</div>
+      </div>
+      <!-- RELEASES TAB -->
+      <div class="admin-section active" id="admin-releases">
+        <div class="tw">
           <table>
-            <thead><tr><th>Release</th><th>Streams</th><th>Gross</th><th>Commission</th><th>Your Payout</th></tr></thead>
-            <tbody id="royalty-tbody"></tbody>
+            <thead><tr><th>Artist</th><th>Title</th><th>Genre</th><th>Date Submitted</th><th>Status</th><th>Streams</th><th>Earnings($)</th><th>Actions</th></tr></thead>
+            <tbody id="admin-tbody"></tbody>
           </table>
         </div>
       </div>
-
-      <!-- PAYOUT -->
-      <div class="page" id="page-payout">
-        <div class="dash-nav"><div class="dash-nav-title">Payout</div></div>
-        <div class="payout-card">
-          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:.25rem">Available Balance</div>
-          <div style="font-size:40px;font-weight:900;color:var(--gold-dark);letter-spacing:-1.5px;margin-bottom:1.5rem" id="payout-balance">$0.00</div>
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:1rem">Select payout method</div>
-          <div class="payout-methods">
-            <div class="payout-opt" id="opt-momo" onclick="selectPayout('momo')">
-              <i class="ti ti-device-mobile"></i>
-              <div class="payout-opt-title">Mobile Money</div>
-              <div class="payout-opt-sub">MTN, Vodafone, AirtelTigo</div>
-            </div>
-            <div class="payout-opt" id="opt-bank" onclick="selectPayout('bank')">
-              <i class="ti ti-building-bank"></i>
-              <div class="payout-opt-title">Bank Transfer</div>
-              <div class="payout-opt-sub">Ghana local bank</div>
-            </div>
-          </div>
-          <!-- MOMO FIELDS -->
-          <div id="momo-fields" style="display:none">
-            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:.75rem">Select network</div>
-            <div class="momo-networks">
-              <div class="momo-btn" id="mtn-btn" onclick="selectNetwork('MTN')">MTN</div>
-              <div class="momo-btn" id="voda-btn" onclick="selectNetwork('Vodafone')">Vodafone</div>
-              <div class="momo-btn" id="airtel-btn" onclick="selectNetwork('AirtelTigo')">AirtelTigo</div>
-            </div>
-            <div class="form-group"><label>Mobile Money Number</label><input id="momo-number" type="tel" placeholder="e.g. 0241234567"></div>
-            <div class="form-group"><label>Account Name</label><input id="momo-name" type="text" placeholder="Name on MoMo account"></div>
-          </div>
-          <!-- BANK FIELDS -->
-          <div id="bank-fields" style="display:none">
-            <div class="form-group"><label>Bank Name</label><input id="bank-name" type="text" placeholder="e.g. GCB Bank"></div>
-            <div class="form-group"><label>Account Number</label><input id="bank-acc" type="text" placeholder="Account number"></div>
-            <div class="form-group"><label>Account Name</label><input id="bank-acc-name" type="text" placeholder="Name on bank account"></div>
-            <div class="form-group"><label>Branch (optional)</label><input id="bank-branch" type="text" placeholder="Branch name"></div>
-          </div>
-          <div id="payout-submit-wrap" style="display:none;margin-top:.5rem">
-            <div style="font-size:13px;color:var(--muted);margin-bottom:.75rem">Payout requests are processed within 5–7 business days.</div>
-            <button class="btn btn-primary" onclick="submitPayout()"><i class="ti ti-wallet"></i> Request Payout</button>
-          </div>
-        </div>
-        <div style="background:#fff;border:1px solid var(--dash-border);border-radius:12px;padding:1.5rem;max-width:560px">
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:.75rem">Payout History</div>
-          <div id="payout-history" style="font-size:13px;color:var(--muted)">No payouts requested yet.</div>
-        </div>
-      </div>
-
-      <!-- UPGRADE -->
-      <div class="page" id="page-upgrade">
-        <div class="dash-nav"><div class="dash-nav-title">Upgrade Plan</div></div>
-        <div class="upgrade-hero">
-          <h1>Unlock your full potential</h1>
-          <p>Remove commission, manage more artists, get priority support.</p>
-        </div>
-        <div class="upgrade-grid">
-          <div class="upgrade-card">
-            <div class="upgrade-plan-name">Solo — Current</div>
-            <div class="upgrade-price">Free <small>/ forever</small></div>
-            <ul class="upgrade-features">
-              <li><i class="ti ti-check check"></i> 1 artist profile</li>
-              <li><i class="ti ti-check check"></i> Unlimited releases</li>
-              <li><i class="ti ti-check check"></i> 150+ DSPs</li>
-              <li><i class="ti ti-check check"></i> Release tracking</li>
-              <li><i class="ti ti-x cross"></i> 15% royalty commission</li>
-              <li><i class="ti ti-x cross"></i> Multiple artists</li>
-              <li><i class="ti ti-x cross"></i> Priority support</li>
-            </ul>
-            <button class="btn btn-ghost" style="width:100%;justify-content:center" disabled>Current Plan</button>
-          </div>
-          <div class="upgrade-card featured">
-            <div class="upgrade-plan-name">Label</div>
-            <div class="upgrade-price">$9.99 <small>/ month</small></div>
-            <ul class="upgrade-features">
-              <li><i class="ti ti-check check"></i> 2+ artist profiles</li>
-              <li><i class="ti ti-check check"></i> Unlimited releases</li>
-              <li><i class="ti ti-check check"></i> 150+ DSPs</li>
-              <li><i class="ti ti-check check"></i> Full royalty dashboard</li>
-              <li><i class="ti ti-check check"></i> 0% commission — keep 100%</li>
-              <li><i class="ti ti-check check"></i> Multiple artists</li>
-              <li><i class="ti ti-check check"></i> Priority support</li>
-            </ul>
-            <button class="btn btn-primary" id="upgrade-cta" style="width:100%;justify-content:center" onclick="openPaystack()"><i class="ti ti-crown"></i> Upgrade to Label</button>
-          </div>
-        </div>
-        <div style="background:#fff;border:1px solid var(--dash-border);border-radius:10px;padding:1.25rem;font-size:13px;color:var(--muted);line-height:1.7;max-width:680px">
-          <strong style="color:var(--text)">About the 15% commission:</strong> On the free Solo plan, Blakkstone retains 15% of your reported royalties to cover distribution and platform costs. Upgrade to Label to keep 100% of your earnings with no deductions.
-        </div>
-      </div>
-
-      <!-- PROFILE -->
-      <div class="page" id="page-profile">
-        <div class="dash-nav"><div class="dash-nav-title">Profile Settings</div></div>
-        <div class="profile-card">
-          <div class="profile-top">
-            <div class="profile-avatar-big" id="profile-avatar-big" onclick="document.getElementById('avatar-input').click()">
-              <span id="profile-avatar-initials">--</span>
-            </div>
-            <div>
-              <div style="font-size:15px;font-weight:700;color:var(--text)" id="profile-display-name">--</div>
-              <div class="profile-avatar-hint">Click avatar to change photo</div>
-              <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>First Name</label><input id="p-fn" type="text"></div>
-            <div class="form-group"><label>Last Name</label><input id="p-ln" type="text"></div>
-          </div>
-          <div class="form-group"><label>Artist / Label Name</label><input id="p-an" type="text"></div>
-          <div class="form-group"><label>Email</label><input id="p-em" type="email" disabled style="opacity:.5;cursor:not-allowed"></div>
-          <button class="btn btn-primary" id="save-profile-btn" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Changes</button>
-          <div class="divider"></div>
-          <div class="section-label"><i class="ti ti-lock"></i> Change Password</div>
-          <div class="form-group"><label>New Password</label><input id="p-pw" type="password" placeholder="Min. 6 characters"></div>
-          <div class="form-group"><label>Confirm Password</label><input id="p-pw2" type="password" placeholder="Repeat password"></div>
-          <button class="btn btn-ghost" onclick="changePassword()"><i class="ti ti-lock"></i> Update Password</button>
-        </div>
-      </div>
-
-      <!-- ADMIN -->
-      <div class="page" id="page-admin">
-        <div class="dash-nav"><div class="dash-nav-title">Admin Panel</div></div>
-        <div class="table-wrap">
+      <!-- ARTISTS TAB -->
+      <div class="admin-section" id="admin-users">
+        <div class="tw">
           <table>
-            <thead><tr><th>Artist</th><th>Title</th><th>Genre</th><th>Submitted</th><th>Status</th><th>Streams</th><th>Earnings ($)</th><th>Action</th></tr></thead>
-            <tbody id="admin-tbody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+            <thead><tr><th>Artist Name</th><th>Email</th><th>Plan</th><th>Releases</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody id="admin-users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- PAYOUTS TAB -->
+      <div class="admin-section" id="admin-payouts">
+        <div class="tw">
+          <table>
+            <thead><tr><th>Artist</th><th>Method</th><th>Account</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody id="admin-payouts-tbody"></tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- PAYSTACK MODAL -->
-  <div class="overlay" id="pay-overlay">
-    <div class="modal">
-      <h3>Upgrade to Label</h3>
-      <p>Keep 100% of your royalties, manage multiple artists, and get priority support. Secure payment via Paystack.</p>
-      <div class="billing-toggle">
-        <div class="billing-opt selected" id="b-monthly" onclick="setBilling('monthly')">Monthly<strong>$9.99</strong></div>
-        <div class="billing-opt" id="b-yearly" onclick="setBilling('yearly')">Yearly<strong>$89.99</strong><small>Save 25%</small></div>
-      </div>
-      <div class="form-group"><label>Email</label><input id="pay-em" type="email" placeholder="you@email.com"></div>
-      <div class="rate-note" id="rate-note"></div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" onclick="closePaystack()">Cancel</button>
-        <button class="btn btn-primary" id="pay-btn" onclick="doPaystack()"><i class="ti ti-lock"></i> Pay with Paystack</button>
-      </div>
+<!-- ARTIST DETAIL MODAL -->
+<div class="overlay" id="artist-overlay">
+  <div class="modal">
+    <h3 id="artist-modal-title">Artist Releases <button onclick="closeArtistModal()">×</button></h3>
+    <div id="artist-modal-body"></div>
+  </div>
+</div>
+
+<!-- PAYSTACK MODAL -->
+<div class="overlay" id="pay-overlay">
+  <div class="pay-modal">
+    <h3 id="pay-modal-title">Upgrade Plan</h3>
+    <p id="pay-modal-desc">Keep 100% of your royalties with Blakkstone.</p>
+    <div class="btog" id="billing-toggle">
+      <div class="bopt sel" id="b-monthly" onclick="setBilling('monthly')">Monthly<strong id="b-monthly-price">$20</strong></div>
+      <div class="bopt" id="b-yearly" onclick="setBilling('yearly')">Yearly<strong id="b-yearly-price">$180</strong><small style="font-size:10px;color:var(--success)">Save 25%</small></div>
+    </div>
+    <div class="fg"><label>Email</label><input id="pay-em" type="email" placeholder="you@email.com"></div>
+    <div class="rate-note" id="rate-note"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closePaystack()">Cancel</button>
+      <button class="btn btn-gold" id="pay-btn" onclick="doPaystack()"><i class="ti ti-lock"></i> Pay with Paystack</button>
     </div>
   </div>
+</div>
 
-  <div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
-const SUPABASE_URL = 'https://rzfnocgqcompyddlzdjy.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6Zm5vY2dxY29tcHlkZGx6ZGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODg3OTcsImV4cCI6MjA5NzY2NDc5N30.mtYUXicTAfRo_GqN5R-zbJj8x12aItFAk0hE6Sb3crU';
-const PAYSTACK_KEY = 'pk_live_cc83d66ba957fe1358d7246e796ab0e81715fdf9';
-const ADMIN_EMAIL = 'blakkstonemusic@hotmail.com';
-const COMMISSION = 0.15;
-// $1 USD = ~15.5 GHS approx — update this rate as needed
-const USD_TO_GHS = 15.5;
+const SB_URL='https://rzfnocgqcompyddlzdjy.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6Zm5vY2dxY29tcHlkZGx6ZGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODg3OTcsImV4cCI6MjA5NzY2NDc5N30.mtYUXicTAfRo_GqN5R-zbJj8x12aItFAk0hE6Sb3crU';
+const PK='pk_live_cc83d66ba957fe1358d7246e796ab0e81715fdf9';
+const ADMIN_EMAIL='blakkstonemusic@hotmail.com';
+const COMM=0.15;
+const GHS_RATE=15.5;
+const PLANS={artist_plus:{monthly:20,yearly:180,label:'Artist+'},label:{monthly:40,yearly:360,label:'Label'}};
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-let user=null, profile=null, authMode='signup', billing='monthly', payoutMethod=null, momoNetwork=null;
+const sb=supabase.createClient(SB_URL,SB_KEY);
+let user=null,profile=null,authMode='signup',billing='monthly',payoutMethod=null,momoNetwork=null,selectedPlan='artist_plus';
 
-function showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+// ── VIEWS ──────────────────────────────────────────────
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
 // ── AUTH ──────────────────────────────────────────────
 function showAuth(mode){
   authMode=mode;
   const isSU=mode==='signup';
-  document.getElementById('auth-title').textContent = isSU?'Create your account':'Welcome back';
-  document.getElementById('auth-sub').textContent = isSU?'Start distributing for free today.':'Log in to your Blakkstone account.';
-  document.getElementById('auth-left-title').textContent = isSU?'Distribute your music globally.':'Welcome back.';
-  document.getElementById('signup-fields').style.display = isSU?'block':'none';
-  document.getElementById('auth-btn').textContent = isSU?'Create account':'Log in';
-  document.getElementById('auth-foot').innerHTML = isSU
-    ? 'Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a>'
-    : 'No account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Sign up free</a>';
+  document.getElementById('auth-title').textContent=isSU?'Create your account':'Welcome back';
+  document.getElementById('auth-sub').textContent=isSU?'Start distributing for free today.':'Log in to your Blakkstone account.';
+  document.getElementById('auth-l-title').textContent=isSU?'Distribute your music globally.':'Welcome back.';
+  document.getElementById('signup-fields').style.display=isSU?'block':'none';
+  document.getElementById('auth-btn').textContent=isSU?'Create account':'Log in';
+  document.getElementById('auth-foot').innerHTML=isSU
+    ?'Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a>'
+    :'No account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Sign up free</a>';
   showView('auth');
 }
-function toggleAuth(){ showAuth(authMode==='signup'?'login':'signup'); }
+function toggleAuth(){showAuth(authMode==='signup'?'login':'signup');}
 
 async function doAuth(){
   const btn=document.getElementById('auth-btn');
   const email=document.getElementById('em').value.trim();
   const pass=document.getElementById('pw').value;
-  if(!email||!pass){ toast('Please fill in all fields',true); return; }
-  if(pass.length<6){ toast('Password must be at least 6 characters',true); return; }
-  btn.disabled=true; btn.innerHTML='<span class="loader"></span>';
+  if(!email||!pass){toast('Please fill in all fields','err');return;}
+  if(pass.length<6){toast('Password must be at least 6 characters','err');return;}
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Please wait...';
   try{
     if(authMode==='signup'){
       const fn=document.getElementById('fn').value.trim();
       const ln=document.getElementById('ln').value.trim();
       const fullName=(fn+' '+ln).trim()||email.split('@')[0];
       const artistName=document.getElementById('an').value.trim()||fullName;
-      const {data,error}=await sb.auth.signUp({ email, password:pass, options:{ emailRedirectTo:'https://blakkstone-distribution.vercel.app', data:{full_name:fullName,artist_name:artistName} } });
-      if(error) throw error;
-      if(data.user && !data.session){ document.getElementById('confirm-email').textContent=email; showView('confirm'); btn.disabled=false; btn.textContent='Create account'; return; }
+      const {data,error}=await sb.auth.signUp({
+        email,password:pass,
+        options:{emailRedirectTo:'https://blakkstone-distribution.vercel.app',data:{full_name:fullName,artist_name:artistName}}
+      });
+      if(error)throw error;
+      if(data.user&&!data.session){
+        document.getElementById('confirm-email').textContent=email;
+        showView('confirm');btn.disabled=false;btn.textContent='Create account';return;
+      }
       if(data.user){
-        await sb.from('profiles').upsert({ id:data.user.id, email, full_name:fullName, artist_name:artistName, plan:'solo' });
+        await sb.from('profiles').upsert({id:data.user.id,email,full_name:fullName,artist_name:artistName,plan:'solo'});
+        toast('Account created! Welcome to Blakkstone.','ok');
         await loadProfile(data.user);
       }
     } else {
-      const {data,error}=await sb.auth.signInWithPassword({ email, password:pass });
-      if(error) throw error;
+      const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error)throw error;
+      toast('Welcome back!','ok');
       await loadProfile(data.user);
     }
-  } catch(e){ toast(e.message||'Auth failed',true); }
-  btn.disabled=false; btn.textContent=authMode==='signup'?'Create account':'Log in';
+  } catch(e){
+    console.error('Auth error:',e);
+    toast(e.message||'Login failed. Check your email and password.','err');
+  }
+  btn.disabled=false;btn.textContent=authMode==='signup'?'Create account':'Log in';
 }
 
 async function loadProfile(u){
@@ -860,9 +835,9 @@ async function loadProfile(u){
 }
 
 async function logout(){
-  await sb.auth.signOut(); user=null; profile=null;
-  document.getElementById('land-nav-right').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="showAuth('login')">Log in</button><button class="btn btn-primary btn-sm" onclick="showAuth('signup')">Get started free</button>`;
-  showView('landing'); toast('Logged out');
+  await sb.auth.signOut();user=null;profile=null;
+  document.getElementById('lnav-right').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="showAuth('login')">Log in</button><button class="btn btn-gold btn-sm" onclick="showAuth('signup')">Get started free</button>`;
+  showView('landing');toast('Logged out');
 }
 
 function enterDashboard(){
@@ -870,14 +845,14 @@ function enterDashboard(){
   const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const isLabel=profile?.plan==='label';
-  document.getElementById('sb-name').textContent=name;
-  document.getElementById('sb-plan').textContent=isAdmin?'Admin':isLabel?'Label Plan':'Solo Plan';
-  document.getElementById('admin-nav').style.display=isAdmin?'flex':'none';
-  document.getElementById('upgrade-nav').style.display=(isAdmin||isLabel)?'none':'flex';
-  document.getElementById('welcome-h').textContent='Hi, '+name.split(' ')[0]+' 👋';
-  document.getElementById('land-nav-right').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>`;
+  const isArtistPlus=profile?.plan==='artist_plus';
+  const isPaid=isLabel||isArtistPlus;
+  document.getElementById('tnav-name').textContent=name.split(' ')[0];
   setAvatarDisplay(initials,profile?.avatar_url);
-  // Profile fields
+  document.getElementById('admin-nav').style.display=isAdmin?'flex':'none';
+  document.getElementById('upgrade-nav').style.display=(isAdmin||isPaid)?'none':'flex';
+  document.getElementById('welcome-h').textContent='Hi, '+name.split(' ')[0]+' 👋';
+  document.getElementById('lnav-right').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>`;
   if(profile){
     const parts=(profile.full_name||'').split(' ');
     document.getElementById('p-fn').value=parts[0]||'';
@@ -887,48 +862,58 @@ function enterDashboard(){
     document.getElementById('profile-display-name').textContent=profile.artist_name||profile.full_name||'';
     document.getElementById('profile-avatar-initials').textContent=initials;
   }
-  if(isLabel||isAdmin){
-    const btn=document.getElementById('upgrade-cta');
-    if(btn){ btn.textContent='Active Plan ✓'; btn.disabled=true; btn.className='btn btn-success'; }
-  }
-  updateCommissionBar(isLabel,isAdmin);
+  updateCommBar(isPaid,isAdmin);
+  updateUpgradePage(profile?.plan);
   showView('dashboard');
-  goPage('overview',document.querySelector('.nav-item'));
+  goPage('overview',document.querySelector('.tnav-item'));
   loadReleases();
-  if(isAdmin) loadAdminReleases();
+  if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();}
 }
 
 function setAvatarDisplay(initials,url){
-  const sb2=document.getElementById('sb-avatar');
-  const big=document.getElementById('profile-avatar-big');
-  if(url){ sb2.innerHTML=`<img src="${url}" alt="a">`; big.innerHTML=`<img src="${url}" alt="a">`; }
-  else { sb2.textContent=initials; document.getElementById('profile-avatar-initials').textContent=initials; }
+  const ta=document.getElementById('tnav-avatar');
+  const ba=document.getElementById('profile-avatar-big');
+  if(url){
+    ta.innerHTML=`<img src="${url}" alt="a" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    ba.innerHTML=`<img src="${url}" alt="a">`;
+  } else {
+    ta.innerHTML=`<span style="font-size:11px;font-weight:700;color:var(--gd)">${initials}</span>`;
+    document.getElementById('profile-avatar-initials').textContent=initials;
+  }
 }
 
-function updateCommissionBar(isLabel,isAdmin){
+function updateCommBar(isPaid,isAdmin){
   const bar=document.getElementById('commission-bar');
-  if(!bar) return;
-  if(!isLabel&&!isAdmin) bar.innerHTML=`<div class="commission-bar"><i class="ti ti-info-circle"></i> You're on the <strong>Solo plan</strong> — Blakkstone keeps 15% of your royalties. <a onclick="goPage('upgrade',null)" style="color:var(--gold-dark);font-weight:600;margin-left:6px">Upgrade to keep 100% →</a></div>`;
+  if(!bar)return;
+  if(!isPaid&&!isAdmin) bar.innerHTML=`<div class="comm-bar"><i class="ti ti-info-circle"></i> You're on the <strong>Solo plan</strong> — Blakkstone keeps 15% of royalties. <a onclick="goPage('upgrade',null)" style="color:var(--gd);font-weight:600;margin-left:6px">Upgrade →</a></div>`;
   else bar.innerHTML='';
 }
 
-// ── PAGES ─────────────────────────────────────────────
+function updateUpgradePage(plan){
+  const apBtn=document.getElementById('ug-artist-btn');
+  const lBtn=document.getElementById('ug-label-btn');
+  if(plan==='artist_plus'&&apBtn){apBtn.textContent='✓ Current Plan';apBtn.disabled=true;apBtn.className='btn btn-ghost';}
+  if(plan==='label'&&lBtn){lBtn.textContent='✓ Current Plan';lBtn.disabled=true;lBtn.className='btn btn-ghost';}
+}
+
+// ── PAGES ──────────────────────────────────────────────
 function goPage(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el) el.classList.add('active');
-  if(id==='admin') loadAdminReleases();
-  if(id==='analytics') loadAnalytics();
-  if(id==='royalties') loadRoyalties();
-  if(id==='payout') loadPayout();
+  document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  if(id==='analytics')loadAnalytics();
+  if(id==='royalties')loadRoyalties();
+  if(id==='payout')loadPayout();
+  if(id==='artists')loadArtists();
+  if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();}
 }
 
 // ── RELEASES ──────────────────────────────────────────
 async function loadReleases(){
   document.getElementById('s-total').textContent='…';
   const {data,error}=await sb.from('releases').select('*').eq('user_id',user.id).order('submitted_at',{ascending:false});
-  if(error){ toast('Error loading releases',true); return; }
+  if(error){toast('Error loading releases','err');return;}
   const releases=data||[];
   const live=releases.filter(r=>r.status==='live').length;
   const pending=releases.filter(r=>r.status==='pending').length;
@@ -937,23 +922,23 @@ async function loadReleases(){
   document.getElementById('s-live').textContent=live;
   document.getElementById('s-pending').textContent=pending;
   document.getElementById('s-streams').textContent=streams.toLocaleString();
-  const html=releases.length?releases.map(r=>releaseRow(r)).join(''):emptyState('No releases yet. Hit "Submit Release" to get started.');
+  const html=releases.length?releases.map(r=>releaseRow(r)).join(''):emptyState('No releases yet. Hit Submit to get started.');
   document.getElementById('ov-releases').innerHTML=releases.slice(0,4).map(r=>releaseRow(r)).join('')||emptyState('No releases yet.');
   document.getElementById('all-releases').innerHTML=html;
 }
 
 function releaseRow(r){
-  const bc={pending:'badge-pending',review:'badge-review',live:'badge-live',rejected:'badge-rejected'}[r.status]||'badge-pending';
+  const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected'}[r.status]||'b-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
   const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
   const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
-  return `<div class="release-row"><div class="release-art">${art}</div><div class="release-info"><div class="release-title">${esc(r.title)}</div><div class="release-meta">${esc(r.artist)} · ${esc(r.genre||'')} · ${d}</div></div><span class="badge ${bc}">${bl}</span></div>`;
+  return `<div class="rr"><div class="r-art">${art}</div><div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')} · ${d}</div></div><span class="badge ${bc}">${bl}</span></div>`;
 }
-function emptyState(msg){ return `<div class="empty-state"><i class="ti ti-music-off"></i><p>${msg}</p></div>`; }
+function emptyState(msg){return `<div class="empty"><i class="ti ti-music-off"></i><p>${msg}</p></div>`;}
 
 // ── SUBMIT ────────────────────────────────────────────
 function fileChosen(input,zoneId,labelId){
-  if(!input.files[0]) return;
+  if(!input.files[0])return;
   document.getElementById(zoneId).classList.add('has-file');
   document.getElementById(labelId).textContent='✓ '+input.files[0].name;
 }
@@ -965,149 +950,184 @@ async function submitRelease(){
   const date=document.getElementById('r-date').value;
   const audioFile=document.getElementById('audio-input').files[0];
   const artFile=document.getElementById('art-input').files[0];
-  if(!title||!artist||!genre||!date){ toast('Please fill all required fields',true); return; }
-  if(!audioFile){ toast('Please upload an audio file',true); return; }
-  if(!artFile){ toast('Please upload cover artwork',true); return; }
+  if(!title||!artist||!genre||!date){toast('Please fill all required fields','err');return;}
+  if(!audioFile){toast('Please upload an audio file','err');return;}
+  if(!artFile){toast('Please upload cover artwork','err');return;}
   const btn=document.getElementById('submit-btn');
-  btn.disabled=true; btn.innerHTML='<span class="loader"></span> Uploading...';
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Uploading...';
   try{
     const audioExt=audioFile.name.split('.').pop();
     const audioPath=`${user.id}/${Date.now()}-audio.${audioExt}`;
     const {error:ae}=await sb.storage.from('audio').upload(audioPath,audioFile);
-    if(ae) throw new Error('Audio upload failed: '+ae.message);
+    if(ae)throw new Error('Audio upload failed: '+ae.message);
     const artExt=artFile.name.split('.').pop();
     const artPath=`${user.id}/${Date.now()}-artwork.${artExt}`;
     const {error:are}=await sb.storage.from('artwork').upload(artPath,artFile);
-    if(are) throw new Error('Artwork upload failed: '+are.message);
+    if(are)throw new Error('Artwork upload failed: '+are.message);
     const {data:artUrl}=sb.storage.from('artwork').getPublicUrl(artPath);
     const {error:dbe}=await sb.from('releases').insert({
-      user_id:user.id, title, artist, genre, release_date:date,
+      user_id:user.id,title,artist,genre,release_date:date,
       isrc:document.getElementById('r-isrc').value.trim()||null,
       featured_artists:document.getElementById('r-feat').value.trim()||null,
       notes:document.getElementById('r-notes').value.trim()||null,
-      audio_url:audioPath, artwork_url:artUrl.publicUrl, status:'pending', streams:0, earnings:0
+      audio_url:audioPath,artwork_url:artUrl.publicUrl,status:'pending',streams:0,earnings:0
     });
-    if(dbe) throw new Error('Submission failed: '+dbe.message);
+    if(dbe)throw new Error('Submission failed: '+dbe.message);
     ['r-title','r-artist','r-isrc','r-feat','r-notes'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('r-genre').value=''; document.getElementById('r-date').value='';
-    document.getElementById('audio-input').value=''; document.getElementById('art-input').value='';
+    document.getElementById('r-genre').value='';document.getElementById('r-date').value='';
+    document.getElementById('audio-input').value='';document.getElementById('art-input').value='';
     ['audio-zone','art-zone'].forEach(id=>document.getElementById(id).classList.remove('has-file'));
     document.getElementById('audio-label').textContent='Click to upload — WAV or MP3 (min. 320kbps)';
     document.getElementById('art-label').textContent='Click to upload — JPG or PNG, 3000×3000px';
     toast('Release submitted! We\'ll review it shortly.','ok');
     loadReleases();
-    goPage('releases',document.querySelectorAll('.nav-item')[1]);
-  } catch(e){ toast(e.message,true); }
-  btn.disabled=false; btn.innerHTML='<i class="ti ti-send"></i> Submit Release';
+    goPage('releases',document.querySelectorAll('.tnav-item')[1]);
+  }catch(e){toast(e.message,'err');}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Release';
 }
+
+// ── ARTISTS (user view) ───────────────────────────────
+async function loadArtists(){
+  const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const container=document.getElementById('artists-list');
+  if(isAdmin){
+    const {data}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+    if(!data||!data.length){container.innerHTML=emptyState('No artists yet.');return;}
+    container.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:.875rem">Showing all ${data.length} artist accounts</div>`+data.map(p=>{
+      const name=p.artist_name||p.full_name||p.email;
+      const initials=name.slice(0,2).toUpperCase();
+      const pill=p.plan==='admin'?'pp-admin':p.plan==='label'?'pp-label':p.plan==='artist_plus'?'pp-label':'pp-solo';
+      const planLabel=p.plan==='admin'?'Admin':p.plan==='label'?'Label':p.plan==='artist_plus'?'Artist+':'Solo';
+      return `<div class="artist-row"><div class="artist-av">${p.avatar_url?`<img src="${p.avatar_url}" alt="a">`:initials}</div><div class="artist-info"><div class="artist-name">${esc(name)}</div><div class="artist-meta">${esc(p.email||'')}</div></div><span class="plan-pill ${pill}">${planLabel}</span><button class="btn btn-ghost btn-sm" onclick="openArtistModal('${p.id}','${esc(name)}')"><i class="ti ti-eye"></i> View</button></div>`;
+    }).join('');
+  } else {
+    // show just their own profile
+    const name=profile?.artist_name||profile?.full_name||user.email;
+    const initials=name.slice(0,2).toUpperCase();
+    const pill=profile?.plan==='label'?'pp-label':profile?.plan==='artist_plus'?'pp-label':'pp-solo';
+    const planLabel=profile?.plan==='label'?'Label':profile?.plan==='artist_plus'?'Artist+':'Solo';
+    container.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:.875rem">Your artist profile</div><div class="artist-row"><div class="artist-av">${profile?.avatar_url?`<img src="${profile.avatar_url}" alt="a">`:initials}</div><div class="artist-info"><div class="artist-name">${esc(name)}</div><div class="artist-meta">${esc(user.email)}</div></div><span class="plan-pill ${pill}">${planLabel}</span><button class="btn btn-ghost btn-sm" onclick="goPage('profile',null)"><i class="ti ti-settings"></i> Settings</button></div>`;
+  }
+}
+
+// Artist detail modal (admin)
+async function openArtistModal(userId,name){
+  const {data:releases}=await sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false});
+  const rl=releases||[];
+  document.getElementById('artist-modal-title').innerHTML=`${esc(name)}'s Releases (${rl.length}) <button onclick="closeArtistModal()">×</button>`;
+  if(!rl.length){document.getElementById('artist-modal-body').innerHTML='<p style="color:var(--muted);font-size:13px">No releases submitted yet.</p>';document.getElementById('artist-overlay').classList.add('open');return;}
+  document.getElementById('artist-modal-body').innerHTML=rl.map(r=>{
+    const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected'}[r.status]||'b-pending';
+    const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
+    return `<div class="release-detail">
+      <div class="rd-header">
+        <div class="r-art" style="width:40px;height:40px">${r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`:'<i class="ti ti-music" style="font-size:18px;color:var(--muted)"></i>'}</div>
+        <div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')}</div></div>
+        <span class="badge ${bc}">${bl}</span>
+      </div>
+      <div class="rd-fields">
+        <div class="fg"><label>Status</label><select class="stsel" style="width:100%" onchange="updateStatus('${r.id}',this.value)"><option value="pending" ${r.status==='pending'?'selected':''}>Pending</option><option value="review" ${r.status==='review'?'selected':''}>In Review</option><option value="live" ${r.status==='live'?'selected':''}>Live</option><option value="rejected" ${r.status==='rejected'?'selected':''}>Rejected</option></select></div>
+        <div class="fg"><label>Streams</label><input type="number" value="${r.streams||0}" min="0" class="num-in" style="width:100%" onchange="updateField('${r.id}','streams',this.value)"></div>
+        <div class="fg"><label>Earnings ($)</label><input type="number" value="${r.earnings||0}" min="0" step="0.01" class="num-in" style="width:100%" onchange="updateField('${r.id}','earnings',this.value)"></div>
+        <div class="fg"><label>Release Date</label><input type="text" value="${r.release_date||'—'}" style="background:var(--off);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;width:100%;color:var(--text)" disabled></div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('artist-overlay').classList.add('open');
+}
+function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
 
 // ── ANALYTICS ─────────────────────────────────────────
 async function loadAnalytics(){
   const {data}=await sb.from('releases').select('*').eq('user_id',user.id);
-  const releases=(data||[]).filter(r=>r.status==='live');
-  const isLabel=profile?.plan==='label'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
-  const totalStreams=releases.reduce((a,r)=>a+(r.streams||0),0);
-  const totalEarnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
-  const commission=isLabel?0:totalEarnings*COMMISSION;
-  const payout=totalEarnings-commission;
-  document.getElementById('a-streams').textContent=totalStreams.toLocaleString();
-  document.getElementById('a-earnings').textContent='$'+totalEarnings.toFixed(2);
+  const rl=(data||[]).filter(r=>r.status==='live');
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const ts=rl.reduce((a,r)=>a+(r.streams||0),0);
+  const te=rl.reduce((a,r)=>a+(r.earnings||0),0);
+  const comm=isPaid?0:te*COMM;
+  const payout=te-comm;
+  document.getElementById('a-streams').textContent=ts.toLocaleString();
+  document.getElementById('a-earnings').textContent='$'+te.toFixed(2);
   document.getElementById('a-payout').textContent='$'+payout.toFixed(2);
-  document.getElementById('a-payout-sub').textContent=isLabel?'No commission (Label plan)':'After 15% commission';
+  document.getElementById('a-payout-sub').textContent=isPaid?'No commission':'After 15% commission';
   const c=document.getElementById('analytics-releases');
-  if(!releases.length){ c.innerHTML=emptyState('No live releases yet. Analytics appear once your music goes live on DSPs.'); return; }
-  c.innerHTML=releases.map(r=>{
-    const comm=isLabel?0:(r.earnings||0)*COMMISSION;
-    const rP=(r.earnings||0)-comm;
-    return `<div class="release-a-row">
-      <div class="release-a-header">
-        <div class="release-art" style="width:40px;height:40px">${r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`}</div>
-        <div class="release-info"><div class="release-title">${esc(r.title)}</div><div class="release-meta">${esc(r.artist)}</div></div>
-        <span class="badge badge-live">Live</span>
-      </div>
-      <div class="release-a-body">
-        <div class="ra-metric"><strong>${(r.streams||0).toLocaleString()}</strong>Streams</div>
-        <div class="ra-metric"><strong>$${(r.earnings||0).toFixed(2)}</strong>Gross Earnings</div>
-        <div class="ra-metric"><strong style="color:var(--danger)">-$${comm.toFixed(2)}</strong>Commission (${isLabel?'0':'15'}%)</div>
-        <div class="ra-metric"><strong style="color:var(--gold-dark)">$${rP.toFixed(2)}</strong>Your Payout</div>
-      </div>
-    </div>`;
-  }).join('');
+  if(!rl.length){c.innerHTML=emptyState('No live releases. Analytics appear once music is live.');return;}
+  c.innerHTML=rl.map(r=>{const rc=isPaid?0:(r.earnings||0)*COMM;const rp=(r.earnings||0)-rc;return `<div class="rar"><div class="rar-head"><div class="r-art" style="width:40px;height:40px">${r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`:'<i class="ti ti-music" style="font-size:18px"></i>'}</div><div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)}</div></div><span class="badge b-live">Live</span></div><div class="rar-body"><div class="rm"><strong>${(r.streams||0).toLocaleString()}</strong>Streams</div><div class="rm"><strong>$${(r.earnings||0).toFixed(2)}</strong>Gross</div><div class="rm"><strong style="color:var(--danger)">-$${rc.toFixed(2)}</strong>Commission</div><div class="rm"><strong style="color:var(--gd)">$${rp.toFixed(2)}</strong>Payout</div></div></div>`;}).join('');
 }
 
 // ── ROYALTIES ─────────────────────────────────────────
 async function loadRoyalties(){
   const {data}=await sb.from('releases').select('*').eq('user_id',user.id);
-  const releases=(data||[]).filter(r=>(r.earnings||0)>0);
-  const isLabel=profile?.plan==='label'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
-  const gross=releases.reduce((a,r)=>a+(r.earnings||0),0);
-  const commission=isLabel?0:gross*COMMISSION;
-  const payout=gross-commission;
+  const rl=(data||[]).filter(r=>(r.earnings||0)>0);
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
+  const comm=isPaid?0:gross*COMM;
+  const payout=gross-comm;
   document.getElementById('r-gross').textContent='$'+gross.toFixed(2);
-  document.getElementById('r-commission').textContent=isLabel?'$0.00 (Label)':'-$'+commission.toFixed(2);
+  document.getElementById('r-commission').textContent=isPaid?'$0.00':'-$'+comm.toFixed(2);
   document.getElementById('r-payout').textContent='$'+payout.toFixed(2);
-  document.getElementById('r-updated').textContent=releases.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';
+  document.getElementById('r-updated').textContent=rl.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';
   const tbody=document.getElementById('royalty-tbody');
-  if(!releases.length){ tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">No royalty data yet. Earnings appear once releases go live.</td></tr>`; return; }
-  tbody.innerHTML=releases.map(r=>{ const rC=isLabel?0:(r.earnings||0)*COMMISSION; const rP=(r.earnings||0)-rC; return `<tr><td>${esc(r.title)}</td><td>${(r.streams||0).toLocaleString()}</td><td>$${(r.earnings||0).toFixed(2)}</td><td style="color:var(--danger)">-$${rC.toFixed(2)}</td><td style="color:var(--gold-dark);font-weight:600">$${rP.toFixed(2)}</td></tr>`; }).join('');
+  if(!rl.length){tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">No royalty data yet.</td></tr>`;return;}
+  tbody.innerHTML=rl.map(r=>{const rc=isPaid?0:(r.earnings||0)*COMM;const rp=(r.earnings||0)-rc;return `<tr><td>${esc(r.title)}</td><td>${(r.streams||0).toLocaleString()}</td><td>$${(r.earnings||0).toFixed(2)}</td><td style="color:var(--danger)">-$${rc.toFixed(2)}</td><td style="color:var(--gd);font-weight:600">$${rp.toFixed(2)}</td></tr>`;}).join('');
 }
 
 // ── PAYOUT ────────────────────────────────────────────
 async function loadPayout(){
   const {data}=await sb.from('releases').select('earnings').eq('user_id',user.id);
-  const isLabel=profile?.plan==='label'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const gross=(data||[]).reduce((a,r)=>a+(r.earnings||0),0);
-  const payout=isLabel?gross:gross*(1-COMMISSION);
-  document.getElementById('payout-balance').textContent='$'+payout.toFixed(2);
-  const {data:ph}=await sb.from('payouts').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
-  const history=document.getElementById('payout-history');
-  if(!ph||!ph.length){ history.textContent='No payouts requested yet.'; return; }
-  history.innerHTML=ph.map(p=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--dash-border);font-size:13px"><span>${p.method==='momo'?'📱 '+p.network+' MoMo':'🏦 Bank Transfer'} — ${p.account}</span><span style="font-weight:600">$${parseFloat(p.amount).toFixed(2)} <span style="color:var(--muted);font-weight:400">${p.status}</span></span></div>`).join('');
+  const bal=isPaid?gross:gross*(1-COMM);
+  document.getElementById('payout-balance').textContent='$'+bal.toFixed(2);
+  try{
+    const {data:ph}=await sb.from('payouts').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    const h=document.getElementById('payout-history');
+    if(!ph||!ph.length){h.textContent='No payouts requested yet.';return;}
+    h.innerHTML=ph.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span>${p.method==='momo'?'📱 '+p.network+' MoMo':'🏦 Bank'} — ${esc(p.account||'')}</span><span style="font-weight:700;color:var(--gd)">$${parseFloat(p.amount||0).toFixed(2)} <span style="color:var(--muted);font-weight:400">(${p.status})</span></span></div>`).join('');
+  }catch(e){}
 }
 
 function selectPayout(method){
   payoutMethod=method;
-  document.getElementById('opt-momo').classList.toggle('selected',method==='momo');
-  document.getElementById('opt-bank').classList.toggle('selected',method==='bank');
+  document.getElementById('opt-momo').classList.toggle('sel',method==='momo');
+  document.getElementById('opt-bank').classList.toggle('sel',method==='bank');
   document.getElementById('momo-fields').style.display=method==='momo'?'block':'none';
   document.getElementById('bank-fields').style.display=method==='bank'?'block':'none';
   document.getElementById('payout-submit-wrap').style.display='block';
 }
-
-function selectNetwork(net){
+function selNet(net){
   momoNetwork=net;
-  ['mtn-btn','voda-btn','airtel-btn'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+  ['mtn-btn','voda-btn','airtel-btn'].forEach(id=>document.getElementById(id).classList.remove('sel'));
   const map={'MTN':'mtn-btn','Vodafone':'voda-btn','AirtelTigo':'airtel-btn'};
-  document.getElementById(map[net]).classList.add('selected');
+  document.getElementById(map[net]).classList.add('sel');
 }
 
 async function submitPayout(){
-  if(!payoutMethod){ toast('Select a payout method',true); return; }
-  let account='', network='';
+  if(!payoutMethod){toast('Select a payout method','err');return;}
+  let account='',network='';
   if(payoutMethod==='momo'){
-    if(!momoNetwork){ toast('Select a Mobile Money network',true); return; }
+    if(!momoNetwork){toast('Select a Mobile Money network','err');return;}
     const num=document.getElementById('momo-number').value.trim();
     const name=document.getElementById('momo-name').value.trim();
-    if(!num||!name){ toast('Fill in all Mobile Money fields',true); return; }
-    account=name+' — '+num; network=momoNetwork;
+    if(!num||!name){toast('Fill in all Mobile Money fields','err');return;}
+    account=name+' — '+num;network=momoNetwork;
   } else {
     const bank=document.getElementById('bank-name').value.trim();
     const acc=document.getElementById('bank-acc').value.trim();
     const accName=document.getElementById('bank-acc-name').value.trim();
-    if(!bank||!acc||!accName){ toast('Fill in all bank fields',true); return; }
+    if(!bank||!acc||!accName){toast('Fill in all bank fields','err');return;}
     account=accName+' — '+bank+' ('+acc+')';
   }
   const {data}=await sb.from('releases').select('earnings').eq('user_id',user.id);
-  const isLabel=profile?.plan==='label'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const gross=(data||[]).reduce((a,r)=>a+(r.earnings||0),0);
-  const amount=isLabel?gross:gross*(1-COMMISSION);
-  if(amount<=0){ toast('No balance available to payout',true); return; }
-  // Save payout request
+  const amount=isPaid?gross:gross*(1-COMM);
+  if(amount<=0){toast('No balance available','err');return;}
   try{
-    await sb.from('payouts').insert({ user_id:user.id, method:payoutMethod, network:network||null, account, amount, status:'pending' });
-    toast('Payout request submitted! Processing within 5–7 business days.','ok');
+    await sb.from('payouts').insert({user_id:user.id,method:payoutMethod,network:network||null,account,amount,status:'pending'});
+    toast('Payout request submitted! Processing in 5–7 business days.','ok');
     loadPayout();
-  } catch(e){ toast('Payout request failed. Run the payouts SQL first.',true); }
+  }catch(e){toast('Payout failed — run payouts SQL in Supabase first.','err');}
 }
 
 // ── PROFILE ───────────────────────────────────────────
@@ -1117,135 +1137,239 @@ async function saveProfile(){
   const fullName=(fn+' '+ln).trim();
   const artistName=document.getElementById('p-an').value.trim();
   const btn=document.getElementById('save-profile-btn');
-  btn.disabled=true; btn.innerHTML='<span class="loader"></span>';
-  const {error}=await sb.from('profiles').update({ full_name:fullName, artist_name:artistName }).eq('id',user.id);
-  if(error){ toast('Save failed: '+error.message,true); }
-  else {
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span>';
+  const {error}=await sb.from('profiles').update({full_name:fullName,artist_name:artistName}).eq('id',user.id);
+  if(error){toast('Save failed: '+error.message,'err');}
+  else{
     profile={...profile,full_name:fullName,artist_name:artistName};
-    document.getElementById('sb-name').textContent=fullName||artistName;
+    document.getElementById('tnav-name').textContent=(fullName||artistName).split(' ')[0];
     document.getElementById('profile-display-name').textContent=artistName||fullName;
     const initials=fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    if(!profile.avatar_url){ document.getElementById('sb-avatar').textContent=initials; document.getElementById('profile-avatar-initials').textContent=initials; }
+    if(!profile.avatar_url){document.getElementById('profile-avatar-initials').textContent=initials;}
     toast('Profile saved!','ok');
   }
-  btn.disabled=false; btn.innerHTML='<i class="ti ti-device-floppy"></i> Save Changes';
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save Changes';
 }
 
 async function changePassword(){
   const pw=document.getElementById('p-pw').value;
   const pw2=document.getElementById('p-pw2').value;
-  if(!pw){ toast('Enter a new password',true); return; }
-  if(pw.length<6){ toast('Password must be at least 6 characters',true); return; }
-  if(pw!==pw2){ toast('Passwords do not match',true); return; }
-  const {error}=await sb.auth.updateUser({ password:pw });
-  if(error){ toast('Update failed: '+error.message,true); return; }
-  document.getElementById('p-pw').value=''; document.getElementById('p-pw2').value='';
+  if(!pw){toast('Enter a new password','err');return;}
+  if(pw.length<6){toast('Password must be at least 6 characters','err');return;}
+  if(pw!==pw2){toast('Passwords do not match','err');return;}
+  const {error}=await sb.auth.updateUser({password:pw});
+  if(error){toast('Update failed: '+error.message,'err');return;}
+  document.getElementById('p-pw').value='';document.getElementById('p-pw2').value='';
   toast('Password updated!','ok');
 }
 
 async function uploadAvatar(input){
-  if(!input.files[0]) return;
+  if(!input.files[0])return;
   const file=input.files[0];
   const ext=file.name.split('.').pop();
   const path=`${user.id}/avatar.${ext}`;
   toast('Uploading photo...');
   const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
-  if(error){ toast('Upload failed: '+error.message,true); return; }
+  if(error){toast('Upload failed: '+error.message,'err');return;}
   const {data}=sb.storage.from('artwork').getPublicUrl(path);
-  await sb.from('profiles').update({ avatar_url:data.publicUrl }).eq('id',user.id);
+  await sb.from('profiles').update({avatar_url:data.publicUrl}).eq('id',user.id);
   profile.avatar_url=data.publicUrl;
   setAvatarDisplay('',data.publicUrl);
-  toast('Profile photo updated!','ok');
+  toast('Photo updated!','ok');
 }
 
 // ── ADMIN ─────────────────────────────────────────────
+function switchAdminTab(tab,el){
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('admin-'+tab).classList.add('active');
+  el.classList.add('active');
+}
+
 async function loadAdminReleases(){
   const tbody=document.getElementById('admin-tbody');
-  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem"><span class="loader"></span></td></tr>';
+  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
   const {data,error}=await sb.from('releases').select('*, profiles(full_name,artist_name,email)').order('submitted_at',{ascending:false});
-  if(error){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">Unable to load. Ensure admin plan is set.</td></tr>'; return; }
-  if(!data.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">No submissions yet.</td></tr>'; return; }
+  if(error||!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.5rem">No submissions yet.</td></tr>';return;}
   tbody.innerHTML=data.map(r=>{
     const pName=r.profiles?.artist_name||r.profiles?.full_name||'—';
     const sub=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
+    const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:32px;height:32px;border-radius:5px;object-fit:cover;margin-right:6px;vertical-align:middle">`:'';
     return `<tr>
-      <td>${esc(pName)}</td><td>${esc(r.title)}</td>
+      <td>${esc(pName)}</td>
+      <td>${art}${esc(r.title)}</td>
       <td style="color:var(--muted)">${esc(r.genre||'')}</td>
       <td style="color:var(--muted)">${sub}</td>
-      <td><select class="status-sel" onchange="updateStatus('${r.id}',this.value)">
+      <td><select class="stsel" onchange="updateStatus('${r.id}',this.value)">
         <option value="pending" ${r.status==='pending'?'selected':''}>Pending</option>
         <option value="review" ${r.status==='review'?'selected':''}>In Review</option>
         <option value="live" ${r.status==='live'?'selected':''}>Live</option>
         <option value="rejected" ${r.status==='rejected'?'selected':''}>Rejected</option>
       </select></td>
-      <td><input type="number" value="${r.streams||0}" min="0" style="width:80px;background:var(--off);border:1px solid var(--dash-border);border-radius:5px;padding:3px 6px;font-size:12px;color:var(--text)" onchange="updateField('${r.id}','streams',this.value)"></td>
-      <td><input type="number" value="${r.earnings||0}" min="0" step="0.01" style="width:80px;background:var(--off);border:1px solid var(--dash-border);border-radius:5px;padding:3px 6px;font-size:12px;color:var(--text)" onchange="updateField('${r.id}','earnings',this.value)"></td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteRelease('${r.id}')"><i class="ti ti-trash"></i></button></td>
+      <td><input type="number" class="num-in" value="${r.streams||0}" min="0" onchange="updateField('${r.id}','streams',this.value)"></td>
+      <td><input type="number" class="num-in" value="${r.earnings||0}" min="0" step="0.01" onchange="updateField('${r.id}','earnings',this.value)"></td>
+      <td><button class="btn-danger-outline" onclick="deleteRelease('${r.id}')"><i class="ti ti-trash"></i></button></td>
     </tr>`;
   }).join('');
 }
 
-async function updateStatus(id,status){ const {error}=await sb.from('releases').update({status}).eq('id',id); if(error){ toast('Update failed',true); return; } toast('Status updated','ok'); loadReleases(); }
-async function updateField(id,field,value){ const val=field==='earnings'?parseFloat(value)||0:parseInt(value)||0; await sb.from('releases').update({[field]:val}).eq('id',id); toast(field==='streams'?'Streams updated':'Earnings updated','ok'); }
-async function deleteRelease(id){ if(!confirm('Remove this release?')) return; await sb.from('releases').delete().eq('id',id); toast('Release removed'); loadAdminReleases(); loadReleases(); }
+async function loadAdminUsers(){
+  const tbody=document.getElementById('admin-users-tbody');
+  tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
+  const {data}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.5rem">No artists yet.</td></tr>';return;}
+  // get release counts
+  const {data:allRel}=await sb.from('releases').select('user_id');
+  const relCount={};
+  (allRel||[]).forEach(r=>{relCount[r.user_id]=(relCount[r.user_id]||0)+1;});
+  tbody.innerHTML=data.map(p=>{
+    const name=p.artist_name||p.full_name||p.email;
+    const pill=p.plan==='admin'?'pp-admin':p.plan==='label'?'pp-label':p.plan==='artist_plus'?'pp-label':'pp-solo';
+    const planLabel=p.plan==='admin'?'Admin':p.plan==='label'?'Label':p.plan==='artist_plus'?'Artist+':'Solo';
+    const joined=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+    return `<tr>
+      <td style="font-weight:600">${esc(name)}</td>
+      <td style="color:var(--muted)">${esc(p.email||'')}</td>
+      <td><select class="stsel" onchange="updateUserPlan('${p.id}',this.value)">
+        <option value="solo" ${p.plan==='solo'?'selected':''}>Solo</option>
+        <option value="artist_plus" ${p.plan==='artist_plus'?'selected':''}>Artist+</option>
+        <option value="label" ${p.plan==='label'?'selected':''}>Label</option>
+        <option value="admin" ${p.plan==='admin'?'selected':''}>Admin</option>
+      </select></td>
+      <td>${relCount[p.id]||0}</td>
+      <td style="color:var(--muted)">${joined}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openArtistModal('${p.id}','${esc(name)}')"><i class="ti ti-eye"></i> View</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadAdminPayouts(){
+  const tbody=document.getElementById('admin-payouts-tbody');
+  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem"><span class="loader"></span></td></tr>';
+  try{
+    const {data}=await sb.from('payouts').select('*, profiles(artist_name,full_name,email)').order('created_at',{ascending:false});
+    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">No payout requests yet.</td></tr>';return;}
+    tbody.innerHTML=data.map(p=>{
+      const name=p.profiles?.artist_name||p.profiles?.full_name||p.profiles?.email||'—';
+      const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+      return `<tr>
+        <td style="font-weight:600">${esc(name)}</td>
+        <td>${p.method==='momo'?'📱 MoMo':'🏦 Bank'} ${p.network?'('+p.network+')':''}</td>
+        <td style="color:var(--muted);font-size:12px">${esc(p.account||'')}</td>
+        <td style="font-weight:700;color:var(--gd)">$${parseFloat(p.amount||0).toFixed(2)}</td>
+        <td><select class="stsel" onchange="updatePayoutStatus('${p.id}',this.value)">
+          <option value="pending" ${p.status==='pending'?'selected':''}>Pending</option>
+          <option value="processing" ${p.status==='processing'?'selected':''}>Processing</option>
+          <option value="paid" ${p.status==='paid'?'selected':''}>Paid</option>
+          <option value="failed" ${p.status==='failed'?'selected':''}>Failed</option>
+        </select></td>
+        <td style="color:var(--muted)">${d}</td>
+        <td><button class="btn-danger-outline" onclick="deletePayout('${p.id}')"><i class="ti ti-trash"></i></button></td>
+      </tr>`;
+    }).join('');
+  }catch(e){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">Run payouts SQL to enable this table.</td></tr>';}
+}
+
+async function updateStatus(id,status){
+  await sb.from('releases').update({status}).eq('id',id);
+  toast('Status updated','ok');loadReleases();
+}
+async function updateField(id,field,value){
+  const val=field==='earnings'?parseFloat(value)||0:parseInt(value)||0;
+  await sb.from('releases').update({[field]:val}).eq('id',id);
+  toast(field==='streams'?'Streams saved':'Earnings saved','ok');
+}
+async function updateUserPlan(id,plan){
+  await sb.from('profiles').update({plan}).eq('id',id);
+  toast('Plan updated','ok');
+}
+async function updatePayoutStatus(id,status){
+  await sb.from('payouts').update({status}).eq('id',id);
+  toast('Payout status updated','ok');
+}
+async function deleteRelease(id){
+  if(!confirm('Remove this release?'))return;
+  await sb.from('releases').delete().eq('id',id);
+  toast('Release removed');loadAdminReleases();loadReleases();
+}
+async function deletePayout(id){
+  if(!confirm('Delete this payout request?'))return;
+  await sb.from('payouts').delete().eq('id',id);
+  toast('Payout deleted');loadAdminPayouts();
+}
 
 // ── PAYSTACK ──────────────────────────────────────────
-function openPaystack(){
-  document.getElementById('pay-overlay').classList.add('open');
-  if(user) document.getElementById('pay-em').value=user.email||'';
+function openPaystack(plan){
+  selectedPlan=plan||'artist_plus';
+  const p=PLANS[selectedPlan];
+  document.getElementById('pay-modal-title').textContent='Upgrade to '+p.label;
+  document.getElementById('pay-modal-desc').textContent=selectedPlan==='label'
+    ?'Manage up to 5 artists and keep 100% of your royalties.'
+    :'Keep 100% of your royalties as a solo artist.';
+  document.getElementById('b-monthly-price').textContent='$'+p.monthly;
+  document.getElementById('b-yearly-price').textContent='$'+p.yearly;
+  billing='monthly';
+  document.getElementById('b-monthly').classList.add('sel');
+  document.getElementById('b-yearly').classList.remove('sel');
+  if(user)document.getElementById('pay-em').value=user.email||'';
   updateRateNote();
+  document.getElementById('pay-overlay').classList.add('open');
 }
-function closePaystack(){ document.getElementById('pay-overlay').classList.remove('open'); }
+function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');}
 function setBilling(cycle){
   billing=cycle;
-  document.getElementById('b-monthly').classList.toggle('selected',cycle==='monthly');
-  document.getElementById('b-yearly').classList.toggle('selected',cycle==='yearly');
+  document.getElementById('b-monthly').classList.toggle('sel',cycle==='monthly');
+  document.getElementById('b-yearly').classList.toggle('sel',cycle==='yearly');
   updateRateNote();
 }
 function updateRateNote(){
-  const usd=billing==='monthly'?9.99:89.99;
-  const ghs=(usd*USD_TO_GHS).toFixed(2);
-  document.getElementById('rate-note').textContent=`Approx. GHS ${ghs} at current rate. Charged in GHS via Paystack.`;
+  const p=PLANS[selectedPlan];
+  const usd=billing==='monthly'?p.monthly:p.yearly;
+  const ghs=(usd*GHS_RATE).toFixed(2);
+  document.getElementById('rate-note').textContent=`≈ GHS ${ghs} at current rate. Charged in GHS via Paystack.`;
 }
 
 function doPaystack(){
   const email=document.getElementById('pay-em').value.trim();
-  if(!email){ toast('Enter your email',true); return; }
-  const usd=billing==='monthly'?9.99:89.99;
-  const ghs=Math.round(usd*USD_TO_GHS*100); // kobo equivalent in pesewas
+  if(!email){toast('Enter your email','err');return;}
+  const p=PLANS[selectedPlan];
+  const usd=billing==='monthly'?p.monthly:p.yearly;
+  const pesewas=Math.round(usd*GHS_RATE*100);
+  if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your internet connection.','err');return;}
   const handler=PaystackPop.setup({
-    key:PAYSTACK_KEY, email, amount:ghs, currency:'GHS',
-    metadata:{ plan:'label', billing_cycle:billing },
+    key:PK,email,amount:pesewas,currency:'GHS',
+    metadata:{plan:selectedPlan,billing_cycle:billing},
     callback:async function(response){
-      if(user){ await sb.from('profiles').update({ plan:'label' }).eq('id',user.id); if(profile) profile.plan='label'; }
-      document.getElementById('sb-plan').textContent='Label Plan';
+      if(user){
+        await sb.from('profiles').update({plan:selectedPlan}).eq('id',user.id);
+        if(profile)profile.plan=selectedPlan;
+      }
       document.getElementById('upgrade-nav').style.display='none';
-      updateCommissionBar(true,false);
-      const btn=document.getElementById('upgrade-cta');
-      if(btn){ btn.textContent='Active Plan ✓'; btn.disabled=true; btn.className='btn btn-success'; }
-      toast('Payment confirmed! Label plan activated.','ok');
+      updateUpgradePage(selectedPlan);
+      updateCommBar(true,false);
+      toast('Payment confirmed! '+p.label+' plan activated.','ok');
       closePaystack();
     },
-    onClose:function(){ toast('Payment cancelled'); }
+    onClose:function(){toast('Payment cancelled');}
   });
   handler.openIframe();
 }
 
 // ── UTILS ─────────────────────────────────────────────
-function esc(s){ const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 function toast(msg,type){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast'+(type==='ok'?' ok':type===true?' error':'');
-  t.classList.add('show'); clearTimeout(t._t);
+  t.textContent=msg;t.className='toast'+(type==='ok'?' ok':type==='err'?' err':'');
+  t.classList.add('show');clearTimeout(t._t);
   t._t=setTimeout(()=>t.classList.remove('show'),3500);
 }
 
 // ── INIT ──────────────────────────────────────────────
 (async()=>{
   const {data:{session}}=await sb.auth.getSession();
-  if(session?.user) await loadProfile(session.user);
+  if(session?.user)await loadProfile(session.user);
   sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_IN'&&session?.user&&!user) await loadProfile(session.user);
+    if(event==='SIGNED_IN'&&session?.user&&!user)await loadProfile(session.user);
   });
 })();
 </script>
