@@ -524,6 +524,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .support-bubble:hover .support-tooltip{display:block}
 /* Progress bar on top of page */
 .page-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gold),#a78bfa);z-index:9999;transition:width .3s;pointer-events:none}
+
+/* DSP logo chips */
+.dsp-logo{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;margin-right:4px}
+.dsp-chip{display:inline-flex;align-items:center;background:var(--off);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -587,34 +591,37 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <p>Distribute everywhere that matters</p>
     <div class="dsp-marquee-wrap">
       <div class="dsp-marquee">
-        <div class="dsp-chip">🎧 Spotify</div>
-        <div class="dsp-chip">🍎 Apple Music</div>
-        <div class="dsp-chip">🔊 Boomplay</div>
-        <div class="dsp-chip">🎵 Audiomack</div>
-        <div class="dsp-chip">▶️ YouTube Music</div>
-        <div class="dsp-chip">🎵 TikTok</div>
-        <div class="dsp-chip">📦 Amazon Music</div>
-        <div class="dsp-chip">🌊 Tidal</div>
-        <div class="dsp-chip">🎶 Deezer</div>
-        <div class="dsp-chip">📸 Instagram</div>
-        <div class="dsp-chip">📻 iHeart Radio</div>
-        <div class="dsp-chip">☁️ SoundCloud</div>
-        <div class="dsp-chip">👻 Snapchat</div>
-        <div class="dsp-chip">🎼 Gaana</div>
-        <div class="dsp-chip">🎙️ Saavn</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/spotify/1DB954" width="18" height="18" alt="Spotify" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Spotify</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/applemusic/FC3C44" width="18" height="18" alt="Apple Music" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Apple Music</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/youtubemusic/FF0000" width="18" height="18" alt="YouTube Music" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> YouTube Music</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/audiomack/FFA200" width="18" height="18" alt="Audiomack" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Audiomack</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/boomplay/00C2FF" width="18" height="18" alt="Boomplay" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Boomplay</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/tiktok/010101" width="18" height="18" alt="TikTok" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> TikTok</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/amazonmusic/25D1DA" width="18" height="18" alt="Amazon Music" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Amazon Music</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/tidal/000000" width="18" height="18" alt="Tidal" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Tidal</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/deezer/A238FF" width="18" height="18" alt="Deezer" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Deezer</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/instagram/E4405F" width="18" height="18" alt="Instagram" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Instagram</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/iheartradio/C6002B" width="18" height="18" alt="iHeart Radio" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> iHeart Radio</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/soundcloud/FF7700" width="18" height="18" alt="SoundCloud" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> SoundCloud</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/shazam/0088FF" width="18" height="18" alt="Shazam" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Shazam</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/snapchat/FFFC00" width="18" height="18" alt="Snapchat" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Snapchat</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/jiosaavn/2BC5B4" width="18" height="18" alt="JioSaavn" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> JioSaavn</div>
         <!-- duplicate for seamless loop -->
-        <div class="dsp-chip">🎧 Spotify</div>
-        <div class="dsp-chip">🍎 Apple Music</div>
-        <div class="dsp-chip">🔊 Boomplay</div>
-        <div class="dsp-chip">🎵 Audiomack</div>
-        <div class="dsp-chip">▶️ YouTube Music</div>
-        <div class="dsp-chip">🎵 TikTok</div>
-        <div class="dsp-chip">📦 Amazon Music</div>
-        <div class="dsp-chip">🌊 Tidal</div>
-        <div class="dsp-chip">🎶 Deezer</div>
-        <div class="dsp-chip">📸 Instagram</div>
-        <div class="dsp-chip">📻 iHeart Radio</div>
-        <div class="dsp-chip">☁️ SoundCloud</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/spotify/1DB954" width="18" height="18" alt="Spotify" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Spotify</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/applemusic/FC3C44" width="18" height="18" alt="Apple Music" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Apple Music</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/youtubemusic/FF0000" width="18" height="18" alt="YouTube Music" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> YouTube Music</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/audiomack/FFA200" width="18" height="18" alt="Audiomack" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Audiomack</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/boomplay/00C2FF" width="18" height="18" alt="Boomplay" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Boomplay</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/tiktok/010101" width="18" height="18" alt="TikTok" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> TikTok</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/amazonmusic/25D1DA" width="18" height="18" alt="Amazon Music" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Amazon Music</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/tidal/000000" width="18" height="18" alt="Tidal" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Tidal</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/deezer/A238FF" width="18" height="18" alt="Deezer" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Deezer</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/instagram/E4405F" width="18" height="18" alt="Instagram" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Instagram</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/iheartradio/C6002B" width="18" height="18" alt="iHeart Radio" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> iHeart Radio</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/soundcloud/FF7700" width="18" height="18" alt="SoundCloud" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> SoundCloud</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/shazam/0088FF" width="18" height="18" alt="Shazam" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Shazam</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/snapchat/FFFC00" width="18" height="18" alt="Snapchat" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Snapchat</div>
+        <div class="dsp-chip"><img src="https://cdn.simpleicons.org/jiosaavn/2BC5B4" width="18" height="18" alt="JioSaavn" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> JioSaavn</div>
       </div>
     </div>
   </section>
@@ -2260,15 +2267,15 @@ function renderLineChart(canvasId, labels, data, color='#a78bfa'){
 
 // DSP store distribution weights (estimated)
 const DSP_STORES=[
-  {name:'Spotify',icon:'🎧',share:.38},
-  {name:'Apple Music',icon:'🍎',share:.18},
-  {name:'YouTube Music',icon:'▶️',share:.14},
-  {name:'Audiomack',icon:'🎵',share:.10},
-  {name:'Boomplay',icon:'🔊',share:.09},
-  {name:'Amazon Music',icon:'📦',share:.05},
-  {name:'Tidal',icon:'🌊',share:.03},
-  {name:'Deezer',icon:'🎶',share:.02},
-  {name:'Others',icon:'🌐',share:.01},
+  {name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954',share:.38},
+  {name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44',share:.18},
+  {name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000',share:.14},
+  {name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200',share:.10},
+  {name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF',share:.09},
+  {name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA',share:.05},
+  {name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000',share:.03},
+  {name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF',share:.02},
+  {name:'Others',logo:'',share:.01},
 ];
 
 async function loadAnalytics(){
@@ -2296,19 +2303,25 @@ async function loadAnalytics(){
         const estStreams=Math.round(ts*s.share);
         const estRev=(te*s.share);
         const pct=Math.round(s.share*100);
+        const logoEl=s.logo?`<img src="${s.logo}" width="22" height="22" alt="${s.name}" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:`<i class="ti ti-music" style="font-size:14px;color:rgba(255,255,255,.3)"></i>`;
         return `<tr>
-          <td><span style="font-size:16px;margin-right:8px">${s.icon}</span><strong>${s.name}</strong></td>
-          <td>${estStreams.toLocaleString()}</td>
-          <td>$${estRev.toFixed(2)}</td>
           <td>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="flex:1;height:6px;background:var(--off);border-radius:3px;overflow:hidden">
-                <div style="width:${pct}%;height:100%;background:var(--gold);border-radius:3px"></div>
-              </div>
-              <span style="font-size:11px;color:var(--muted);width:28px">${pct}%</span>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:5px">${logoEl}</div>
+              <strong style="color:#fff">${s.name}</strong>
             </div>
           </td>
-          <td><span style="font-size:11px;font-weight:600;color:var(--success);background:#f0fff4;padding:2px 8px;border-radius:20px">Live ✓</span></td>
+          <td style="color:rgba(255,255,255,.7)">${estStreams.toLocaleString()}</td>
+          <td style="color:#34d399;font-weight:600">$${estRev.toFixed(2)}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:#a78bfa;border-radius:3px"></div>
+              </div>
+              <span style="font-size:11px;color:rgba(255,255,255,.4);width:28px">${pct}%</span>
+            </div>
+          </td>
+          <td><span style="font-size:11px;font-weight:600;color:#34d399;background:rgba(16,185,129,.15);padding:2px 8px;border-radius:20px">Live ✓</span></td>
         </tr>`;
       }).join('');
     }
@@ -2395,9 +2408,13 @@ async function loadRoyalties(){
     const topStores=DSP_STORES.slice(0,5);
     bestStores.innerHTML=topStores.map(s=>{
       const rev=(gross2*s.share);
+      const logoEl=s.logo?`<img src="${s.logo}" width="18" height="18" alt="${s.name}" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:`<i class="ti ti-music" style="font-size:13px;color:rgba(255,255,255,.3)"></i>`;
       return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-        <span style="font-size:13px;color:rgba(255,255,255,.7)">${s.icon} ${s.name}</span>
-        <span style="font-size:13px;font-weight:600;color:#34d399">$${rev.toFixed(2)}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px">${logoEl}</div>
+          <span style="font-size:13px;color:rgba(255,255,255,.8);font-weight:500">${s.name}</span>
+        </div>
+        <span style="font-size:13px;font-weight:700;color:#34d399">$${rev.toFixed(2)}</span>
       </div>`;
     }).join('');
   }
@@ -2758,8 +2775,22 @@ async function loadAdminReleases(){
   const tbody=document.getElementById('admin-tbody');
   if(!tbody)return;
   tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
-  const {data,error}=await sb.from('releases').select('*, profiles(full_name,artist_name,email,account_id)').order('submitted_at',{ascending:false});
-  if(error||!data){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:#f87171;padding:1.5rem">'+( error?.message||'No data')+'</td></tr>';return;}
+  // Fetch releases and profiles separately to avoid RLS join issues
+  const [{data:releases,error},{data:profiles}]=await Promise.all([
+    sb.from('releases').select('*').order('submitted_at',{ascending:false}),
+    sb.from('profiles').select('id,full_name,artist_name,email,account_id')
+  ]);
+  if(error){
+    tbody.innerHTML=`<tr><td colspan="12" style="text-align:center;color:#f87171;padding:1.5rem">Error: ${error.message}</td></tr>`;
+    return;
+  }
+  if(!releases||!releases.length){
+    tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No releases submitted yet.</td></tr>';
+    return;
+  }
+  // Build a profile map and attach to each release
+  const profMap={};(profiles||[]).forEach(p=>{profMap[p.id]=p;});
+  const data=releases.map(r=>({...r,profiles:profMap[r.user_id]||null}));
   allReleasesCache=data;
   renderAdminReleases(data);
 }
@@ -3322,19 +3353,32 @@ let wizData={};
 let wizToggleState={};
 
 const ALL_STORES=[
-  {name:'Spotify',icon:'🎧',type:'streaming'},{name:'Apple Music',icon:'🍎',type:'streaming'},
-  {name:'YouTube Music',icon:'▶️',type:'streaming'},{name:'Audiomack',icon:'🎵',type:'streaming'},
-  {name:'Boomplay',icon:'🔊',type:'streaming'},{name:'Tidal',icon:'🌊',type:'streaming'},
-  {name:'Deezer',icon:'🎶',type:'streaming'},{name:'Amazon Music',icon:'📦',type:'streaming'},
-  {name:'TikTok',icon:'🎵',type:'streaming'},{name:'Instagram/Facebook',icon:'📸',type:'streaming'},
-  {name:'Pandora',icon:'🎸',type:'streaming'},{name:'iHeart Radio',icon:'📻',type:'streaming'},
-  {name:'SoundCloud',icon:'☁️',type:'streaming'},{name:'Shazam',icon:'🔵',type:'streaming'},
-  {name:'Snapchat',icon:'👻',type:'streaming'},{name:'Triller',icon:'📱',type:'streaming'},
-  {name:'Gaana',icon:'🎼',type:'streaming'},{name:'Saavn',icon:'🎙️',type:'streaming'},
-  {name:'Joox',icon:'🎤',type:'streaming'},{name:'Resso',icon:'🎵',type:'streaming'},
-  {name:'Netease',icon:'🌐',type:'streaming'},{name:'QQ Music',icon:'🎵',type:'streaming'},
-  {name:'iTunes',icon:'🎵',type:'download'},{name:'7digital',icon:'7️⃣',type:'download'},
-  {name:'Amazon MP3',icon:'📦',type:'download'},{name:'Beatport',icon:'🎚️',type:'download'},
+  {name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954',type:'streaming'},
+  {name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44',type:'streaming'},
+  {name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000',type:'streaming'},
+  {name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200',type:'streaming'},
+  {name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF',type:'streaming'},
+  {name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000',type:'streaming'},
+  {name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF',type:'streaming'},
+  {name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA',type:'streaming'},
+  {name:'TikTok',logo:'https://cdn.simpleicons.org/tiktok/010101',type:'streaming'},
+  {name:'Instagram',logo:'https://cdn.simpleicons.org/instagram/E4405F',type:'streaming'},
+  {name:'Pandora',logo:'https://cdn.simpleicons.org/pandora/3668FF',type:'streaming'},
+  {name:'iHeart Radio',logo:'https://cdn.simpleicons.org/iheartradio/C6002B',type:'streaming'},
+  {name:'SoundCloud',logo:'https://cdn.simpleicons.org/soundcloud/FF7700',type:'streaming'},
+  {name:'Shazam',logo:'https://cdn.simpleicons.org/shazam/0088FF',type:'streaming'},
+  {name:'Snapchat',logo:'https://cdn.simpleicons.org/snapchat/FFFC00',type:'streaming'},
+  {name:'Gaana',logo:'https://cdn.simpleicons.org/gaana/E02020',type:'streaming'},
+  {name:'JioSaavn',logo:'https://cdn.simpleicons.org/jiosaavn/2BC5B4',type:'streaming'},
+  {name:'Joox',logo:'https://cdn.simpleicons.org/joox/00C44F',type:'streaming'},
+  {name:'Resso',logo:'https://cdn.simpleicons.org/resso/FF3366',type:'streaming'},
+  {name:'Netease',logo:'https://cdn.simpleicons.org/neteasemusic/C20C0C',type:'streaming'},
+  {name:'QQ Music',logo:'https://cdn.simpleicons.org/qqmusic/31C27C',type:'streaming'},
+  {name:'Bandcamp',logo:'https://cdn.simpleicons.org/bandcamp/1DA0C3',type:'streaming'},
+  {name:'iTunes',logo:'https://cdn.simpleicons.org/itunes/FC3C44',type:'download'},
+  {name:'7digital',logo:'https://cdn.simpleicons.org/7digital/E51C23',type:'download'},
+  {name:'Amazon MP3',logo:'https://cdn.simpleicons.org/amazonmusic/FF9900',type:'download'},
+  {name:'Beatport',logo:'https://cdn.simpleicons.org/beatport/00FF00',type:'download'},
 ];
 
 function initWizard(){
@@ -3462,7 +3506,7 @@ function renderStoresGrid(){
   if(!grid)return;
   grid.innerHTML=ALL_STORES.map(s=>`
     <div class="store-chip selected" id="store-${s.name.replace(/[^a-z]/gi,'')}" onclick="toggleStore('${s.name.replace(/[^a-z]/gi,'')}','${s.name}')">
-      <div class="store-chip-icon">${s.icon}</div>
+      <div class="store-chip-icon" style="background:rgba(255,255,255,.05);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px">${s.logo?`<img src="${s.logo}" width="18" height="18" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:'<i class="ti ti-music" style="font-size:12px;color:rgba(255,255,255,.3)"></i>'}</div>
       <div class="store-chip-name">${s.name}</div>
       <div class="store-chip-check"></div>
     </div>`).join('');
