@@ -528,6 +528,53 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* DSP logo chips */
 .dsp-logo{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;margin-right:4px}
 .dsp-chip{display:inline-flex;align-items:center;background:var(--off);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--muted)}
+
+/* ── ANALYTICS PAGE ── */
+.an-hero-stats{background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.75rem;display:flex;gap:2rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
+.an-hero-main{flex:1;min-width:200px}
+.an-hero-label{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem}
+.an-hero-val{font-size:52px;font-weight:900;color:#fff;letter-spacing:-2px;line-height:1}
+.an-hero-sub{font-size:13px;color:rgba(255,255,255,.35);margin-top:.5rem}
+.an-hero-side{display:flex;gap:1.5rem;flex-wrap:wrap}
+.an-mini-stat{background:#131320;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1rem 1.25rem;min-width:110px}
+.an-mini-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.35);margin-bottom:.4rem}
+.an-mini-val{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px}
+/* Store breakdown bars in analytics */
+.an-store-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.an-store-row:last-child{border-bottom:none}
+.an-store-logo{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px}
+.an-store-logo img{width:18px;height:18px;object-fit:contain;display:block}
+.an-store-name{font-size:12px;color:rgba(255,255,255,.7);width:110px;flex-shrink:0;font-weight:500}
+.an-store-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.an-store-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.an-store-count{font-size:12px;color:rgba(255,255,255,.5);width:60px;text-align:right;flex-shrink:0}
+/* Top releases in analytics */
+.an-release-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.an-release-row:last-child{border-bottom:none}
+.an-release-rank{font-size:11px;font-weight:800;color:rgba(255,255,255,.25);width:18px;flex-shrink:0;text-align:center}
+.an-release-art{width:34px;height:34px;border-radius:6px;background:#2a2a45;overflow:hidden;flex-shrink:0}
+.an-release-art img{width:100%;height:100%;object-fit:cover}
+.an-release-info{flex:1;min-width:0}
+.an-release-title{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an-release-artist{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px}
+.an-release-streams{font-size:13px;font-weight:700;color:#a78bfa;flex-shrink:0}
+
+/* ── ROYALTIES PAGE ── */
+.roy-hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.roy-hero-card{border-radius:14px;padding:1.5rem;display:flex;align-items:flex-start;gap:1rem;border:1px solid rgba(255,255,255,.07)}
+.roy-hero-gross{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(79,70,229,.08));border-color:rgba(124,58,237,.25)}
+.roy-hero-comm{background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(185,28,28,.06));border-color:rgba(239,68,68,.2)}
+.roy-hero-payout{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(4,120,87,.06));border-color:rgba(16,185,129,.2)}
+.roy-hero-period{background:#1e1e35;border-color:rgba(255,255,255,.07)}
+.roy-hero-icon{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.roy-hero-icon i{font-size:20px;color:#a78bfa}
+.roy-hero-gross .roy-hero-icon i{color:#a78bfa}
+.roy-hero-comm .roy-hero-icon i{color:#f87171}
+.roy-hero-payout .roy-hero-icon i{color:#34d399}
+.roy-hero-period .roy-hero-icon i{color:#fbbf24}
+.roy-hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.4);margin-bottom:.4rem}
+.roy-hero-val{font-size:28px;font-weight:800;letter-spacing:-.5px;color:#fff}
+.roy-hero-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px}
 </style>
 </head>
 <body>
@@ -1281,79 +1328,188 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- ROYALTIES -->
     <div class="page" id="page-royalties">
-      <div class="ph"><div><h1>Royalties</h1><p>Your earnings breakdown.</p></div></div>
-      <div class="royalties-subtabs">
-        <div class="rsub active" onclick="switchRoyaltyTab('sales',this)">Sales</div>
-        <div class="rsub" onclick="switchRoyaltyTab('reports',this)">Reports</div>
-        <div class="rsub" onclick="switchRoyaltyTab('payouts-tab',this)">Payouts</div>
+      <div class="ph">
+        <div><h1>Royalties</h1><p>Your earnings from streaming platforms.</p></div>
+        <button class="btn btn-purple" onclick="goPage('payout',null)"><i class="ti ti-wallet"></i> Request Payout</button>
       </div>
-      <!-- SALES SUB-TAB -->
-      <div id="rt-sales">
-        <div class="yellow-banner"><i class="ti ti-info-circle"></i> Stores pay out royalties with a minimum delay of two months.</div>
-        <div id="commission-bar"></div>
-        <div class="ag" style="margin-bottom:1.5rem">
-          <div class="ac"><div class="ac-label">Gross Earnings</div><div class="ac-val" id="r-gross">$0.00</div></div>
-          <div class="ac"><div class="ac-label">Commission</div><div class="ac-val" style="color:#f87171" id="r-commission">$0.00</div></div>
-          <div class="ac"><div class="ac-label">Your Payout</div><div class="ac-val" style="color:#34d399" id="r-payout">$0.00</div></div>
-          <div class="ac"><div class="ac-label">Last Updated</div><div class="ac-val" style="font-size:15px;font-weight:600" id="r-updated">—</div></div>
+
+      <!-- INFO BANNER -->
+      <div class="yellow-banner" style="margin-bottom:1.5rem">
+        <i class="ti ti-info-circle" style="flex-shrink:0"></i>
+        Stores pay out royalties with a minimum delay of two months. Figures shown are estimates until confirmed by DSPs.
+      </div>
+
+      <!-- COMMISSION NOTICE -->
+      <div id="commission-bar"></div>
+
+      <!-- EARNINGS HERO CARDS -->
+      <div class="roy-hero-grid">
+        <div class="roy-hero-card roy-hero-gross">
+          <div class="roy-hero-icon"><i class="ti ti-trending-up"></i></div>
+          <div>
+            <div class="roy-hero-label">Gross Earnings</div>
+            <div class="roy-hero-val" id="r-gross">$0.00</div>
+            <div class="roy-hero-sub">Total before deductions</div>
+          </div>
         </div>
-        <!-- EARNINGS CHART -->
-        <div class="chart-card">
-          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem">
-            <span style="font-size:14px;font-weight:700;color:#fff">Total Earnings</span>
-            <span style="font-size:13px;color:rgba(255,255,255,.3)">Streams</span>
+        <div class="roy-hero-card roy-hero-comm">
+          <div class="roy-hero-icon"><i class="ti ti-percentage"></i></div>
+          <div>
+            <div class="roy-hero-label">Commission</div>
+            <div class="roy-hero-val" id="r-commission" style="color:#f87171">$0.00</div>
+            <div class="roy-hero-sub" id="r-comm-sub">Blakkstone 15% fee</div>
+          </div>
+        </div>
+        <div class="roy-hero-card roy-hero-payout">
+          <div class="roy-hero-icon"><i class="ti ti-coin"></i></div>
+          <div>
+            <div class="roy-hero-label">Your Payout</div>
+            <div class="roy-hero-val" id="r-payout" style="color:#34d399">$0.00</div>
+            <div class="roy-hero-sub">Available to withdraw</div>
+          </div>
+        </div>
+        <div class="roy-hero-card roy-hero-period">
+          <div class="roy-hero-icon"><i class="ti ti-calendar"></i></div>
+          <div>
+            <div class="roy-hero-label">Last Reporting</div>
+            <div class="roy-hero-val" id="r-updated" style="font-size:16px;font-weight:700">—</div>
+            <div class="roy-hero-sub">DSP reporting period</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EARNINGS CHART + BEST STORES -->
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;margin-bottom:1.5rem">
+        <div class="chart-card" style="margin-bottom:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+            <div>
+              <div style="font-size:15px;font-weight:700;color:#fff">Earnings Overview</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px">Monthly earnings estimate</div>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.05);padding:4px 10px;border-radius:6px">Last 6 months</div>
           </div>
           <canvas id="earnings-chart" height="180"></canvas>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
-          <div class="chart-card">
-            <div class="chart-title">Best Performing Stores</div>
-            <div id="best-stores"></div>
+        <div class="chart-card" style="margin-bottom:0">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-award" style="color:#fbbf24"></i> Best Stores
           </div>
-          <div class="chart-card">
-            <div class="chart-title">Release Breakdown</div>
-            <div class="dark-table-wrap"><table><thead><tr><th>Release</th><th>Streams</th><th>Gross</th><th>Commission</th><th>Payout</th></tr></thead><tbody id="royalty-tbody"></tbody></table></div>
-          </div>
+          <div id="best-stores"></div>
         </div>
       </div>
-      <!-- REPORTS SUB-TAB -->
-      <div id="rt-reports" style="display:none">
-        <div class="chart-card">
-          <div class="chart-title">Monthly Earnings Report</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.35);margin-top:.5rem">Detailed reports are generated monthly after DSP reporting cycles complete.</div>
-        </div>
+
+      <!-- RELEASE BREAKDOWN TABLE -->
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-music" style="color:#a78bfa"></i> Earnings by Release
       </div>
-      <!-- PAYOUTS SUB-TAB -->
-      <div id="rt-payouts-tab" style="display:none">
-        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1rem">Manage your payout requests and history.</div>
-        <button class="btn btn-purple btn-sm" onclick="goPage('payout',null)" style="margin-bottom:1.5rem"><i class="ti ti-wallet"></i> Go to Payout Page</button>
+      <div class="dark-table-wrap" style="margin-bottom:1.5rem">
+        <table>
+          <thead>
+            <tr>
+              <th>Release</th>
+              <th>Streams</th>
+              <th>Gross</th>
+              <th>Commission</th>
+              <th>Your Payout</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="royalty-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- REPORTS NOTE -->
+      <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.25rem;display:flex;align-items:flex-start;gap:12px">
+        <i class="ti ti-file-analytics" style="font-size:22px;color:#a78bfa;flex-shrink:0;margin-top:2px"></i>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">About Royalty Reports</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.4);line-height:1.7">Detailed monthly reports are generated after DSP reporting cycles complete (typically 2–3 months after streaming). Figures shown are estimates based on current stream counts. Final amounts may vary.</div>
+          <button class="btn btn-purple btn-sm" style="margin-top:.875rem" onclick="goPage('payout',null)"><i class="ti ti-wallet"></i> View Payout History</button>
+        </div>
       </div>
     </div>
 
     <!-- ANALYTICS -->
     <div class="page" id="page-analytics">
       <div class="ph">
-        <div><h1>Analytics & Trends 📊</h1><p>Performance data across all your releases.</p></div>
+        <div>
+          <h1>Analytics</h1>
+          <p>Streaming performance across all your releases.</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 12px;font-size:12px;color:rgba(255,255,255,.4)">
+            <i class="ti ti-calendar"></i> All time
+          </div>
+        </div>
       </div>
-      <div class="ag">
-        <div class="ac"><div class="ac-label">Total Streams</div><div class="ac-val" id="a-streams">0</div><div class="ac-sub">All releases</div></div>
-        <div class="ac"><div class="ac-label">Gross Earnings</div><div class="ac-val" id="a-earnings">$0.00</div><div class="ac-sub">Before commission</div></div>
-        <div class="ac"><div class="ac-label">Your Payout</div><div class="ac-val" id="a-payout">$0.00</div><div class="ac-sub" id="a-payout-sub">After 15% commission</div></div>
-        <div class="ac"><div class="ac-label">Live Releases</div><div class="ac-val" id="a-live">0</div><div class="ac-sub">On DSPs</div></div>
+
+      <!-- TOP STREAM STATS -->
+      <div class="an-hero-stats">
+        <div class="an-hero-main">
+          <div class="an-hero-label">Total Streams</div>
+          <div class="an-hero-val" id="a-streams">0</div>
+          <div class="an-hero-sub">Across all live releases · all stores</div>
+        </div>
+        <div class="an-hero-side">
+          <div class="an-mini-stat">
+            <div class="an-mini-label">Daily Average</div>
+            <div class="an-mini-val" id="a-daily-avg">0</div>
+          </div>
+          <div class="an-mini-stat">
+            <div class="an-mini-label">Live Releases</div>
+            <div class="an-mini-val" id="a-live">0</div>
+          </div>
+          <div class="an-mini-stat">
+            <div class="an-mini-label">Best Store</div>
+            <div class="an-mini-val" id="a-best-store" style="font-size:13px">—</div>
+          </div>
+        </div>
       </div>
-      <!-- PERFORMANCE CHART -->
-      <div class="chart-card">
-        <div class="chart-title">Performance Data</div>
+
+      <!-- STREAMS CHART -->
+      <div class="chart-card" style="margin-bottom:1.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#fff">Stream Performance</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px">Estimated monthly streams</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.4)">
+              <span style="width:10px;height:10px;border-radius:50%;background:#7c3aed;display:inline-block"></span> Streams
+            </div>
+          </div>
+        </div>
         <canvas id="analytics-chart" height="200"></canvas>
       </div>
-      <!-- STORES TABLE -->
-      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem">Stores</div>
-      <div class="dark-table-wrap" style="margin-bottom:1.5rem">
-        <table><thead><tr><th>Store</th><th>Est. Streams</th><th>Est. Revenue</th><th>Share</th><th>Status</th></tr></thead>
-        <tbody id="stores-tbody"></tbody></table>
+
+      <!-- STORE BREAKDOWN + TOP RELEASES side by side -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
+        <!-- STORE BREAKDOWN -->
+        <div class="chart-card" style="margin-bottom:0">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-chart-bar" style="color:#a78bfa"></i> Streams by Store
+          </div>
+          <div id="an-stores-breakdown"></div>
+        </div>
+        <!-- TOP RELEASES -->
+        <div class="chart-card" style="margin-bottom:0">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-music" style="color:#a78bfa"></i> Top Releases by Streams
+          </div>
+          <div id="an-top-releases"></div>
+        </div>
       </div>
-      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem">Per Release</div>
-      <div id="analytics-releases"></div>
+
+      <!-- PER RELEASE TABLE -->
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-list" style="color:#a78bfa"></i> All Releases
+      </div>
+      <div class="dark-table-wrap" style="margin-bottom:1.5rem">
+        <table>
+          <thead><tr><th>Release</th><th>Artist</th><th>Genre</th><th>Streams</th><th>Share</th><th>Status</th></tr></thead>
+          <tbody id="an-releases-tbody"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- PAYOUT -->
@@ -2280,145 +2436,198 @@ const DSP_STORES=[
 
 async function loadAnalytics(){
   const {data}=await sb.from('releases').select('*').eq('user_id',user.id);
-  const rl=(data||[]).filter(r=>r.status==='live');
-  const allRl=data||[];
-  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
-  const ts=rl.reduce((a,r)=>a+(r.streams||0),0);
-  const te=rl.reduce((a,r)=>a+(r.earnings||0),0);
-  const comm=isPaid?0:te*COMM;
-  const payout=te-comm;
-  document.getElementById('a-streams').textContent=ts.toLocaleString();
-  document.getElementById('a-earnings').textContent='$'+te.toFixed(2);
-  document.getElementById('a-payout').textContent='$'+payout.toFixed(2);
-  document.getElementById('a-payout-sub').textContent=isPaid?'No commission':'After 15% commission';
-  document.getElementById('a-live').textContent=rl.length;
+  const live=(data||[]).filter(r=>r.status==='live');
+  const all=data||[];
+  const ts=live.reduce((a,r)=>a+(r.streams||0),0);
 
-  // Render store breakdown table
-  const storesTbody=document.getElementById('stores-tbody');
-  if(storesTbody){
-    if(!rl.length){
-      storesTbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">No live releases yet. Store data appears once your music is live.</td></tr>';
+  // Hero stats
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('a-streams',ts.toLocaleString());
+  set('a-live',live.length);
+  // Daily average (rough estimate based on 30 days)
+  set('a-daily-avg',live.length?Math.round(ts/30).toLocaleString():'0');
+  // Best store
+  const bestStore=DSP_STORES[0];
+  const bsEl=document.getElementById('a-best-store');
+  if(bsEl) bsEl.innerHTML=bestStore.logo
+    ?`<img src="${bestStore.logo}" width="16" height="16" style="object-fit:contain;vertical-align:middle;margin-right:4px">${bestStore.name}`
+    :bestStore.name;
+
+  // Store breakdown bars
+  const storesEl=document.getElementById('an-stores-breakdown');
+  if(storesEl){
+    if(!live.length){
+      storesEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No live releases yet</div>';
     } else {
-      storesTbody.innerHTML=DSP_STORES.map(s=>{
-        const estStreams=Math.round(ts*s.share);
-        const estRev=(te*s.share);
-        const pct=Math.round(s.share*100);
-        const logoEl=s.logo?`<img src="${s.logo}" width="22" height="22" alt="${s.name}" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:`<i class="ti ti-music" style="font-size:14px;color:rgba(255,255,255,.3)"></i>`;
+      const maxShare=DSP_STORES[0].share;
+      storesEl.innerHTML=DSP_STORES.slice(0,7).map(s=>{
+        const est=Math.round(ts*s.share);
+        const barW=Math.round((s.share/maxShare)*100);
+        const logo=s.logo?`<img src="${s.logo}" width="18" height="18" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:'';
+        return `<div class="an-store-row">
+          <div class="an-store-logo">${logo}</div>
+          <div class="an-store-name">${s.name}</div>
+          <div class="an-store-bar-wrap"><div class="an-store-bar-fill" style="width:${barW}%"></div></div>
+          <div class="an-store-count">${est.toLocaleString()}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Top releases
+  const topEl=document.getElementById('an-top-releases');
+  if(topEl){
+    const sorted=[...live].sort((a,b)=>(b.streams||0)-(a.streams||0));
+    if(!sorted.length){
+      topEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No live releases yet</div>';
+    } else {
+      topEl.innerHTML=sorted.slice(0,5).map((r,i)=>{
+        const art=r.artwork_url?`<img src="${r.artwork_url}" alt="">`:'';
+        return `<div class="an-release-row">
+          <div class="an-release-rank">${i+1}</div>
+          <div class="an-release-art">${art}</div>
+          <div class="an-release-info">
+            <div class="an-release-title">${esc(r.title)}</div>
+            <div class="an-release-artist">${esc(r.artist)}</div>
+          </div>
+          <div class="an-release-streams">${(r.streams||0).toLocaleString()}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // All releases table
+  const tbody=document.getElementById('an-releases-tbody');
+  if(tbody){
+    if(!all.length){
+      tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';
+    } else {
+      const totalStreams=ts||1;
+      tbody.innerHTML=all.map(r=>{
+        const pct=ts>0?Math.round(((r.streams||0)/ts)*100):0;
+        const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected'}[r.status]||'b-pending';
+        const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
+        const art=r.artwork_url?`<img src="${r.artwork_url}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:8px">`:'';
         return `<tr>
+          <td style="white-space:nowrap">${art}<strong style="color:#fff">${esc(r.title)}</strong></td>
+          <td style="color:rgba(255,255,255,.5)">${esc(r.artist)}</td>
+          <td style="color:rgba(255,255,255,.4);font-size:12px">${esc(r.genre||'—')}</td>
+          <td style="font-weight:700;color:#fff">${(r.streams||0).toLocaleString()}</td>
           <td>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:5px">${logoEl}</div>
-              <strong style="color:#fff">${s.name}</strong>
-            </div>
-          </td>
-          <td style="color:rgba(255,255,255,.7)">${estStreams.toLocaleString()}</td>
-          <td style="color:#34d399;font-weight:600">$${estRev.toFixed(2)}</td>
-          <td>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden">
-                <div style="width:${pct}%;height:100%;background:#a78bfa;border-radius:3px"></div>
+            <div style="display:flex;align-items:center;gap:8px;min-width:80px">
+              <div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:#7c3aed;border-radius:2px"></div>
               </div>
-              <span style="font-size:11px;color:rgba(255,255,255,.4);width:28px">${pct}%</span>
+              <span style="font-size:11px;color:rgba(255,255,255,.35);width:28px">${pct}%</span>
             </div>
           </td>
-          <td><span style="font-size:11px;font-weight:600;color:#34d399;background:rgba(16,185,129,.15);padding:2px 8px;border-radius:20px">Live ✓</span></td>
+          <td><span class="badge ${bc}">${bl}</span></td>
         </tr>`;
       }).join('');
     }
   }
 
-  // Per-release breakdown
-  const container=document.getElementById('analytics-releases');
-  if(!rl.length){container.innerHTML=emptyState('No live releases. Analytics appear once music is live.');return;}
-  container.innerHTML=rl.map(r=>{
-    const rc=isPaid?0:(r.earnings||0)*COMM;
-    const rp=(r.earnings||0)-rc;
-    return `<div style="background:#1e1e35;border:1px solid rgba(255,255,255,.07);border-radius:11px;overflow:hidden;margin-bottom:8px">
-      <div style="padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div class="r-art" style="width:40px;height:40px">${r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`:'<i class="ti ti-music" style="font-size:18px;color:rgba(255,255,255,.2)"></i>'}</div>
-        <div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')}</div></div>
-        <span class="badge b-live">Live</span>
-      </div>
-      <div style="padding:.875rem 1.1rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem">
-        <div style="font-size:12px;color:rgba(255,255,255,.4)"><strong style="display:block;font-size:18px;font-weight:700;color:#fff;margin-bottom:2px">${(r.streams||0).toLocaleString()}</strong>Streams</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4)"><strong style="display:block;font-size:18px;font-weight:700;color:#fff;margin-bottom:2px">$${(r.earnings||0).toFixed(2)}</strong>Gross</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4)"><strong style="display:block;font-size:18px;font-weight:700;color:#f87171;margin-bottom:2px">-$${rc.toFixed(2)}</strong>Commission</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4)"><strong style="display:block;font-size:18px;font-weight:700;color:#34d399;margin-bottom:2px">$${rp.toFixed(2)}</strong>Payout</div>
-      </div>
-    </div>`;
-  }).join('');
-  // Analytics chart
-  const months2=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now2=new Date();
-  const aLabels=Array.from({length:7},(_,i)=>months2[(now2.getMonth()-6+i+12)%12]);
-  const aData=[0,0,0,0,0,0,ts].map((v,i)=>i===6?v:Math.round(ts*Math.random()*.4));
-  setTimeout(()=>renderLineChart('analytics-chart',aLabels,aData,'#7c3aed'),100);
+  // Chart — streams only
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  const labels=Array.from({length:7},(_,i)=>months[(now.getMonth()-6+i+12)%12]);
+  const chartData=[0,0,0,0,0,0,ts].map((v,i)=>i===6?v:Math.round(ts*Math.random()*.4));
+  setTimeout(()=>renderLineChart('analytics-chart',labels,chartData,'#7c3aed'),100);
 }
+
 
 // ── ROYALTIES ─────────────────────────────────────────
 async function loadRoyalties(){
-  // Fetch releases AND pending/processing payouts together
   const [{data:relData},{data:payoutData}]=await Promise.all([
     sb.from('releases').select('*').eq('user_id',user.id),
     sb.from('payouts').select('amount,status').eq('user_id',user.id)
   ]);
   const rl=(relData||[]).filter(r=>(r.earnings||0)>0);
+  const allRel=relData||[];
   const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
   const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
   const comm=isPaid?0:gross*COMM;
   const totalPayout=gross-comm;
-  // Deduct any pending or processing payout requests
   const pendingPayouts=(payoutData||[])
     .filter(p=>p.status==='pending'||p.status==='processing')
     .reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const available=Math.max(0,totalPayout-pendingPayouts);
-  document.getElementById('r-gross').textContent='$'+gross.toFixed(2);
-  document.getElementById('r-commission').textContent=isPaid?'$0.00':'-$'+comm.toFixed(2);
-  document.getElementById('r-payout').textContent='$'+available.toFixed(2);
-  document.getElementById('r-updated').textContent=rl.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—';
-  // Show pending payout deduction notice if any
+
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('r-gross','$'+gross.toFixed(2));
+  set('r-commission',isPaid?'$0.00':'-$'+comm.toFixed(2));
+  set('r-payout','$'+available.toFixed(2));
+  set('r-updated',rl.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—');
+
+  // Commission sub-label
+  const cSub=document.getElementById('r-comm-sub');
+  if(cSub) cSub.textContent=isPaid?'No commission (paid plan)':'Blakkstone 15% fee';
+
+  // Commission bar notice for solo users
   const commBar=document.getElementById('commission-bar');
-  if(commBar&&pendingPayouts>0){
-    const existing=commBar.querySelector('.payout-deduct-notice');
-    if(!existing){
-      const notice=document.createElement('div');
-      notice.className='payout-deduct-notice';
-      notice.style.cssText='background:#ebf4ff;border:1px solid #bdd7f5;border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:var(--info);margin-bottom:1rem;display:flex;align-items:center;gap:7px';
-      notice.innerHTML='<i class="ti ti-clock"></i> <strong>$'+pendingPayouts.toFixed(2)+'</strong> is pending payout processing and has been deducted from your available balance.';
-      commBar.insertAdjacentElement('afterend',notice);
+  if(commBar){
+    if(!isPaid&&gross>0){
+      commBar.innerHTML=`<div style="background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:#a78bfa;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span><i class="ti ti-crown"></i> You're on the <strong>Solo plan</strong> — upgrade to keep 100% of your royalties.</span>
+        <button class="btn btn-purple btn-sm" onclick="goPage('upgrade',null)"><i class="ti ti-crown"></i> Upgrade now</button>
+      </div>`;
+    } else if(pendingPayouts>0){
+      commBar.innerHTML=`<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px">
+        <i class="ti ti-clock"></i> <strong>$${pendingPayouts.toFixed(2)}</strong> is pending payout and has been deducted from your available balance.
+      </div>`;
+    } else {
+      commBar.innerHTML='';
     }
   }
-  const tbody=document.getElementById('royalty-tbody');
-  if(!rl.length){tbody.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem">No royalty data yet.</td></tr>`;return;}
-  tbody.innerHTML=rl.map(r=>{
-    const rc=isPaid?0:(r.earnings||0)*COMM;
-    const rp=(r.earnings||0)-rc;
-    return `<tr><td style="font-weight:600;color:#fff">${esc(r.title)}</td><td>${(r.streams||0).toLocaleString()}</td><td>$${(r.earnings||0).toFixed(2)}</td><td style="color:#f87171">-$${rc.toFixed(2)}</td><td style="color:#34d399;font-weight:600">$${rp.toFixed(2)}</td></tr>`;
-  }).join('');
-  // Render earnings chart (monthly simulated)
+
+  // Earnings chart
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const now=new Date();
-  const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
-  const gross2=rl.reduce((a,r)=>a+(r.earnings||0),0);
-  const chartData=[0,0,0,0,0,gross2].map((v,i)=>i===5?v:parseFloat((gross2*Math.random()*.3).toFixed(2)));
-  setTimeout(()=>renderLineChart('earnings-chart',chartLabels,chartData,'#a78bfa'),100);
+  const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
+  const chartData=[0,0,0,0,0,gross].map((v,i)=>i===5?v:parseFloat((gross*Math.random()*.3).toFixed(2)));
+  setTimeout(()=>renderLineChart('earnings-chart',labels,chartData,'#a78bfa'),100);
+
   // Best stores
-  const bestStores=document.getElementById('best-stores');
-  if(bestStores){
-    const topStores=DSP_STORES.slice(0,5);
-    bestStores.innerHTML=topStores.map(s=>{
-      const rev=(gross2*s.share);
-      const logoEl=s.logo?`<img src="${s.logo}" width="18" height="18" alt="${s.name}" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:`<i class="ti ti-music" style="font-size:13px;color:rgba(255,255,255,.3)"></i>`;
+  const bestEl=document.getElementById('best-stores');
+  if(bestEl){
+    bestEl.innerHTML=DSP_STORES.slice(0,5).map(s=>{
+      const rev=(gross*s.share);
+      const logo=s.logo?`<img src="${s.logo}" width="18" height="18" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:'';
       return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px">${logoEl}</div>
+          <div style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:4px;flex-shrink:0">${logo}</div>
           <span style="font-size:13px;color:rgba(255,255,255,.8);font-weight:500">${s.name}</span>
         </div>
         <span style="font-size:13px;font-weight:700;color:#34d399">$${rev.toFixed(2)}</span>
       </div>`;
+    }).join('')||'<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1rem">No earnings yet</div>';
+  }
+
+  // Release breakdown table
+  const tbody=document.getElementById('royalty-tbody');
+  if(tbody){
+    if(!allRel.length){
+      tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML=allRel.map(r=>{
+      const rc=isPaid?0:(r.earnings||0)*COMM;
+      const rp=(r.earnings||0)-rc;
+      const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected'}[r.status]||'b-pending';
+      const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected'}[r.status]||r.status;
+      const art=r.artwork_url?`<img src="${r.artwork_url}" alt="" style="width:30px;height:30px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:7px">`:'';
+      return `<tr>
+        <td style="white-space:nowrap">${art}<strong style="color:#fff">${esc(r.title)}</strong><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;margin-left:37px">${esc(r.artist)}</div></td>
+        <td style="color:rgba(255,255,255,.6)">${(r.streams||0).toLocaleString()}</td>
+        <td style="color:#fff;font-weight:600">$${(r.earnings||0).toFixed(2)}</td>
+        <td style="color:#f87171">-$${rc.toFixed(2)}</td>
+        <td style="color:#34d399;font-weight:700">$${rp.toFixed(2)}</td>
+        <td><span class="badge ${bc}">${bl}</span></td>
+      </tr>`;
     }).join('');
   }
 }
+
 
 // ── PAYOUT ────────────────────────────────────────────
 async function loadPayout(){
