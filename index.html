@@ -1345,6 +1345,8 @@ function enterDashboard(){
     const allNavItems=document.querySelectorAll('.tnav-item');
     let matchedNav=null;
     allNavItems.forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+pageToLoad+"'"))matchedNav=n;});
+    // Replace state (not push) so back from initial load goes to pre-dashboard
+    history.replaceState({page:pageToLoad},'',window.location.pathname+'#'+pageToLoad);
     goPage(pageToLoad,matchedNav||document.querySelector('.tnav-item'));
     loadReleases();
     if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();startRealtimeAdmin();requestNotifPermission();}
@@ -1392,8 +1394,11 @@ function goPage(id,el){
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
   if(el)el.classList.add('active');
-  // Save to URL hash so refresh restores the page
-  window.location.hash=id;
+  else document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+id+"'"))n.classList.add('active');});
+  // Push to browser history so back/forward button works
+  if(typeof pushState==='undefined'||pushState!==false){
+    history.pushState({page:id},'',window.location.pathname+'#'+id);
+  }
   if(id==='analytics')loadAnalytics();
   if(id==='submit')initWizard();
   if(id==='royalties')loadRoyalties();
@@ -2678,6 +2683,30 @@ function buildReview(){
     <div class="review-row"><span class="review-label">Tracks</span><span class="review-val">${wizTracks.map(t=>esc(t.name)).join(', ')}</span></div>
   `;
 }
+
+// ── BROWSER BACK/FORWARD SUPPORT ─────────────────────
+const pushState = true; // flag used by goPage
+window.addEventListener('popstate', function(e){
+  if(!user) return;
+  const page = e.state?.page || window.location.hash.replace('#','') || 'overview';
+  const validPages = ['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','admin'];
+  if(validPages.includes(page)){
+    // Pass false-like via a temp flag to avoid re-pushing state
+    const pageEl = document.getElementById('page-'+page);
+    if(!pageEl) return;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    pageEl.classList.add('active');
+    document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
+    document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+page+"'"))n.classList.add('active');});
+    // Don't push state again - just load data
+    if(page==='analytics')loadAnalytics();
+    if(page==='royalties')loadRoyalties();
+    if(page==='payout')loadPayout();
+    if(page==='artists')loadArtists();
+    if(page==='submit')initWizard();
+    if(page==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();}
+  }
+});
 
 // ── REAL-TIME SUBSCRIPTIONS ───────────────────────────
 function startRealtimeAdmin(){
