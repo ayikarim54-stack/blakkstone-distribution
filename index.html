@@ -967,7 +967,7 @@ function enterDashboard(){
     showView('dashboard');
     goPage('overview',document.querySelector('.tnav-item'));
     loadReleases();
-    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();}
+    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){
     console.error('enterDashboard error:',e);
     // Force show dashboard even if something else failed
@@ -1302,8 +1302,47 @@ async function submitPayout(){
   try{
     await sb.from('payouts').insert({user_id:user.id,method:payoutMethod,network:network||null,account,amount,status:'pending'});
     toast('Payout request submitted! Processing in 5–7 business days.','ok');
+    // Send email notification to admin via Supabase Edge Function (if configured)
+    sendPayoutNotificationEmail(amount, payoutMethod, network, account);
     loadPayout();
   }catch(e){toast('Payout failed — run payouts SQL in Supabase first.','err');}
+}
+
+// Send admin email notification via Resend (configure RESEND_KEY below)
+async function sendPayoutNotificationEmail(amount, method, network, account){
+  const RESEND_KEY = 're_UGAtaTRj_6yG6uCwzcUQbLr9gQdhARnkN';
+  if(RESEND_KEY === 'YOUR_RESEND_API_KEY') return; // Skip if not configured
+  const artistName = profile?.artist_name || profile?.full_name || user.email;
+  try{
+    await fetch('https://api.resend.com/emails',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+RESEND_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        from:'Blakkstone Distribution <onboarding@resend.dev>',
+        to:['Ayikarim54@gmail.com'],
+        subject:'💸 New Payout Request — '+artistName,
+        html:`
+          <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:2rem">
+            <div style="background:#0d0d0d;padding:1rem 1.5rem;border-radius:10px 10px 0 0">
+              <h2 style="color:#C9A84C;margin:0;font-size:18px">Blakkstone Distribution</h2>
+            </div>
+            <div style="background:#fff;border:1px solid #e8e8e8;border-top:none;padding:1.5rem;border-radius:0 0 10px 10px">
+              <h3 style="margin:0 0 1rem;color:#111">New Payout Request</h3>
+              <table style="width:100%;border-collapse:collapse;font-size:14px">
+                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Artist</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${artistName}</td></tr>
+                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Amount</td><td style="padding:8px 0;font-weight:700;color:#8a6420;border-bottom:1px solid #f0f0f0">$${parseFloat(amount).toFixed(2)}</td></tr>
+                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Method</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${method==='momo'?'📱 '+(network||'')+' Mobile Money':'🏦 Bank Transfer'}</td></tr>
+                <tr><td style="padding:8px 0;color:#666">Account</td><td style="padding:8px 0;font-weight:600">${account}</td></tr>
+              </table>
+              <div style="margin-top:1.5rem">
+                <a href="https://blakkstone-distribution.vercel.app" style="background:#C9A84C;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">View in Admin Panel →</a>
+              </div>
+              <p style="font-size:12px;color:#999;margin-top:1.5rem">This notification was sent automatically by Blakkstone Distribution.</p>
+            </div>
+          </div>`
+      })
+    });
+  }catch(e){ console.warn('Email notification failed:',e); }
 }
 
 async function cancelPayout(id){
@@ -1798,8 +1837,69 @@ function toast(msg,type){
   t._t=setTimeout(()=>t.classList.remove('show'),3500);
 }
 
+// ── REAL-TIME SUBSCRIPTIONS ───────────────────────────
+function startRealtimeAdmin(){
+  // Listen for new payout requests
+  sb.channel('admin-payouts')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'payouts'},payload=>{
+      const p=payload.new;
+      showAdminAlert('💸 New Payout Request',''+
+        (p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer')+
+        ' — $'+parseFloat(p.amount||0).toFixed(2));
+      loadAdminStats();
+      loadNotifications();
+      // Reload payouts tab if open
+      if(document.getElementById('admin-payouts')?.classList.contains('active')) loadAdminPayouts();
+    })
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'releases'},payload=>{
+      const r=payload.new;
+      showAdminAlert('🎵 New Release Submitted','"'+r.title+'" by '+r.artist);
+      loadAdminStats();
+      loadNotifications();
+      if(document.getElementById('admin-releases')?.classList.contains('active')) loadAdminReleases();
+    })
+    .subscribe();
+}
+
+function showAdminAlert(title,body){
+  // Show floating alert
+  const existing=document.getElementById('admin-realtime-alert');
+  if(existing) existing.remove();
+  const el=document.createElement('div');
+  el.id='admin-realtime-alert';
+  el.style.cssText='position:fixed;top:70px;right:1.25rem;background:#fff;border:1.5px solid var(--gold);border-radius:12px;padding:1rem 1.25rem;max-width:300px;box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:999;animation:slideIn .3s ease';
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">${title}</div>
+        <div style="font-size:12px;color:var(--muted)">${body}</div>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);line-height:1;flex-shrink:0">×</button>
+    </div>
+    <div style="margin-top:.75rem;display:flex;gap:6px">
+      <button class="btn btn-gold btn-sm" onclick="goPage('admin',document.getElementById('admin-nav'));this.closest('#admin-realtime-alert').remove()"><i class="ti ti-arrow-right"></i> View in Admin</button>
+    </div>`;
+  document.body.appendChild(el);
+  // Also show browser notification if permitted
+  if(Notification.permission==='granted'){
+    new Notification('Blakkstone Distribution — '+title,{body,icon:'/favicon.ico'});
+  }
+  setTimeout(()=>el.remove(),8000);
+}
+
+// Request browser notification permission for admin
+async function requestNotifPermission(){
+  if(Notification.permission==='default'){
+    await Notification.requestPermission();
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────
 (async()=>{
+  // Add slideIn animation
+  const style=document.createElement('style');
+  style.textContent='@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}';
+  document.head.appendChild(style);
   const {data:{session}}=await sb.auth.getSession();
   if(session?.user)await loadProfile(session.user);
   sb.auth.onAuthStateChange(async(event,session)=>{
