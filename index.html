@@ -1418,6 +1418,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
 
+      <!-- DRAFT RESUME BANNER -->
+      <div id="draft-banner" style="display:none;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:6px"><i class="ti ti-file-time"></i> Draft saved</div>
+          <div id="draft-banner-title" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">You have an unfinished submission.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-gold btn-sm" onclick="resumeDraft()"><i class="ti ti-player-play"></i> Resume</button>
+          <button class="btn btn-sm" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="discardDraft()">Discard</button>
+        </div>
+      </div>
+
       <!-- STEP 1: UPLOAD -->
       <div class="wizard-panel active" id="wpanel-1">
         <div style="text-align:center;max-width:600px;margin:0 auto">
@@ -1491,15 +1503,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
             </div>
             <!-- CREDITS & COMPOSITION -->
             <div style="margin-top:1.75rem;padding-top:1.75rem;border-top:1px solid rgba(255,255,255,.07)">
-              <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none" onclick="toggleCredits()">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <i class="ti ti-users" style="color:var(--gold);font-size:16px"></i>
-                  <div style="font-size:16px;font-weight:700;color:#fff">Credits & Composition</div>
-                  <span style="font-size:11px;color:rgba(255,255,255,.35);background:rgba(255,255,255,.07);padding:2px 8px;border-radius:20px">Optional</span>
-                </div>
-                <i class="ti ti-chevron-down" id="credits-chevron" style="color:rgba(255,255,255,.4);font-size:18px;transition:transform .2s"></i>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:1.25rem">
+                <i class="ti ti-users" style="color:var(--gold);font-size:16px"></i>
+                <div style="font-size:16px;font-weight:700;color:#fff">Credits & Composition</div>
+                <span style="font-size:11px;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 8px;border-radius:20px">Required</span>
               </div>
-              <div id="credits-body" style="display:none;margin-top:1.25rem">
+              <div id="credits-body" style="margin-top:0">
 
                 <!-- PRODUCER -->
                 <div class="credits-toggle-row" onclick="toggleCredit('producer')">
@@ -1510,9 +1519,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
                       <div class="credits-toggle-sub">Beat maker / instrumental producer</div>
                     </div>
                   </div>
-                  <div class="credits-toggle-switch" id="sw-producer"></div>
+                  <div class="credits-toggle-switch on" id="sw-producer"></div>
                 </div>
-                <div class="credits-field" id="cf-producer" style="display:none">
+                <div class="credits-field" id="cf-producer">
                   <input type="text" id="r-producer" placeholder="Producer name(s), separate with commas" class="credits-input">
                 </div>
 
@@ -1525,9 +1534,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
                       <div class="credits-toggle-sub">Wrote the lyrics</div>
                     </div>
                   </div>
-                  <div class="credits-toggle-switch" id="sw-songwriter"></div>
+                  <div class="credits-toggle-switch on" id="sw-songwriter"></div>
                 </div>
-                <div class="credits-field" id="cf-songwriter" style="display:none">
+                <div class="credits-field" id="cf-songwriter">
                   <input type="text" id="r-songwriter" placeholder="Songwriter name(s), separate with commas" class="credits-input">
                 </div>
 
@@ -1676,9 +1685,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:3px">3000 × 3000px recommended</div>
           </div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:2rem;max-width:900px">
+        <div style="display:flex;gap:10px;margin-top:2rem;max-width:900px;flex-wrap:wrap">
           <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(1)"><i class="ti ti-arrow-left"></i> Back</button>
           <button class="btn btn-purple" onclick="goWizard(3)">Next: Schedule <i class="ti ti-arrow-right"></i></button>
+          <button class="btn btn-sm" style="margin-left:auto;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2)" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save draft</button>
         </div>
       </div>
 
@@ -1736,6 +1746,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="display:flex;gap:10px;margin-top:2rem">
           <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(2)"><i class="ti ti-arrow-left"></i> Back</button>
           <button class="btn btn-purple" onclick="goWizard(4)">Next: Stores <i class="ti ti-arrow-right"></i></button>
+          <button class="btn btn-sm" style="margin-left:auto;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2)" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save draft</button>
         </div>
       </div>
 
@@ -1761,6 +1772,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="display:flex;gap:10px;margin-top:2rem">
           <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(3)"><i class="ti ti-arrow-left"></i> Back</button>
           <button class="btn btn-purple" onclick="goWizard(5)">Next: Review <i class="ti ti-arrow-right"></i></button>
+          <button class="btn btn-sm" style="margin-left:auto;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2)" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save draft</button>
         </div>
       </div>
 
@@ -3358,7 +3370,14 @@ const ALL_STORES=[
 ];
 function initWizard(){
   wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};
+  // Reset credit states — producer and songwriter on by default
+  Object.keys(_creditStates).forEach(k=>delete _creditStates[k]);
+  _creditStates.producer=true;_creditStates.songwriter=true;
   renderStoresGrid();goWizard(1);
+  // Check for saved draft
+  if(user) loadDraft().then(state=>{
+    if(state&&(state.title||state.tracks?.length)) updateDraftBanner(state);
+  });
   const ai=document.getElementById('r-artist');
   if(ai&&profile){ai.value=profile.artist_name||profile.full_name||user?.email?.split('@')[0]||'';ai.readOnly=true;ai.style.cursor='not-allowed';ai.style.opacity='.75';}
 }
@@ -3380,6 +3399,15 @@ function goWizard(step){
     if(l) l.classList.toggle('done',i<step);
   }
   if(step===5)buildReview();
+  // Auto-save draft when moving forward
+  if(step>1&&user) saveDraftSilent();
+}
+async function saveDraftSilent(){
+  try{
+    const state=collectWizardState();
+    if(!state.title&&!state.tracks?.length)return;
+    localStorage.setItem(DRAFT_KEY+'_'+user.id, JSON.stringify(state));
+  }catch(e){}
 }
 function handleAudioSelect(input){Array.from(input.files).forEach(f=>addTrack(f));input.value='';}
 function handleAudioDrop(e){
@@ -3435,6 +3463,174 @@ function filterStores(type,btn){
   document.querySelectorAll('.store-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   document.querySelectorAll('.store-chip').forEach(el=>{const sn=el.querySelector('.store-chip-name')?.textContent;const store=ALL_STORES.find(s=>s.name===sn);if(!store)return;el.style.display=(type==='all'||store.type===type)?'flex':'none';});
 }
+// ── DRAFT SAVE / RESUME ──────────────────────────────
+const DRAFT_KEY='blakkstone_wiz_draft';
+
+function collectWizardState(){
+  return {
+    step: wizStep,
+    title: document.getElementById('r-title')?.value||'',
+    artist: document.getElementById('r-artist')?.value||'',
+    copyright: document.getElementById('r-copyright')?.value||'',
+    copyrightYear: document.getElementById('r-copyright-year')?.value||'',
+    pcopyright: document.getElementById('r-pcopyright')?.value||'',
+    prodYear: document.getElementById('r-prod-year')?.value||'',
+    label: document.getElementById('r-label')?.value||'',
+    genre: document.getElementById('r-genre')?.value||'',
+    genre2: document.getElementById('r-genre2')?.value||'',
+    language: document.getElementById('r-language')?.value||'English',
+    artistType: document.querySelector('input[name="artist-type"]:checked')?.value||'artist',
+    feat: document.getElementById('r-feat')?.value||'',
+    hasFeat: document.getElementById('r-has-feat')?.checked||false,
+    remixer: document.getElementById('r-remixer')?.value||'',
+    hasRemix: document.getElementById('r-has-remix')?.checked||false,
+    releaseDate: document.getElementById('r-date')?.value||'',
+    explicit: wizToggleState['explicit']||'no',
+    prevReleased: wizToggleState['prev-released']||'no',
+    countryRestrict: wizToggleState['country-restrict']||'no',
+    stores: wizStores,
+    credits: getCreditsData(),
+    creditStates: {..._creditStates},
+    tracks: wizTracks.map(t=>({id:t.id,name:t.name,isrc:t.isrc||'',size:t.size})),
+    notes: document.getElementById('r-notes')?.value||'',
+    savedAt: new Date().toISOString(),
+  };
+}
+
+async function saveDraft(){
+  const state=collectWizardState();
+  if(!state.title&&!state.tracks.length){toast('Add a title or upload a track first','err');return;}
+  try{
+    const key=DRAFT_KEY+'_'+user.id;
+    localStorage.setItem(key, JSON.stringify(state));
+    // Also save to Supabase profiles metadata as backup
+    await sb.from('profiles').update({draft_wizard: state}).eq('id',user.id).catch(()=>{});
+    toast('Draft saved — you can resume anytime','ok');
+    updateDraftBanner(state);
+  }catch(e){
+    toast('Draft saved locally','ok');
+  }
+}
+
+async function loadDraft(){
+  try{
+    // Try localStorage first (fastest)
+    const key=DRAFT_KEY+'_'+user.id;
+    const local=localStorage.getItem(key);
+    if(local){
+      const state=JSON.parse(local);
+      if(state.title||state.tracks?.length) return state;
+    }
+    // Fallback: check Supabase profile
+    const {data}=await sb.from('profiles').select('draft_wizard').eq('id',user.id).single();
+    if(data?.draft_wizard?.title||data?.draft_wizard?.tracks?.length) return data.draft_wizard;
+  }catch(e){}
+  return null;
+}
+
+function updateDraftBanner(state){
+  const banner=document.getElementById('draft-banner');
+  const titleEl=document.getElementById('draft-banner-title');
+  if(!banner||!state)return;
+  const ago=state.savedAt?timeSince(new Date(state.savedAt)):'recently';
+  if(titleEl) titleEl.textContent=(state.title||'Untitled release')+' · saved '+ago;
+  banner.style.display='flex';
+}
+
+function timeSince(date){
+  const mins=Math.floor((Date.now()-date)/60000);
+  if(mins<1) return 'just now';
+  if(mins<60) return mins+'m ago';
+  const hrs=Math.floor(mins/60);
+  if(hrs<24) return hrs+'h ago';
+  return Math.floor(hrs/24)+'d ago';
+}
+
+function resumeDraft(){
+  loadDraft().then(state=>{
+    if(!state){toast('No draft found','err');return;}
+    restoreWizardState(state);
+    document.getElementById('draft-banner').style.display='none';
+    toast('Draft restored — pick up where you left off','ok');
+  });
+}
+
+function discardDraft(){
+  if(!confirm('Discard your saved draft?'))return;
+  try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
+  sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).catch(()=>{});
+  document.getElementById('draft-banner').style.display='none';
+  toast('Draft discarded','ok');
+}
+
+function restoreWizardState(state){
+  // Restore text fields
+  const setVal=(id,v)=>{const el=document.getElementById(id);if(el&&v) el.value=v;};
+  setVal('r-title', state.title);
+  setVal('r-copyright', state.copyright);
+  setVal('r-copyright-year', state.copyrightYear);
+  setVal('r-pcopyright', state.pcopyright);
+  setVal('r-prod-year', state.prodYear);
+  setVal('r-label', state.label);
+  setVal('r-genre', state.genre);
+  setVal('r-genre2', state.genre2);
+  setVal('r-language', state.language);
+  setVal('r-date', state.releaseDate);
+  setVal('r-feat', state.feat);
+  setVal('r-remixer', state.remixer);
+  setVal('r-notes', state.notes);
+  // Featured / remixer checkboxes
+  const featCb=document.getElementById('r-has-feat');
+  if(featCb&&state.hasFeat){featCb.checked=true;document.getElementById('r-feat-wrap').style.display='block';}
+  const remixCb=document.getElementById('r-has-remix');
+  if(remixCb&&state.hasRemix){remixCb.checked=true;document.getElementById('r-remix-wrap').style.display='block';}
+  // Artist type radio
+  if(state.artistType){
+    const radio=document.querySelector('input[name="artist-type"][value="'+state.artistType+'"]');
+    if(radio) radio.checked=true;
+  }
+  // Stores
+  if(state.stores?.length){
+    wizStores=state.stores;
+    document.querySelectorAll('.store-chip').forEach(el=>{
+      const name=el.querySelector('.store-chip-name')?.textContent;
+      el.classList.toggle('selected', wizStores.includes(name));
+    });
+  }
+  // Credits
+  if(state.creditStates){
+    Object.entries(state.creditStates).forEach(([k,v])=>{
+      _creditStates[k]=v;
+      const sw=document.getElementById('sw-'+k);const field=document.getElementById('cf-'+k);
+      if(sw) sw.classList.toggle('on',v);
+      if(field) field.style.display=v?'block':'none';
+    });
+  }
+  if(state.credits){
+    Object.entries(state.credits).forEach(([k,v])=>{
+      setVal('r-'+k, v);
+    });
+  }
+  // Toggle states
+  ['explicit','prev-released','country-restrict'].forEach(key=>{
+    if(state[key.replace('-','')]||wizToggleState[key]){
+      const val=state.explicit||state.prevReleased||state.countryRestrict||'no';
+      setToggle(key,val);
+    }
+  });
+  if(state.explicit) setToggle('explicit',state.explicit);
+  if(state.prevReleased) setToggle('prev-released',state.prevReleased);
+  if(state.countryRestrict) setToggle('country-restrict',state.countryRestrict);
+  // Tracks (restore names/ISRCs only — files can't be restored)
+  if(state.tracks?.length){
+    const note=document.getElementById('track-list');
+    if(note) note.innerHTML='<div style="background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:.75rem 1rem;font-size:12px;color:var(--gold);margin-bottom:.5rem"><i class="ti ti-info-circle"></i> <strong>'+state.tracks.length+' track(s) were saved.</strong> Please re-upload the audio files to continue.</div>';
+  }
+  // Navigate to saved step
+  const targetStep=Math.min(state.step||1,4);
+  if(targetStep>1) setTimeout(()=>goWizard(targetStep),100);
+}
+
 function buildCreditsReview(){
   const credits=getCreditsData();
   if(!Object.keys(credits).length) return '';
@@ -3496,6 +3692,9 @@ async function submitRelease(){
     });
     if(dbe)throw new Error('Submission failed: '+dbe.message);
     toast('Release submitted! We will review it shortly.','ok');
+    // Clear draft on success
+    try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
+    sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).catch(()=>{});
     initWizard();loadReleases();goPage('releases',null);
   }catch(e){toast(e.message,'err');}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Release';
