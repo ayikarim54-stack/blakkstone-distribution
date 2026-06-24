@@ -3414,30 +3414,82 @@ function handleAudioDrop(e){
   e.preventDefault();document.getElementById('audio-drop-zone').classList.remove('drag-over');
   Array.from(e.dataTransfer.files).forEach(f=>{if(f.type.startsWith('audio/')||f.name.match(/\.(mp3|wav|flac|aiff|m4a)$/i))addTrack(f);});
 }
-function addTrack(file){
+async function addTrack(file){
   const id=Date.now()+'_'+Math.random().toString(36).slice(2,6);
-  wizTracks.push({id,file,name:file.name.replace(/\.[^.]+$/,''),size:file.size});
+  const cleanName=file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+  // Push immediately so UI updates
+  const track={id,file,name:file.name.replace(/\.[^.]+$/,''),size:file.size,uploading:true,url:null};
+  wizTracks.push(track);
   renderTrackList();renderTracklistDetails();
+  // Auto-fill title from first track
   if(wizTracks.length===1){
-    const cleanName=file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
     const titleEl=document.getElementById('r-title');if(titleEl&&!titleEl.value) titleEl.value=cleanName;
   }
+  // Upload to Supabase Storage immediately so draft can reference it
+  try{
+    const ext=file.name.split('.').pop();
+    const path=user.id+'/drafts/'+id+'.'+ext;
+    const {error}=await sb.storage.from('audio').upload(path,file,{upsert:true});
+    if(!error){
+      const {data:urlData}=sb.storage.from('audio').getPublicUrl(path);
+      // Update the track with its permanent URL
+      const t=wizTracks.find(t=>t.id===id);
+      if(t){t.url=urlData.publicUrl;t.storagePath=path;t.uploading=false;}
+      renderTrackList();
+      saveDraftSilent();
+    } else {
+      const t=wizTracks.find(t=>t.id===id);if(t) t.uploading=false;
+      renderTrackList();
+    }
+  }catch(e){
+    const t=wizTracks.find(t=>t.id===id);if(t) t.uploading=false;
+    renderTrackList();
+  }
 }
-function removeTrack(id){wizTracks=wizTracks.filter(t=>t.id!==id);renderTrackList();renderTracklistDetails();}
+function removeTrack(id){
+  const track=wizTracks.find(t=>t.id===id);
+  // Delete from Supabase Storage if it was uploaded
+  if(track?.storagePath){
+    sb.storage.from('audio').remove([track.storagePath]).catch(()=>{});
+  }
+  wizTracks=wizTracks.filter(t=>t.id!==id);
+  renderTrackList();renderTracklistDetails();
+  saveDraftSilent();
+}
 function renderTrackList(){
   const el=document.getElementById('track-list');if(!el)return;
-  el.innerHTML=wizTracks.map((t,i)=>'<div class="track-item"><div class="track-num">'+(i+1)+'</div><div class="track-name">'+esc(t.name)+'</div><div class="track-size">'+(t.size/1024/1024).toFixed(1)+'MB</div><button class="track-remove" onclick="removeTrack(\''+t.id+'\')">×</button></div>').join('');
+  el.innerHTML=wizTracks.map((t,i)=>{
+    const statusIcon=t.uploading
+      ?'<span class="loader" style="margin-right:4px"></span>'
+      :t.url?'<i class="ti ti-cloud-check" style="color:#34d399;font-size:14px;margin-right:4px" title="Saved to cloud"></i>'
+      :'<i class="ti ti-file-music" style="color:rgba(255,255,255,.3);font-size:14px;margin-right:4px"></i>';
+    return '<div class="track-item"><div class="track-num">'+(i+1)+'</div>'+statusIcon+'<div class="track-name">'+esc(t.name)+'</div><div class="track-size">'+(t.size/1024/1024).toFixed(1)+'MB</div><button class="track-remove" onclick="removeTrack(\''+t.id+'\')">×</button></div>';
+  }).join('');
 }
 function renderTracklistDetails(){
   const el=document.getElementById('tracklist-details');if(!el)return;
   if(!wizTracks.length){el.innerHTML='<p style="font-size:13px;color:rgba(255,255,255,.3)">No tracks uploaded yet.</p>';return;}
   el.innerHTML=wizTracks.map((t,i)=>'<div class="track-item"><div class="track-num">'+(i+1)+'</div><div style="flex:1"><input type="text" value="'+esc(t.name)+'" style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:500;width:100%;outline:none;font-family:Inter,sans-serif" onchange="wizTracks['+i+'].name=this.value"></div><input class="track-isrc" type="text" placeholder="ISRC (optional)" onchange="wizTracks['+i+'].isrc=this.value"><button class="track-remove" onclick="removeTrack(\''+t.id+'\')">×</button></div>').join('');
 }
-function previewArtwork(input){
-  if(!input.files[0])return;wizData.artFile=input.files[0];
-  const url=URL.createObjectURL(input.files[0]);
+async function previewArtwork(input){
+  if(!input.files[0])return;
+  const file=input.files[0];
+  wizData.artFile=file;
+  const url=URL.createObjectURL(file);
   const wrap=document.getElementById('artwork-preview-wrap');if(wrap) wrap.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
   const tp=document.getElementById('artwork-title-preview');const t=document.getElementById('r-title');if(tp&&t) tp.textContent=t.value||'Your Release';
+  // Upload artwork immediately so draft can reference it
+  try{
+    const ext=file.name.split('.').pop();
+    const path=user.id+'/drafts/artwork_draft.'+ext;
+    const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
+    if(!error){
+      const {data:urlData}=sb.storage.from('artwork').getPublicUrl(path);
+      wizData.artUrl=urlData.publicUrl;
+      wizData.artPath=path;
+      saveDraftSilent();
+    }
+  }catch(e){}
 }
 function setToggle(key,val){
   wizToggleState[key]=val;
@@ -3489,9 +3541,11 @@ function collectWizardState(){
     prevReleased: wizToggleState['prev-released']||'no',
     countryRestrict: wizToggleState['country-restrict']||'no',
     stores: wizStores,
+    artUrl: wizData.artUrl||null,
+    artPath: wizData.artPath||null,
     credits: getCreditsData(),
     creditStates: {..._creditStates},
-    tracks: wizTracks.map(t=>({id:t.id,name:t.name,isrc:t.isrc||'',size:t.size})),
+    tracks: wizTracks.map(t=>({id:t.id,name:t.name,isrc:t.isrc||'',size:t.size,url:t.url||null,storagePath:t.storagePath||null})),
     notes: document.getElementById('r-notes')?.value||'',
     savedAt: new Date().toISOString(),
   };
@@ -3621,10 +3675,32 @@ function restoreWizardState(state){
   if(state.explicit) setToggle('explicit',state.explicit);
   if(state.prevReleased) setToggle('prev-released',state.prevReleased);
   if(state.countryRestrict) setToggle('country-restrict',state.countryRestrict);
-  // Tracks (restore names/ISRCs only — files can't be restored)
+  // Restore tracks with their cloud URLs
   if(state.tracks?.length){
+    wizTracks=state.tracks.map(t=>({
+      id:t.id,name:t.name,isrc:t.isrc||'',size:t.size||0,
+      url:t.url||null,storagePath:t.storagePath||null,
+      uploading:false,
+      // Create a placeholder file-like object for display
+      file:null
+    }));
+    renderTrackList();renderTracklistDetails();
+    // Show info if all tracks have cloud URLs
+    const allSaved=wizTracks.every(t=>t.url);
     const note=document.getElementById('track-list');
-    if(note) note.innerHTML='<div style="background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:.75rem 1rem;font-size:12px;color:var(--gold);margin-bottom:.5rem"><i class="ti ti-info-circle"></i> <strong>'+state.tracks.length+' track(s) were saved.</strong> Please re-upload the audio files to continue.</div>';
+    if(note&&allSaved){
+      note.innerHTML='<div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:.75rem 1rem;font-size:12px;color:#34d399;margin-bottom:.5rem"><i class="ti ti-cloud-check"></i> <strong>'+wizTracks.length+' track(s) restored from cloud.</strong> Ready to submit.</div>'+note.innerHTML;
+    } else if(note){
+      note.innerHTML='<div style="background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:.75rem 1rem;font-size:12px;color:var(--gold);margin-bottom:.5rem"><i class="ti ti-info-circle"></i> <strong>'+state.tracks.length+' track(s) found.</strong> Tracks without cloud backup need to be re-uploaded.</div>'+note.innerHTML;
+    }
+  }
+  // Restore artwork URL
+  if(state.artUrl){
+    wizData.artUrl=state.artUrl;wizData.artPath=state.artPath||null;
+    const wrap=document.getElementById('artwork-preview-wrap');
+    if(wrap) wrap.innerHTML='<img src="'+state.artUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+    const tp=document.getElementById('artwork-title-preview');
+    if(tp) tp.textContent=state.title||'Your Release';
   }
   // Navigate to saved step
   const targetStep=Math.min(state.step||1,4);
@@ -3657,15 +3733,36 @@ async function submitRelease(){
   if(!wizData.artFile){toast('Upload cover artwork','err');return;}
   const btn=document.getElementById('submit-btn');btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
   try{
-    const artExt=wizData.artFile.name.split('.').pop();const artPath=user.id+'/'+Date.now()+'-artwork.'+artExt;
-    const {error:are}=await sb.storage.from('artwork').upload(artPath,wizData.artFile);
-    if(are)throw new Error('Artwork upload failed: '+are.message);
-    const {data:artUrl}=sb.storage.from('artwork').getPublicUrl(artPath);
+    let artPublicUrl='';
+    if(wizData.artUrl){
+      // Already uploaded during draft/preview
+      artPublicUrl=wizData.artUrl;
+    } else if(wizData.artFile){
+      const artExt=wizData.artFile.name.split('.').pop();const artPath=user.id+'/'+Date.now()+'-artwork.'+artExt;
+      const {error:are}=await sb.storage.from('artwork').upload(artPath,wizData.artFile);
+      if(are)throw new Error('Artwork upload failed: '+are.message);
+      const {data:artUrlData}=sb.storage.from('artwork').getPublicUrl(artPath);
+      artPublicUrl=artUrlData.publicUrl;
+    } else {
+      throw new Error('Please upload cover artwork.');
+    }
     const audioPaths=[];
     for(const track of wizTracks){
-      const ext=track.file.name.split('.').pop();const ap=user.id+'/'+Date.now()+'-'+track.name.replace(/[^a-z0-9]/gi,'_')+'.'+ext;
-      const {error:ae}=await sb.storage.from('audio').upload(ap,track.file);if(ae)throw new Error('Audio upload failed: '+ae.message);
-      audioPaths.push(ap);
+      if(track.storagePath){
+        // Already uploaded during draft save — move from drafts/ to final path
+        const ext=track.storagePath.split('.').pop();
+        const finalPath=user.id+'/'+Date.now()+'-'+track.name.replace(/[^a-z0-9]/gi,'_')+'.'+ext;
+        // Copy by downloading and re-uploading (Supabase doesn't have a native copy API)
+        // For now reuse the draft path directly — it's already in storage
+        audioPaths.push(track.storagePath);
+      } else if(track.file){
+        // File object still in memory — upload normally
+        const ext=track.file.name.split('.').pop();const ap=user.id+'/'+Date.now()+'-'+track.name.replace(/[^a-z0-9]/gi,'_')+'.'+ext;
+        const {error:ae}=await sb.storage.from('audio').upload(ap,track.file);if(ae)throw new Error('Audio upload failed: '+ae.message);
+        audioPaths.push(ap);
+      } else {
+        throw new Error('Track "'+track.name+'" has no audio file. Please re-upload it.');
+      }
     }
     const credits=getCreditsData();
     const creditLines=Object.entries(credits).map(([k,v])=>{
@@ -3688,7 +3785,7 @@ async function submitRelease(){
     const {error:dbe}=await sb.from('releases').insert({
       user_id:user.id,title,artist,genre,release_date:date,
       isrc:wizTracks[0]?.isrc||null,notes:extraInfo||null,
-      audio_url:audioPaths[0],artwork_url:artUrl.publicUrl,status:'pending',streams:0,earnings:0
+      audio_url:audioPaths[0],artwork_url:artPublicUrl,status:'pending',streams:0,earnings:0
     });
     if(dbe)throw new Error('Submission failed: '+dbe.message);
     toast('Release submitted! We will review it shortly.','ok');
