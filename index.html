@@ -2780,7 +2780,8 @@ async function loadReleases(){
   if(!user)return;
   const el=document.getElementById('s-total');if(el) el.textContent='…';
   const {data,error}=await sb.from('releases').select('*').eq('user_id',user.id).order('submitted_at',{ascending:false});
-  if(error){toast('Error loading releases','err');return;}
+  console.log('loadReleases result:',{count:data?.length,error:error?.message,userId:user.id});
+  if(error){toast('Error: '+error.message,'err');console.error('Releases RLS error:',error);return;}
   allRelData=data||[];
   const releases=allRelData;
   const banner=document.getElementById('announcement-banner');
