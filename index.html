@@ -684,6 +684,25 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .roy-hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.4);margin-bottom:.4rem}
 .roy-hero-val{font-size:28px;font-weight:800;letter-spacing:-.5px;color:#fff}
 .roy-hero-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px}
+
+/* ── PAYWALL ── */
+#paywall{min-height:100vh}
+.paywall-card{background:#1a1a1a;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:1.75rem;position:relative;text-align:left;display:flex;flex-direction:column;gap:0}
+.paywall-card-featured{border-color:var(--gold);background:#1a1600}
+.paywall-featured-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-size:9px;font-weight:800;letter-spacing:1.5px;padding:4px 14px;border-radius:0 0 8px 8px}
+.paywall-card-name{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem;margin-top:.5rem}
+.paywall-card-price{font-size:36px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:2px}
+.paywall-card-price span{font-size:14px;font-weight:500;color:rgba(255,255,255,.35);letter-spacing:0}
+.paywall-card-ghs{font-size:12px;color:rgba(255,255,255,.3);margin-bottom:.875rem}
+.paywall-card-desc{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:1.25rem}
+.paywall-feats{list-style:none;margin-bottom:1.5rem;flex:1;display:flex;flex-direction:column;gap:6px}
+.paywall-feats li{font-size:13px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px}
+.paywall-feats li i{font-size:14px;color:var(--gold);flex-shrink:0}
+.paywall-feats li strong{color:#fff}
+@media(max-width:700px){
+  #paywall>div>div>div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr!important}
+  #paywall h1{font-size:28px}
+}
 </style>
 </head>
 <body>
@@ -1084,6 +1103,101 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <p>We sent a confirmation link to <strong id="confirm-email"></strong>. Click the link to activate your account, then log in.</p>
     <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('login')">Go to Login</button>
     <p style="font-size:11px;color:var(--muted);margin-top:.875rem">Didn't get it? Check your spam folder.</p>
+  </div>
+</div>
+
+<!-- ══════════════ PAYWALL ══════════════ -->
+<div class="view" id="paywall">
+  <div style="min-height:100vh;background:#0d0d0d;display:flex;flex-direction:column">
+    <!-- Nav -->
+    <div style="background:#000;border-bottom:1px solid rgba(255,255,255,.08);height:62px;display:flex;align-items:center;padding:0 2rem;justify-content:space-between">
+      <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-.5px">Blakkstone<span style="color:var(--gold)">.</span></div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>
+    </div>
+
+    <!-- Content -->
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1rem">
+      <div style="max-width:900px;width:100%;text-align:center">
+        <!-- Header -->
+        <div style="margin-bottom:3rem">
+          <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:1.5rem">
+            <i class="ti ti-lock"></i> Subscription Required
+          </div>
+          <h1 style="font-size:42px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.75rem">Choose your plan to get started</h1>
+          <p style="font-size:16px;color:rgba(255,255,255,.45);max-width:500px;margin:0 auto">Welcome, <strong style="color:#fff" id="paywall-name"></strong>! Select a plan to start distributing your music to 150+ platforms worldwide.</p>
+        </div>
+
+        <!-- Plans grid -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;max-width:860px;margin:0 auto 2.5rem">
+
+          <!-- Solo -->
+          <div class="paywall-card">
+            <div class="paywall-card-name">Solo</div>
+            <div class="paywall-card-price">$15 <span>/ year</span></div>
+            <div class="paywall-card-ghs">≈ GHS 233</div>
+            <p class="paywall-card-desc">1 artist profile with 9% commission on royalties.</p>
+            <ul class="paywall-feats">
+              <li><i class="ti ti-check"></i> 1 artist profile</li>
+              <li><i class="ti ti-check"></i> Unlimited releases</li>
+              <li><i class="ti ti-check"></i> 150+ DSPs worldwide</li>
+              <li><i class="ti ti-check"></i> Mobile Money payouts</li>
+              <li><i class="ti ti-alert-circle" style="color:#fbbf24"></i> 9% royalty commission</li>
+            </ul>
+            <button class="btn" style="width:100%;justify-content:center;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="paywallPay('solo')">
+              <i class="ti ti-bolt"></i> Get Solo — $15/yr
+            </button>
+          </div>
+
+          <!-- Artist+ (featured) -->
+          <div class="paywall-card paywall-card-featured">
+            <div class="paywall-featured-badge">MOST POPULAR</div>
+            <div class="paywall-card-name">Artist+</div>
+            <div class="paywall-card-price">$25 <span>/ year</span></div>
+            <div class="paywall-card-ghs">≈ GHS 388</div>
+            <p class="paywall-card-desc">2 artist profiles, keep 100% of your royalties.</p>
+            <ul class="paywall-feats">
+              <li><i class="ti ti-check"></i> 2 artist profiles</li>
+              <li><i class="ti ti-check"></i> Unlimited releases</li>
+              <li><i class="ti ti-check"></i> 150+ DSPs worldwide</li>
+              <li><i class="ti ti-check"></i> <strong>0% commission</strong></li>
+              <li><i class="ti ti-check"></i> ISRC code generation</li>
+              <li><i class="ti ti-check"></i> Store analytics</li>
+              <li><i class="ti ti-check"></i> Mobile Money + Bank payouts</li>
+            </ul>
+            <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="paywallPay('artist_plus')">
+              <i class="ti ti-crown"></i> Get Artist+ — $25/yr
+            </button>
+          </div>
+
+          <!-- Label -->
+          <div class="paywall-card">
+            <div class="paywall-card-name">Label</div>
+            <div class="paywall-card-price">$45 <span>/ year</span></div>
+            <div class="paywall-card-ghs">≈ GHS 698</div>
+            <p class="paywall-card-desc">5+ artists, 0% commission. For labels & collectives.</p>
+            <ul class="paywall-feats">
+              <li><i class="ti ti-check"></i> 5+ artist profiles</li>
+              <li><i class="ti ti-check"></i> Unlimited releases</li>
+              <li><i class="ti ti-check"></i> 150+ DSPs worldwide</li>
+              <li><i class="ti ti-check"></i> <strong>0% commission</strong></li>
+              <li><i class="ti ti-check"></i> Priority support</li>
+              <li><i class="ti ti-check"></i> Label analytics overview</li>
+              <li><i class="ti ti-check"></i> Dedicated account manager</li>
+            </ul>
+            <button class="btn" style="width:100%;justify-content:center;background:#fff;color:#111;font-weight:700" onclick="paywallPay('label')">
+              Get Label — $45/yr
+            </button>
+          </div>
+        </div>
+
+        <!-- Trust note -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-size:12px;color:rgba(255,255,255,.3)">
+          <span><i class="ti ti-lock" style="color:var(--gold)"></i> Secure payment via Paystack</span>
+          <span><i class="ti ti-device-mobile" style="color:var(--gold)"></i> Pay in GHS · Mobile Money accepted</span>
+          <span><i class="ti ti-refresh" style="color:var(--gold)"></i> Cancel anytime</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2256,7 +2370,7 @@ async function doAuth(){
         showView('confirm');btn.disabled=false;btn.textContent='Create account';return;
       }
       if(data.user){
-        await sb.from('profiles').upsert({id:data.user.id,email,full_name:fullName,artist_name:artistName,plan:'solo'});
+        await sb.from('profiles').upsert({id:data.user.id,email,full_name:fullName,artist_name:artistName,plan:'free'});
         toast('Account created! Welcome to Blakkstone.','ok');
         await loadProfile(data.user);
       }
@@ -2277,7 +2391,51 @@ async function loadProfile(u){
   user=u;
   const {data}=await sb.from('profiles').select('*').eq('id',u.id).single();
   profile=data;
-  enterDashboard();
+  // Admin bypasses paywall
+  const isAdmin=profile?.plan==='admin'||u.email===ADMIN_EMAIL;
+  // Check if user has an active paid subscription
+  const hasPlan=isAdmin||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
+  // 'free' and 'solo' (old default) have no subscription — block them
+  if(!hasPlan){
+    showPaywall();
+  } else {
+    enterDashboard();
+  }
+}
+
+function showPaywall(){
+  const name=profile?.artist_name||profile?.full_name||user?.email?.split('@')[0]||'';
+  const el=document.getElementById('paywall-name');
+  if(el) el.textContent=name;
+  showView('paywall');
+}
+
+function paywallPay(plan){
+  selectedPlan=plan;
+  const p=PLANS[plan];
+  // Pre-fill email
+  const emailEl=document.getElementById('pay-em');
+  if(emailEl) emailEl.value=user?.email||'';
+  updateRateNote();
+  // Show paystack modal
+  document.getElementById('pay-overlay').classList.add('open');
+  // Update modal title
+  const titleEl=document.getElementById('pay-modal-title');
+  if(titleEl) titleEl.textContent='Get '+p.label+' Plan';
+  const descEl=document.getElementById('pay-modal-desc');
+  const descs={
+    solo:'1 artist profile, unlimited releases, 9% commission.',
+    artist_plus:'2 artist profiles, 0% commission — keep 100% of your royalties.',
+    label:'5+ artist profiles, 0% commission, priority support.'
+  };
+  if(descEl) descEl.textContent=descs[plan]||'';
+  // Update price display
+  const mp=document.getElementById('b-monthly-price');
+  const yp=document.getElementById('b-yearly-price');
+  if(mp) mp.textContent='$'+p.monthly;
+  if(yp) yp.textContent='$'+p.yearly;
+  billing='yearly';
+  updateRateNote();
 }
 
 async function logout(){
@@ -2303,7 +2461,8 @@ function enterDashboard(){
     const adminNav=document.getElementById('admin-nav');
     if(adminNav) adminNav.style.display=isAdmin?'flex':'none';
     const upgradeNav=document.getElementById('upgrade-nav');
-    if(upgradeNav) upgradeNav.style.display=(isAdmin||isPaid)?'none':'flex';
+    const isOnPaidPlan=['solo_paid','artist_plus','label'].includes(profile?.plan);
+    if(upgradeNav) upgradeNav.style.display=(isAdmin||isOnPaidPlan)?'none':'flex';
     const welcomeH=document.getElementById('welcome-h');
     if(welcomeH) welcomeH.textContent='Hi, '+name.split(' ')[0]+' 👋';
     const lnavRight=document.getElementById('lnav-right');
@@ -2363,7 +2522,8 @@ function setAvatarDisplay(initials,url){
 function updateCommBar(isPaid,isAdmin){
   const bar=document.getElementById('commission-bar');
   if(!bar)return;
-  if(!isPaid&&!isAdmin) bar.innerHTML=`<div class="comm-bar"><i class="ti ti-info-circle"></i> You're on the <strong>Solo plan</strong> — Blakkstone keeps 9% of royalties. <a onclick="goPage('upgrade',null)" style="color:var(--gd);font-weight:600;margin-left:6px">Upgrade →</a></div>`;
+  const isOnSoloPaid=profile?.plan==='solo_paid';
+  if(!isPaid&&!isAdmin) bar.innerHTML=`<div class="comm-bar"><i class="ti ti-info-circle"></i> You're on the <strong>${isOnSoloPaid?'Solo':'Free'} plan</strong> — Blakkstone keeps 9% of royalties. <a onclick="goPage('upgrade',null)" style="color:var(--gd);font-weight:600;margin-left:6px">Upgrade →</a></div>`;
   else bar.innerHTML='';
 }
 
@@ -2371,7 +2531,12 @@ function updateUpgradePage(plan){
   const soloBtn=document.getElementById('ug-solo-btn');
   const apBtn=document.getElementById('ug-artist-btn');
   const lBtn=document.getElementById('ug-label-btn');
-  if((plan==='solo'||plan==='solo_paid')&&soloBtn){soloBtn.textContent='✓ Current Plan';soloBtn.disabled=true;soloBtn.className='btn btn-ghost';}
+  // Reset all buttons first
+  if(soloBtn){soloBtn.textContent='Get Solo';soloBtn.disabled=false;soloBtn.className='btn btn-purple';}
+  if(apBtn){apBtn.innerHTML='<i class="ti ti-crown"></i> Get Artist+';apBtn.disabled=false;apBtn.className='btn btn-gold';}
+  if(lBtn){lBtn.textContent='Get Label';lBtn.disabled=false;lBtn.className='btn';}
+  // Mark current plan
+  if(plan==='solo_paid'&&soloBtn){soloBtn.textContent='✓ Current Plan';soloBtn.disabled=true;soloBtn.className='btn btn-ghost';}
   if(plan==='artist_plus'&&apBtn){apBtn.textContent='✓ Current Plan';apBtn.disabled=true;apBtn.className='btn btn-ghost';}
   if(plan==='label'&&lBtn){lBtn.textContent='✓ Current Plan';lBtn.disabled=true;lBtn.className='btn btn-ghost';}
 }
@@ -3856,10 +4021,15 @@ async function onPaystackSuccess(ref, planKey, billingCycle, usd, pesewas){
     }).catch(()=>{});
     const upgradeNav=document.getElementById('upgrade-nav');
     if(upgradeNav) upgradeNav.style.display='none';
-    updateUpgradePage(planKey);
-    updateCommBar(true,false);
-    toast('Payment confirmed! '+planLabel+' plan activated.','ok');
+    updateUpgradePage(dbPlan);
+    updateCommBar(dbPlan!=='solo',false);
+    toast('Payment confirmed! '+planLabel+' plan activated. Welcome to Blakkstone! 🎉','ok');
     closePaystack();
+    // If user was on paywall, now enter dashboard
+    const paywall=document.getElementById('paywall');
+    if(paywall&&paywall.classList.contains('active')){
+      enterDashboard();
+    }
   }catch(e){
     console.error('Post-payment error:',e);
     toast('Plan activated! Refresh the page if dashboard does not update.','ok');
