@@ -2375,27 +2375,2284 @@ const GHS_RATE=15.5;
 const PLANS={solo:{monthly:15,yearly:15,label:'Solo'},artist_plus:{monthly:25,yearly:25,label:'Artist+'},label:{monthly:45,yearly:45,label:'Label'}};
 
 const sb=supabase.createClient(SB_URL,SB_KEY);
+let user=null,profile=null,authMode='signup',billing='monthly',payoutMethod=null,momoNetwork=null,selectedPlan='artist_plus';
 
-// ── TITLE FORMAT SAFEGUARD ──────────────────────────
-const FORBIDDEN_TITLE_PHRASES=[
-  {re:/\bfeat\.?\b/i, field:'Featured artists', hint:'r-has-feat'},
-  {re:/\bft\.?\b/i,   field:'Featured artists', hint:'r-has-feat'},
-  {re:/\bwith\b/i,     field:'Featured artists', hint:'r-has-feat'},
-  {re:/\bprod\.?\b/i, field:'Producer credits', hint:null},
-  {re:/\bproduced by\b/i, field:'Producer credits', hint:null},
-  {re:/\bremix\b/i,   field:'Remixer artists',  hint:'r-has-remix'},
+// ── VIEWS ──────────────────────────────────────────────
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  updateSupportBubble();
+}
+
+// ── AUTH ──────────────────────────────────────────────
+function showAuth(mode){
+  authMode=mode;
+  const isSU=mode==='signup';
+  document.getElementById('auth-title').textContent=isSU?'Create your account':'Welcome back';
+  document.getElementById('auth-sub').textContent=isSU?'Start distributing for free today.':'Log in to your Blakkstone account.';
+  document.getElementById('auth-l-title').textContent=isSU?'Distribute your music globally.':'Welcome back.';
+  document.getElementById('signup-fields').style.display=isSU?'block':'none';
+  document.getElementById('auth-btn').textContent=isSU?'Create account':'Log in';
+  document.getElementById('auth-foot').innerHTML=isSU
+    ?'Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a>'
+    :'No account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Sign up free</a>';
+  showView('auth');
+}
+function toggleAuth(){showAuth(authMode==='signup'?'login':'signup');}
+function togglePwVis(){
+  const pw=document.getElementById('pw');
+  const eye=document.getElementById('pw-eye');
+  if(!pw||!eye)return;
+  if(pw.type==='password'){pw.type='text';eye.className='ti ti-eye-off';}
+  else{pw.type='password';eye.className='ti ti-eye';}
+}
+
+async function doAuth(){
+  const btn=document.getElementById('auth-btn');
+  const email=document.getElementById('em').value.trim();
+  const pass=document.getElementById('pw').value;
+  if(!email||!pass){toast('Please fill in all fields','err');return;}
+  if(pass.length<6){toast('Password must be at least 6 characters','err');return;}
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Please wait...';
+  try{
+    if(authMode==='signup'){
+      const fn=document.getElementById('fn').value.trim();
+      const ln=document.getElementById('ln').value.trim();
+      const fullName=(fn+' '+ln).trim()||email.split('@')[0];
+      const artistName=document.getElementById('an').value.trim()||fullName;
+      const {data,error}=await sb.auth.signUp({
+        email,password:pass,
+        options:{emailRedirectTo:'https://blakkstonemusic.com',data:{full_name:fullName,artist_name:artistName}}
+      });
+      if(error)throw error;
+      if(data.user&&!data.session){
+        document.getElementById('confirm-email').textContent=email;
+        showView('confirm');btn.disabled=false;btn.textContent='Create account';return;
+      }
+      if(data.user){
+        await sb.from('profiles').upsert({id:data.user.id,email,full_name:fullName,artist_name:artistName,plan:'free'});
+        toast('Account created! Welcome to Blakkstone.','ok');
+        await loadProfile(data.user);
+      }
+    } else {
+      const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error)throw error;
+      toast('Welcome back!','ok');
+      await loadProfile(data.user);
+    }
+  } catch(e){
+    console.error('Auth error:',e);
+    toast(e.message||'Login failed. Check your email and password.','err');
+  }
+  btn.disabled=false;btn.textContent=authMode==='signup'?'Create account':'Log in';
+}
+
+async function loadProfile(u){
+  user=u;
+  const {data}=await sb.from('profiles').select('*').eq('id',u.id).single();
+  profile=data;
+  // Admin bypasses paywall
+  const isAdmin=profile?.plan==='admin'||u.email===ADMIN_EMAIL;
+  // Check if user has an active paid subscription
+  const hasPlan=isAdmin||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
+  // 'free' and 'solo' (old default) have no subscription — block them
+  if(!hasPlan){
+    showPaywall();
+  } else {
+    enterDashboard();
+  }
+}
+
+function showPaywall(){
+  const name=profile?.artist_name||profile?.full_name||user?.email?.split('@')[0]||'';
+  const el=document.getElementById('paywall-name');
+  if(el) el.textContent=name;
+  showView('paywall');
+}
+
+function paywallPay(plan){
+  selectedPlan=plan;
+  const p=PLANS[plan];
+  // Pre-fill email
+  const emailEl=document.getElementById('pay-em');
+  if(emailEl) emailEl.value=user?.email||'';
+  updateRateNote();
+  // Show paystack modal
+  document.getElementById('pay-overlay').classList.add('open');
+  // Update modal title
+  const titleEl=document.getElementById('pay-modal-title');
+  if(titleEl) titleEl.textContent='Get '+p.label+' Plan';
+  const descEl=document.getElementById('pay-modal-desc');
+  const descs={
+    solo:'1 artist profile, unlimited releases, 9% commission.',
+    artist_plus:'2 artist profiles, 0% commission — keep 100% of your royalties.',
+    label:'5+ artist profiles, 0% commission, priority support.'
+  };
+  if(descEl) descEl.textContent=descs[plan]||'';
+  // Update price display
+  const mp=document.getElementById('b-monthly-price');
+  const yp=document.getElementById('b-yearly-price');
+  if(mp) mp.textContent='$'+p.monthly;
+  if(yp) yp.textContent='$'+p.yearly;
+  billing='yearly';
+  updateRateNote();
+}
+
+async function logout(){
+  await sb.auth.signOut();user=null;profile=null;
+  document.getElementById('lnav-right').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="showAuth('login')">Log in</button><button class="btn btn-gold btn-sm" onclick="showAuth('signup')">Get started free</button>`;
+  showView('landing');toast('Logged out');
+}
+
+function enterDashboard(){
+  try{
+    const name=profile?.full_name||profile?.artist_name||user.email.split('@')[0];
+    const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+    const isLabel=profile?.plan==='label';
+    const isArtistPlus=profile?.plan==='artist_plus';
+    const isPaid=isLabel||isArtistPlus;
+    // Safe element updates — check element exists before setting
+    const tnavName=document.getElementById('tnav-name');
+    if(tnavName) tnavName.textContent=name.split(' ')[0];
+    const tnavId=document.getElementById('tnav-account-id');
+    if(tnavId) tnavId.textContent=profile?.account_id||'';
+    setAvatarDisplay(initials,profile?.avatar_url);
+    const adminNav=document.getElementById('admin-nav');
+    if(adminNav) adminNav.style.display=isAdmin?'flex':'none';
+    const upgradeNav=document.getElementById('upgrade-nav');
+    const isOnPaidPlan=['solo_paid','artist_plus','label'].includes(profile?.plan);
+    if(upgradeNav) upgradeNav.style.display=(isAdmin||isOnPaidPlan)?'none':'flex';
+    const welcomeH=document.getElementById('welcome-h');
+    if(welcomeH) welcomeH.textContent='Hi, '+name.split(' ')[0]+' 👋';
+    const lnavRight=document.getElementById('lnav-right');
+    if(lnavRight) lnavRight.innerHTML=`<button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>`;
+    if(profile){
+      const parts=(profile.full_name||'').split(' ');
+      const pfn=document.getElementById('p-fn');if(pfn) pfn.value=parts[0]||'';
+      const pln=document.getElementById('p-ln');if(pln) pln.value=parts.slice(1).join(' ')||'';
+      const pan=document.getElementById('p-an');if(pan) pan.value=profile.artist_name||'';
+      const pem=document.getElementById('p-em');if(pem) pem.value=profile.email||user.email;
+      const pdn=document.getElementById('profile-display-name');if(pdn) pdn.textContent=profile.artist_name||profile.full_name||'';
+      const pai=document.getElementById('profile-avatar-initials');if(pai) pai.textContent=initials;
+      const paid=document.getElementById('profile-account-id');if(paid) paid.textContent=profile.account_id||'Assigning ID...';
+    }
+    updateCommBar(isPaid,isAdmin);
+    updateUpgradePage(profile?.plan);
+    // Always show dashboard last — this is the critical step
+    showView('dashboard');
+    // Restore last visited page from URL hash
+    const validPages=['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','admin'];
+    const hashPage=window.location.hash.replace('#','');
+    const pageToLoad=validPages.includes(hashPage)?hashPage:'overview';
+    const allNavItems=document.querySelectorAll('.tnav-item');
+    let matchedNav=null;
+    allNavItems.forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+pageToLoad+"'"))matchedNav=n;});
+    // Replace state (not push) so back from initial load goes to pre-dashboard
+    history.replaceState({page:pageToLoad},'',window.location.pathname+'#'+pageToLoad);
+    goPage(pageToLoad,matchedNav||document.querySelector('.tnav-item'));
+    loadReleases().then(()=>updateOnboarding());
+    updateWelcomeTime();
+    updateSupportBubble();
+    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();startRealtimeAdmin();requestNotifPermission();}
+  }catch(e){
+    console.error('enterDashboard error:',e);
+    // Force show dashboard even if something else failed
+    showView('dashboard');
+    goPage('overview',document.querySelector('.tnav-item'));
+    loadReleases();
+  }
+}
+
+function setAvatarDisplay(initials,url){
+  try{
+    const ta=document.getElementById('tnav-avatar');
+    const ba=document.getElementById('profile-avatar-big');
+    if(url){
+      if(ta) ta.innerHTML=`<img src="${url}" alt="a" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      if(ba) ba.innerHTML=`<img src="${url}" alt="a">`;
+    } else {
+      if(ta) ta.innerHTML=`<span style="font-size:11px;font-weight:700;color:#a07d10">${initials}</span>`;
+      const pai=document.getElementById('profile-avatar-initials');
+      if(pai) pai.textContent=initials;
+    }
+  }catch(e){ console.warn('setAvatarDisplay error:',e); }
+}
+
+function updateCommBar(isPaid,isAdmin){
+  const bar=document.getElementById('commission-bar');
+  if(!bar)return;
+  const isOnSoloPaid=profile?.plan==='solo_paid';
+  if(!isPaid&&!isAdmin) bar.innerHTML=`<div class="comm-bar"><i class="ti ti-info-circle"></i> You're on the <strong>${isOnSoloPaid?'Solo':'Free'} plan</strong> — Blakkstone keeps 9% of royalties. <a onclick="goPage('upgrade',null)" style="color:#a07d10;font-weight:600;margin-left:6px">Upgrade →</a></div>`;
+  else bar.innerHTML='';
+}
+
+function updateUpgradePage(plan){
+  const soloBtn=document.getElementById('ug-solo-btn');
+  const apBtn=document.getElementById('ug-artist-btn');
+  const lBtn=document.getElementById('ug-label-btn');
+  // Reset all buttons first
+  if(soloBtn){soloBtn.textContent='Get Solo';soloBtn.disabled=false;soloBtn.className='btn btn-purple';}
+  if(apBtn){apBtn.innerHTML='<i class="ti ti-crown"></i> Get Artist+';apBtn.disabled=false;apBtn.className='btn btn-gold';}
+  if(lBtn){lBtn.textContent='Get Label';lBtn.disabled=false;lBtn.className='btn';}
+  // Mark current plan
+  if(plan==='solo_paid'&&soloBtn){soloBtn.textContent='✓ Current Plan';soloBtn.disabled=true;soloBtn.className='btn btn-ghost';}
+  if(plan==='artist_plus'&&apBtn){apBtn.textContent='✓ Current Plan';apBtn.disabled=true;apBtn.className='btn btn-ghost';}
+  if(plan==='label'&&lBtn){lBtn.textContent='✓ Current Plan';lBtn.disabled=true;lBtn.className='btn btn-ghost';}
+}
+
+// ── PAGES ──────────────────────────────────────────────
+function goPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  else document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+id+"'"))n.classList.add('active');});
+  // Push to browser history so back/forward button works
+  if(typeof pushState==='undefined'||pushState!==false){
+    history.pushState({page:id},'',window.location.pathname+'#'+id);
+  }
+  if(id==='analytics')loadAnalytics();
+  if(id==='submit')initWizard();
+  if(id==='royalties')loadRoyalties();
+  if(id==='payout')loadPayout();
+  if(id==='artists')loadArtists();
+  if(id==='profile')loadProfileStats();
+  if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
+  // Sync mobile nav
+  const mobMap={overview:'mob-overview',releases:'mob-music',submit:'mob-submit',royalties:'mob-royalties',profile:'mob-profile'};
+  if(mobMap[id]) setMobNav(mobMap[id]);
+}
+
+// ── RELEASES ──────────────────────────────────────────
+let allRelData=[];
+
+async function loadReleases(){
+  const el=document.getElementById('s-total');
+  if(el) el.textContent='…';
+  const {data,error}=await sb.from('releases').select('*').eq('user_id',user.id).order('submitted_at',{ascending:false});
+  if(error){toast('Error loading releases','err');return;}
+  allRelData=data||[];
+  const releases=allRelData;
+  // Show welcome banner for users with no releases
+  const banner=document.getElementById('announcement-banner');
+  if(banner&&releases.length===0&&profile){
+    banner.style.display='flex';
+  }
+  const live=releases.filter(r=>r.status==='live').length;
+  const pending=releases.filter(r=>r.status==='pending').length;
+  const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
+  const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
+  const payout=isPaid?earnings:earnings*(1-COMM);
+  if(document.getElementById('s-total')) document.getElementById('s-total').textContent=releases.length;
+  const rcb=document.getElementById('releases-count-badge');
+  if(rcb) rcb.textContent=releases.length>0?releases.length+' total':'';
+  if(document.getElementById('s-live-sub')) document.getElementById('s-live-sub').textContent=live+' live on DSPs';
+  if(document.getElementById('s-pending')) document.getElementById('s-pending').textContent=pending;
+  if(document.getElementById('s-streams')) document.getElementById('s-streams').textContent=streams.toLocaleString();
+  if(document.getElementById('s-earnings')) document.getElementById('s-earnings').textContent='$'+payout.toFixed(2);
+  // Overview grid
+  const grid=document.getElementById('ov-releases-grid');
+  if(grid){
+    const cards=releases.slice(0,8).map(r=>releaseGridCard(r)).join('');
+    grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet. Hit <strong>Create Release</strong> to get started.</p></div>';
+  }
+  // Releases list
+  renderReleasesList(releases,'all');
+}
+
+function releaseGridCard(r){
+  const bc={pending:'rg-badge-pending',review:'rg-badge-review',live:'rg-badge-live',rejected:'rg-badge-rejected',takendown:'rg-badge-takendown'}[r.status]||'rg-badge-pending';
+  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',taken_down:'Taken Down'}[r.status]||r.status;
+  const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
+  // Store release in map, use id as key
+  _releaseMap[r.id]=r;
+  return `<div class="rg-card" onclick="openReleaseById('${r.id}')" style="cursor:pointer">
+    <div class="rg-art">${art}<span class="rg-badge ${bc}">${bl}</span></div>
+    <div class="rg-info"><div class="rg-title">${esc(r.title)}</div><div class="rg-meta">${esc(r.artist)}</div></div>
+  </div>`;
+}
+
+function renderReleasesList(releases,filter){
+  const list=document.getElementById('all-releases');
+  if(!list)return;
+  let filtered=releases;
+  if(filter==='live') filtered=releases.filter(r=>r.status==='live');
+  else if(filter==='pending') filtered=releases.filter(r=>r.status==='pending'||r.status==='review');
+  else if(filter==='rejected') filtered=releases.filter(r=>r.status==='rejected');
+  else if(filter==='takendown') filtered=releases.filter(r=>r.status==='takendown');
+  const html=filtered.length?`<div class="rl">`+filtered.map(r=>releaseRow(r)).join('')+`</div>`:emptyState('No releases found.');
+  list.innerHTML=html;
+}
+
+function filterOvSearch(){
+  const q=(document.getElementById('ov-search-input')?.value||'').toLowerCase();
+  const grid=document.getElementById('ov-releases-grid');
+  if(!grid)return;
+  if(!q){
+    // restore all
+    const cards=allRelData.slice(0,8).map(r=>releaseGridCard(r)).join('');
+    grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet. Hit Create Release to get started.</p></div>';
+    return;
+  }
+  const filtered=allRelData.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
+  const cards=filtered.map(r=>releaseGridCard(r)).join('');
+  grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-search"></i><p>No releases match your search.</p></div>';
+}
+
+function filterRelTab(filter,el){
+  document.querySelectorAll('.rel-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderReleasesList(allRelData,filter);
+}
+
+function filterReleasesBySearch(){
+  const q=(document.getElementById('rel-search-input')?.value||'').toLowerCase();
+  const filtered=allRelData.filter(r=>
+    (r.title||'').toLowerCase().includes(q)||
+    (r.artist||'').toLowerCase().includes(q)||
+    (r.genre||'').toLowerCase().includes(q)
+  );
+  document.getElementById('all-releases').innerHTML=filtered.length?`<div class="rl">`+filtered.map(r=>releaseRow(r)).join('')+`</div>`:emptyState('No releases found.');
+}
+
+function releaseRow(r){
+  const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',taken_down:'b-taken'}[r.status]||'b-pending';
+  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',taken_down:'Taken Down'}[r.status]||r.status;
+  const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
+  const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
+  _releaseMap[r.id]=r;
+  return `<div class="rr" onclick="openReleaseById('${r.id}')" style="cursor:pointer">
+    <div class="r-art">${art}</div>
+    <div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')} · ${d}</div></div>
+    <span class="badge ${bc}">${bl}</span>
+    <i class="ti ti-chevron-right" style="color:rgba(255,255,255,.2);font-size:16px;flex-shrink:0"></i>
+  </div>`;
+}
+function emptyState(msg){return `<div class="empty"><i class="ti ti-music-off"></i><p>${msg}</p></div>`;}
+
+// ── SUBMIT ────────────────────────────────────────────
+function fileChosen(input,zoneId,labelId){
+  if(!input.files[0])return;
+  document.getElementById(zoneId).classList.add('has-file');
+  document.getElementById(labelId).textContent='✓ '+input.files[0].name;
+}
+
+async function submitRelease(){
+  if(!document.getElementById('r-terms')?.checked){toast('Please agree to the terms and conditions','err');return;}
+  const title=document.getElementById('r-title')?.value.trim();
+  const artist=document.getElementById('r-artist')?.value.trim();
+  const genre=document.getElementById('r-genre')?.value;
+  const date=document.getElementById('r-date')?.value;
+  if(!title||!artist||!genre||!date){toast('Please complete all required fields in Steps 2 & 3','err');return;}
+  if(!wizTracks.length){toast('Please upload at least one audio track in Step 1','err');return;}
+  if(!wizData.artFile){toast('Please upload cover artwork in Step 2','err');return;}
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
+  try{
+    const artExt=wizData.artFile.name.split('.').pop();
+    const artPath=user.id+'/'+Date.now()+'-artwork.'+artExt;
+    const {error:are}=await sb.storage.from('artwork').upload(artPath,wizData.artFile);
+    if(are) throw new Error('Artwork upload failed: '+are.message);
+    const {data:artUrl}=sb.storage.from('artwork').getPublicUrl(artPath);
+    const audioPaths=[];
+    for(const track of wizTracks){
+      const ext=track.file.name.split('.').pop();
+      const ap=user.id+'/'+Date.now()+'-'+track.name.replace(/[^a-z0-9]/gi,'_')+'.'+ext;
+      const {error:ae}=await sb.storage.from('audio').upload(ap,track.file);
+      if(ae) throw new Error('Audio upload failed for '+track.name+': '+ae.message);
+      audioPaths.push(ap);
+    }
+    const extraInfo=[
+      document.getElementById('r-label')?.value?'Label: '+document.getElementById('r-label').value:'',
+      document.getElementById('r-copyright')?.value?'(c) '+document.getElementById('r-copyright').value:'',
+      document.getElementById('r-language')?.value?'Language: '+document.getElementById('r-language').value:'',
+      wizToggleState['explicit']==='yes'?'EXPLICIT CONTENT':'',
+      wizToggleState['country-restrict']==='yes'?'Country restrictions: '+(document.getElementById('r-countries')?.value||''):'',
+      'Stores: '+wizStores.join(', '),
+      document.getElementById('r-notes')?.value||''
+    ].filter(Boolean).join(' | ');
+    const {error:dbe}=await sb.from('releases').insert({
+      user_id:user.id,title,artist,genre,release_date:date,
+      isrc:wizTracks[0]?.isrc||null,
+      featured_artists:document.getElementById('r-feat')?.value?.trim()||null,
+      notes:extraInfo||null,
+      audio_url:audioPaths[0],artwork_url:artUrl.publicUrl,
+      status:'pending',streams:0,earnings:0
+    });
+    if(dbe) throw new Error('Submission failed: '+dbe.message);
+    toast('Release submitted! We will review it shortly.','ok');
+    initWizard();
+    loadReleases();
+    goPage('releases',document.querySelectorAll('.tnav-item')[1]);
+  }catch(e){toast(e.message,'err');}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Release';
+}
+
+
+async function loadArtists(){
+  const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const container=document.getElementById('artists-list');
+  if(isAdmin){
+    const {data,error:uerr}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+    if(uerr){console.error('profiles error:',uerr);container.innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i><p style="color:#f87171">'+uerr.message+'</p></div>';return;}
+    if(!data||!data.length){container.innerHTML=emptyState('No artists yet.');return;}
+    container.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:.875rem">Showing all ${data.length} artist accounts</div>`+data.map(p=>{
+      const name=p.artist_name||p.full_name||p.email;
+      const initials=name.slice(0,2).toUpperCase();
+      const pill=p.plan==='admin'?'pp-admin':p.plan==='label'?'pp-label':p.plan==='artist_plus'?'pp-label':'pp-solo';
+      const planLabel=p.plan==='admin'?'Admin':p.plan==='label'?'Label':p.plan==='artist_plus'?'Artist+':'Solo';
+      return `<div class="artist-row"><div class="artist-av">${p.avatar_url?`<img src="${p.avatar_url}" alt="a">`:initials}</div><div class="artist-info"><div class="artist-name">${esc(name)}</div><div class="artist-meta">${esc(p.email||'')}</div></div><span class="plan-pill ${pill}">${planLabel}</span><button class="btn btn-ghost btn-sm" onclick="openArtistModal('${p.id}','${esc(name)}')"><i class="ti ti-eye"></i> View</button></div>`;
+    }).join('');
+  } else {
+    // show just their own profile
+    const name=profile?.artist_name||profile?.full_name||user.email;
+    const initials=name.slice(0,2).toUpperCase();
+    const pill=profile?.plan==='label'?'pp-label':profile?.plan==='artist_plus'?'pp-label':'pp-solo';
+    const planLabel=profile?.plan==='label'?'Label':profile?.plan==='artist_plus'?'Artist+':'Solo';
+    container.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:.875rem">Your artist profile</div><div class="artist-row"><div class="artist-av">${profile?.avatar_url?`<img src="${profile.avatar_url}" alt="a">`:initials}</div><div class="artist-info"><div class="artist-name">${esc(name)}</div><div class="artist-meta">${esc(user.email)}</div></div><span class="plan-pill ${pill}">${planLabel}</span><button class="btn btn-ghost btn-sm" onclick="goPage('profile',null)"><i class="ti ti-settings"></i> Settings</button></div>`;
+  }
+}
+
+// Artist detail modal (admin)
+async function openArtistModal(userId,name){
+  const {data:releases}=await sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false});
+  const rl=releases||[];
+  document.getElementById('artist-modal-title').innerHTML=`${esc(name)}'s Releases (${rl.length}) <button onclick="closeArtistModal()">×</button>`;
+  if(!rl.length){document.getElementById('artist-modal-body').innerHTML='<p style="color:var(--muted);font-size:13px">No releases submitted yet.</p>';document.getElementById('artist-overlay').classList.add('open');return;}
+  document.getElementById('artist-modal-body').innerHTML=rl.map(r=>{
+    const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',taken_down:'b-taken'}[r.status]||'b-pending';
+    const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',taken_down:'Taken Down'}[r.status]||r.status;
+    return `<div class="release-detail">
+      <div class="rd-header">
+        <div class="r-art" style="width:40px;height:40px">${r.artwork_url?`<img src="${r.artwork_url}" alt="art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`:'<i class="ti ti-music" style="font-size:18px;color:var(--muted)"></i>'}</div>
+        <div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')}</div></div>
+        <span class="badge ${bc}">${bl}</span>
+      </div>
+      <div class="rd-fields">
+        <div class="fg"><label>Status</label><select class="stsel" style="width:100%" onchange="updateStatus('${r.id}',this.value)"><option value="pending" ${r.status==='pending'?'selected':''}>Pending</option><option value="review" ${r.status==='review'?'selected':''}>In Review</option><option value="live" ${r.status==='live'?'selected':''}>Live</option><option value="rejected" ${r.status==='rejected'?'selected':''}>Rejected</option><option value="takendown" ${r.status==='takendown'?'selected':''}>🚫 Taken Down</option></select></div>
+        <div class="fg"><label>Streams</label><input type="number" value="${r.streams||0}" min="0" class="num-in" style="width:100%" onchange="updateField('${r.id}','streams',this.value)"></div>
+        <div class="fg"><label>Earnings ($)</label><input type="number" value="${r.earnings||0}" min="0" step="0.01" class="num-in" style="width:100%" onchange="updateField('${r.id}','earnings',this.value)"></div>
+        <div class="fg"><label>Release Date</label><input type="text" value="${r.release_date||'—'}" style="background:var(--off);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;width:100%;color:var(--text)" disabled></div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('artist-overlay').classList.add('open');
+}
+function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
+
+// Release lookup map — avoids inline JSON which breaks with special chars
+const _releaseMap={};
+function openReleaseById(id){
+  const r=_releaseMap[id];
+  if(r) openReleaseModal(r);
+}
+
+function openReleaseModal(r){
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
+  const comm=isPaid?0:(r.earnings||0)*0.15;
+  const payout=(r.earnings||0)-comm;
+
+  // ── Header
+  const artEl=document.getElementById('rel-modal-art');
+  if(artEl) artEl.innerHTML=r.artwork_url
+    ?`<img src="${r.artwork_url}" style="width:100%;height:100%;object-fit:cover">`
+    :`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="font-size:32px;color:rgba(255,255,255,.2)"></i></div>`;
+
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('rel-modal-title', r.title||'—');
+  set('rel-modal-artist', r.artist||'—');
+
+  const genrePill=document.getElementById('rel-modal-genre-pill');
+  if(genrePill) genrePill.textContent=r.genre||'';
+
+  // Status badge
+  const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',taken_down:'b-taken'}[r.status]||'b-pending';
+  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',taken_down:'Taken Down'}[r.status]||r.status;
+  const sb=document.getElementById('rel-modal-status-badge');
+  if(sb) sb.innerHTML=`<span class="badge ${bc}" style="font-size:12px;padding:4px 12px">${bl}</span>`;
+
+  // ── Performance stats
+  set('rel-modal-streams', (r.streams||0).toLocaleString());
+  set('rel-modal-earnings', '$'+(r.earnings||0).toFixed(2));
+  set('rel-modal-payout', '$'+payout.toFixed(2));
+  set('rel-modal-payout-sub', isPaid?'100% yours':'After 9% commission');
+
+  // ── Release info
+  set('rel-modal-date', r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—');
+  set('rel-modal-status-text', bl);
+  set('rel-modal-submitted', r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—');
+
+  // ISRC
+  const isrcCell=document.getElementById('rel-modal-isrc-cell');
+  if(isrcCell) isrcCell.style.display=r.isrc?'block':'none';
+  set('rel-modal-isrc', r.isrc||'');
+
+  // Notes
+  const notesWrap=document.getElementById('rel-modal-notes-wrap');
+  if(notesWrap) notesWrap.style.display=r.notes?'block':'none';
+  set('rel-modal-notes', r.notes||'');
+
+  // ── Store breakdown
+  const storesEl=document.getElementById('rel-modal-stores');
+  if(storesEl){
+    const ts=r.streams||0;
+    if(ts===0){
+      storesEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);padding:.5rem 0">No streams recorded yet.</div>';
+    } else {
+      const topStores=DSP_STORES.slice(0,5);
+      const maxShare=topStores[0].share;
+      storesEl.innerHTML=topStores.map(s=>{
+        const est=Math.round(ts*s.share);
+        const barW=Math.round((s.share/maxShare)*100);
+        const logo=s.logo?`<img src="${s.logo}" width="16" height="16" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:'';
+        return `<div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:3px">${logo}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6);width:100px;flex-shrink:0">${s.name}</div>
+          <div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden">
+            <div style="width:${barW}%;height:100%;background:linear-gradient(90deg,#D4AF37,#e8c97a);border-radius:2px"></div>
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5);width:50px;text-align:right;flex-shrink:0">${est.toLocaleString()}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ── Stream trend chart
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
+  const ts=r.streams||0;
+  // Generate a realistic-looking growth curve
+  const seed=ts>0?[
+    Math.round(ts*.05), Math.round(ts*.1), Math.round(ts*.18),
+    Math.round(ts*.28), Math.round(ts*.42), ts
+  ]:[0,0,0,0,0,0];
+  setTimeout(()=>renderLineChart('rel-modal-chart',labels,seed,'#D4AF37',''),80);
+
+  document.getElementById('release-overlay').classList.add('open');
+}
+
+function closeReleaseModal(){document.getElementById('release-overlay').classList.remove('open');}
+
+// Close modals on Escape key
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeArtistModal();
+    closePaystack();
+    document.getElementById('payout-method-section').style.display='none';
+  }
+});
+
+// ── ANALYTICS ─────────────────────────────────────────
+// Simple SVG line chart renderer
+function renderLineChart(canvasId, labels, data, color='#D4AF37', prefix='$'){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||600;
+  const H=canvas.height||200;
+  canvas.width=W;
+  ctx.clearRect(0,0,W,H);
+  if(!data.length){
+    ctx.fillStyle='rgba(255,255,255,.2)';
+    ctx.font='13px Inter';
+    ctx.fillText('No data yet',W/2-40,H/2);
+    return;
+  }
+  const max=Math.max(...data,1);
+  const padL=44,padR=20,padT=20,padB=30;
+  const cW=W-padL-padR,cH=H-padT-padB;
+  const pts=data.map((v,i)=>({x:padL+i*(cW/(data.length-1||1)),y:padT+cH-(v/max)*cH}));
+  // Grid lines
+  for(let i=0;i<=4;i++){
+    const y=padT+(i/4)*cH;
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='10px Inter';
+    const val=max*(1-i/4);
+    const label=prefix==='$'?'$'+val.toFixed(0):val>=1000?(val/1000).toFixed(1)+'k':val.toFixed(0);
+    ctx.fillText(label,2,y+4);
+  }
+  // Fill
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x,padT+cH);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,padT+cH);
+  ctx.closePath();
+  const grad=ctx.createLinearGradient(0,padT,0,padT+cH);
+  grad.addColorStop(0,color+'55');grad.addColorStop(1,color+'05');
+  ctx.fillStyle=grad;ctx.fill();
+  // Line
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+  // Dots
+  pts.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);
+    ctx.fillStyle='#1e1e35';ctx.fill();
+    ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
+  });
+  // Labels
+  if(labels.length){
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px Inter';
+    const step=Math.ceil(labels.length/6);
+    labels.forEach((l,i)=>{if(i%step===0)ctx.fillText(l,pts[i].x-15,H-8);});
+  }
+}
+
+// DSP store distribution weights (estimated)
+const DSP_STORES=[
+  {name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954',share:.38},
+  {name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44',share:.18},
+  {name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000',share:.14},
+  {name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200',share:.10},
+  {name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF',share:.09},
+  {name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA',share:.05},
+  {name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000',share:.03},
+  {name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF',share:.02},
+  {name:'Others',logo:'',share:.01},
 ];
-function checkTitleFormat(input,warnId){
+
+async function loadAnalytics(){
+  const {data}=await sb.from('releases').select('*').eq('user_id',user.id);
+  const live=(data||[]).filter(r=>r.status==='live');
+  const all=data||[];
+  const ts=live.reduce((a,r)=>a+(r.streams||0),0);
+
+  // Hero stats
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('a-streams',ts.toLocaleString());
+  set('a-live',live.length);
+  // Daily average (rough estimate based on 30 days)
+  set('a-daily-avg',live.length?Math.round(ts/30).toLocaleString():'0');
+  // Best store
+  const bestStore=DSP_STORES[0];
+  const bsEl=document.getElementById('a-best-store');
+  if(bsEl) bsEl.innerHTML=bestStore.logo
+    ?`<img src="${bestStore.logo}" width="16" height="16" style="object-fit:contain;vertical-align:middle;margin-right:4px">${bestStore.name}`
+    :bestStore.name;
+
+  // Store breakdown bars
+  const storesEl=document.getElementById('an-stores-breakdown');
+  if(storesEl){
+    if(!live.length){
+      storesEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No live releases yet</div>';
+    } else {
+      const maxShare=DSP_STORES[0].share;
+      storesEl.innerHTML=DSP_STORES.slice(0,7).map(s=>{
+        const est=Math.round(ts*s.share);
+        const barW=Math.round((s.share/maxShare)*100);
+        const logo=s.logo?`<img src="${s.logo}" width="18" height="18" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:'';
+        return `<div class="an-store-row">
+          <div class="an-store-logo">${logo}</div>
+          <div class="an-store-name">${s.name}</div>
+          <div class="an-store-bar-wrap"><div class="an-store-bar-fill" style="width:${barW}%"></div></div>
+          <div class="an-store-count">${est.toLocaleString()}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Top releases
+  const topEl=document.getElementById('an-top-releases');
+  if(topEl){
+    const sorted=[...live].sort((a,b)=>(b.streams||0)-(a.streams||0));
+    if(!sorted.length){
+      topEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No live releases yet</div>';
+    } else {
+      topEl.innerHTML=sorted.slice(0,5).map((r,i)=>{
+        const art=r.artwork_url?`<img src="${r.artwork_url}" alt="">`:'';
+        return `<div class="an-release-row">
+          <div class="an-release-rank">${i+1}</div>
+          <div class="an-release-art">${art}</div>
+          <div class="an-release-info">
+            <div class="an-release-title">${esc(r.title)}</div>
+            <div class="an-release-artist">${esc(r.artist)}</div>
+          </div>
+          <div class="an-release-streams">${(r.streams||0).toLocaleString()}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // All releases table
+  const tbody=document.getElementById('an-releases-tbody');
+  if(tbody){
+    if(!all.length){
+      tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';
+    } else {
+      const totalStreams=ts||1;
+      tbody.innerHTML=all.map(r=>{
+        const pct=ts>0?Math.round(((r.streams||0)/ts)*100):0;
+        const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',taken_down:'b-taken'}[r.status]||'b-pending';
+        const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',taken_down:'Taken Down'}[r.status]||r.status;
+        const art=r.artwork_url?`<img src="${r.artwork_url}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:8px">`:'';
+        return `<tr>
+          <td style="white-space:nowrap">${art}<strong style="color:#fff">${esc(r.title)}</strong></td>
+          <td style="color:rgba(255,255,255,.5)">${esc(r.artist)}</td>
+          <td style="color:rgba(255,255,255,.4);font-size:12px">${esc(r.genre||'—')}</td>
+          <td style="font-weight:700;color:#fff">${(r.streams||0).toLocaleString()}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;min-width:80px">
+              <div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:var(--gold);border-radius:2px"></div>
+              </div>
+              <span style="font-size:11px;color:rgba(255,255,255,.35);width:28px">${pct}%</span>
+            </div>
+          </td>
+          <td><span class="badge ${bc}">${bl}</span></td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  // Chart — streams only
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  const labels=Array.from({length:7},(_,i)=>months[(now.getMonth()-6+i+12)%12]);
+  const chartData=[0,0,0,0,0,0,ts].map((v,i)=>i===6?v:Math.round(ts*Math.random()*.4));
+  setTimeout(()=>renderLineChart('analytics-chart',labels,chartData,'#D4AF37',''),100);
+}
+
+
+// ── ROYALTIES ─────────────────────────────────────────
+async function loadRoyalties(){
+  const [{data:relData},{data:payoutData}]=await Promise.all([
+    sb.from('releases').select('*').eq('user_id',user.id),
+    sb.from('payouts').select('amount,status').eq('user_id',user.id)
+  ]);
+  const rl=(relData||[]).filter(r=>(r.earnings||0)>0);
+  const allRel=relData||[];
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
+  const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
+  const comm=isPaid?0:gross*COMM;
+  const totalPayout=gross-comm;
+  const pendingPayouts=(payoutData||[])
+    .filter(p=>p.status==='pending'||p.status==='processing')
+    .reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const available=Math.max(0,totalPayout-pendingPayouts);
+
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('r-gross','$'+gross.toFixed(2));
+  set('r-commission',isPaid?'$0.00':'-$'+comm.toFixed(2));
+  set('r-payout','$'+available.toFixed(2));
+  set('r-updated',rl.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—');
+
+  // Commission sub-label
+  const cSub=document.getElementById('r-comm-sub');
+  if(cSub) cSub.textContent=isPaid?'No commission (paid plan)':'Blakkstone 9% commission';
+
+  // Commission bar notice for solo users
+  const commBar=document.getElementById('commission-bar');
+  if(commBar){
+    if(!isPaid&&gross>0){
+      commBar.innerHTML=`<div style="background:rgba(201,168,76,.1);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:'#D4AF37';margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span><i class="ti ti-crown"></i> You're on the <strong>Solo plan</strong> — upgrade to keep 100% of your royalties.</span>
+        <button class="btn btn-purple btn-sm" onclick="goPage('upgrade',null)"><i class="ti ti-crown"></i> Upgrade now</button>
+      </div>`;
+    } else if(pendingPayouts>0){
+      commBar.innerHTML=`<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px">
+        <i class="ti ti-clock"></i> <strong>$${pendingPayouts.toFixed(2)}</strong> is pending payout and has been deducted from your available balance.
+      </div>`;
+    } else {
+      commBar.innerHTML='';
+    }
+  }
+
+  // Earnings chart
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
+  const chartData=[0,0,0,0,0,gross].map((v,i)=>i===5?v:parseFloat((gross*Math.random()*.3).toFixed(2)));
+  setTimeout(()=>renderLineChart('earnings-chart',labels,chartData,'#D4AF37'),100);
+
+  // Best stores
+  const bestEl=document.getElementById('best-stores');
+  if(bestEl){
+    bestEl.innerHTML=DSP_STORES.slice(0,5).map(s=>{
+      const rev=(gross*s.share);
+      const logo=s.logo?`<img src="${s.logo}" width="18" height="18" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:'';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:4px;flex-shrink:0">${logo}</div>
+          <span style="font-size:13px;color:rgba(255,255,255,.8);font-weight:500">${s.name}</span>
+        </div>
+        <span style="font-size:13px;font-weight:700;color:#34d399">$${rev.toFixed(2)}</span>
+      </div>`;
+    }).join('')||'<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1rem">No earnings yet</div>';
+  }
+
+  // Release breakdown table
+  const tbody=document.getElementById('royalty-tbody');
+  if(tbody){
+    if(!allRel.length){
+      tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML=allRel.map(r=>{
+      const rc=isPaid?0:(r.earnings||0)*COMM;
+      const rp=(r.earnings||0)-rc;
+      const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',taken_down:'b-taken'}[r.status]||'b-pending';
+      const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',taken_down:'Taken Down'}[r.status]||r.status;
+      const art=r.artwork_url?`<img src="${r.artwork_url}" alt="" style="width:30px;height:30px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:7px">`:'';
+      return `<tr>
+        <td style="white-space:nowrap">${art}<strong style="color:#fff">${esc(r.title)}</strong><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;margin-left:37px">${esc(r.artist)}</div></td>
+        <td style="color:rgba(255,255,255,.6)">${(r.streams||0).toLocaleString()}</td>
+        <td style="color:#fff;font-weight:600">$${(r.earnings||0).toFixed(2)}</td>
+        <td style="color:#f87171">-$${rc.toFixed(2)}</td>
+        <td style="color:#34d399;font-weight:700">$${rp.toFixed(2)}</td>
+        <td><span class="badge ${bc}">${bl}</span></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+
+// ── PAYOUT ────────────────────────────────────────────
+async function loadPayout(){
+  const [{data:relData},{data:payoutData}]=await Promise.all([
+    sb.from('releases').select('earnings').eq('user_id',user.id),
+    sb.from('payouts').select('amount,status').eq('user_id',user.id)
+  ]);
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
+  const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
+  const afterComm=isPaid?gross:gross*(1-COMM);
+  // Deduct pending/processing payouts from available balance
+  const pendingPayouts=(payoutData||[])
+    .filter(p=>p.status==='pending'||p.status==='processing')
+    .reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const bal=Math.max(0,afterComm-pendingPayouts);
+  document.getElementById('payout-balance').textContent='$'+bal.toFixed(2);
+  const avLabel=document.getElementById('payout-available-label');
+  if(avLabel) avLabel.textContent='$'+bal.toFixed(2);
+  const pendLabel=document.getElementById('payout-pending-label');
+  if(pendLabel) pendLabel.textContent='$'+pendingPayouts.toFixed(2);
+  // Update balance bar
+  const barEl=document.getElementById('payout-bar');
+  if(barEl){const total=afterComm||1;barEl.style.width=Math.min(100,(bal/total)*100)+'%';}
+  // Update withdraw input max
+  const wi=document.getElementById('withdraw-amount');
+  if(wi) wi.max=bal;
+  try{
+    const {data:ph}=await sb.from('payouts').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    const h=document.getElementById('payout-history-tbody');
+    if(!h)return;
+    if(!ph||!ph.length){h.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payouts requested yet.</td></tr>';return;}
+    h.innerHTML=ph.map(p=>{
+      const statusColor={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
+      const canCancel=p.status==='pending';
+      const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'';
+      const stLabel={pending:'⏳ Pending',processing:'🔄 Processing',paid:'✅ Paid',failed:'❌ Failed',cancelled:'🚫 Cancelled'}[p.status]||p.status;
+      return '<tr><td style="font-weight:700;color:#fff">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td style="color:rgba(255,255,255,.6)">'+(p.method==='momo'?'📱 '+esc(p.network||'')+' MoMo':'🏦 Bank Transfer')+'</td><td style="color:rgba(255,255,255,.35)">'+d+'</td><td><span style="font-size:11px;font-weight:600;'+statusColor+'">'+stLabel+'</span>'+(canCancel?' <button class="btn-danger-outline" style="font-size:10px;padding:2px 7px;margin-left:4px" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</td></tr>';
+    }).join('');
+  }catch(e){}
+}
+
+function showPayoutMethods(){
+  const amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
+  if(!amt||amt<1){toast('Enter a valid withdrawal amount (min $1.00)','err');return;}
+  document.getElementById('payout-method-section').style.display='block';
+  document.getElementById('payout-method-section').scrollIntoView({behavior:'smooth'});
+}
+
+function selectPayout(method){
+  payoutMethod=method;
+  document.getElementById('opt-momo').classList.toggle('sel',method==='momo');
+  document.getElementById('opt-bank').classList.toggle('sel',method==='bank');
+  document.getElementById('momo-fields').style.display=method==='momo'?'block':'none';
+  document.getElementById('bank-fields').style.display=method==='bank'?'block':'none';
+  document.getElementById('payout-submit-wrap').style.display='block';
+}
+function selNet(net){
+  momoNetwork=net;
+  ['mtn-btn','voda-btn','airtel-btn'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  const map={'MTN':'mtn-btn','Vodafone':'voda-btn','AirtelTigo':'airtel-btn'};
+  document.getElementById(map[net]).classList.add('sel');
+}
+
+async function submitPayout(){
+  if(!payoutMethod){toast('Select a payout method','err');return;}
+  // Get user-entered amount
+  const withdrawInput=document.getElementById('withdraw-amount');
+  const requestedAmount=parseFloat(withdrawInput?.value||0);
+  if(!requestedAmount||requestedAmount<1){toast('Enter a valid withdrawal amount (min $1.00)','err');return;}
+  // Check against available balance
+  const [{data:relData},{data:existingPayouts}]=await Promise.all([
+    sb.from('releases').select('earnings').eq('user_id',user.id),
+    sb.from('payouts').select('amount,status').eq('user_id',user.id)
+  ]);
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
+  const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
+  const afterComm=isPaid?gross:gross*(1-COMM);
+  const pendingTotal=(existingPayouts||[])
+    .filter(p=>p.status==='pending'||p.status==='processing')
+    .reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const available=Math.max(0,afterComm-pendingTotal);
+  if(requestedAmount>available){toast('Amount exceeds your available balance of $'+available.toFixed(2),'err');return;}
+  let account='',network='';
+  if(payoutMethod==='momo'){
+    if(!momoNetwork){toast('Select a Mobile Money network','err');return;}
+    const num=document.getElementById('momo-number').value.trim();
+    const name=document.getElementById('momo-name').value.trim();
+    if(!num||!name){toast('Fill in all Mobile Money fields','err');return;}
+    account=name+' — '+num;network=momoNetwork;
+  } else {
+    const bank=document.getElementById('bank-name').value.trim();
+    const acc=document.getElementById('bank-acc').value.trim();
+    const accName=document.getElementById('bank-acc-name').value.trim();
+    if(!bank||!acc||!accName){toast('Fill in all bank fields','err');return;}
+    account=accName+' — '+bank+' ('+acc+')';
+  }
+  try{
+    const {error}=await sb.from('payouts').insert({
+      user_id:user.id,
+      method:payoutMethod,
+      network:network||null,
+      account,
+      amount:requestedAmount,
+      status:'pending'
+    });
+    if(error) throw error;
+    if(withdrawInput) withdrawInput.value='';
+    toast('Payout request submitted! Processing in 5–7 business days.','ok');
+    sendPayoutNotificationEmail(requestedAmount, payoutMethod, network, account);
+    loadPayout();
+  }catch(e){
+    console.error('Payout error:',e);
+    toast('Payout failed: '+e.message,'err');
+  }
+}
+
+// Send admin email notification via Resend (configure RESEND_KEY below)
+async function sendPayoutNotificationEmail(amount, method, network, account){
+  const RESEND_KEY = 're_UGAtaTRj_6yG6uCwzcUQbLr9gQdhARnkN';
+  if(RESEND_KEY === 'YOUR_RESEND_API_KEY') return; // Skip if not configured
+  const artistName = profile?.artist_name || profile?.full_name || user.email;
+  try{
+    await fetch('https://api.resend.com/emails',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+RESEND_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        from:'Blakkstone Distribution <noreply@blakkstonemusic.com>',
+        to:['payment@blakkstonemusic.com'],
+        subject:'💸 New Payout Request — '+(profile?.account_id||'')+' '+artistName,
+        html:`
+          <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:2rem">
+            <div style="background:#08080C;padding:1rem 1.5rem;border-radius:10px 10px 0 0">
+              <h2 style="color:#D4AF37;margin:0;font-size:18px">Blakkstone Distribution</h2>
+            </div>
+            <div style="background:#fff;border:1px solid #e8e8e8;border-top:none;padding:1.5rem;border-radius:0 0 10px 10px">
+              <h3 style="margin:0 0 1rem;color:#111">New Payout Request</h3>
+              <table style="width:100%;border-collapse:collapse;font-size:14px">
+                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Account ID</td><td style="padding:8px 0;font-weight:700;color:#D4AF37;border-bottom:1px solid #f0f0f0">${profile?.account_id||'—'}</td></tr><tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Artist</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${artistName}</td></tr>
+                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Amount</td><td style="padding:8px 0;font-weight:700;color:#8a6420;border-bottom:1px solid #f0f0f0">$${parseFloat(amount).toFixed(2)}</td></tr>
+                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Method</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${method==='momo'?'📱 '+(network||'')+' Mobile Money':'🏦 Bank Transfer'}</td></tr>
+                <tr><td style="padding:8px 0;color:#666">Account</td><td style="padding:8px 0;font-weight:600">${account}</td></tr>
+              </table>
+              <div style="margin-top:1.5rem">
+                <a href="https://blakkstonemusic.com" style="background:#D4AF37;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">View in Admin Panel →</a>
+              </div>
+              <p style="font-size:12px;color:#999;margin-top:1.5rem">This notification was sent automatically by Blakkstone Distribution.</p>
+            </div>
+          </div>`
+      })
+    });
+  }catch(e){ console.warn('Email notification failed:',e); }
+}
+
+async function cancelPayout(id){
+  if(!confirm('Cancel this payout request?'))return;
+  const {error}=await sb.from('payouts').update({status:'cancelled'}).eq('id',id).eq('user_id',user.id);
+  if(error){toast('Could not cancel payout','err');return;}
+  toast('Payout cancelled','ok');
+  loadPayout();
+}
+
+// ── PROFILE ───────────────────────────────────────────
+async function loadProfileStats(){
+  try{
+    const {data:rels}=await sb.from('releases').select('streams,earnings').eq('user_id',user.id);
+    const cnt=rels?.length||0;
+    const earn=(rels||[]).reduce((a,r)=>a+(r.earnings||0),0);
+    const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
+    const net=isPaid?earn:earn*(1-COMM);
+    const rc=document.getElementById('prof-release-count');
+    const re=document.getElementById('prof-earnings');
+    const pb=document.getElementById('prof-plan-badge');
+    if(rc) rc.textContent=cnt;
+    if(re) re.textContent='$'+net.toFixed(2);
+    if(pb){
+      const planLabel={admin:'Admin',label:'Label',artist_plus:'Artist+',solo:'Solo'}[profile?.plan]||'Solo';
+      pb.textContent=planLabel;
+    }
+  }catch(e){}
+}
+
+async function saveProfile(){
+  const fn=document.getElementById('p-fn').value.trim();
+  const ln=document.getElementById('p-ln').value.trim();
+  const fullName=(fn+' '+ln).trim();
+  const artistName=document.getElementById('p-an').value.trim();
+  const btn=document.getElementById('save-profile-btn');
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span>';
+  const {error}=await sb.from('profiles').update({full_name:fullName,artist_name:artistName}).eq('id',user.id);
+  if(error){toast('Save failed: '+error.message,'err');}
+  else{
+    profile={...profile,full_name:fullName,artist_name:artistName};
+    document.getElementById('tnav-name').textContent=(fullName||artistName).split(' ')[0];
+    document.getElementById('profile-display-name').textContent=artistName||fullName;
+    const initials=fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    if(!profile.avatar_url){document.getElementById('profile-avatar-initials').textContent=initials;}
+    toast('Profile saved!','ok');
+  }
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save Changes';
+}
+
+async function changePassword(){
+  const pw=document.getElementById('p-pw').value;
+  const pw2=document.getElementById('p-pw2').value;
+  if(!pw){toast('Enter a new password','err');return;}
+  if(pw.length<6){toast('Password must be at least 6 characters','err');return;}
+  if(pw!==pw2){toast('Passwords do not match','err');return;}
+  const {error}=await sb.auth.updateUser({password:pw});
+  if(error){toast('Update failed: '+error.message,'err');return;}
+  document.getElementById('p-pw').value='';document.getElementById('p-pw2').value='';
+  toast('Password updated!','ok');
+}
+
+async function uploadAvatar(input){
+  if(!input.files[0])return;
+  const file=input.files[0];
+  const ext=file.name.split('.').pop();
+  const path=`${user.id}/avatar.${ext}`;
+  toast('Uploading photo...');
+  const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
+  if(error){toast('Upload failed: '+error.message,'err');return;}
+  const {data}=sb.storage.from('artwork').getPublicUrl(path);
+  await sb.from('profiles').update({avatar_url:data.publicUrl}).eq('id',user.id);
+  profile.avatar_url=data.publicUrl;
+  setAvatarDisplay('',data.publicUrl);
+  toast('Photo updated!','ok');
+}
+
+// ── ADMIN ─────────────────────────────────────────────
+let allReleasesCache=[],allUsersCache=[],allPayoutsCache=[];
+
+function switchRoyaltyTab(tab,el){
+  document.querySelectorAll('.royalties-subtabs .rsub').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  ['sales','reports','payouts-tab'].forEach(t=>{
+    const d=document.getElementById('rt-'+t);
+    if(d) d.style.display=t===tab?'block':'none';
+  });
+}
+
+function switchAdminTab(tab,el){
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  const sec=document.getElementById('admin-'+tab);
+  if(sec) sec.classList.add('active');
+  if(el) el.classList.add('active');
+  if(tab==='reports') loadAdminReports();
+  if(tab==='broadcast') loadBroadcastHistory();
+}
+
+function refreshAdmin(){
+  loadAdminReleases();loadAdminUsers();loadAdminPayouts();
+  loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();
+  loadAdminDashboard();
+  toast('Admin data refreshed','ok');
+}
+
+async function loadAdminStats(){
+  try{
+    const [{data:profiles},{data:releases},{data:payouts},{data:subs}]=await Promise.all([
+      sb.from('profiles').select('id,plan,created_at'),
+      sb.from('releases').select('id,status,streams,earnings'),
+      sb.from('payouts').select('id,status,amount').catch(()=>({data:[]})),
+      sb.from('subscriptions').select('id,amount_usd').catch(()=>({data:[]}))
+    ]);
+    const now=new Date(),thisMonth=now.getMonth(),thisYear=now.getFullYear();
+    const newThisMonth=(profiles||[]).filter(p=>{const d=new Date(p.created_at);return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;}).length;
+    const liveRel=(releases||[]).filter(r=>r.status==='live').length;
+    const pendingRel=(releases||[]).filter(r=>r.status==='pending').length;
+    const paidPlans=(profiles||[]).filter(p=>p.plan==='artist_plus'||p.plan==='label').length;
+    const pendingPay=(payouts||[]).filter(p=>p.status==='pending');
+    const pendingAmt=pendingPay.reduce((a,p)=>a+parseFloat(p.amount||0),0);
+    const totalRevenue=(subs||[]).reduce((a,s)=>a+parseFloat(s.amount_usd||0),0);
+    const totalStreams=(releases||[]).reduce((a,r)=>a+(r.streams||0),0);
+    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    set('adm-artists',(profiles||[]).length);
+    set('adm-artists-sub',newThisMonth+' new this month');
+    set('adm-releases',(releases||[]).length);
+    set('adm-releases-sub',liveRel+' live on DSPs');
+    set('adm-pending',pendingRel);
+    set('adm-paid',paidPlans);
+    set('adm-revenue-sub','$'+totalRevenue.toFixed(2)+' total revenue');
+    set('adm-payouts',pendingPay.length);
+    set('adm-payout-amount','$'+pendingAmt.toFixed(2)+' total pending');
+    set('adm-streams',totalStreams.toLocaleString());
+    const pa=document.getElementById('payout-alert');if(pa){pa.style.display=pendingPay.length>0?'inline':'none';pa.textContent=pendingPay.length;}
+    const nb=document.getElementById('notif-badge-admin');if(nb){nb.style.display=(pendingPay.length+pendingRel)>0?'inline':'none';nb.textContent=pendingPay.length+pendingRel;}
+    const nb2=document.getElementById('notif-badge');if(nb2){nb2.style.display=(pendingPay.length+pendingRel)>0?'inline':'none';nb2.textContent=pendingPay.length+pendingRel;}
+  }catch(e){console.warn('loadAdminStats error:',e);}
+}
+
+async function loadAdminDashboard(){
+  try{
+    const [{data:profiles},{data:releases},{data:subs}]=await Promise.all([
+      sb.from('profiles').select('id,plan,created_at'),
+      sb.from('releases').select('id,status,streams,earnings,artist,title,user_id'),
+      sb.from('subscriptions').select('amount_usd,created_at,plan').catch(()=>({data:[]}))
+    ]);
+    // Plan breakdown
+    const plans={solo:0,artist_plus:0,label:0,admin:0};
+    (profiles||[]).forEach(p=>plans[p.plan]=(plans[p.plan]||0)+1);
+    const totalP=(profiles||[]).length||1;
+    const planEl=document.getElementById('adm-plan-breakdown');
+    if(planEl) planEl.innerHTML=[
+      {k:'Solo',v:plans.solo,c:'#6b7280'},
+      {k:'Artist+',v:plans.artist_plus,c:'#D4AF37'},
+      {k:'Label',v:plans.label,c:'#059669'},
+      {k:'Admin',v:plans.admin,c:'#2563eb'}
+    ].map(p=>`<div class="adm-bar-row"><div class="adm-bar-label">${p.k}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round((p.v/totalP)*100)}%;background:${p.c}"></div></div><div class="adm-bar-val">${p.v}</div></div>`).join('');
+    // Release breakdown
+    const statuses={pending:0,review:0,live:0,rejected:0};
+    (releases||[]).forEach(r=>statuses[r.status]=(statuses[r.status]||0)+1);
+    const totalR=(releases||[]).length||1;
+    const relEl=document.getElementById('adm-release-breakdown');
+    if(relEl) relEl.innerHTML=[
+      {k:'Live',v:statuses.live,c:'#10b981'},
+      {k:'Pending',v:statuses.pending,c:'#f59e0b'},
+      {k:'In Review',v:statuses.review,c:'#3b82f6'},
+      {k:'Rejected',v:statuses.rejected,c:'#ef4444'}
+    ].map(p=>`<div class="adm-bar-row"><div class="adm-bar-label">${p.k}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round((p.v/totalR)*100)}%;background:${p.c}"></div></div><div class="adm-bar-val">${p.v}</div></div>`).join('');
+    // Recent activity
+    const actEl=document.getElementById('adm-recent-activity');
+    if(actEl){
+      const recent=[
+        ...(profiles||[]).slice(-3).map(p=>({type:'join',text:'New artist joined',time:p.created_at,color:'#D4AF37'})),
+        ...(releases||[]).filter(r=>r.status==='pending').slice(-3).map(r=>({type:'release',text:'"'+r.title+'" submitted for review',time:r.submitted_at||new Date().toISOString(),color:'#fbbf24'}))
+      ].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,8);
+      actEl.innerHTML=recent.map(a=>`<div class="activity-item"><div class="activity-dot" style="background:${a.color}"></div><div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time?new Date(a.time).toLocaleDateString('en-GB'):''}</div></div></div>`).join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No recent activity</div>';
+    }
+    // Revenue chart
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const now=new Date();
+    const revByMonth=Array(6).fill(0);
+    (subs||[]).forEach(s=>{
+      const d=new Date(s.created_at);
+      const diff=(now.getMonth()-d.getMonth()+12)%12;
+      if(diff<6) revByMonth[5-diff]+=parseFloat(s.amount_usd||0);
+    });
+    const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
+    setTimeout(()=>{
+      renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#D4AF37');
+      const growthData=Array(6).fill(0);
+      (profiles||[]).forEach(p=>{
+        const d=new Date(p.created_at);
+        const diff=(now.getMonth()-d.getMonth()+12)%12;
+        if(diff<6) growthData[5-diff]++;
+      });
+      renderLineChart('adm-growth-chart',chartLabels,growthData,'#34d399');
+    },100);
+  }catch(e){console.warn('loadAdminDashboard error:',e);}
+}
+
+async function loadAdminReleases(){
+  const tbody=document.getElementById('admin-tbody');
+  if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
+  // Fetch releases and profiles separately to avoid RLS join issues
+  const [{data:releases,error},{data:profiles}]=await Promise.all([
+    sb.from('releases').select('*').order('submitted_at',{ascending:false}),
+    sb.from('profiles').select('id,full_name,artist_name,email,account_id')
+  ]);
+  if(error){
+    tbody.innerHTML=`<tr><td colspan="12" style="text-align:center;color:#f87171;padding:1.5rem">Error: ${error.message}</td></tr>`;
+    return;
+  }
+  if(!releases||!releases.length){
+    tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No releases submitted yet.</td></tr>';
+    return;
+  }
+  // Build a profile map and attach to each release
+  const profMap={};(profiles||[]).forEach(p=>{profMap[p.id]=p;});
+  const data=releases.map(r=>({...r,profiles:profMap[r.user_id]||null}));
+  allReleasesCache=data;
+  renderAdminReleases(data);
+}
+
+function renderAdminReleases(data){
+  const tbody=document.getElementById('admin-tbody');if(!tbody)return;
+  if(!data.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No releases found.</td></tr>';return;}
+  tbody.innerHTML=data.map(r=>{
+    const pName=r.profiles?.artist_name||r.profiles?.full_name||'—';
+    const accId=r.profiles?.account_id||'—';
+    const sub=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
+    const rd=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB'):'—';
+    const art=r.artwork_url?`<img src="${r.artwork_url}" alt="" style="width:32px;height:32px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:6px">`:'';
+    const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',taken_down:'color:#9ca3af'}[r.status]||'';
+    return `<tr>
+      <td><input type="checkbox" class="rel-cb" data-id="${r.id}" style="accent-color:var(--gold)"></td>
+      <td style="font-weight:700;cocolor:'#D4AF37'ont-size:12px">${esc(accId)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(pName)}</td>
+      <td style="white-space:nowrap">${art}${esc(r.title)}</td>
+      <td style="color:rgba(255,255,255,.4);font-size:12px">${esc(r.genre||'')}</td>
+      <td style="color:rgba(255,255,255,.35);font-size:11px">${sub}</td>
+      <td style="color:rgba(255,255,255,.35);font-size:11px">${rd}</td>
+      <td><select class="stsel" style="${sc};font-weight:600" onchange="updateStatus('${r.id}',this.value,this)">
+        <option value="pending" ${r.status==='pending'?'selected':''}>⏳ Pending</option>
+        <option value="review" ${r.status==='review'?'selected':''}>🔍 In Review</option>
+        <option value="live" ${r.status==='live'?'selected':''}>✅ Live</option>
+        <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ Rejected</option>
+        <option value="taken_down" ${r.status==='taken_down'?'selected':''}>🚫 Taken Down</option>
+      </select></td>
+      <td><input type="number" class="num-in" value="${r.streams||0}" min="0" onchange="updateField('${r.id}','streams',this.value)"></td>
+      <td><input type="number" class="num-in" value="${r.earnings||0}" min="0" step="0.01" onchange="updateField('${r.id}','earnings',this.value)"></td>
+      <td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.notes||'')}">${r.notes?esc(r.notes.slice(0,30))+'…':'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal('${r.user_id}','${esc(pName)}')"><i class="ti ti-eye"></i></button>
+        <button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease('${r.id}')"><i class="ti ti-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterReleases(){
+  const q=(document.getElementById('rel-search')?.value||'').toLowerCase();
+  const st=document.getElementById('rel-status-filter')?.value||'';
+  let data=allReleasesCache;
+  if(q) data=data.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q)||((r.profiles?.artist_name||r.profiles?.full_name||'')).toLowerCase().includes(q));
+  if(st) data=data.filter(r=>r.status===st);
+  renderAdminReleases(data);
+}
+
+function toggleSelectAll(type,cb){
+  document.querySelectorAll('.'+type+'-cb').forEach(c=>c.checked=cb.checked);
+}
+
+async function bulkStatusUpdate(status){
+  const checked=Array.from(document.querySelectorAll('.rel-cb:checked')).map(c=>c.dataset.id);
+  if(!checked.length){toast('Select releases first','err');return;}
+  if(!confirm(`Set ${checked.length} release(s) to "${status}"?`))return;
+  for(const id of checked){
+    await sb.from('releases').update({status}).eq('id',id);
+  }
+  toast(checked.length+' releases updated to '+status,'ok');
+  loadAdminReleases();loadAdminStats();
+}
+
+async function loadAdminUsers(){
+  const tbody=document.getElementById('admin-users-tbody');if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
+  const {data}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+  if(!data){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists yet.</td></tr>';return;}
+  const [{data:allRel,error:relErr},{data:allPayouts}]=await Promise.all([
+    sb.from('releases').select('user_id,streams,earnings'),
+    sb.from('payouts').select('user_id,amount,status').catch(()=>({data:[]}))
+  ]);
+  if(relErr) console.warn('releases join warn:',relErr.message);
+  const relCount={};const relStreams={};const relEarn={};
+  (allRel||[]).forEach(r=>{relCount[r.user_id]=(relCount[r.user_id]||0)+1;relStreams[r.user_id]=(relStreams[r.user_id]||0)+(r.streams||0);relEarn[r.user_id]=(relEarn[r.user_id]||0)+(r.earnings||0);});
+  allUsersCache=data;
+  renderAdminUsers(data,relCount,relStreams,relEarn);
+}
+
+function renderAdminUsers(data,relCount,relStreams,relEarn){
+  relCount=relCount||{};relStreams=relStreams||{};relEarn=relEarn||{};
+  const tbody=document.getElementById('admin-users-tbody');if(!tbody)return;
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists found.</td></tr>';return;}
+  tbody.innerHTML=data.map(p=>{
+    const name=p.artist_name||p.full_name||p.email;
+    const planLabel={admin:'Admin',label:'Label',artist_plus:'Artist+',solo:'Solo'}[p.plan]||'Solo';
+    const planColor={admin:'color:#60a5fa',label:'color:#34d399',artist_plus:'color:#D4AF37',solo:'color:rgba(255,255,255,.4)'}[p.plan]||'';
+    const joined=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+    const statusFlag=p.status_flag||'active';
+    const statusBadge={active:'asb-active',suspended:'asb-suspended',warned:'asb-warned'}[statusFlag]||'asb-active';
+    return `<tr>
+      <td style="font-weight:700;colocolor:'#D4AF37't-size:12px">${esc(p.account_id||'—')}</td>
+      <td><div style="font-weight:600;color:#fff">${esc(name)}</div><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px">${esc(p.email||'')}</div></td>
+      <td style="color:rgba(255,255,255,.5);font-size:11px">${esc(p.email||'')}</td>
+      <td><select class="stsel" style="${planColor};font-weight:600" onchange="updateUserPlan('${p.id}',this.value)">
+        <option value="solo" ${p.plan==='solo'?'selected':''}>Solo</option>
+        <option value="artist_plus" ${p.plan==='artist_plus'?'selected':''}>Artist+</option>
+        <option value="label" ${p.plan==='label'?'selected':''}>Label</option>
+        <option value="admin" ${p.plan==='admin'?'selected':''}>Admin</option>
+      </select></td>
+      <td style="text-align:center;font-weight:600;color:#fff">${relCount[p.id]||0}</td>
+      <td style="color:rgba(255,255,255,.6)">${(relStreams[p.id]||0).toLocaleString()}</td>
+      <td style="color:#34d399;font-weight:600">$${(relEarn[p.id]||0).toFixed(2)}</td>
+      <td><span class="artist-status-badge ${statusBadge}">${statusFlag}</span></td>
+      <td style="color:rgba(255,255,255,.35);font-size:11px">${joined}</td>
+      <td style="white-space:nowrap">
+        <button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal('${p.id}','${esc(name)}')"><i class="ti ti-eye"></i></button>
+        <button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openMsgTo('${esc(p.email||'')}')"><i class="ti ti-message"></i></button>
+        <select class="stsel" style="font-size:11px;padding:3px 6px" onchange="updateArtistStatus('${p.id}',this.value)">
+          <option value="active" ${statusFlag==='active'?'selected':''}>Active</option>
+          <option value="warned" ${statusFlag==='warned'?'selected':''}>Warned</option>
+          <option value="suspended" ${statusFlag==='suspended'?'selected':''}>Suspended</option>
+        </select>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterUsers(){
+  const q=(document.getElementById('user-search')?.value||'').toLowerCase();
+  const plan=document.getElementById('user-plan-filter')?.value||'';
+  let data=allUsersCache;
+  if(q) data=data.filter(p=>(p.artist_name||'').toLowerCase().includes(q)||(p.full_name||'').toLowerCase().includes(q)||(p.email||'').toLowerCase().includes(q)||(p.account_id||'').toLowerCase().includes(q));
+  if(plan) data=data.filter(p=>p.plan===plan);
+  renderAdminUsers(data,{},{},{});
+}
+
+async function updateArtistStatus(id,status){
+  await sb.from('profiles').update({status_flag:status}).eq('id',id);
+  toast('Artist status updated to '+status,'ok');
+}
+
+async function loadAdminPayouts(){
+  const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
+  try{
+    const [{data:payouts,error:pe},{data:profiles}]=await Promise.all([
+      sb.from('payouts').select('*').order('created_at',{ascending:false}),
+      sb.from('profiles').select('id,artist_name,full_name,email,account_id')
+    ]);
+    if(pe){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#f87171;padding:1.5rem">'+pe.message+'</td></tr>';return;}
+    allPayoutsCache=payouts||[];
+    const profileMap={};(profiles||[]).forEach(p=>{profileMap[p.id]=p;});
+    const pending=(payouts||[]).filter(p=>p.status==='pending').length;
+    const notice=document.getElementById('payout-pending-notice');
+    if(notice&&pending>0) notice.innerHTML=`<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><span><i class="ti ti-alert-circle"></i> <strong>${pending} pending payout${pending>1?'s':''}</strong> waiting for your action</span></div>`;
+    else if(notice) notice.innerHTML='';
+    if(!payouts||!payouts.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payout requests yet.</td></tr>';return;}
+    renderAdminPayouts(payouts,profileMap);
+  }catch(e){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Run payouts SQL in Supabase first.</td></tr>';}
+}
+
+function renderAdminPayouts(payouts,profileMap){
+  const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
+  tbody.innerHTML=payouts.map(p=>{
+    const prof=profileMap[p.user_id]||{};
+    const name=prof.artist_name||prof.full_name||prof.email||'—';
+    const accId=prof.account_id||'—';
+    const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+    const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
+    return `<tr>
+      <td style="font-weight:700;color:color:'#D4AF37'size:13px">${esc(accId)}</td>
+      <td><div style="font-weight:600;color:#fff;font-size:13px">${esc(name)}</div><div style="font-size:11px;color:rgba(255,255,255,.35)">${esc(prof.email||'')}</div></td>
+      <td>${p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer'}</td>
+      <td style="color:rgba(255,255,255,.5)">${esc(p.network||'—')}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">${esc(p.account||'—')}</td>
+      <td style="font-weight:700;color:#34d399;font-size:16px">$${parseFloat(p.amount||0).toFixed(2)}</td>
+      <td><select class="stsel" style="${sc};font-weight:600" onchange="updatePayoutStatus('${p.id}',this.value)">
+        <option value="pending" ${p.status==='pending'?'selected':''}>⏳ Pending</option>
+        <option value="processing" ${p.status==='processing'?'selected':''}>🔄 Processing</option>
+        <option value="paid" ${p.status==='paid'?'selected':''}>✅ Paid</option>
+        <option value="failed" ${p.status==='failed'?'selected':''}>❌ Failed</option>
+        <option value="cancelled" ${p.status==='cancelled'?'selected':''}>🚫 Cancelled</option>
+      </select></td>
+      <td style="color:rgba(255,255,255,.35);font-size:12px">${d}</td>
+      <td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout('${p.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterPayouts(){
+  const st=document.getElementById('payout-status-filter')?.value||'';
+  const profileMap={};
+  allUsersCache.forEach(p=>{profileMap[p.id]=p;});
+  let data=allPayoutsCache;
+  if(st) data=data.filter(p=>p.status===st);
+  renderAdminPayouts(data,profileMap);
+}
+
+async function loadAdminSubs(){
+  const tbody=document.getElementById('admin-subs-tbody');if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
+  try{
+    const {data}=await sb.from('subscriptions').select('*, profiles(artist_name,full_name,email,account_id)').order('created_at',{ascending:false});
+    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No subscriptions yet.</td></tr>';return;}
+    tbody.innerHTML=data.map(s=>{
+      const name=s.profiles?.artist_name||s.profiles?.full_name||s.profiles?.email||'—';
+      const accId=s.profiles?.account_id||'—';
+      const d=s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'—';
+      const planLabel={artist_plus:'Artist+',label:'Label'}[s.plan]||s.plan;
+      return `<tr>
+        <td style="font-weight:600;color:#fff">${esc(name)}</td>
+        <td style="font-weight:700;color:vacolor:'#D4AF37'ze:12px">${esc(accId)}</td>
+        <td style="color:var(--gold);font-weight:600">${planLabel}</td>
+        <td style="color:rgba(255,255,255,.5)">${s.billing_cycle||'annual'}</td>
+        <td style="font-weight:700;color:#34d399">$${parseFloat(s.amount_usd||0).toFixed(2)}</td>
+        <td style="color:rgba(255,255,255,.4)">GHS ${parseFloat(s.amount_ghs||0).toFixed(2)}</td>
+        <td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">${esc(s.paystack_ref||'—')}</td>
+        <td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${s.status==='active'?'rgba(16,185,129,.2)':'rgba(255,255,255,.08)'};color:${s.status==='active'?'#34d399':'rgba(255,255,255,.4)'}">${s.status||'active'}</span></td>
+        <td style="color:rgba(255,255,255,.35);font-size:12px">${d}</td>
+      </tr>`;
+    }).join('');
+  }catch(e){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Run subscriptions SQL first.</td></tr>';}
+}
+
+async function loadAdminReports(){
+  try{
+    const [{data:releases},{data:profiles}]=await Promise.all([
+      sb.from('releases').select('*, profiles(artist_name,full_name,account_id)').order('streams',{ascending:false}),
+      sb.from('profiles').select('id,artist_name,full_name,account_id,plan')
+    ]);
+    const allRel=releases||[];
+    // Revenue summary
+    const totalEarnings=allRel.reduce((a,r)=>a+(r.earnings||0),0);
+    const totalStreams=allRel.reduce((a,r)=>a+(r.streams||0),0);
+    const totalComm=totalEarnings*0.15;
+    const revEl=document.getElementById('adm-revenue-summary');
+    if(revEl) revEl.innerHTML=`
+      <div class="adm-bar-row"><div class="adm-bar-label">Gross Earnings</div><div class="adm-bar-val" style="color:#34d399;font-size:15px">$${totalEarnings.toFixed(2)}</div></div>
+      <div class="adm-bar-row"><div class="adm-bar-label">15% Commission</div><div class="adm-bar-val" style="color:var(--gold);font-size:15px">$${totalComm.toFixed(2)}</div></div>
+      <div class="adm-bar-row"><div class="adm-bar-label">Artist Payouts</div><div class="adm-bar-val" style="color:#fbbf24;font-size:15px">$${(totalEarnings-totalComm).toFixed(2)}</div></div>
+      <div class="adm-bar-row"><div class="adm-bar-label">Total Streams</div><div class="adm-bar-val" style="color:#60a5fa;font-size:15px">${totalStreams.toLocaleString()}</div></div>`;
+    // Top artists
+    const artistStreams={};const artistNames={};
+    allRel.forEach(r=>{
+      if(!r.user_id)return;
+      artistStreams[r.user_id]=(artistStreams[r.user_id]||0)+(r.streams||0);
+      artistNames[r.user_id]=r.profiles?.artist_name||r.profiles?.full_name||'—';
+    });
+    const topArtists=Object.entries(artistStreams).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxAS=topArtists[0]?.[1]||1;
+    const taEl=document.getElementById('adm-top-artists');
+    if(taEl) taEl.innerHTML=topArtists.map(([id,streams])=>`<div class="adm-bar-row"><div class="adm-bar-label" style="width:120px">${esc(artistNames[id])}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round((streams/maxAS)*100)}%"></div></div><div class="adm-bar-val">${streams.toLocaleString()}</div></div>`).join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px;margin-top:.5rem">No stream data yet</div>';
+    // Top releases
+    const maxRS=allRel[0]?.streams||1;
+    const trEl=document.getElementById('adm-top-releases');
+    if(trEl) trEl.innerHTML=allRel.slice(0,5).map(r=>`<div class="adm-bar-row"><div class="adm-bar-label" style="width:120px">${esc(r.title)}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round(((r.streams||0)/maxRS)*100)}%"></div></div><div class="adm-bar-val">${(r.streams||0).toLocaleString()}</div></div>`).join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px;margin-top:.5rem">No releases yet</div>';
+  }catch(e){console.warn('loadAdminReports:',e);}
+}
+
+async function loadAdminMessages(){
+  const container=document.getElementById('messages-list');if(!container)return;
+  try{
+    const {data}=await sb.from('messages').select('*, profiles!messages_from_id_fkey(artist_name,full_name,email,account_id)').order('created_at',{ascending:false}).limit(50);
+    const unread=(data||[]).filter(m=>!m.read_at&&m.direction==='in').length;
+    const msgCount=document.getElementById('adm-msgs');if(msgCount) msgCount.textContent=unread||0;
+    const msgAlert=document.getElementById('msg-alert');if(msgAlert){msgAlert.style.display=unread>0?'inline':'none';msgAlert.textContent=unread;}
+    if(!data||!data.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
+    container.innerHTML=data.map(m=>{
+      const name=m.profiles?.artist_name||m.profiles?.full_name||m.profiles?.email||'Unknown';
+      const accId=m.profiles?.account_id||'';
+      const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';
+      const isIn=m.direction==='in';
+      return `<div style="background:#08080C;border:1px solid var(--line);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px;${!m.read_at&&isIn?'border-left:3px solid var(--gold)':''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#fff">${isIn?'📨 '+esc(name)+(accId?' · '+accId:''):'📤 To: '+esc(m.to_email||'')}</div>
+            ${m.subject?`<div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">${esc(m.subject)}</div>`:''}
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            <span style="font-size:11px;color:rgba(255,255,255,.25)">${d}</span>
+            ${isIn&&!m.read_at?`<button class="btn adm-btn-sec btn-sm" style="padding:3px 8px;font-size:11px" onclick="markRead('${m.id}')">Mark read</button>`:''}
+            ${isIn?`<button class="btn btn-purple btn-sm" style="padding:3px 8px;font-size:11px" onclick="openMsgTo('${esc(m.from_email||'')}')"><i class="ti ti-corner-up-left"></i> Reply</button>`:''}
+          </div>
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6">${esc(m.body||'')}</div>
+      </div>`;
+    }).join('');
+  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>Run messages SQL to enable.</p></div>';}
+}
+
+async function loadNotifications(){
+  const container=document.getElementById('notifications-list');if(!container)return;
+  try{
+    const [{data:payouts},{data:releases},{data:profList}]=await Promise.all([
+      sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
+      sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false}),
+      sb.from('profiles').select('id,artist_name,full_name,account_id')
+    ]);
+    const profileMap2={};(profList||[]).forEach(p=>{profileMap2[p.id]=p;});
+    const total=(payouts?.length||0)+(releases?.length||0);
+    const badge=document.getElementById('notif-badge');if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
+    const badge2=document.getElementById('notif-badge-admin');if(badge2){badge2.style.display=total>0?'inline':'none';badge2.textContent=total;}
+    let html='';
+    if(payouts?.length){
+      html+=`<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem;margin-top:1rem">💸 Pending Payout Requests (${payouts.length})</div>`;
+      html+=payouts.map(p=>{
+        const prof2=profileMap2[p.user_id]||{};
+        const name=prof2.artist_name||prof2.full_name||'—';
+        const accId=prof2.account_id||'';
+        const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+        return `<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600;color:#fff">${accId?`<span style='color:var(--gold)'>${esc(accId)}</span> — `:''}${esc(name)}</div><div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">${p.method==='momo'?'📱 '+p.network+' MoMo':'🏦 Bank Transfer'} — $${parseFloat(p.amount||0).toFixed(2)} · ${d}</div></div>
+          <button class="btn btn-purple btn-sm" onclick="switchAdminTab('payouts',document.getElementById('atab-payouts'))"><i class="ti ti-arrow-right"></i> Process</button>
+        </div>`;
+      }).join('');
+    }
+    if(releases?.length){
+      html+=`<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem;margin-top:1rem">🎵 Pending Releases (${releases.length})</div>`;
+      html+=releases.map(r=>{
+        const name=r.profiles?.artist_name||r.profiles?.full_name||'—';
+        const d=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
+        return `<div style="background:#1e1e35;border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--gold);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600;color:#fff">"${esc(r.title)}" by ${esc(name)}</div><div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">${esc(r.genre||'')} · ${d}</div></div>
+          <button class="btn adm-btn-sec btn-sm" onclick="switchAdminTab('releases',document.getElementById('atab-releases'))"><i class="ti ti-arrow-right"></i> Review</button>
+        </div>`;
+      }).join('');
+    }
+    if(!html) html='<div class="empty"><i class="ti ti-check"></i><p>All caught up! No pending actions.</p></div>';
+    container.innerHTML=html;
+  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-bell-off"></i><p>Unable to load notifications.</p></div>';}
+}
+
+function openMsgTo(email){
+  const inp=document.getElementById('msg-to');if(inp) inp.value=email;
+  switchAdminTab('messages',document.getElementById('atab-messages'));
+}
+
+async function markRead(id){
+  await sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',id);
+  toast('Marked as read','ok');loadAdminMessages();
+}
+
+async function sendAdminMessage(){
+  const to=document.getElementById('msg-to').value.trim();
+  const subject=document.getElementById('msg-subject')?.value.trim()||'Message from Blakkstone';
+  const body=document.getElementById('msg-body').value.trim();
+  if(!to||!body){toast('Fill in email and message','err');return;}
+  try{
+    await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:new Date().toISOString()});
+    document.getElementById('msg-body').value='';
+    toast('Message sent to '+to,'ok');loadAdminMessages();
+  }catch(e){toast('Run messages SQL first','err');}
+}
+
+async function sendBroadcast(){
+  const subject=document.getElementById('bc-subject')?.value.trim();
+  const body=document.getElementById('bc-body')?.value.trim();
+  if(!subject||!body){toast('Fill in subject and message','err');return;}
+  const toAll=document.getElementById('bc-all')?.checked;
+  const toSolo=document.getElementById('bc-solo')?.checked;
+  const toPaid=document.getElementById('bc-paid')?.checked;
+  let query=sb.from('profiles').select('id,email,artist_name,full_name,plan');
+  const {data:allProfiles}=await query;
+  let targets=(allProfiles||[]);
+  if(!toAll){
+    targets=targets.filter(p=>{
+      if(toSolo&&p.plan==='solo') return true;
+      if(toPaid&&(p.plan==='artist_plus'||p.plan==='label')) return true;
+      return false;
+    });
+  }
+  if(!targets.length){toast('No artists match selected filters','err');return;}
+  if(!confirm(`Send broadcast to ${targets.length} artist${targets.length!==1?'s':''}?`))return;
+  let sent=0;
+  for(const p of targets){
+    try{
+      await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:new Date().toISOString()});
+      sent++;
+    }catch(e){}
+  }
+  document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
+  toast(`Broadcast sent to ${sent} artist${sent!==1?'s':''}!`,'ok');
+  loadBroadcastHistory();
+}
+
+async function loadBroadcastHistory(){
+  const el=document.getElementById('broadcast-history');if(!el)return;
+  try{
+    const {data}=await sb.from('messages').select('*').eq('direction','out').eq('from_id',user.id).order('created_at',{ascending:false}).limit(10);
+    if(!data||!data.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">No broadcasts sent yet.</div>';return;}
+    el.innerHTML=data.map(m=>`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:600;color:#fff">${esc(m.subject||'No subject')}</div><div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:2px">To: ${esc(m.to_email||'')} · ${m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):''}</div></div>`).join('');
+  }catch(e){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Run messages SQL first.</div>';}
+}
+
+// ── CSV EXPORT ────────────────────────────────────────
+async function exportCSV(type){
+  let data=[],filename='',headers=[];
+  if(type==='artists'||type===undefined){
+    const {data:d}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
+    data=d||[];filename='blakkstone-artists.csv';
+    headers=['Account ID','Name','Email','Plan','Created'];
+    data=data.map(p=>[p.account_id||'',p.artist_name||p.full_name||'',p.email||'',p.plan||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);
+  } else if(type==='releases'){
+    const {data:d}=await sb.from('releases').select('*, profiles(artist_name,account_id)').order('submitted_at',{ascending:false});
+    data=d||[];filename='blakkstone-releases.csv';
+    headers=['Account ID','Artist','Title','Genre','Release Date','Status','Streams','Earnings'];
+    data=data.map(r=>[r.profiles?.account_id||'',r.profiles?.artist_name||'',r.title||'',r.genre||'',r.release_date||'',r.status||'',r.streams||0,r.earnings||0]);
+  } else if(type==='payouts'){
+    const {data:d}=await sb.from('payouts').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));
+    data=d||[];filename='blakkstone-payouts.csv';
+    headers=['Account ID','Artist','Method','Network','Account','Amount','Status','Date'];
+    data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.network||'',p.account||'',p.amount||0,p.status||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);
+  } else if(type==='subscriptions'){
+    const {data:d}=await sb.from('subscriptions').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));
+    data=d||[];filename='blakkstone-subscriptions.csv';
+    headers=['Account ID','Artist','Plan','Billing','USD','GHS','Ref','Status','Date'];
+    data=data.map(s=>[s.profiles?.account_id||'',s.profiles?.artist_name||'',s.plan||'',s.billing_cycle||'',s.amount_usd||0,s.amount_ghs||0,s.paystack_ref||'',s.status||'',s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'']);
+  }
+  const csv=[headers,...data].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+  toast('Exported '+filename,'ok');
+}
+
+function exportArtistsCSV(){exportCSV('artists');}
+function exportPayoutsCSV(){exportCSV('payouts');}
+
+async function updateStatus(id,status,sel){
+  await sb.from('releases').update({status}).eq('id',id);
+  if(sel){const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',taken_down:'color:#9ca3af'};sel.style.cssText=sc[status]||'';}
+  toast('Status updated','ok');loadReleases();loadAdminStats();
+}
+async function updateField(id,field,value){
+  const val=field==='earnings'?parseFloat(value)||0:parseInt(value)||0;
+  await sb.from('releases').update({[field]:val}).eq('id',id);
+  toast(field==='streams'?'Streams saved':'Earnings saved','ok');
+}
+async function updateUserPlan(id,plan){
+  await sb.from('profiles').update({plan}).eq('id',id);
+  toast('Plan updated','ok');loadAdminStats();
+}
+async function updatePayoutStatus(id,status){
+  await sb.from('payouts').update({status}).eq('id',id);
+  toast('Payout status updated','ok');loadAdminStats();
+}
+async function deleteRelease(id){
+  if(!confirm('Remove this release?'))return;
+  await sb.from('releases').delete().eq('id',id);
+  toast('Release removed');loadAdminReleases();loadReleases();loadAdminStats();
+}
+async function deletePayout(id){
+  if(!confirm('Delete this payout request?'))return;
+  await sb.from('payouts').delete().eq('id',id);
+  toast('Payout deleted');loadAdminPayouts();loadAdminStats();
+}
+
+// ── PAYSTACK ──────────────────────────────────────────
+function openPaystack(plan){
+  selectedPlan=plan||'solo';
+  const p=PLANS[selectedPlan];
+  document.getElementById('pay-modal-title').textContent='Get '+p.label+' Plan';
+  const descs={
+    solo:'1 artist profile, unlimited releases, 9% commission.',
+    artist_plus:'2 artist profiles, 0% commission — keep 100% of your royalties.',
+    label:'5+ artist profiles, 0% commission, priority support.'
+  };
+  document.getElementById('pay-modal-desc').textContent=descs[selectedPlan]||'';
+  document.getElementById('b-monthly-price').textContent='$'+p.monthly;
+  document.getElementById('b-yearly-price').textContent='$'+p.yearly;
+  billing='yearly';
+  document.getElementById('b-yearly').classList.add('sel');
+  if(user)document.getElementById('pay-em').value=user.email||'';
+  updateRateNote();
+  document.getElementById('pay-overlay').classList.add('open');
+}
+function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');}
+function setBilling(cycle){
+  billing=cycle;
+  document.getElementById('b-monthly').classList.toggle('sel',cycle==='monthly');
+  document.getElementById('b-yearly').classList.toggle('sel',cycle==='yearly');
+  updateRateNote();
+}
+function updateRateNote(){
+  const p=PLANS[selectedPlan];
+  const usd=billing==='monthly'?p.monthly:p.yearly;
+  const ghs=(usd*GHS_RATE).toFixed(2);
+  document.getElementById('rate-note').textContent=`≈ GHS ${ghs} at current rate. Charged in GHS via Paystack.`;
+}
+
+// Separate async handler — Paystack callback cannot be async
+async function onPaystackSuccess(ref, planKey, billingCycle, usd, pesewas){
+  try{
+    const planLabel=PLANS[planKey]?.label||planKey;
+    if(user){
+      // Solo purchasers get solo_paid to distinguish from free solo users
+      const dbPlan=planKey==='solo'?'solo_paid':planKey;
+      await sb.from('profiles').update({plan:dbPlan}).eq('id',user.id);
+      if(profile) profile.plan=dbPlan;
+    }
+    await sb.from('subscriptions').insert({
+      user_id:user?.id, plan:planKey, billing_cycle:billingCycle,
+      amount_usd:usd, amount_ghs:(pesewas/100).toFixed(2),
+      paystack_ref:ref, status:'active'
+    }).catch(()=>{});
+    const upgradeNav=document.getElementById('upgrade-nav');
+    if(upgradeNav) upgradeNav.style.display='none';
+    updateUpgradePage(dbPlan);
+    updateCommBar(dbPlan!=='solo',false);
+    toast('Payment confirmed! '+planLabel+' plan activated. Welcome to Blakkstone! 🎉','ok');
+    closePaystack();
+    // If user was on paywall, now enter dashboard
+    const paywall=document.getElementById('paywall');
+    if(paywall&&paywall.classList.contains('active')){
+      enterDashboard();
+    }
+  }catch(e){
+    console.error('Post-payment error:',e);
+    toast('Plan activated! Refresh the page if dashboard does not update.','ok');
+    closePaystack();
+  }
+}
+
+function doPaystack(){
+  const email=document.getElementById('pay-em').value.trim();
+  if(!email){toast('Enter your email','err');return;}
+  const p=PLANS[selectedPlan];
+  const usd=billing==='monthly'?p.monthly:p.yearly;
+  const pesewas=Math.round(usd*GHS_RATE*100);
+  const btn=document.getElementById('pay-btn');
+  if(typeof PaystackPop==='undefined'){
+    toast('Paystack not loaded. Check your internet connection.','err');
+    return;
+  }
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
+  const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+  // Capture plan/billing in closure so callback is synchronous
+  const _plan=selectedPlan, _billing=billing, _usd=usd, _pesewas=pesewas;
+  try{
+    const handler=PaystackPop.setup({
+      key:PK,
+      email:email,
+      amount:pesewas,
+      currency:'GHS',
+      ref:ref,
+      callback:function(response){
+        // Plain sync callback — triggers async handler separately
+        onPaystackSuccess(response.reference||ref, _plan, _billing, _usd, _pesewas);
+      },
+      onClose:function(){
+        toast('Payment cancelled');
+        btn.disabled=false;
+        btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';
+      }
+    });
+    handler.openIframe();
+  }catch(e){
+    console.error('Paystack setup error:',e);
+    toast('Payment error: '+e.message,'err');
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';
+  }
+}
+
+// ── UTILS ─────────────────────────────────────────────
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function toast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type==='ok'?' ok':type==='err'?' err':'');
+  t.classList.add('show');clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── WIZARD ──────────────────────────────────────────────
+let wizStep=1;
+let wizTracks=[];
+let wizStores=[];
+let wizData={};
+let wizToggleState={};
+
+const ALL_STORES=[
+  {name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954',type:'streaming'},
+  {name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44',type:'streaming'},
+  {name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000',type:'streaming'},
+  {name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200',type:'streaming'},
+  {name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF',type:'streaming'},
+  {name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000',type:'streaming'},
+  {name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF',type:'streaming'},
+  {name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA',type:'streaming'},
+  {name:'TikTok',logo:'https://cdn.simpleicons.org/tiktok/010101',type:'streaming'},
+  {name:'Instagram',logo:'https://cdn.simpleicons.org/instagram/E4405F',type:'streaming'},
+  {name:'Pandora',logo:'https://cdn.simpleicons.org/pandora/3668FF',type:'streaming'},
+  {name:'iHeart Radio',logo:'https://cdn.simpleicons.org/iheartradio/C6002B',type:'streaming'},
+  {name:'SoundCloud',logo:'https://cdn.simpleicons.org/soundcloud/FF7700',type:'streaming'},
+  {name:'Shazam',logo:'https://cdn.simpleicons.org/shazam/0088FF',type:'streaming'},
+  {name:'Snapchat',logo:'https://cdn.simpleicons.org/snapchat/FFFC00',type:'streaming'},
+  {name:'Gaana',logo:'https://cdn.simpleicons.org/gaana/E02020',type:'streaming'},
+  {name:'JioSaavn',logo:'https://cdn.simpleicons.org/jiosaavn/2BC5B4',type:'streaming'},
+  {name:'Joox',logo:'https://cdn.simpleicons.org/joox/00C44F',type:'streaming'},
+  {name:'Resso',logo:'https://cdn.simpleicons.org/resso/FF3366',type:'streaming'},
+  {name:'Netease',logo:'https://cdn.simpleicons.org/neteasemusic/C20C0C',type:'streaming'},
+  {name:'QQ Music',logo:'https://cdn.simpleicons.org/qqmusic/31C27C',type:'streaming'},
+  {name:'Bandcamp',logo:'https://cdn.simpleicons.org/bandcamp/1DA0C3',type:'streaming'},
+  {name:'iTunes',logo:'https://cdn.simpleicons.org/itunes/FC3C44',type:'download'},
+  {name:'7digital',logo:'https://cdn.simpleicons.org/7digital/E51C23',type:'download'},
+  {name:'Amazon MP3',logo:'https://cdn.simpleicons.org/amazonmusic/FF9900',type:'download'},
+  {name:'Beatport',logo:'https://cdn.simpleicons.org/beatport/00FF00',type:'download'},
+];
+
+function initWizard(){
+  wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};
+  renderStoresGrid();
+  goWizard(1);
+  // Profile anchoring: auto-populate and lock primary artist field
+  const artistInput=document.getElementById('r-artist');
+  if(artistInput&&profile){
+    const moniker=profile.artist_name||profile.full_name||user?.email?.split('@')[0]||'';
+    artistInput.value=moniker;
+    artistInput.readOnly=true;
+    artistInput.style.cursor='not-allowed';
+    artistInput.style.opacity='.75';
+  }
+}
+
+function goWizard(step){
+  // Validate before advancing
+  if(step>wizStep){
+    if(wizStep===1&&!wizTracks.length){toast('Please upload at least one audio track','err');return;}
+    if(wizStep===2){
+      const title=document.getElementById('r-title')?.value.trim();
+      const artist=document.getElementById('r-artist')?.value.trim();
+      const genre=document.getElementById('r-genre')?.value;
+      if(!title||!artist||!genre){toast('Please fill in Release Title, Artist and Genre','err');return;}
+    }
+    if(wizStep===3){
+      const date=document.getElementById('r-date')?.value;
+      if(!date){toast('Please select a release date','err');return;}
+    }
+  }
+  wizStep=step;
+  document.querySelectorAll('.wizard-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('wpanel-'+step);
+  if(panel){panel.classList.add('active');panel.scrollIntoView({behavior:'smooth',block:'start'});}
+  // Update step indicators
+  for(let i=1;i<=5;i++){
+    const s=document.getElementById('wstep-'+i);
+    const l=document.getElementById('wsline-'+i);
+    if(s){s.classList.toggle('active',i===step);s.classList.toggle('done',i<step);}
+    if(l) l.classList.toggle('done',i<step);
+  }
+  if(step===5) buildReview();
+  // Update artwork title preview
+  const t=document.getElementById('r-title');
+  const ap=document.getElementById('artwork-title-preview');
+  if(t&&ap) ap.textContent=t.value||'—';
+}
+
+function handleAudioSelect(input){
+  Array.from(input.files).forEach(f=>addTrack(f));
+  input.value='';
+}
+
+function handleAudioDrop(e){
+  e.preventDefault();
+  document.getElementById('audio-drop-zone').classList.remove('drag-over');
+  Array.from(e.dataTransfer.files).forEach(f=>{
+    if(f.type.startsWith('audio/')||f.name.match(/\.(mp3|wav|flac|aiff|m4a)$/i)) addTrack(f);
+  });
+}
+
+function addTrack(file){
+  const id=Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  wizTracks.push({id,file,name:file.name.replace(/\.[^.]+$/,''),size:file.size});
+  renderTrackList();
+  renderTracklistDetails();
+  // Fast Pass Inference: if exactly 1 track, copy title+artwork down automatically
+  if(wizTracks.length===1){
+    const cleanName=file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+    const titleEl=document.getElementById('r-title');
+    if(titleEl&&!titleEl.value) titleEl.value=cleanName;
+    // Show fast-pass nudge
+    const nudge=document.getElementById('fast-pass-nudge');
+    if(nudge){
+      nudge.innerHTML=`<i class="ti ti-bolt" style="color:var(--gold)"></i> <strong>Fast Pass:</strong> Title auto-suggested from filename. Update artwork in Step 2 to apply it to the track too.`;
+      nudge.style.display='flex';
+      setTimeout(()=>nudge.style.display='none',6000);
+    }
+  }
+}
+
+function removeTrack(id){
+  wizTracks=wizTracks.filter(t=>t.id!==id);
+  renderTrackList();
+  renderTracklistDetails();
+}
+
+function renderTrackList(){
+  const el=document.getElementById('track-list');
+  if(!el)return;
+  if(!wizTracks.length){el.innerHTML='';return;}
+  el.innerHTML=wizTracks.map((t,i)=>`
+    <div class="track-item">
+      <div class="track-num">${i+1}</div>
+      <div class="track-name">${esc(t.name)}</div>
+      <div class="track-size">${(t.size/1024/1024).toFixed(1)}MB</div>
+      <button class="track-remove" onclick="removeTrack('${t.id}')">×</button>
+    </div>`).join('');
+}
+
+function renderTracklistDetails(){
+  const el=document.getElementById('tracklist-details');
+  if(!el)return;
+  if(!wizTracks.length){el.innerHTML='<p style="font-size:13px;color:rgba(255,255,255,.3)">No tracks uploaded yet. Go back to Step 1 to upload.</p>';return;}
+  el.innerHTML=wizTracks.map((t,i)=>`
+    <div class="track-item">
+      <div class="track-num">${i+1}</div>
+      <div style="flex:1">
+        <input type="text" value="${esc(t.name)}" style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:500;width:100%;outline:none;font-family:Inter,sans-serif" onchange="wizTracks[${i}].name=this.value" oninput="checkTitleFormat(this,'track-warn-${i}')">
+      <div id="track-warn-${i}" class="field-warn" style="display:none"></div>
+      </div>
+      <input class="track-isrc" type="text" placeholder="ISRC (optional)" onchange="wizTracks[${i}].isrc=this.value">
+      <button class="track-remove" onclick="removeTrack('${t.id}')">×</button>
+    </div>`).join('');
+}
+
+function previewArtwork(input){
+  if(!input.files[0])return;
+  wizData.artFile=input.files[0];
+  const url=URL.createObjectURL(input.files[0]);
+  const wrap=document.getElementById('artwork-preview-wrap');
+  if(wrap) wrap.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`;
+  const tp=document.getElementById('artwork-title-preview');
+  const t=document.getElementById('r-title');
+  if(tp&&t) tp.textContent=t.value||'Your Release';
+}
+
+function setToggle(key,val){
+  wizToggleState[key]=val;
+  // Update button states
+  const noBtn=document.getElementById(key.replace('-','').slice(0,2)+'-no')||document.getElementById('cr-no')||document.getElementById('pr-no')||document.getElementById('exp-no');
+  // Simple approach - find by key prefix
+  const prefix={
+    'country-restrict':'cr','prev-released':'pr','explicit':'exp'
+  }[key];
+  if(prefix){
+    document.getElementById(prefix+'-no').classList.toggle('active',val==='no');
+    document.getElementById(prefix+'-yes').classList.toggle('active',val==='yes');
+    const fieldsEl=document.getElementById(key+'-fields');
+    if(fieldsEl) fieldsEl.style.display=val==='yes'?'block':'none';
+  }
+}
+
+function renderStoresGrid(){
+  const grid=document.getElementById('stores-grid');
+  if(!grid)return;
+  grid.innerHTML=ALL_STORES.map(s=>`
+    <div class="store-chip selected" id="store-${s.name.replace(/[^a-z]/gi,'')}" onclick="toggleStore('${s.name.replace(/[^a-z]/gi,'')}','${s.name}')">
+      <div class="store-chip-icon" style="background:rgba(255,255,255,.05);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px">${s.logo?`<img src="${s.logo}" width="18" height="18" style="object-fit:contain;display:block" onerror="this.style.display='none'">`:'<i class="ti ti-music" style="font-size:12px;color:rgba(255,255,255,.3)"></i>'}</div>
+      <div class="store-chip-name">${s.name}</div>
+      <div class="store-chip-check"></div>
+    </div>`).join('');
+}
+
+function toggleStore(id,name){
+  const el=document.getElementById('store-'+id);
+  if(!el)return;
+  el.classList.toggle('selected');
+  if(el.classList.contains('selected')){
+    if(!wizStores.includes(name)) wizStores.push(name);
+  } else {
+    wizStores=wizStores.filter(s=>s!==name);
+  }
+}
+
+function selectAllStores(sel){
+  wizStores=sel?ALL_STORES.map(s=>s.name):[];
+  document.querySelectorAll('.store-chip').forEach(el=>{
+    el.classList.toggle('selected',sel);
+  });
+}
+
+function filterStores(type,btn){
+  document.querySelectorAll('.store-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.store-chip').forEach(el=>{
+    const storeName=el.querySelector('.store-chip-name')?.textContent;
+    const store=ALL_STORES.find(s=>s.name===storeName);
+    if(!store)return;
+    el.style.display=(type==='all'||store.type===type)?'flex':'none';
+  });
+}
+
+// ── SPLIT-SHEET ENGINE (basis points — integers out of 10,000) ──────────────
+let splitRows=[];
+
+function splitInit(){
+  // Always seed with primary artist at 10000 bp (100%)
+  const artistName=document.getElementById('r-artist')?.value||profile?.artist_name||'Primary Artist';
+  splitRows=[{id:'primary',name:artistName,bp:10000,locked:true}];
+  renderSplitRows();
+  splitRecalc();
+  renderSplitLegal();
+}
+
+function splitAddRow(){
+  splitRows.push({id:'s_'+Date.now(),name:'',bp:0,locked:false});
+  // Adjust primary to give space
+  const usedBp=splitRows.filter(r=>r.id!=='primary').reduce((a,r)=>a+r.bp,0);
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  if(primaryRow) primaryRow.bp=Math.max(0,10000-usedBp);
+  renderSplitRows();
+  splitRecalc();
+}
+
+function splitRemoveRow(id){
+  const row=splitRows.find(r=>r.id===id);
+  if(!row)return;
+  // Return bp back to primary
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  if(primaryRow) primaryRow.bp=Math.min(10000,primaryRow.bp+row.bp);
+  splitRows=splitRows.filter(r=>r.id!==id);
+  renderSplitRows();
+  splitRecalc();
+}
+
+function splitUpdateBp(id,val){
+  const bp=Math.max(0,Math.min(10000,Math.round(parseFloat(val)*100)));
+  const row=splitRows.find(r=>r.id===id);
+  if(row) row.bp=bp;
+  // Auto-adjust primary to fill remainder
+  const usedBp=splitRows.filter(r=>r.id!=='primary').reduce((a,r)=>a+r.bp,0);
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  if(primaryRow) primaryRow.bp=Math.max(0,10000-usedBp);
+  renderSplitRows();
+  splitRecalc();
+}
+
+function splitUpdateName(id,val){
+  const row=splitRows.find(r=>r.id===id);
+  if(row) row.name=val;
+}
+
+function splitDistributeRemaining(){
+  const secondary=splitRows.filter(r=>r.id!=='primary'&&r.bp===0);
+  if(!secondary.length){toast('No rows with 0% to distribute to','err');return;}
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  const avail=primaryRow?primaryRow.bp:0;
+  if(avail<=0){toast('Nothing left to distribute','err');return;}
+  const perRow=Math.floor(avail/secondary.length);
+  let remainder=avail-(perRow*secondary.length);
+  secondary.forEach((r,i)=>{r.bp=perRow+(i===0?remainder:0);});
+  if(primaryRow) primaryRow.bp=0;
+  renderSplitRows();
+  splitRecalc();
+  toast('Remaining split equally across '+secondary.length+' contributor(s)','ok');
+}
+
+function splitClaimRemainder(){
+  const totalUsed=splitRows.reduce((a,r)=>a+r.bp,0);
+  const gap=10000-totalUsed;
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  if(primaryRow) primaryRow.bp+=gap;
+  renderSplitRows();
+  splitRecalc();
+  toast('Remainder claimed by primary artist','ok');
+}
+
+function splitRecalc(){
+  const totalBp=splitRows.reduce((a,r)=>a+r.bp,0);
+  const pct=(totalBp/100).toFixed(2);
+  const fill=document.getElementById('split-bar-fill');
+  const label=document.getElementById('split-ledger-label');
+  const status=document.getElementById('split-ledger-status');
+  const submitBtn=document.getElementById('submit-btn');
+  if(fill){
+    fill.style.width=Math.min(100,totalBp/100)+'%';
+    fill.style.background=totalBp===10000?'#34d399':totalBp>10000?'#f87171':'#fbbf24';
+  }
+  if(label){
+    if(totalBp===10000){
+      label.className='split-ledger-ok';
+      label.textContent='✓ Ledger Balanced: 100%';
+    } else if(totalBp>10000){
+      label.className='split-ledger-over';
+      label.textContent='⚠ Over-allocated: '+pct+'%';
+    } else {
+      label.className='split-ledger-warn';
+      label.textContent='Allocated: '+pct+'%';
+    }
+  }
+  if(status) status.textContent=totalBp.toLocaleString()+' of 10,000 bp';
+  // Lock submit unless exactly 100%
+  if(submitBtn) submitBtn.disabled=totalBp!==10000;
+  // Show/hide legal wrap
+  const legalWrap=document.getElementById('split-legal-wrap');
+  if(legalWrap) legalWrap.style.display=splitRows.length>1?'block':'none';
+}
+
+function renderSplitRows(){
+  const el=document.getElementById('split-rows');
+  if(!el)return;
+  el.innerHTML=splitRows.map(r=>{
+    const pct=(r.bp/100).toFixed(2);
+    const isPrimary=r.id==='primary';
+    return `<div style="display:flex;align-items:center;gap:8px;background:#08080C;border:1px solid var(--line);border-radius:8px;padding:.625rem .875rem">
+      <div style="width:24px;height:24px;border-radius:50%;background:${isPrimary?'rgba(212,175,55,.15)':'rgba(255,255,255,.07)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="ti ti-${isPrimary?'crown':'user'}" style="font-size:11px;color:${isPrimary?'var(--gold)':'rgba(255,255,255,.4)'}"></i>
+      </div>
+      <input type="text" value="${esc(r.name)}" placeholder="Contributor name" ${isPrimary?'readonly style="font-weight:600;color:var(--gold);background:transparent;border:none;outline:none;flex:1"':'style="flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:13px"'} onchange="splitUpdateName('${r.id}',this.value)">
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <input type="number" value="${pct}" min="0" max="100" step="0.01" style="width:70px;background:#111118;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;color:#fff;text-align:right" onchange="splitUpdateBp('${r.id}',this.value)" ${isPrimary?'readonly':''}>
+        <span style="font-size:11px;color:rgba(255,255,255,.3)">%</span>
+      </div>
+      ${isPrimary?'':'<button onclick="splitRemoveRow(''+r.id+'')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.25);font-size:16px;line-height:1;padding:0;margin-left:2px">×</button>'}
+    </div>`;
+  }).join('');
+}
+
+const SPLIT_LEGAL_CLAUSES=[
+  {
+    title:'1. Master vs. Composition Separation',
+    body:'This split-sheet applies strictly to the <strong>master sound recording</strong> (the audio file). It does not transfer, assign, or affect any underlying musical composition (publishing) rights. Composition royalties are governed separately.'
+  },{
+    title:'2. Irrevocable Payment Directive',
+    body:'All parties irrevocably authorise <strong>Blakkstone Distribution</strong> to calculate and remit streaming royalties directly to each named contributor at the percentages specified herein, at the point of collection from DSPs, without requiring further approval per payment cycle.'
+  },{
+    title:'3. Warranty of Originality & Indemnification',
+    body:'Each contributor warrants that their contribution to this recording contains <strong>no uncleared samples, interpolations, or third-party intellectual property</strong>, and agrees to indemnify all other contributors and Blakkstone Distribution against any claims arising from a breach of this warranty.'
+  },{
+    title:'4. Non-Exclusive Synchronisation Clearances',
+    body:'Each contributor grants a <strong>non-exclusive licence</strong> for this master recording to be placed in synchronisation (film, TV, advertising, games) projects, provided that any sync fees or royalties received are distributed <em>pro-rata</em> in accordance with the percentages set out in this split-sheet.'
+  }
+];
+
+function renderSplitLegal(){
+  const el=document.getElementById('split-legal-content');
+  if(!el)return;
+  el.innerHTML=SPLIT_LEGAL_CLAUSES.map(cl=>`
+    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:.625rem;margin-top:.25rem">
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px">${cl.title}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.7">${cl.body}</div>
+    </div>`).join('');
+}
+
+function buildReview(){
+  splitInit();
+  const title=document.getElementById('r-title')?.value||'—';
+  const artist=document.getElementById('r-artist')?.value||'—';
+  const genre=document.getElementById('r-genre')?.value||'—';
+  const date=document.getElementById('r-date')?.value||'—';
+  const label=document.getElementById('r-label')?.value||'Independent';
+  const lang=document.getElementById('r-language')?.value||'English';
+  const el=document.getElementById('review-content');
+  if(!el)return;
+  el.innerHTML=`
+    <div style="display:flex;gap:1.5rem;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="width:80px;height:80px;border-radius:10px;background:#2a2a45;overflow:hidden;flex-shrink:0">${wizData.artFile?`<img src="${URL.createObjectURL(wizData.artFile)}" style="width:100%;height:100%;object-fit:cover">`:''}</div>
+      <div><div style="font-size:18px;font-weight:700;color:#fff">${esc(title)}</div><div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:4px">${esc(artist)}</div><div style="font-size:12px;color:var(--gold);margin-top:4px">${wizTracks.length} track${wizTracks.length!==1?'s':''}</div></div>
+    </div>
+    <div class="review-row"><span class="review-label">Genre</span><span class="review-val">${esc(genre)}</span></div>
+    <div class="review-row"><span class="review-label">Release Date</span><span class="review-val">${date}</span></div>
+    <div class="review-row"><span class="review-label">Label</span><span class="review-val">${esc(label)}</span></div>
+    <div class="review-row"><span class="review-label">Language</span><span class="review-val">${lang}</span></div>
+    <div class="review-row"><span class="review-label">Stores</span><span class="review-val">${wizStores.length} of ${ALL_STORES.length} selected</span></div>
+    <div class="review-row"><span class="review-label">Tracks</span><span class="review-val">${wizTracks.map(t=>esc(t.name)).join(', ')}</span></div>
+  `;
+}
+
+// ── BROWSER BACK/FORWARD SUPPORT ─────────────────────
+const pushState = true; // flag used by goPage
+window.addEventListener('popstate', function(e){
+  if(!user) return;
+  const page = e.state?.page || window.location.hash.replace('#','') || 'overview';
+  const validPages = ['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','admin'];
+  if(validPages.includes(page)){
+    // Pass false-like via a temp flag to avoid re-pushing state
+    const pageEl = document.getElementById('page-'+page);
+    if(!pageEl) return;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    pageEl.classList.add('active');
+    document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
+    document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+page+"'"))n.classList.add('active');});
+    // Don't push state again - just load data
+    if(page==='analytics')loadAnalytics();
+    if(page==='royalties')loadRoyalties();
+    if(page==='payout')loadPayout();
+    if(page==='artists')loadArtists();
+    if(page==='submit')initWizard();
+    if(page==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();}
+  }
+});
+
+// ── REAL-TIME SUBSCRIPTIONS ───────────────────────────
+let _realtimeChannel=null;
+function startRealtimeAdmin(){
+  // Remove existing channel to avoid duplicates
+  if(_realtimeChannel){
+    try{sb.removeChannel(_realtimeChannel);}catch(e){}
+  }
+  _realtimeChannel=sb.channel('admin-rt-'+Date.now())
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'payouts'},payload=>{
+      const p=payload.new;
+      const amt='$'+parseFloat(p.amount||0).toFixed(2);
+      const method=p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer';
+      showAdminAlert('💸 New Payout Request',method+' — '+amt);
+      // Update badge immediately
+      const nb=document.getElementById('notif-badge');
+      const nb2=document.getElementById('notif-badge-admin');
+      const pa=document.getElementById('payout-alert');
+      if(nb){nb.style.display='inline';nb.textContent=parseInt(nb.textContent||0)+1;}
+      if(nb2){nb2.style.display='inline';nb2.textContent=parseInt(nb2.textContent||0)+1;}
+      if(pa){pa.style.display='inline';pa.textContent=parseInt(pa.textContent||0)+1;}
+      loadAdminStats();loadNotifications();
+      if(document.getElementById('admin-payouts')?.classList.contains('active')) loadAdminPayouts();
+    })
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'releases'},payload=>{
+      const r=payload.new;
+      showAdminAlert('🎵 New Release Submitted','"'+(r.title||'Unknown')+'" submitted');
+      loadAdminStats();loadNotifications();
+      if(document.getElementById('admin-releases')?.classList.contains('active')) loadAdminReleases();
+    })
+    .subscribe((status,err)=>{
+      console.log('Realtime status:',status);
+      if(err) console.error('Realtime error:',err);
+    });
+}
+
+function showAdminAlert(title,body){
+  // Show floating alert
+  const existing=document.getElementById('admin-realtime-alert');
+  if(existing) existing.remove();
+  const el=document.createElement('div');
+  el.id='admin-realtime-alert';
+  el.style.cssText='position:fixed;top:70px;right:1.25rem;background:#1e1e35;border:1.5px solid var(--gold);border-radius:12px;padding:1rem 1.25rem;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:9999;animation:slideIn .3s ease';
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">${title}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5)">${body}</div>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:18px;color:rgba(255,255,255,.4);line-height:1;flex-shrink:0">×</button>
+    </div>
+    <div style="margin-top:.75rem;display:flex;gap:6px">
+      <button class="btn btn-purple btn-sm" onclick="goPage('admin',document.getElementById('admin-nav'));this.closest('#admin-realtime-alert').remove()"><i class="ti ti-arrow-right"></i> View in Admin</button>
+    </div>`;
+  document.body.appendChild(el);
+  // Also show browser notification if permitted
+  if(Notification.permission==='granted'){
+    new Notification('Blakkstone Distribution — '+title,{body,icon:'/favicon.ico'});
+  }
+  setTimeout(()=>el.remove(),8000);
+}
+
+// Request browser notification permission for admin
+async function requestNotifPermission(){
+  if(Notification.permission==='default'){
+    await Notification.requestPermission();
+  }
+}
+
+// ── LANDING ENHANCEMENTS ──────────────────────────────
+// ── TITLE FORMAT SAFEGUARD ────────────────────────────
+const FORBIDDEN_TITLE_PHRASES=[
+  {re:/feat\.?/i, field:'Featured artists', hint:'r-has-feat'},
+  {re:/ft\.?/i,   field:'Featured artists', hint:'r-has-feat'},
+  {re:/with/i,    field:'Featured artists', hint:'r-has-feat'},
+  {re:/prod\.?/i, field:'Producer credits', hint:null},
+  {re:/produced by/i, field:'Producer credits', hint:null},
+  {re:/remix/i,   field:'Remixer artists', hint:'r-has-remix'},
+];
+function checkTitleFormat(input, warnId){
   const val=input.value;
   const warnEl=document.getElementById(warnId);
   if(!warnEl)return;
   for(const rule of FORBIDDEN_TITLE_PHRASES){
     if(rule.re.test(val)){
       const hintHtml=rule.hint
-        ?'<br>Use the <strong>"'+rule.field+'"</strong> field below instead — DSPs index contributors separately.'
-        :'<br>Use the <strong>Admin Notes</strong> field to credit producers — DSP title fields must be clean.';
-      const matched=(val.match(rule.re)||[''])[0];
-      warnEl.innerHTML='<strong>⚠ DSP Guideline Violation:</strong> Titles cannot contain inline contributor tags like <code>'+matched+'</code>.'+hintHtml;
+        ?`<br>Use the <strong>"${rule.field}"</strong> field below instead — DSPs index contributors separately.`
+        :`<br>Use the <strong>Admin Notes</strong> field to credit producers — DSP title fields must be clean.`;
+      warnEl.innerHTML=`<strong>⚠ DSP Guideline Violation:</strong> Titles cannot contain inline contributor tags like <code>${val.match(rule.re)?.[0]}</code>.${hintHtml}`;
       warnEl.style.display='block';
       return;
     }
