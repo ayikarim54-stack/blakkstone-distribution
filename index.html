@@ -1919,7 +1919,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <li><i class="ti ti-x cx"></i> 9% commission</li>
             <li><i class="ti ti-x cx"></i> Multiple artists</li>
           </ul>
-          <button class="btn btn-purple" id="ug-solo-btn" style="width:100%;justify-content:center" onclick="openPaystack('solo_paid')"><i class="ti ti-rocket"></i> Get Solo</button>
+          <button class="btn btn-purple" id="ug-solo-btn" style="width:100%;justify-content:center" onclick="openPaystack('solo')"><i class="ti ti-rocket"></i> Get Solo</button>
         </div>
         <div class="ug-card featured">
           <div class="ug-name">Artist+</div>
@@ -2777,6 +2777,7 @@ function filterOvSearch(){
   grid.innerHTML=filtered.map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-search"></i><p>No matches.</p></div>';
 }
 async function loadReleases(){
+  if(!user)return;
   const el=document.getElementById('s-total');if(el) el.textContent='…';
   const {data,error}=await sb.from('releases').select('*').eq('user_id',user.id).order('submitted_at',{ascending:false});
   if(error){toast('Error loading releases','err');return;}
