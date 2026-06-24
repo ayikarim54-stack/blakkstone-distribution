@@ -733,6 +733,30 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .credits-field{background:#08080C;border:1px solid var(--line);border-radius:8px;padding:.875rem;margin-bottom:8px;margin-top:-2px}
 .credits-input{width:100%;background:transparent;border:none;outline:none;color:#fff;font-size:13px;font-family:Inter,sans-serif}
 .credits-input::placeholder{color:rgba(255,255,255,.3)}
+
+/* ── PER-TRACK METADATA ── */
+.track-meta-card{background:#08080C;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.track-meta-header{display:flex;align-items:center;gap:10px;padding:.875rem 1rem;cursor:pointer;user-select:none;transition:background .15s}
+.track-meta-header:hover{background:rgba(255,255,255,.03)}
+.track-meta-num{width:26px;height:26px;border-radius:6px;background:rgba(212,175,55,.15);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0}
+.track-meta-name-input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:14px;font-weight:600;font-family:Inter,sans-serif;min-width:0}
+.track-meta-status{font-size:11px;color:rgba(255,255,255,.3);flex-shrink:0;display:flex;align-items:center;gap:5px}
+.track-meta-chevron{font-size:16px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0}
+.track-meta-body{display:none;padding:0 1rem 1rem;border-top:1px solid var(--line)}
+.track-meta-body.open{display:block}
+.track-meta-section{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.3);margin:1rem 0 .5rem}
+.track-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tmg-1{grid-template-columns:1fr}
+.track-fg{display:flex;flex-direction:column;gap:4px}
+.track-fg label{font-size:11px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.4px}
+.track-fg input,.track-fg select{background:#111118;border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;width:100%}
+.track-fg input:focus,.track-fg select:focus{border-color:rgba(212,175,55,.4)}
+.track-fg input::placeholder{color:rgba(255,255,255,.25)}
+.track-inherit-btn{font-size:11px;color:var(--gold);background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:Inter,sans-serif;margin-top:4px;display:inline-flex;align-items:center;gap:4px}
+.track-inherit-btn:hover{background:rgba(212,175,55,.15)}
+.track-remove-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.2);font-size:13px;padding:4px 8px;border-radius:6px;font-family:Inter,sans-serif;display:flex;align-items:center;gap:4px;margin-top:.5rem}
+.track-remove-btn:hover{color:#f87171;background:rgba(239,68,68,.1)}
+@media(max-width:600px){.track-meta-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -3469,8 +3493,182 @@ function renderTrackList(){
 function renderTracklistDetails(){
   const el=document.getElementById('tracklist-details');if(!el)return;
   if(!wizTracks.length){el.innerHTML='<p style="font-size:13px;color:rgba(255,255,255,.3)">No tracks uploaded yet.</p>';return;}
-  el.innerHTML=wizTracks.map((t,i)=>'<div class="track-item"><div class="track-num">'+(i+1)+'</div><div style="flex:1"><input type="text" value="'+esc(t.name)+'" style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:500;width:100%;outline:none;font-family:Inter,sans-serif" onchange="wizTracks['+i+'].name=this.value"></div><input class="track-isrc" type="text" placeholder="ISRC (optional)" onchange="wizTracks['+i+'].isrc=this.value"><button class="track-remove" onclick="removeTrack(\''+t.id+'\')">×</button></div>').join('');
+  // Preserve open state
+  const openIds=new Set([...el.querySelectorAll('.track-meta-body.open')].map(b=>b.dataset.id));
+  el.innerHTML=wizTracks.map((t,i)=>{
+    const isOpen=openIds.has(t.id)||wizTracks.length===1;
+    const m=t.meta||{};
+    const hasExtra=!!(m.producer||m.songwriter||m.composer||m.mixing||m.mastering||m.isrc||m.explicit);
+    const cloudIcon=t.uploading?'<span class="loader" style="width:10px;height:10px;border-width:1.5px"></span>':t.url?'<i class="ti ti-cloud-check" style="color:#34d399"></i>':'';
+    return `<div class="track-meta-card" id="tmc-${t.id}">
+      <div class="track-meta-header" onclick="toggleTrackMeta('${t.id}')">
+        <div class="track-meta-num">${i+1}</div>
+        <input class="track-meta-name-input" type="text" value="${esc(t.name)}" placeholder="Track title"
+          onchange="updateTrackField('${t.id}','name',this.value)"
+          onclick="event.stopPropagation()">
+        <span class="track-meta-status">${cloudIcon}${hasExtra?'<i class="ti ti-check" style="color:var(--gold)"></i>':''}</span>
+        <i class="ti ti-chevron-down track-meta-chevron" style="transform:${isOpen?'rotate(180deg)':'rotate(0deg)'}"></i>
+      </div>
+      <div class="track-meta-body${isOpen?' open':''}" data-id="${t.id}">
+
+        <div class="track-meta-section">Basic Info</div>
+        <div class="track-meta-grid">
+          <div class="track-fg">
+            <label>ISRC Code</label>
+            <input type="text" value="${esc(m.isrc||t.isrc||'')}" placeholder="Auto-assigned if blank" style="font-family:monospace"
+              onchange="updateTrackMeta('${t.id}','isrc',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>Track Language</label>
+            <select onchange="updateTrackMeta('${t.id}','language',this.value)">
+              <option value="">Same as release</option>
+              <option${(m.language==='English')?' selected':''}>English</option>
+              <option${(m.language==='Twi')?' selected':''}>Twi</option>
+              <option${(m.language==='Ga')?' selected':''}>Ga</option>
+              <option${(m.language==='Hausa')?' selected':''}>Hausa</option>
+              <option${(m.language==='Yoruba')?' selected':''}>Yoruba</option>
+              <option${(m.language==='Pidgin')?' selected':''}>Pidgin</option>
+              <option${(m.language==='French')?' selected':''}>French</option>
+              <option${(m.language==='Other')?' selected':''}>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="track-meta-grid tmg-1" style="margin-top:6px">
+          <div class="track-fg">
+            <label>Featured Artist(s)</label>
+            <input type="text" value="${esc(m.feat||'')}" placeholder="Separate with commas"
+              onchange="updateTrackMeta('${t.id}','feat',this.value)">
+          </div>
+        </div>
+
+        <div class="track-meta-section">Credits</div>
+        <div style="margin-bottom:6px">
+          <button class="track-inherit-btn" onclick="inheritReleaseCredits('${t.id}')">
+            <i class="ti ti-copy"></i> Copy from release credits
+          </button>
+        </div>
+        <div class="track-meta-grid">
+          <div class="track-fg">
+            <label>Producer(s)</label>
+            <input type="text" value="${esc(m.producer||'')}" placeholder="Beat maker"
+              onchange="updateTrackMeta('${t.id}','producer',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>Songwriter(s)</label>
+            <input type="text" value="${esc(m.songwriter||'')}" placeholder="Lyric writer(s)"
+              onchange="updateTrackMeta('${t.id}','songwriter',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>Composer(s)</label>
+            <input type="text" value="${esc(m.composer||'')}" placeholder="Melody / score"
+              onchange="updateTrackMeta('${t.id}','composer',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>Mixing Engineer</label>
+            <input type="text" value="${esc(m.mixing||'')}" placeholder="Mixed by"
+              onchange="updateTrackMeta('${t.id}','mixing',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>Mastering Engineer</label>
+            <input type="text" value="${esc(m.mastering||'')}" placeholder="Mastered by"
+              onchange="updateTrackMeta('${t.id}','mastering',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>Recording Engineer</label>
+            <input type="text" value="${esc(m.recording||'')}" placeholder="Recorded by"
+              onchange="updateTrackMeta('${t.id}','recording',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>Executive Producer</label>
+            <input type="text" value="${esc(m.exec||'')}" placeholder="EP name(s)"
+              onchange="updateTrackMeta('${t.id}','exec',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>Publisher</label>
+            <input type="text" value="${esc(m.publisher||'')}" placeholder="Publishing company"
+              onchange="updateTrackMeta('${t.id}','publisher',this.value)">
+          </div>
+        </div>
+
+        <div class="track-meta-section">Additional</div>
+        <div class="track-meta-grid">
+          <div class="track-fg">
+            <label>Explicit Content</label>
+            <select onchange="updateTrackMeta('${t.id}','explicit',this.value)">
+              <option value="no"${(m.explicit!=='yes')?' selected':''}>Clean</option>
+              <option value="yes"${(m.explicit==='yes')?' selected':''}>Explicit</option>
+            </select>
+          </div>
+          <div class="track-fg">
+            <label>Contains Sample</label>
+            <input type="text" value="${esc(m.sample||'')}" placeholder="Declare any samples"
+              onchange="updateTrackMeta('${t.id}','sample',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>ISWC Code</label>
+            <input type="text" value="${esc(m.iswc||'')}" placeholder="T-000.000.000-0" style="font-family:monospace"
+              onchange="updateTrackMeta('${t.id}','iswc',this.value)">
+          </div>
+          <div class="track-fg">
+            <label>© Copyright Holder</label>
+            <input type="text" value="${esc(m.copyright||'')}" placeholder="Defaults to release"
+              onchange="updateTrackMeta('${t.id}','copyright',this.value)">
+          </div>
+        </div>
+
+        <button class="track-remove-btn" onclick="removeTrack('${t.id}')">
+          <i class="ti ti-trash"></i> Remove track
+        </button>
+      </div>
+    </div>`;
+  }).join('');
 }
+// ── TRACK METADATA HELPERS ───────────────────────────
+function toggleTrackMeta(id){
+  const body=document.querySelector(`.track-meta-body[data-id="${id}"]`);
+  const chevron=document.querySelector(`#tmc-${id} .track-meta-chevron`);
+  if(!body)return;
+  const open=body.classList.toggle('open');
+  if(chevron) chevron.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+
+function updateTrackField(id,field,val){
+  const t=wizTracks.find(t=>t.id===id);
+  if(t) t[field]=val;
+  saveDraftSilent();
+}
+
+function updateTrackMeta(id,field,val){
+  const t=wizTracks.find(t=>t.id===id);
+  if(!t)return;
+  if(!t.meta) t.meta={};
+  t.meta[field]=val;
+  // Update status indicator
+  const m=t.meta;
+  const hasExtra=!!(m.producer||m.songwriter||m.composer||m.mixing||m.mastering||m.isrc||m.explicit==='yes');
+  const statusEl=document.querySelector(`#tmc-${id} .track-meta-status`);
+  if(statusEl){
+    const cloudPart=t.url?'<i class="ti ti-cloud-check" style="color:#34d399"></i>':'';
+    statusEl.innerHTML=cloudPart+(hasExtra?'<i class="ti ti-check" style="color:var(--gold)"></i>':'');
+  }
+  saveDraftSilent();
+}
+
+function inheritReleaseCredits(id){
+  const t=wizTracks.find(t=>t.id===id);
+  if(!t){return;}
+  if(!t.meta) t.meta={};
+  // Copy from release-level credit fields
+  const fields=['producer','songwriter','composer','mixing','mastering','recording','exec','publisher','iswc','sample'];
+  fields.forEach(f=>{
+    const val=document.getElementById('r-'+f)?.value?.trim();
+    if(val) t.meta[f]=val;
+  });
+  // Re-render to show inherited values
+  renderTracklistDetails();
+  toast('Release credits copied to this track','ok');
+}
+
 async function previewArtwork(input){
   if(!input.files[0])return;
   const file=input.files[0];
@@ -3545,7 +3743,7 @@ function collectWizardState(){
     artPath: wizData.artPath||null,
     credits: getCreditsData(),
     creditStates: {..._creditStates},
-    tracks: wizTracks.map(t=>({id:t.id,name:t.name,isrc:t.isrc||'',size:t.size,url:t.url||null,storagePath:t.storagePath||null})),
+    tracks: wizTracks.map(t=>({id:t.id,name:t.name,isrc:t.isrc||'',size:t.size,url:t.url||null,storagePath:t.storagePath||null,meta:t.meta||{}})),
     notes: document.getElementById('r-notes')?.value||'',
     savedAt: new Date().toISOString(),
   };
@@ -3680,8 +3878,8 @@ function restoreWizardState(state){
     wizTracks=state.tracks.map(t=>({
       id:t.id,name:t.name,isrc:t.isrc||'',size:t.size||0,
       url:t.url||null,storagePath:t.storagePath||null,
+      meta:t.meta||{},
       uploading:false,
-      // Create a placeholder file-like object for display
       file:null
     }));
     renderTrackList();renderTracklistDetails();
@@ -3705,6 +3903,20 @@ function restoreWizardState(state){
   // Navigate to saved step
   const targetStep=Math.min(state.step||1,4);
   if(targetStep>1) setTimeout(()=>goWizard(targetStep),100);
+}
+
+function buildTracksReview(){
+  if(!wizTracks.length)return'';
+  const creditLabels={producer:'Producer',songwriter:'Songwriter',composer:'Composer',
+    mixing:'Mix',mastering:'Master',recording:'Rec',exec:'Exec',publisher:'Pub',iswc:'ISWC',sample:'Sample'};
+  return wizTracks.map((t,i)=>{
+    const m=t.meta||{};
+    const badges=Object.entries(m).filter(([k,v])=>v&&k!=='explicit').map(([k])=>
+      '<span style="font-size:10px;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2);padding:1px 6px;border-radius:4px">'+creditLabels[k]+'</span>'
+    ).join(' ');
+    const explicit=m.explicit==='yes'?'<span style="font-size:10px;background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:1px 6px;border-radius:4px">E</span>':'';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span style="font-size:11px;color:rgba(255,255,255,.3);width:20px">'+(i+1)+'.</span><span style="font-size:13px;color:#fff;flex:1">'+esc(t.name)+'</span>'+explicit+badges+'</div>';
+  }).join('');
 }
 
 function buildCreditsReview(){
@@ -3765,12 +3977,16 @@ async function submitRelease(){
       }
     }
     const credits=getCreditsData();
-    const creditLines=Object.entries(credits).map(([k,v])=>{
-      const labels={producer:'Producer',songwriter:'Songwriter',composer:'Composer',
-        mixing:'Mix Engineer',mastering:'Master Engineer',recording:'Recording Engineer',
-        exec:'Exec Producer',publisher:'Publisher',iswc:'ISWC',sample:'Sample'};
-      return (labels[k]||k)+': '+v;
-    });
+    const creditLabels={producer:'Producer',songwriter:'Songwriter',composer:'Composer',
+      mixing:'Mix Engineer',mastering:'Master Engineer',recording:'Recording Engineer',
+      exec:'Exec Producer',publisher:'Publisher',iswc:'ISWC',sample:'Sample'};
+    const relCreditLines=Object.entries(credits).map(([k,v])=>(creditLabels[k]||k)+': '+v);
+    // Per-track metadata summary
+    const trackMetaLines=wizTracks.map((t,i)=>{
+      const m=t.meta||{};
+      const parts=Object.entries(m).filter(([k,v])=>v).map(([k,v])=>(creditLabels[k]||k)+': '+v);
+      return parts.length?'Track '+(i+1)+' ('+t.name+'): '+parts.join(', '):'';
+    }).filter(Boolean);
     const featArtist=document.getElementById('r-feat')?.value?.trim();
     const remixer=document.getElementById('r-remixer')?.value?.trim();
     const extraInfo=[
@@ -3778,7 +3994,8 @@ async function submitRelease(){
       document.getElementById('r-copyright')?.value?'(c) '+document.getElementById('r-copyright').value:'',
       featArtist?'Feat: '+featArtist:'',
       remixer?'Remixer: '+remixer:'',
-      ...creditLines,
+      ...relCreditLines,
+      ...trackMetaLines,
       wizToggleState['explicit']==='yes'?'EXPLICIT CONTENT':'',
       'Stores: '+wizStores.join(', ')
     ].filter(Boolean).join(' | ');
