@@ -357,7 +357,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-.btn-purple{background:var(--gold);color:#000;font-weight:700}.btn-purple:hover{background:var(--gd);color:#fff}
+.btn-purple{background:var(--gold);color:#111;font-weight:700}.btn-purple:hover{background:var(--gd);color:#fff}
 .btn-danger-outline{background:transparent;color:#ef4444;border:1.5px solid #ef4444;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;display:inline-flex;align-items:center;gap:4px}
 /* ── MOBILE BOTTOM NAV ── */
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#000;border-top:1px solid rgba(255,255,255,.1);z-index:300;padding:.5rem 0 calc(.5rem + env(safe-area-inset-bottom));justify-content:space-around;align-items:center}
@@ -632,7 +632,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .support-tooltip{position:absolute;bottom:60px;right:0;background:#fff;border:1px solid var(--border);border-radius:10px;padding:.625rem 1rem;font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.1);display:none}
 .support-bubble:hover .support-tooltip{display:block}
 /* Progress bar on top of page */
-.page-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold));z-index:9999;transition:width .3s;pointer-events:none}
+.page-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#C9A84C,#e8c97a);z-index:9999;transition:width .3s;pointer-events:none}
 
 /* DSP logo chips */
 .dsp-logo{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;margin-right:4px}
@@ -1500,7 +1500,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div>
             <div class="roy-hero-label">Commission</div>
             <div class="roy-hero-val" id="r-commission" style="color:#f87171">$0.00</div>
-            <div class="roy-hero-sub" id="r-comm-sub">Blakkstone 9% fee</div>
+            <div class="roy-hero-sub" id="r-comm-sub">Blakkstone 9% commission</div>
           </div>
         </div>
         <div class="roy-hero-card roy-hero-payout">
@@ -2368,8 +2368,10 @@ function updateCommBar(isPaid,isAdmin){
 }
 
 function updateUpgradePage(plan){
+  const soloBtn=document.getElementById('ug-solo-btn');
   const apBtn=document.getElementById('ug-artist-btn');
   const lBtn=document.getElementById('ug-label-btn');
+  if((plan==='solo'||plan==='solo_paid')&&soloBtn){soloBtn.textContent='✓ Current Plan';soloBtn.disabled=true;soloBtn.className='btn btn-ghost';}
   if(plan==='artist_plus'&&apBtn){apBtn.textContent='✓ Current Plan';apBtn.disabled=true;apBtn.className='btn btn-ghost';}
   if(plan==='label'&&lBtn){lBtn.textContent='✓ Current Plan';lBtn.disabled=true;lBtn.className='btn btn-ghost';}
 }
@@ -2416,7 +2418,7 @@ async function loadReleases(){
   const pending=releases.filter(r=>r.status==='pending').length;
   const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
   const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
-  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
   const payout=isPaid?earnings:earnings*(1-COMM);
   if(document.getElementById('s-total')) document.getElementById('s-total').textContent=releases.length;
   const rcb=document.getElementById('releases-count-badge');
@@ -2623,7 +2625,7 @@ function openReleaseById(id){
 }
 
 function openReleaseModal(r){
-  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
   const comm=isPaid?0:(r.earnings||0)*0.15;
   const payout=(r.earnings||0)-comm;
 
@@ -2684,7 +2686,7 @@ function openReleaseModal(r){
           <div style="width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:3px">${logo}</div>
           <div style="font-size:12px;color:rgba(255,255,255,.6);width:100px;flex-shrink:0">${s.name}</div>
           <div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden">
-            <div style="width:${barW}%;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold));border-radius:2px"></div>
+            <div style="width:${barW}%;height:100%;background:linear-gradient(90deg,#C9A84C,#e8c97a);border-radius:2px"></div>
           </div>
           <div style="font-size:12px;color:rgba(255,255,255,.5);width:50px;text-align:right;flex-shrink:0">${est.toLocaleString()}</div>
         </div>`;
@@ -2702,7 +2704,7 @@ function openReleaseModal(r){
     Math.round(ts*.05), Math.round(ts*.1), Math.round(ts*.18),
     Math.round(ts*.28), Math.round(ts*.42), ts
   ]:[0,0,0,0,0,0];
-  setTimeout(()=>renderLineChart('rel-modal-chart',labels,seed,'var(--gold)',''),80);
+  setTimeout(()=>renderLineChart('rel-modal-chart',labels,seed,'#C9A84C',''),80);
 
   document.getElementById('release-overlay').classList.add('open');
 }
@@ -2720,7 +2722,7 @@ document.addEventListener('keydown',e=>{
 
 // ── ANALYTICS ─────────────────────────────────────────
 // Simple SVG line chart renderer
-function renderLineChart(canvasId, labels, data, color='var(--gold)', prefix='$'){
+function renderLineChart(canvasId, labels, data, color='#C9A84C', prefix='$'){
   const canvas=document.getElementById(canvasId);
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
@@ -2886,7 +2888,7 @@ async function loadAnalytics(){
   const now=new Date();
   const labels=Array.from({length:7},(_,i)=>months[(now.getMonth()-6+i+12)%12]);
   const chartData=[0,0,0,0,0,0,ts].map((v,i)=>i===6?v:Math.round(ts*Math.random()*.4));
-  setTimeout(()=>renderLineChart('analytics-chart',labels,chartData,'var(--gold)',''),100);
+  setTimeout(()=>renderLineChart('analytics-chart',labels,chartData,'#C9A84C',''),100);
 }
 
 
@@ -2898,7 +2900,7 @@ async function loadRoyalties(){
   ]);
   const rl=(relData||[]).filter(r=>(r.earnings||0)>0);
   const allRel=relData||[];
-  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
   const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
   const comm=isPaid?0:gross*COMM;
   const totalPayout=gross-comm;
@@ -2915,13 +2917,13 @@ async function loadRoyalties(){
 
   // Commission sub-label
   const cSub=document.getElementById('r-comm-sub');
-  if(cSub) cSub.textContent=isPaid?'No commission (paid plan)':'Blakkstone 9% fee';
+  if(cSub) cSub.textContent=isPaid?'No commission (paid plan)':'Blakkstone 9% commission';
 
   // Commission bar notice for solo users
   const commBar=document.getElementById('commission-bar');
   if(commBar){
     if(!isPaid&&gross>0){
-      commBar.innerHTML=`<div style="background:rgba(201,168,76,.1);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:var(--gold);margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      commBar.innerHTML=`<div style="background:rgba(201,168,76,.1);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:'#C9A84C';margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span><i class="ti ti-crown"></i> You're on the <strong>Solo plan</strong> — upgrade to keep 100% of your royalties.</span>
         <button class="btn btn-purple btn-sm" onclick="goPage('upgrade',null)"><i class="ti ti-crown"></i> Upgrade now</button>
       </div>`;
@@ -2939,7 +2941,7 @@ async function loadRoyalties(){
   const now=new Date();
   const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
   const chartData=[0,0,0,0,0,gross].map((v,i)=>i===5?v:parseFloat((gross*Math.random()*.3).toFixed(2)));
-  setTimeout(()=>renderLineChart('earnings-chart',labels,chartData,'var(--gold)'),100);
+  setTimeout(()=>renderLineChart('earnings-chart',labels,chartData,'#C9A84C'),100);
 
   // Best stores
   const bestEl=document.getElementById('best-stores');
@@ -2989,7 +2991,7 @@ async function loadPayout(){
     sb.from('releases').select('earnings').eq('user_id',user.id),
     sb.from('payouts').select('amount,status').eq('user_id',user.id)
   ]);
-  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
   const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
   const afterComm=isPaid?gross:gross*(1-COMM);
   // Deduct pending/processing payouts from available balance
@@ -3056,7 +3058,7 @@ async function submitPayout(){
     sb.from('releases').select('earnings').eq('user_id',user.id),
     sb.from('payouts').select('amount,status').eq('user_id',user.id)
   ]);
-  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
   const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
   const afterComm=isPaid?gross:gross*(1-COMM);
   const pendingTotal=(existingPayouts||[])
@@ -3149,7 +3151,7 @@ async function loadProfileStats(){
     const {data:rels}=await sb.from('releases').select('streams,earnings').eq('user_id',user.id);
     const cnt=rels?.length||0;
     const earn=(rels||[]).reduce((a,r)=>a+(r.earnings||0),0);
-    const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+    const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
     const net=isPaid?earn:earn*(1-COMM);
     const rc=document.getElementById('prof-release-count');
     const re=document.getElementById('prof-earnings');
@@ -3287,7 +3289,7 @@ async function loadAdminDashboard(){
     const planEl=document.getElementById('adm-plan-breakdown');
     if(planEl) planEl.innerHTML=[
       {k:'Solo',v:plans.solo,c:'#6b7280'},
-      {k:'Artist+',v:plans.artist_plus,c:'var(--gold)'},
+      {k:'Artist+',v:plans.artist_plus,c:'#C9A84C'},
       {k:'Label',v:plans.label,c:'#059669'},
       {k:'Admin',v:plans.admin,c:'#2563eb'}
     ].map(p=>`<div class="adm-bar-row"><div class="adm-bar-label">${p.k}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round((p.v/totalP)*100)}%;background:${p.c}"></div></div><div class="adm-bar-val">${p.v}</div></div>`).join('');
@@ -3306,7 +3308,7 @@ async function loadAdminDashboard(){
     const actEl=document.getElementById('adm-recent-activity');
     if(actEl){
       const recent=[
-        ...(profiles||[]).slice(-3).map(p=>({type:'join',text:'New artist joined',time:p.created_at,color:var(--gold)})),
+        ...(profiles||[]).slice(-3).map(p=>({type:'join',text:'New artist joined',time:p.created_at,color:'#C9A84C'})),
         ...(releases||[]).filter(r=>r.status==='pending').slice(-3).map(r=>({type:'release',text:'"'+r.title+'" submitted for review',time:r.submitted_at||new Date().toISOString(),color:'#fbbf24'}))
       ].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,8);
       actEl.innerHTML=recent.map(a=>`<div class="activity-item"><div class="activity-dot" style="background:${a.color}"></div><div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time?new Date(a.time).toLocaleDateString('en-GB'):''}</div></div></div>`).join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No recent activity</div>';
@@ -3322,7 +3324,7 @@ async function loadAdminDashboard(){
     });
     const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
     setTimeout(()=>{
-      renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'var(--gold)');
+      renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#C9A84C');
       const growthData=Array(6).fill(0);
       (profiles||[]).forEach(p=>{
         const d=new Date(p.created_at);
@@ -3370,7 +3372,7 @@ function renderAdminReleases(data){
     const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',taken_down:'color:#9ca3af'}[r.status]||'';
     return `<tr>
       <td><input type="checkbox" class="rel-cb" data-id="${r.id}" style="accent-color:var(--gold)"></td>
-      <td style="font-weight:700;color:var(--gold);font-size:12px">${esc(accId)}</td>
+      <td style="font-weight:700;cocolor:'#C9A84C'ont-size:12px">${esc(accId)}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(pName)}</td>
       <td style="white-space:nowrap">${art}${esc(r.title)}</td>
       <td style="color:rgba(255,255,255,.4);font-size:12px">${esc(r.genre||'')}</td>
@@ -3441,12 +3443,12 @@ function renderAdminUsers(data,relCount,relStreams,relEarn){
   tbody.innerHTML=data.map(p=>{
     const name=p.artist_name||p.full_name||p.email;
     const planLabel={admin:'Admin',label:'Label',artist_plus:'Artist+',solo:'Solo'}[p.plan]||'Solo';
-    const planColor={admin:'color:#60a5fa',label:'color:#34d399',artist_plus:'color:var(--gold)',solo:'color:rgba(255,255,255,.4)'}[p.plan]||'';
+    const planColor={admin:'color:#60a5fa',label:'color:#34d399',artist_plus:'color:#C9A84C',solo:'color:rgba(255,255,255,.4)'}[p.plan]||'';
     const joined=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     const statusFlag=p.status_flag||'active';
     const statusBadge={active:'asb-active',suspended:'asb-suspended',warned:'asb-warned'}[statusFlag]||'asb-active';
     return `<tr>
-      <td style="font-weight:700;color:var(--gold);font-size:12px">${esc(p.account_id||'—')}</td>
+      <td style="font-weight:700;colocolor:'#C9A84C't-size:12px">${esc(p.account_id||'—')}</td>
       <td><div style="font-weight:600;color:#fff">${esc(name)}</div><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px">${esc(p.email||'')}</div></td>
       <td style="color:rgba(255,255,255,.5);font-size:11px">${esc(p.email||'')}</td>
       <td><select class="stsel" style="${planColor};font-weight:600" onchange="updateUserPlan('${p.id}',this.value)">
@@ -3516,7 +3518,7 @@ function renderAdminPayouts(payouts,profileMap){
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
     return `<tr>
-      <td style="font-weight:700;color:var(--gold);font-size:13px">${esc(accId)}</td>
+      <td style="font-weight:700;color:color:'#C9A84C'size:13px">${esc(accId)}</td>
       <td><div style="font-weight:600;color:#fff;font-size:13px">${esc(name)}</div><div style="font-size:11px;color:rgba(255,255,255,.35)">${esc(prof.email||'')}</div></td>
       <td>${p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer'}</td>
       <td style="color:rgba(255,255,255,.5)">${esc(p.network||'—')}</td>
@@ -3557,7 +3559,7 @@ async function loadAdminSubs(){
       const planLabel={artist_plus:'Artist+',label:'Label'}[s.plan]||s.plan;
       return `<tr>
         <td style="font-weight:600;color:#fff">${esc(name)}</td>
-        <td style="font-weight:700;color:var(--gold);font-size:12px">${esc(accId)}</td>
+        <td style="font-weight:700;color:vacolor:'#C9A84C'ze:12px">${esc(accId)}</td>
         <td style="color:var(--gold);font-weight:600">${planLabel}</td>
         <td style="color:rgba(255,255,255,.5)">${s.billing_cycle||'annual'}</td>
         <td style="font-weight:700;color:#34d399">$${parseFloat(s.amount_usd||0).toFixed(2)}</td>
@@ -3842,8 +3844,10 @@ async function onPaystackSuccess(ref, planKey, billingCycle, usd, pesewas){
   try{
     const planLabel=PLANS[planKey]?.label||planKey;
     if(user){
-      await sb.from('profiles').update({plan:planKey}).eq('id',user.id);
-      if(profile) profile.plan=planKey;
+      // Solo purchasers get solo_paid to distinguish from free solo users
+      const dbPlan=planKey==='solo'?'solo_paid':planKey;
+      await sb.from('profiles').update({plan:dbPlan}).eq('id',user.id);
+      if(profile) profile.plan=dbPlan;
     }
     await sb.from('subscriptions').insert({
       user_id:user?.id, plan:planKey, billing_cycle:billingCycle,
