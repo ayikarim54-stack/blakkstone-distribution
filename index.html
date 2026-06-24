@@ -16,12 +16,13 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --w:#fff;--off:#f6f6f6;--border:#e8e8e8;--text:#111;--muted:#666;--subtle:#aaa;
-  --gold:#C9A84C;--gl:#fff8e7;--gd:#8a6420;
-  --black:#0d0d0d;--danger:#dc3545;--success:#198754;--info:#0d6efd;
+  --gold:#D4AF37;--gl:rgba(212,175,55,.1);--gd:#a07d10;
+  --black:#08080C;--danger:#dc3545;--success:#198754;--info:#0d6efd;
+  --card:#111118;--rim:rgba(255,255,255,0.05);--line:rgba(255,255,255,0.06);
 }
 html,body{height:100%;font-family:'Inter',sans-serif;color:var(--text);background:var(--off)}
 .btn{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:9px 20px;border-radius:8px;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;text-decoration:none}
-.btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:var(--gd)}
+.btn-gold{background:var(--gold);color:#fff}.btn-gold:hover{background:#a07d10}
 .btn-outline{background:transparent;color:var(--gold);border:2px solid var(--gold)}.btn-outline:hover{background:var(--gl)}
 .btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:#999}
 .btn-dark{background:var(--black);color:#fff}.btn-dark:hover{opacity:.85}
@@ -86,7 +87,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;color:var(--text);backgroun
 .tc-stars{color:var(--gold);font-size:13px;margin-bottom:.75rem}
 .tc-text{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:1.1rem;font-style:italic}
 .tc-author{display:flex;align-items:center;gap:9px}
-.tc-av{width:34px;height:34px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gd)}
+.tc-av{width:34px;height:34px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#a07d10}
 .tc-name{font-size:13px;font-weight:600}
 .tc-role{font-size:11px;color:var(--muted)}
 .cta-band{background:var(--black);padding:4.5rem 2.5rem;text-align:center}
@@ -115,7 +116,7 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .auth-r .fg select option{background:#fff;color:var(--text)}
 .fg{margin-bottom:.875rem}
 .fg label{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
-.fg input,.fg select,.fg textarea{width:100%;background:#2a2a2a;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 11px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+.fg input,.fg select,.fg textarea{width:100%;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(201,168,76,.6);background:#1a1a2e}
 .fg input::placeholder{color:rgba(255,255,255,.25)}
 .fg textarea::placeholder{color:rgba(255,255,255,.25)}
@@ -134,9 +135,10 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .conf-card p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:1.4rem}
 
 /* ── DASHBOARD DARK THEME (Ditto-inspired) ── */
-#dashboard{flex-direction:column;min-height:100vh;background:#191919}
+#dashboard{flex-direction:column;min-height:100vh;background:#08080C;
+  background-image:radial-gradient(circle at 0% 0%, rgba(212,175,55,0.04) 0%, transparent 50%)}
 /* TOP NAV */
-.dash-topnav{background:#000;border-bottom:1px solid rgba(255,255,255,.08);height:62px;display:flex;align-items:center;padding:0 2rem;gap:0;position:sticky;top:0;z-index:200}
+.dash-topnav{background:#08080C;border-bottom:1px solid var(--line);height:62px;display:flex;align-items:center;padding:0 2rem;gap:0;position:sticky;top:0;z-index:200}
 .dash-topnav-logo{font-size:16px;font-weight:900;color:#fff;margin-right:2rem;cursor:pointer;white-space:nowrap}
 .dash-topnav-logo span{color:var(--gold)}
 .dash-topnav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto}
@@ -150,7 +152,7 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .dash-user-chip{display:flex;align-items:center;gap:8px;background:transparent;border:none;border-radius:8px;padding:5px 8px;cursor:pointer}
 .dash-user-chip:hover{border-color:rgba(201,168,76,.5)}
 /* MAIN */
-.dash-body{flex:1;padding:2.5rem;overflow-y:auto;min-height:0;background:#191919}
+.dash-body{flex:1;padding:2.5rem;overflow-y:auto;min-height:0;background:#08080C}
 .page{display:none}
 .page.active{display:block}
 .ph{margin-bottom:1.75rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
@@ -158,8 +160,8 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .ph p{font-size:13px;color:rgba(255,255,255,.4);margin-top:4px}
 /* OVERVIEW STAT CARDS */
 .overview-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2.5rem}
-.ov-card{border-radius:14px;padding:1.5rem 1.75rem;display:flex;align-items:center;gap:1.25rem;position:relative;overflow:hidden;min-height:110px}
-.ov-card-1{background:linear-gradient(135deg,#C9A84C,#8a6420)}
+.ov-card{border-radius:14px;padding:1.5rem 1.75rem;display:flex;align-items:center;gap:1.25rem;position:relative;overflow:hidden;min-height:110px;box-shadow:inset 0 1px 0 var(--rim)}
+.ov-card-1{background:linear-gradient(135deg,#D4AF37,#8a6420)}
 .ov-card-2{background:linear-gradient(135deg,#0891b2,#0e7490)}
 .ov-card-3{background:linear-gradient(135deg,#1d4ed8,#1e40af)}
 .ov-card-4{background:linear-gradient(135deg,#ea580c,#c2410c)}
@@ -170,7 +172,7 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .ov-card-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:5px}
 /* RELEASES GRID */
 .releases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.875rem}
-.rg-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s}
+.rg-card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s;box-shadow:inset 0 1px 0 var(--rim)}
 .rg-card:hover{border-color:rgba(255,255,255,.2);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
 .rg-art{width:100%;aspect-ratio:1;background:#2a2a45;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .rg-art img{width:100%;height:100%;object-fit:cover}
@@ -189,7 +191,7 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .rg-meta{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
 /* RELEASES LIST VIEW */
 .rl{display:flex;flex-direction:column;gap:8px}
-.rr{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:all .15s}
+.rr{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;transition:all .15s;box-shadow:inset 0 1px 0 var(--rim)}
 .rr:hover{border-color:rgba(201,168,76,.4);background:#2c2c2c;transform:translateX(2px)}
 .r-art{width:44px;height:44px;border-radius:8px;background:#333;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .r-art img{width:100%;height:100%;object-fit:cover;border-radius:8px}
@@ -240,18 +242,18 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .upload-z.has-file p{color:#34d399}
 /* ANALYTICS */
 .ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
-.ac{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.25rem}
+.ac{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.25rem;box-shadow:inset 0 1px 0 var(--rim)}
 .ac-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem}
 .ac-val{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px}
 .ac-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:4px}
 /* CHART */
-.chart-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:inset 0 1px 0 var(--rim)}
 .chart-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem}
 .chart-wrap{position:relative;height:220px}
 /* STORE TABLE */
-.dark-table-wrap{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:12px;overflow:hidden;overflow-x:auto}
+.dark-table-wrap{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;overflow-x:auto;box-shadow:inset 0 1px 0 var(--rim)}
 table{width:100%;border-collapse:collapse}
-th{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:10px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);background:#1e1e1e}
+th{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:10px 16px;text-align:left;border-bottom:1px solid var(--line);background:#0d0d12}
 td{font-size:13px;color:rgba(255,255,255,.8);padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.02)}
@@ -265,7 +267,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* PAYOUT */
 .payout-balance-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:2rem;max-width:560px;margin-bottom:1.5rem}
 .payout-bar-wrap{background:#2a2a45;border-radius:8px;height:10px;margin:1rem 0;overflow:hidden}
-.payout-bar-fill{background:linear-gradient(90deg,#C9A84C,#8a6420);height:100%;border-radius:8px;transition:width .4s}
+.payout-bar-fill{background:linear-gradient(90deg,#D4AF37,#8a6420);height:100%;border-radius:8px;transition:width .4s}
 .pmethod-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;max-width:380px;margin-bottom:1.5rem}
 .pmethods{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
 .popt{border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:1.1rem;cursor:pointer;transition:all .15s;background:#2a2a2a}
@@ -322,15 +324,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .atab.active{border-color:var(--gold);background:rgba(201,168,76,.12);color:var(--gold)}
 .admin-section{display:none}
 .admin-section.active{display:block}
-.tw{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:11px;overflow:hidden;overflow-x:auto}
-.stsel{background:#2a2a2a;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:'Inter',sans-serif;cursor:pointer;outline:none}
+.tw{background:var(--card);border:1px solid var(--line);border-radius:11px;overflow:hidden;overflow-x:auto}
+.stsel{background:#0e0e14;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:'Inter',sans-serif;cursor:pointer;outline:none}
 .stsel:focus{border-color:var(--gold)}
 .num-in{width:76px;background:#2a2a2a;border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:3px 6px;font-size:12px;color:#fff;font-family:'Inter',sans-serif;outline:none}
 .num-in:focus{border-color:var(--gold)}
 /* OVERLAY/MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s}
 .overlay.open{opacity:1;pointer-events:all}
-.modal{background:#242424;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:2rem;max-width:640px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5);max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:2rem;max-width:640px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 1px 0 var(--rim);max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal h3{font-size:18px;font-weight:800;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
 .modal h3 button{background:none;border:none;cursor:pointer;font-size:20px;color:rgba(255,255,255,.4);line-height:1}
 .release-detail{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;margin-bottom:.875rem;background:#131320}
@@ -357,7 +359,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-.btn-purple{background:var(--gold);color:#111;font-weight:700}.btn-purple:hover{background:var(--gd);color:#fff}
+.btn-purple{background:var(--gold);color:#111;font-weight:700}.btn-purple:hover{background:#a07d10;color:#fff}
 .btn-danger-outline{background:transparent;color:#ef4444;border:1.5px solid #ef4444;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;display:inline-flex;align-items:center;gap:4px}
 /* ── MOBILE BOTTOM NAV ── */
 .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#000;border-top:1px solid rgba(255,255,255,.1);z-index:300;padding:.5rem 0 calc(.5rem + env(safe-area-inset-bottom));justify-content:space-around;align-items:center}
@@ -485,7 +487,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .ws-line.done{background:#10b981}
 .wizard-panel{display:none}
 .wizard-panel.active{display:block}
-.wiz-drop-zone{border:2px dashed rgba(255,255,255,.15);border-radius:16px;padding:4rem 2rem;cursor:pointer;background:#242424;transition:all .2s}
+.wiz-drop-zone{border:2px dashed rgba(212,175,55,.2);border-radius:16px;padding:4rem 2rem;cursor:pointer;background:var(--card);transition:all .2s}
 .wiz-drop-zone:hover,.wiz-drop-zone.drag-over{border-color:var(--gold);background:rgba(201,168,76,.08)}
 .track-item{background:#1e1e35;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;margin-bottom:8px}
 .track-num{width:28px;height:28px;border-radius:6px;background:rgba(201,168,76,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0}
@@ -496,7 +498,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .track-isrc{background:#2a2a2a;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;width:140px}
 .wiz-toggle{padding:7px 20px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
 .wiz-toggle.active{background:var(--gold);border-color:var(--gold);color:#000;font-weight:700}
-.store-chip{background:#2a2a2a;border:1.5px solid rgba(255,255,255,.08);border-radius:10px;padding:.625rem .875rem;display:flex;align-items:center;gap:.625rem;cursor:pointer;transition:all .15s}
+.store-chip{background:#0e0e14;border:1.5px solid rgba(255,255,255,.08);border-radius:10px;padding:.625rem .875rem;display:flex;align-items:center;gap:.625rem;cursor:pointer;transition:all .15s}
 .store-chip:hover{border-color:rgba(201,168,76,.4)}
 .store-chip.selected{border-color:var(--gold);background:rgba(201,168,76,.1)}
 .store-chip-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
@@ -515,7 +517,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .adm-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
 .adm-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
 .adm-stat-card{border-radius:14px;padding:1.25rem;position:relative;overflow:hidden}
-.adm-stat-purple{background:linear-gradient(135deg,#C9A84C,#8a6420)}
+.adm-stat-purple{background:linear-gradient(135deg,#D4AF37,#8a6420)}
 .adm-stat-teal{background:linear-gradient(135deg,#0891b2,#0e7490)}
 .adm-stat-orange{background:linear-gradient(135deg,#ea580c,#c2410c)}
 .adm-stat-green{background:linear-gradient(135deg,#059669,#047857)}
@@ -526,7 +528,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .adm-stat-val{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:2px}
 .adm-stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.8)}
 .adm-stat-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px}
-.adm-card{background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.25rem}
+.adm-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.25rem;box-shadow:inset 0 1px 0 var(--rim)}
 .adm-card-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
 .adm-card-title i{color:var(--gold);font-size:16px}
 .adm-btn-sec{background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.1);font-size:12px}
@@ -538,7 +540,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .adm-bar-row:last-child{border-bottom:none}
 .adm-bar-label{font-size:12px;color:rgba(255,255,255,.6);width:100px;flex-shrink:0}
 .adm-bar-track{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
-.adm-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#C9A84C,#e8c97a)}
+.adm-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#D4AF37,#e8c97a)}
 .adm-bar-val{font-size:12px;font-weight:600;color:#fff;width:50px;text-align:right;flex-shrink:0}
 .activity-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px}
 .activity-item:last-child{border-bottom:none}
@@ -610,13 +612,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .welcome-time{font-size:13px;color:rgba(255,255,255,.35);font-weight:400}
 /* Quick action buttons on overview */
 .quick-actions{display:flex;gap:10px;margin-bottom:2rem;flex-wrap:wrap}
-.qa-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#1e1e35;border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;white-space:nowrap}
-.qa-btn:hover{background:#252545;border-color:rgba(201,168,76,.4);color:#fff}
+.qa-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:13px;font-weight:500;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;white-space:nowrap}
+.qa-btn:hover{background:#1c1c26;border-color:rgba(201,168,76,.4);color:#fff}
 .qa-btn i{font-size:16px;color:var(--gold)}
 /* Release cards on overview - clickable */
 .rg-card{cursor:pointer}
 /* Onboarding checklist */
-.onboard-card{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(79,70,229,.1));border:1px solid rgba(124,58,237,.3);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
+.onboard-card{background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(160,125,16,.04));border:1px solid rgba(124,58,237,.3);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
 .onboard-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;justify-content:space-between}
 .onboard-steps{display:flex;gap:8px;flex-wrap:wrap}
 .ob-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5)}
@@ -632,7 +634,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .support-tooltip{position:absolute;bottom:60px;right:0;background:#fff;border:1px solid var(--border);border-radius:10px;padding:.625rem 1rem;font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.1);display:none}
 .support-bubble:hover .support-tooltip{display:block}
 /* Progress bar on top of page */
-.page-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#C9A84C,#e8c97a);z-index:9999;transition:width .3s;pointer-events:none}
+.page-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#D4AF37,#e8c97a);z-index:9999;transition:width .3s;pointer-events:none}
 
 /* DSP logo chips */
 .dsp-logo{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;margin-right:4px}
@@ -645,7 +647,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .an-hero-val{font-size:52px;font-weight:900;color:#fff;letter-spacing:-2px;line-height:1}
 .an-hero-sub{font-size:13px;color:rgba(255,255,255,.35);margin-top:.5rem}
 .an-hero-side{display:flex;gap:1.5rem;flex-wrap:wrap}
-.an-mini-stat{background:#131320;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1rem 1.25rem;min-width:110px}
+.an-mini-stat{background:#08080C;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1rem 1.25rem;min-width:110px}
 .an-mini-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.35);margin-bottom:.4rem}
 .an-mini-val{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px}
 /* Store breakdown bars in analytics */
@@ -655,7 +657,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .an-store-logo img{width:18px;height:18px;object-fit:contain;display:block}
 .an-store-name{font-size:12px;color:rgba(255,255,255,.7);width:110px;flex-shrink:0;font-weight:500}
 .an-store-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-.an-store-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#C9A84C,#e8c97a)}
+.an-store-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#D4AF37,#e8c97a)}
 .an-store-count{font-size:12px;color:rgba(255,255,255,.5);width:60px;text-align:right;flex-shrink:0}
 /* Top releases in analytics */
 .an-release-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
@@ -671,7 +673,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* ── ROYALTIES PAGE ── */
 .roy-hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
 .roy-hero-card{border-radius:14px;padding:1.5rem;display:flex;align-items:flex-start;gap:1rem;border:1px solid rgba(255,255,255,.07)}
-.roy-hero-gross{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(138,100,32,.06));border-color:rgba(201,168,76,.25)}
+.roy-hero-gross{background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(138,100,32,.06));border-color:rgba(201,168,76,.25)}
 .roy-hero-comm{background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(185,28,28,.06));border-color:rgba(239,68,68,.2)}
 .roy-hero-payout{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(4,120,87,.06));border-color:rgba(16,185,129,.2)}
 .roy-hero-period{background:#1e1e35;border-color:rgba(255,255,255,.07)}
@@ -687,8 +689,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 /* ── PAYWALL ── */
 #paywall{min-height:100vh}
-.paywall-card{background:#1a1a1a;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:1.75rem;position:relative;text-align:left;display:flex;flex-direction:column;gap:0}
-.paywall-card-featured{border-color:var(--gold);background:#1a1600}
+.paywall-card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:1.75rem;position:relative;text-align:left;display:flex;flex-direction:column;gap:0}
+.paywall-card-featured{border-color:var(--gold);background:#12100a}
 .paywall-featured-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-size:9px;font-weight:800;letter-spacing:1.5px;padding:4px 14px;border-radius:0 0 8px 8px}
 .paywall-card-name{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem;margin-top:.5rem}
 .paywall-card-price{font-size:36px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:2px}
@@ -703,6 +705,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
   #paywall>div>div>div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr!important}
   #paywall h1{font-size:28px}
 }
+
+/* ── FIELD WARNINGS ── */
+.field-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:.625rem .875rem;font-size:12px;color:#fbbf24;line-height:1.6;margin-top:6px}
+.field-warn strong{color:#fff}
+.field-warn code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:4px;font-size:11px;font-family:monospace}
+/* Split-sheet balance bar */
+.split-balance-bar{height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.07);margin:1rem 0;box-shadow:inset 0 1px 0 rgba(0,0,0,.3)}
+.split-balance-fill{height:100%;border-radius:4px;transition:width .2s,background .2s}
+.split-ledger{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:.5rem}
+.split-ledger-ok{color:#34d399;font-weight:700}
+.split-ledger-warn{color:#fbbf24;font-weight:700}
+.split-ledger-over{color:#f87171;font-weight:700}
 </style>
 </head>
 <body>
@@ -944,7 +958,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
     </div>
-    <div style="max-width:560px;margin:2rem auto 0;background:#fff8e7;border:1px solid var(--gl);border-radius:10px;padding:1rem 1.25rem;font-size:13px;color:var(--gd);text-align:center">
+    <div style="max-width:560px;margin:2rem auto 0;background:#fff8e7;border:1px solid var(--gl);border-radius:10px;padding:1rem 1.25rem;font-size:13px;color:#a07d10;text-align:center">
       <i class="ti ti-info-circle"></i> The 9% commission on Solo plan covers delivery costs. Upgrade anytime to remove it.
     </div>
   </section>
@@ -1108,7 +1122,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ══════════════ PAYWALL ══════════════ -->
 <div class="view" id="paywall">
-  <div style="min-height:100vh;background:#0d0d0d;display:flex;flex-direction:column">
+  <div style="min-height:100vh;background:#08080C;display:flex;flex-direction:column">
     <!-- Nav -->
     <div style="background:#000;border-bottom:1px solid rgba(255,255,255,.08);height:62px;display:flex;align-items:center;padding:0 2rem;justify-content:space-between">
       <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:-.5px">Blakkstone<span style="color:var(--gold)">.</span></div>
@@ -1400,6 +1414,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <input type="file" id="audio-input-multi" accept=".wav,.mp3,.flac,audio/*" multiple style="display:none" onchange="handleAudioSelect(this)">
           <div id="track-list" style="margin-top:1.5rem;text-align:left"></div>
+          <div id="fast-pass-nudge" style="display:none;align-items:center;gap:8px;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.2);border-radius:9px;padding:.625rem 1rem;font-size:12px;color:rgba(255,255,255,.7);margin-top:1rem;max-width:600px;margin-left:auto;margin-right:auto"></div>
           <div style="display:flex;justify-content:flex-end;margin-top:2rem">
             <button class="btn btn-purple" onclick="goWizard(2)" id="wiz-next-1">Next: Details <i class="ti ti-arrow-right"></i></button>
           </div>
@@ -1411,7 +1426,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="display:grid;grid-template-columns:1fr 280px;gap:2rem;max-width:900px">
           <div>
             <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Release Details</h2>
-            <div class="fg"><label>Release Title *</label><input id="r-title" type="text" placeholder="e.g. Midnight Stories"></div>
+            <div class="fg">
+  <label>Release Title *</label>
+  <input id="r-title" type="text" placeholder="e.g. Midnight Stories" oninput="checkTitleFormat(this,'title-warn')">
+  <div id="title-warn" class="field-warn" style="display:none"></div>
+</div>
             <div class="frow">
               <div class="fg"><label>© Copyright Holder</label><input id="r-copyright" type="text" placeholder="Name"></div>
               <div class="fg"><label>Copyright Year</label><input id="r-copyright-year" type="number" placeholder="2025" value="2025"></div>
@@ -1438,7 +1457,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
                 <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;text-transform:none;letter-spacing:0"><input type="radio" name="artist-type" value="various" style="accent-color:var(--gold)"> Compilation / Various Artists</label>
               </div>
             </div>
-            <div class="fg" style="margin-top:1rem"><label>Primary Artist *</label><input id="r-artist" type="text" placeholder="Artist name"></div>
+            <div class="fg" style="margin-top:1rem">
+  <label style="display:flex;align-items:center;justify-content:space-between">
+    Primary Artist *
+    <span id="artist-lock-badge" style="font-size:10px;font-weight:600;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 8px;border-radius:20px;letter-spacing:.5px;display:flex;align-items:center;gap:4px"><i class="ti ti-lock" style="font-size:10px"></i> Profile Anchored</span>
+  </label>
+  <input id="r-artist" type="text" placeholder="Artist name" readonly style="opacity:.75;cursor:not-allowed;border-color:rgba(212,175,55,.2)">
+  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px">Auto-filled from your profile. Change your artist name in <a onclick="goPage('profile',null)" style="color:var(--gold);cursor:pointer">Profile Settings</a>.</div>
+</div>
             <div style="margin-top:.5rem">
               <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" id="r-has-feat" style="accent-color:var(--gold)" onchange="document.getElementById('r-feat-wrap').style.display=this.checked?'block':'none'"> Add Featured artists</label>
               <div id="r-feat-wrap" style="display:none;margin-top:.75rem"><div class="fg"><label>Featured Artists</label><input id="r-feat" type="text" placeholder="Separate with commas"></div></div>
@@ -1563,10 +1589,44 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1rem">
             <div id="review-content"></div>
           </div>
-          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem">
+          <!-- SPLIT-SHEET MECHANICS -->
+          <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin-bottom:1rem;box-shadow:inset 0 1px 0 var(--rim)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px">
+              <div>
+                <div style="font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px"><i class="ti ti-adjustments-horizontal" style="color:var(--gold)"></i> Royalty Split Sheet</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:3px">Define how earnings are distributed among contributors (basis points, out of 10,000)</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-sm" style="background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2);font-size:11px" onclick="splitDistributeRemaining()"><i class="ti ti-divide"></i> Distribute Remaining</button>
+                <button class="btn btn-sm" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);font-size:11px" onclick="splitClaimRemainder()"><i class="ti ti-arrow-back-up"></i> Claim Remainder</button>
+              </div>
+            </div>
+
+            <!-- BALANCE TRACKER -->
+            <div class="split-ledger">
+              <span id="split-ledger-label" class="split-ledger-warn">Allocated: 0%</span>
+              <span id="split-ledger-status" style="font-size:11px;color:rgba(255,255,255,.3)">0 of 10,000 bp</span>
+            </div>
+            <div class="split-balance-bar">
+              <div class="split-balance-fill" id="split-bar-fill" style="width:0%;background:#fbbf24"></div>
+            </div>
+
+            <!-- SPLIT ROWS -->
+            <div id="split-rows" style="display:flex;flex-direction:column;gap:8px;margin-top:1rem"></div>
+
+            <button class="btn btn-sm" style="margin-top:1rem;background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);font-size:12px;width:100%;justify-content:center" onclick="splitAddRow()"><i class="ti ti-plus"></i> Add Contributor</button>
+          </div>
+
+          <!-- LEGAL ACCORDION -->
+          <div id="split-legal-wrap" style="display:none;background:rgba(212,175,55,.04);border:1px solid rgba(212,175,55,.15);border-radius:14px;padding:1.25rem;margin-bottom:1rem">
+            <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.5px;text-transform:uppercase;margin-bottom:.875rem;display:flex;align-items:center;gap:6px"><i class="ti ti-file-certificate"></i> Split-Sheet Legal Disclosures</div>
+            <div id="split-legal-content" style="font-size:12px;color:rgba(255,255,255,.45);line-height:1.8;display:flex;flex-direction:column;gap:.625rem"></div>
+          </div>
+
+          <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem">
             <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0">
               <input type="checkbox" id="r-terms" style="accent-color:var(--gold);margin-top:2px;flex-shrink:0">
-              I confirm I own or have the rights to distribute this music and agree to Blakkstone Distribution's terms and conditions.
+              I confirm I own or have the rights to distribute this music, agree to Blakkstone Distribution's terms, and confirm the royalty split above is correct.
             </label>
           </div>
           <div style="display:flex;gap:10px">
@@ -1926,15 +1986,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="divhr"></div>
         <!-- ACCOUNT STATS -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem">
-          <div style="background:#131320;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:.875rem;text-align:center">
+          <div style="background:#08080C;border:1px solid var(--line);border-radius:9px;padding:.875rem;text-align:center">
             <div style="font-size:20px;font-weight:800;color:#fff" id="prof-release-count">0</div>
             <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Releases</div>
           </div>
-          <div style="background:#131320;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:.875rem;text-align:center">
+          <div style="background:#08080C;border:1px solid var(--line);border-radius:9px;padding:.875rem;text-align:center">
             <div style="font-size:20px;font-weight:800;color:#34d399" id="prof-earnings">$0.00</div>
             <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Earnings</div>
           </div>
-          <div style="background:#131320;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:.875rem;text-align:center">
+          <div style="background:#08080C;border:1px solid var(--line);border-radius:9px;padding:.875rem;text-align:center">
             <div style="font-size:11px;font-weight:700;color:var(--gold);padding:3px 8px;background:rgba(201,168,76,.15);border-radius:20px;display:inline-block" id="prof-plan-badge">Solo</div>
             <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:4px">Your Plan</div>
           </div>
@@ -2199,17 +2259,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Performance</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem">
-        <div style="background:#191919;border-radius:10px;padding:1rem">
+        <div style="background:#08080C;border-radius:10px;padding:1rem">
           <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-wavesaw-mono" style="color:var(--gold)"></i> Streams</div>
           <div id="rel-modal-streams" style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px">0</div>
           <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px">Total plays</div>
         </div>
-        <div style="background:#191919;border-radius:10px;padding:1rem">
+        <div style="background:#08080C;border-radius:10px;padding:1rem">
           <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-coin" style="color:#34d399"></i> Gross</div>
           <div id="rel-modal-earnings" style="font-size:26px;font-weight:800;color:#34d399;letter-spacing:-.5px">$0.00</div>
           <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px">Before commission</div>
         </div>
-        <div style="background:#191919;border-radius:10px;padding:1rem">
+        <div style="background:#08080C;border-radius:10px;padding:1rem">
           <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-wallet" style="color:#fbbf24"></i> Payout</div>
           <div id="rel-modal-payout" style="font-size:26px;font-weight:800;color:#fbbf24;letter-spacing:-.5px">$0.00</div>
           <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px" id="rel-modal-payout-sub">Your share</div>
@@ -2512,7 +2572,7 @@ function setAvatarDisplay(initials,url){
       if(ta) ta.innerHTML=`<img src="${url}" alt="a" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
       if(ba) ba.innerHTML=`<img src="${url}" alt="a">`;
     } else {
-      if(ta) ta.innerHTML=`<span style="font-size:11px;font-weight:700;color:var(--gd)">${initials}</span>`;
+      if(ta) ta.innerHTML=`<span style="font-size:11px;font-weight:700;color:#a07d10">${initials}</span>`;
       const pai=document.getElementById('profile-avatar-initials');
       if(pai) pai.textContent=initials;
     }
@@ -2523,7 +2583,7 @@ function updateCommBar(isPaid,isAdmin){
   const bar=document.getElementById('commission-bar');
   if(!bar)return;
   const isOnSoloPaid=profile?.plan==='solo_paid';
-  if(!isPaid&&!isAdmin) bar.innerHTML=`<div class="comm-bar"><i class="ti ti-info-circle"></i> You're on the <strong>${isOnSoloPaid?'Solo':'Free'} plan</strong> — Blakkstone keeps 9% of royalties. <a onclick="goPage('upgrade',null)" style="color:var(--gd);font-weight:600;margin-left:6px">Upgrade →</a></div>`;
+  if(!isPaid&&!isAdmin) bar.innerHTML=`<div class="comm-bar"><i class="ti ti-info-circle"></i> You're on the <strong>${isOnSoloPaid?'Solo':'Free'} plan</strong> — Blakkstone keeps 9% of royalties. <a onclick="goPage('upgrade',null)" style="color:#a07d10;font-weight:600;margin-left:6px">Upgrade →</a></div>`;
   else bar.innerHTML='';
 }
 
@@ -2851,7 +2911,7 @@ function openReleaseModal(r){
           <div style="width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:3px">${logo}</div>
           <div style="font-size:12px;color:rgba(255,255,255,.6);width:100px;flex-shrink:0">${s.name}</div>
           <div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden">
-            <div style="width:${barW}%;height:100%;background:linear-gradient(90deg,#C9A84C,#e8c97a);border-radius:2px"></div>
+            <div style="width:${barW}%;height:100%;background:linear-gradient(90deg,#D4AF37,#e8c97a);border-radius:2px"></div>
           </div>
           <div style="font-size:12px;color:rgba(255,255,255,.5);width:50px;text-align:right;flex-shrink:0">${est.toLocaleString()}</div>
         </div>`;
@@ -2869,7 +2929,7 @@ function openReleaseModal(r){
     Math.round(ts*.05), Math.round(ts*.1), Math.round(ts*.18),
     Math.round(ts*.28), Math.round(ts*.42), ts
   ]:[0,0,0,0,0,0];
-  setTimeout(()=>renderLineChart('rel-modal-chart',labels,seed,'#C9A84C',''),80);
+  setTimeout(()=>renderLineChart('rel-modal-chart',labels,seed,'#D4AF37',''),80);
 
   document.getElementById('release-overlay').classList.add('open');
 }
@@ -2887,7 +2947,7 @@ document.addEventListener('keydown',e=>{
 
 // ── ANALYTICS ─────────────────────────────────────────
 // Simple SVG line chart renderer
-function renderLineChart(canvasId, labels, data, color='#C9A84C', prefix='$'){
+function renderLineChart(canvasId, labels, data, color='#D4AF37', prefix='$'){
   const canvas=document.getElementById(canvasId);
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
@@ -3053,7 +3113,7 @@ async function loadAnalytics(){
   const now=new Date();
   const labels=Array.from({length:7},(_,i)=>months[(now.getMonth()-6+i+12)%12]);
   const chartData=[0,0,0,0,0,0,ts].map((v,i)=>i===6?v:Math.round(ts*Math.random()*.4));
-  setTimeout(()=>renderLineChart('analytics-chart',labels,chartData,'#C9A84C',''),100);
+  setTimeout(()=>renderLineChart('analytics-chart',labels,chartData,'#D4AF37',''),100);
 }
 
 
@@ -3088,7 +3148,7 @@ async function loadRoyalties(){
   const commBar=document.getElementById('commission-bar');
   if(commBar){
     if(!isPaid&&gross>0){
-      commBar.innerHTML=`<div style="background:rgba(201,168,76,.1);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:'#C9A84C';margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      commBar.innerHTML=`<div style="background:rgba(201,168,76,.1);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:'#D4AF37';margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span><i class="ti ti-crown"></i> You're on the <strong>Solo plan</strong> — upgrade to keep 100% of your royalties.</span>
         <button class="btn btn-purple btn-sm" onclick="goPage('upgrade',null)"><i class="ti ti-crown"></i> Upgrade now</button>
       </div>`;
@@ -3106,7 +3166,7 @@ async function loadRoyalties(){
   const now=new Date();
   const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
   const chartData=[0,0,0,0,0,gross].map((v,i)=>i===5?v:parseFloat((gross*Math.random()*.3).toFixed(2)));
-  setTimeout(()=>renderLineChart('earnings-chart',labels,chartData,'#C9A84C'),100);
+  setTimeout(()=>renderLineChart('earnings-chart',labels,chartData,'#D4AF37'),100);
 
   // Best stores
   const bestEl=document.getElementById('best-stores');
@@ -3280,19 +3340,19 @@ async function sendPayoutNotificationEmail(amount, method, network, account){
         subject:'💸 New Payout Request — '+(profile?.account_id||'')+' '+artistName,
         html:`
           <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;padding:2rem">
-            <div style="background:#0d0d0d;padding:1rem 1.5rem;border-radius:10px 10px 0 0">
-              <h2 style="color:#C9A84C;margin:0;font-size:18px">Blakkstone Distribution</h2>
+            <div style="background:#08080C;padding:1rem 1.5rem;border-radius:10px 10px 0 0">
+              <h2 style="color:#D4AF37;margin:0;font-size:18px">Blakkstone Distribution</h2>
             </div>
             <div style="background:#fff;border:1px solid #e8e8e8;border-top:none;padding:1.5rem;border-radius:0 0 10px 10px">
               <h3 style="margin:0 0 1rem;color:#111">New Payout Request</h3>
               <table style="width:100%;border-collapse:collapse;font-size:14px">
-                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Account ID</td><td style="padding:8px 0;font-weight:700;color:#C9A84C;border-bottom:1px solid #f0f0f0">${profile?.account_id||'—'}</td></tr><tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Artist</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${artistName}</td></tr>
+                <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Account ID</td><td style="padding:8px 0;font-weight:700;color:#D4AF37;border-bottom:1px solid #f0f0f0">${profile?.account_id||'—'}</td></tr><tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Artist</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${artistName}</td></tr>
                 <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Amount</td><td style="padding:8px 0;font-weight:700;color:#8a6420;border-bottom:1px solid #f0f0f0">$${parseFloat(amount).toFixed(2)}</td></tr>
                 <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0">Method</td><td style="padding:8px 0;font-weight:600;border-bottom:1px solid #f0f0f0">${method==='momo'?'📱 '+(network||'')+' Mobile Money':'🏦 Bank Transfer'}</td></tr>
                 <tr><td style="padding:8px 0;color:#666">Account</td><td style="padding:8px 0;font-weight:600">${account}</td></tr>
               </table>
               <div style="margin-top:1.5rem">
-                <a href="https://blakkstonemusic.com" style="background:#C9A84C;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">View in Admin Panel →</a>
+                <a href="https://blakkstonemusic.com" style="background:#D4AF37;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">View in Admin Panel →</a>
               </div>
               <p style="font-size:12px;color:#999;margin-top:1.5rem">This notification was sent automatically by Blakkstone Distribution.</p>
             </div>
@@ -3454,7 +3514,7 @@ async function loadAdminDashboard(){
     const planEl=document.getElementById('adm-plan-breakdown');
     if(planEl) planEl.innerHTML=[
       {k:'Solo',v:plans.solo,c:'#6b7280'},
-      {k:'Artist+',v:plans.artist_plus,c:'#C9A84C'},
+      {k:'Artist+',v:plans.artist_plus,c:'#D4AF37'},
       {k:'Label',v:plans.label,c:'#059669'},
       {k:'Admin',v:plans.admin,c:'#2563eb'}
     ].map(p=>`<div class="adm-bar-row"><div class="adm-bar-label">${p.k}</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:${Math.round((p.v/totalP)*100)}%;background:${p.c}"></div></div><div class="adm-bar-val">${p.v}</div></div>`).join('');
@@ -3473,7 +3533,7 @@ async function loadAdminDashboard(){
     const actEl=document.getElementById('adm-recent-activity');
     if(actEl){
       const recent=[
-        ...(profiles||[]).slice(-3).map(p=>({type:'join',text:'New artist joined',time:p.created_at,color:'#C9A84C'})),
+        ...(profiles||[]).slice(-3).map(p=>({type:'join',text:'New artist joined',time:p.created_at,color:'#D4AF37'})),
         ...(releases||[]).filter(r=>r.status==='pending').slice(-3).map(r=>({type:'release',text:'"'+r.title+'" submitted for review',time:r.submitted_at||new Date().toISOString(),color:'#fbbf24'}))
       ].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,8);
       actEl.innerHTML=recent.map(a=>`<div class="activity-item"><div class="activity-dot" style="background:${a.color}"></div><div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time?new Date(a.time).toLocaleDateString('en-GB'):''}</div></div></div>`).join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No recent activity</div>';
@@ -3489,7 +3549,7 @@ async function loadAdminDashboard(){
     });
     const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
     setTimeout(()=>{
-      renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#C9A84C');
+      renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#D4AF37');
       const growthData=Array(6).fill(0);
       (profiles||[]).forEach(p=>{
         const d=new Date(p.created_at);
@@ -3537,7 +3597,7 @@ function renderAdminReleases(data){
     const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',taken_down:'color:#9ca3af'}[r.status]||'';
     return `<tr>
       <td><input type="checkbox" class="rel-cb" data-id="${r.id}" style="accent-color:var(--gold)"></td>
-      <td style="font-weight:700;cocolor:'#C9A84C'ont-size:12px">${esc(accId)}</td>
+      <td style="font-weight:700;cocolor:'#D4AF37'ont-size:12px">${esc(accId)}</td>
       <td style="font-size:12px;color:rgba(255,255,255,.6)">${esc(pName)}</td>
       <td style="white-space:nowrap">${art}${esc(r.title)}</td>
       <td style="color:rgba(255,255,255,.4);font-size:12px">${esc(r.genre||'')}</td>
@@ -3608,12 +3668,12 @@ function renderAdminUsers(data,relCount,relStreams,relEarn){
   tbody.innerHTML=data.map(p=>{
     const name=p.artist_name||p.full_name||p.email;
     const planLabel={admin:'Admin',label:'Label',artist_plus:'Artist+',solo:'Solo'}[p.plan]||'Solo';
-    const planColor={admin:'color:#60a5fa',label:'color:#34d399',artist_plus:'color:#C9A84C',solo:'color:rgba(255,255,255,.4)'}[p.plan]||'';
+    const planColor={admin:'color:#60a5fa',label:'color:#34d399',artist_plus:'color:#D4AF37',solo:'color:rgba(255,255,255,.4)'}[p.plan]||'';
     const joined=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     const statusFlag=p.status_flag||'active';
     const statusBadge={active:'asb-active',suspended:'asb-suspended',warned:'asb-warned'}[statusFlag]||'asb-active';
     return `<tr>
-      <td style="font-weight:700;colocolor:'#C9A84C't-size:12px">${esc(p.account_id||'—')}</td>
+      <td style="font-weight:700;colocolor:'#D4AF37't-size:12px">${esc(p.account_id||'—')}</td>
       <td><div style="font-weight:600;color:#fff">${esc(name)}</div><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px">${esc(p.email||'')}</div></td>
       <td style="color:rgba(255,255,255,.5);font-size:11px">${esc(p.email||'')}</td>
       <td><select class="stsel" style="${planColor};font-weight:600" onchange="updateUserPlan('${p.id}',this.value)">
@@ -3683,7 +3743,7 @@ function renderAdminPayouts(payouts,profileMap){
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
     return `<tr>
-      <td style="font-weight:700;color:color:'#C9A84C'size:13px">${esc(accId)}</td>
+      <td style="font-weight:700;color:color:'#D4AF37'size:13px">${esc(accId)}</td>
       <td><div style="font-weight:600;color:#fff;font-size:13px">${esc(name)}</div><div style="font-size:11px;color:rgba(255,255,255,.35)">${esc(prof.email||'')}</div></td>
       <td>${p.method==='momo'?'📱 Mobile Money':'🏦 Bank Transfer'}</td>
       <td style="color:rgba(255,255,255,.5)">${esc(p.network||'—')}</td>
@@ -3724,7 +3784,7 @@ async function loadAdminSubs(){
       const planLabel={artist_plus:'Artist+',label:'Label'}[s.plan]||s.plan;
       return `<tr>
         <td style="font-weight:600;color:#fff">${esc(name)}</td>
-        <td style="font-weight:700;color:vacolor:'#C9A84C'ze:12px">${esc(accId)}</td>
+        <td style="font-weight:700;color:vacolor:'#D4AF37'ze:12px">${esc(accId)}</td>
         <td style="color:var(--gold);font-weight:600">${planLabel}</td>
         <td style="color:rgba(255,255,255,.5)">${s.billing_cycle||'annual'}</td>
         <td style="font-weight:700;color:#34d399">$${parseFloat(s.amount_usd||0).toFixed(2)}</td>
@@ -3785,7 +3845,7 @@ async function loadAdminMessages(){
       const accId=m.profiles?.account_id||'';
       const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';
       const isIn=m.direction==='in';
-      return `<div style="background:#131320;border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px;${!m.read_at&&isIn?'border-left:3px solid var(--gold)':''}">
+      return `<div style="background:#08080C;border:1px solid var(--line);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px;${!m.read_at&&isIn?'border-left:3px solid var(--gold)':''}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
           <div>
             <div style="font-size:13px;font-weight:600;color:#fff">${isIn?'📨 '+esc(name)+(accId?' · '+accId:''):'📤 To: '+esc(m.to_email||'')}</div>
@@ -4126,6 +4186,15 @@ function initWizard(){
   wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};
   renderStoresGrid();
   goWizard(1);
+  // Profile anchoring: auto-populate and lock primary artist field
+  const artistInput=document.getElementById('r-artist');
+  if(artistInput&&profile){
+    const moniker=profile.artist_name||profile.full_name||user?.email?.split('@')[0]||'';
+    artistInput.value=moniker;
+    artistInput.readOnly=true;
+    artistInput.style.cursor='not-allowed';
+    artistInput.style.opacity='.75';
+  }
 }
 
 function goWizard(step){
@@ -4179,6 +4248,19 @@ function addTrack(file){
   wizTracks.push({id,file,name:file.name.replace(/\.[^.]+$/,''),size:file.size});
   renderTrackList();
   renderTracklistDetails();
+  // Fast Pass Inference: if exactly 1 track, copy title+artwork down automatically
+  if(wizTracks.length===1){
+    const cleanName=file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
+    const titleEl=document.getElementById('r-title');
+    if(titleEl&&!titleEl.value) titleEl.value=cleanName;
+    // Show fast-pass nudge
+    const nudge=document.getElementById('fast-pass-nudge');
+    if(nudge){
+      nudge.innerHTML=`<i class="ti ti-bolt" style="color:var(--gold)"></i> <strong>Fast Pass:</strong> Title auto-suggested from filename. Update artwork in Step 2 to apply it to the track too.`;
+      nudge.style.display='flex';
+      setTimeout(()=>nudge.style.display='none',6000);
+    }
+  }
 }
 
 function removeTrack(id){
@@ -4208,7 +4290,8 @@ function renderTracklistDetails(){
     <div class="track-item">
       <div class="track-num">${i+1}</div>
       <div style="flex:1">
-        <input type="text" value="${esc(t.name)}" style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:500;width:100%;outline:none;font-family:Inter,sans-serif" onchange="wizTracks[${i}].name=this.value">
+        <input type="text" value="${esc(t.name)}" style="background:transparent;border:none;color:#fff;font-size:13px;font-weight:500;width:100%;outline:none;font-family:Inter,sans-serif" onchange="wizTracks[${i}].name=this.value" oninput="checkTitleFormat(this,'track-warn-${i}')">
+      <div id="track-warn-${i}" class="field-warn" style="display:none"></div>
       </div>
       <input class="track-isrc" type="text" placeholder="ISRC (optional)" onchange="wizTracks[${i}].isrc=this.value">
       <button class="track-remove" onclick="removeTrack('${t.id}')">×</button>
@@ -4282,7 +4365,160 @@ function filterStores(type,btn){
   });
 }
 
+// ── SPLIT-SHEET ENGINE (basis points — integers out of 10,000) ──────────────
+let splitRows=[];
+
+function splitInit(){
+  // Always seed with primary artist at 10000 bp (100%)
+  const artistName=document.getElementById('r-artist')?.value||profile?.artist_name||'Primary Artist';
+  splitRows=[{id:'primary',name:artistName,bp:10000,locked:true}];
+  renderSplitRows();
+  splitRecalc();
+  renderSplitLegal();
+}
+
+function splitAddRow(){
+  splitRows.push({id:'s_'+Date.now(),name:'',bp:0,locked:false});
+  // Adjust primary to give space
+  const usedBp=splitRows.filter(r=>r.id!=='primary').reduce((a,r)=>a+r.bp,0);
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  if(primaryRow) primaryRow.bp=Math.max(0,10000-usedBp);
+  renderSplitRows();
+  splitRecalc();
+}
+
+function splitRemoveRow(id){
+  const row=splitRows.find(r=>r.id===id);
+  if(!row)return;
+  // Return bp back to primary
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  if(primaryRow) primaryRow.bp=Math.min(10000,primaryRow.bp+row.bp);
+  splitRows=splitRows.filter(r=>r.id!==id);
+  renderSplitRows();
+  splitRecalc();
+}
+
+function splitUpdateBp(id,val){
+  const bp=Math.max(0,Math.min(10000,Math.round(parseFloat(val)*100)));
+  const row=splitRows.find(r=>r.id===id);
+  if(row) row.bp=bp;
+  // Auto-adjust primary to fill remainder
+  const usedBp=splitRows.filter(r=>r.id!=='primary').reduce((a,r)=>a+r.bp,0);
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  if(primaryRow) primaryRow.bp=Math.max(0,10000-usedBp);
+  renderSplitRows();
+  splitRecalc();
+}
+
+function splitUpdateName(id,val){
+  const row=splitRows.find(r=>r.id===id);
+  if(row) row.name=val;
+}
+
+function splitDistributeRemaining(){
+  const secondary=splitRows.filter(r=>r.id!=='primary'&&r.bp===0);
+  if(!secondary.length){toast('No rows with 0% to distribute to','err');return;}
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  const avail=primaryRow?primaryRow.bp:0;
+  if(avail<=0){toast('Nothing left to distribute','err');return;}
+  const perRow=Math.floor(avail/secondary.length);
+  let remainder=avail-(perRow*secondary.length);
+  secondary.forEach((r,i)=>{r.bp=perRow+(i===0?remainder:0);});
+  if(primaryRow) primaryRow.bp=0;
+  renderSplitRows();
+  splitRecalc();
+  toast('Remaining split equally across '+secondary.length+' contributor(s)','ok');
+}
+
+function splitClaimRemainder(){
+  const totalUsed=splitRows.reduce((a,r)=>a+r.bp,0);
+  const gap=10000-totalUsed;
+  const primaryRow=splitRows.find(r=>r.id==='primary');
+  if(primaryRow) primaryRow.bp+=gap;
+  renderSplitRows();
+  splitRecalc();
+  toast('Remainder claimed by primary artist','ok');
+}
+
+function splitRecalc(){
+  const totalBp=splitRows.reduce((a,r)=>a+r.bp,0);
+  const pct=(totalBp/100).toFixed(2);
+  const fill=document.getElementById('split-bar-fill');
+  const label=document.getElementById('split-ledger-label');
+  const status=document.getElementById('split-ledger-status');
+  const submitBtn=document.getElementById('submit-btn');
+  if(fill){
+    fill.style.width=Math.min(100,totalBp/100)+'%';
+    fill.style.background=totalBp===10000?'#34d399':totalBp>10000?'#f87171':'#fbbf24';
+  }
+  if(label){
+    if(totalBp===10000){
+      label.className='split-ledger-ok';
+      label.textContent='✓ Ledger Balanced: 100%';
+    } else if(totalBp>10000){
+      label.className='split-ledger-over';
+      label.textContent='⚠ Over-allocated: '+pct+'%';
+    } else {
+      label.className='split-ledger-warn';
+      label.textContent='Allocated: '+pct+'%';
+    }
+  }
+  if(status) status.textContent=totalBp.toLocaleString()+' of 10,000 bp';
+  // Lock submit unless exactly 100%
+  if(submitBtn) submitBtn.disabled=totalBp!==10000;
+  // Show/hide legal wrap
+  const legalWrap=document.getElementById('split-legal-wrap');
+  if(legalWrap) legalWrap.style.display=splitRows.length>1?'block':'none';
+}
+
+function renderSplitRows(){
+  const el=document.getElementById('split-rows');
+  if(!el)return;
+  el.innerHTML=splitRows.map(r=>{
+    const pct=(r.bp/100).toFixed(2);
+    const isPrimary=r.id==='primary';
+    return `<div style="display:flex;align-items:center;gap:8px;background:#08080C;border:1px solid var(--line);border-radius:8px;padding:.625rem .875rem">
+      <div style="width:24px;height:24px;border-radius:50%;background:${isPrimary?'rgba(212,175,55,.15)':'rgba(255,255,255,.07)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="ti ti-${isPrimary?'crown':'user'}" style="font-size:11px;color:${isPrimary?'var(--gold)':'rgba(255,255,255,.4)'}"></i>
+      </div>
+      <input type="text" value="${esc(r.name)}" placeholder="Contributor name" ${isPrimary?'readonly style="font-weight:600;color:var(--gold);background:transparent;border:none;outline:none;flex:1"':'style="flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:13px"'} onchange="splitUpdateName('${r.id}',this.value)">
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <input type="number" value="${pct}" min="0" max="100" step="0.01" style="width:70px;background:#111118;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;color:#fff;text-align:right" onchange="splitUpdateBp('${r.id}',this.value)" ${isPrimary?'readonly':''}>
+        <span style="font-size:11px;color:rgba(255,255,255,.3)">%</span>
+      </div>
+      ${isPrimary?'':'<button onclick="splitRemoveRow(''+r.id+'')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.25);font-size:16px;line-height:1;padding:0;margin-left:2px">×</button>'}
+    </div>`;
+  }).join('');
+}
+
+const SPLIT_LEGAL_CLAUSES=[
+  {
+    title:'1. Master vs. Composition Separation',
+    body:'This split-sheet applies strictly to the <strong>master sound recording</strong> (the audio file). It does not transfer, assign, or affect any underlying musical composition (publishing) rights. Composition royalties are governed separately.'
+  },{
+    title:'2. Irrevocable Payment Directive',
+    body:'All parties irrevocably authorise <strong>Blakkstone Distribution</strong> to calculate and remit streaming royalties directly to each named contributor at the percentages specified herein, at the point of collection from DSPs, without requiring further approval per payment cycle.'
+  },{
+    title:'3. Warranty of Originality & Indemnification',
+    body:'Each contributor warrants that their contribution to this recording contains <strong>no uncleared samples, interpolations, or third-party intellectual property</strong>, and agrees to indemnify all other contributors and Blakkstone Distribution against any claims arising from a breach of this warranty.'
+  },{
+    title:'4. Non-Exclusive Synchronisation Clearances',
+    body:'Each contributor grants a <strong>non-exclusive licence</strong> for this master recording to be placed in synchronisation (film, TV, advertising, games) projects, provided that any sync fees or royalties received are distributed <em>pro-rata</em> in accordance with the percentages set out in this split-sheet.'
+  }
+];
+
+function renderSplitLegal(){
+  const el=document.getElementById('split-legal-content');
+  if(!el)return;
+  el.innerHTML=SPLIT_LEGAL_CLAUSES.map(cl=>`
+    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:.625rem;margin-top:.25rem">
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px">${cl.title}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.7">${cl.body}</div>
+    </div>`).join('');
+}
+
 function buildReview(){
+  splitInit();
   const title=document.getElementById('r-title')?.value||'—';
   const artist=document.getElementById('r-artist')?.value||'—';
   const genre=document.getElementById('r-genre')?.value||'—';
@@ -4398,6 +4634,33 @@ async function requestNotifPermission(){
 }
 
 // ── LANDING ENHANCEMENTS ──────────────────────────────
+// ── TITLE FORMAT SAFEGUARD ────────────────────────────
+const FORBIDDEN_TITLE_PHRASES=[
+  {re:/feat\.?/i, field:'Featured artists', hint:'r-has-feat'},
+  {re:/ft\.?/i,   field:'Featured artists', hint:'r-has-feat'},
+  {re:/with/i,    field:'Featured artists', hint:'r-has-feat'},
+  {re:/prod\.?/i, field:'Producer credits', hint:null},
+  {re:/produced by/i, field:'Producer credits', hint:null},
+  {re:/remix/i,   field:'Remixer artists', hint:'r-has-remix'},
+];
+function checkTitleFormat(input, warnId){
+  const val=input.value;
+  const warnEl=document.getElementById(warnId);
+  if(!warnEl)return;
+  for(const rule of FORBIDDEN_TITLE_PHRASES){
+    if(rule.re.test(val)){
+      const hintHtml=rule.hint
+        ?`<br>Use the <strong>"${rule.field}"</strong> field below instead — DSPs index contributors separately.`
+        :`<br>Use the <strong>Admin Notes</strong> field to credit producers — DSP title fields must be clean.`;
+      warnEl.innerHTML=`<strong>⚠ DSP Guideline Violation:</strong> Titles cannot contain inline contributor tags like <code>${val.match(rule.re)?.[0]}</code>.${hintHtml}`;
+      warnEl.style.display='block';
+      return;
+    }
+  }
+  warnEl.style.display='none';
+  warnEl.innerHTML='';
+}
+
 function toggleFaq(el){
   const isOpen=el.classList.contains('open');
   document.querySelectorAll('.faq-item').forEach(f=>f.classList.remove('open'));
