@@ -717,6 +717,22 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .split-ledger-ok{color:#34d399;font-weight:700}
 .split-ledger-warn{color:#fbbf24;font-weight:700}
 .split-ledger-over{color:#f87171;font-weight:700}
+
+/* ── CREDITS & COMPOSITION ── */
+.credits-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;background:var(--card);border:1px solid var(--line);border-radius:10px;cursor:pointer;margin-bottom:6px;transition:border-color .15s}
+.credits-toggle-row:hover{border-color:rgba(212,175,55,.3)}
+.credits-toggle-left{display:flex;align-items:center;gap:.875rem}
+.credits-toggle-icon{width:34px;height:34px;border-radius:8px;background:rgba(212,175,55,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.credits-toggle-icon i{font-size:16px;color:var(--gold)}
+.credits-toggle-title{font-size:13px;font-weight:600;color:#fff}
+.credits-toggle-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px}
+.credits-toggle-switch{width:38px;height:22px;border-radius:11px;background:rgba(255,255,255,.1);position:relative;transition:background .2s;flex-shrink:0}
+.credits-toggle-switch::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s,background .2s}
+.credits-toggle-switch.on{background:var(--gold)}
+.credits-toggle-switch.on::after{transform:translateX(16px);background:#fff}
+.credits-field{background:#08080C;border:1px solid var(--line);border-radius:8px;padding:.875rem;margin-bottom:8px;margin-top:-2px}
+.credits-input{width:100%;background:transparent;border:none;outline:none;color:#fff;font-size:13px;font-family:Inter,sans-serif}
+.credits-input::placeholder{color:rgba(255,255,255,.3)}
 </style>
 </head>
 <body>
@@ -1473,6 +1489,172 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" id="r-has-remix" style="accent-color:var(--gold)" onchange="document.getElementById('r-remix-wrap').style.display=this.checked?'block':'none'"> Add Remixer artists</label>
               <div id="r-remix-wrap" style="display:none;margin-top:.75rem"><div class="fg"><label>Remixer Artists</label><input id="r-remixer" type="text" placeholder="Separate with commas"></div></div>
             </div>
+            <!-- CREDITS & COMPOSITION -->
+            <div style="margin-top:1.75rem;padding-top:1.75rem;border-top:1px solid rgba(255,255,255,.07)">
+              <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none" onclick="toggleCredits()">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <i class="ti ti-users" style="color:var(--gold);font-size:16px"></i>
+                  <div style="font-size:16px;font-weight:700;color:#fff">Credits & Composition</div>
+                  <span style="font-size:11px;color:rgba(255,255,255,.35);background:rgba(255,255,255,.07);padding:2px 8px;border-radius:20px">Optional</span>
+                </div>
+                <i class="ti ti-chevron-down" id="credits-chevron" style="color:rgba(255,255,255,.4);font-size:18px;transition:transform .2s"></i>
+              </div>
+              <div id="credits-body" style="display:none;margin-top:1.25rem">
+
+                <!-- PRODUCER -->
+                <div class="credits-toggle-row" onclick="toggleCredit('producer')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon"><i class="ti ti-device-audio-tape"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">Producer</div>
+                      <div class="credits-toggle-sub">Beat maker / instrumental producer</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-producer"></div>
+                </div>
+                <div class="credits-field" id="cf-producer" style="display:none">
+                  <input type="text" id="r-producer" placeholder="Producer name(s), separate with commas" class="credits-input">
+                </div>
+
+                <!-- SONGWRITER -->
+                <div class="credits-toggle-row" onclick="toggleCredit('songwriter')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon"><i class="ti ti-pencil"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">Songwriter</div>
+                      <div class="credits-toggle-sub">Wrote the lyrics</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-songwriter"></div>
+                </div>
+                <div class="credits-field" id="cf-songwriter" style="display:none">
+                  <input type="text" id="r-songwriter" placeholder="Songwriter name(s), separate with commas" class="credits-input">
+                </div>
+
+                <!-- COMPOSER -->
+                <div class="credits-toggle-row" onclick="toggleCredit('composer')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon"><i class="ti ti-music"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">Composer</div>
+                      <div class="credits-toggle-sub">Composed the melody / instrumental score</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-composer"></div>
+                </div>
+                <div class="credits-field" id="cf-composer" style="display:none">
+                  <input type="text" id="r-composer" placeholder="Composer name(s), separate with commas" class="credits-input">
+                </div>
+
+                <!-- MIXING ENGINEER -->
+                <div class="credits-toggle-row" onclick="toggleCredit('mixing')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon"><i class="ti ti-adjustments-horizontal"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">Mixing Engineer</div>
+                      <div class="credits-toggle-sub">Mixed the final audio</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-mixing"></div>
+                </div>
+                <div class="credits-field" id="cf-mixing" style="display:none">
+                  <input type="text" id="r-mixing" placeholder="Mixing engineer name(s)" class="credits-input">
+                </div>
+
+                <!-- MASTERING ENGINEER -->
+                <div class="credits-toggle-row" onclick="toggleCredit('mastering')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon"><i class="ti ti-wave-sine"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">Mastering Engineer</div>
+                      <div class="credits-toggle-sub">Mastered the final audio</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-mastering"></div>
+                </div>
+                <div class="credits-field" id="cf-mastering" style="display:none">
+                  <input type="text" id="r-mastering" placeholder="Mastering engineer name(s)" class="credits-input">
+                </div>
+
+                <!-- RECORDING ENGINEER -->
+                <div class="credits-toggle-row" onclick="toggleCredit('recording')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon"><i class="ti ti-microphone"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">Recording Engineer</div>
+                      <div class="credits-toggle-sub">Recorded the session</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-recording"></div>
+                </div>
+                <div class="credits-field" id="cf-recording" style="display:none">
+                  <input type="text" id="r-recording" placeholder="Recording engineer name(s)" class="credits-input">
+                </div>
+
+                <!-- EXECUTIVE PRODUCER -->
+                <div class="credits-toggle-row" onclick="toggleCredit('exec')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon"><i class="ti ti-crown"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">Executive Producer</div>
+                      <div class="credits-toggle-sub">Oversaw the project</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-exec"></div>
+                </div>
+                <div class="credits-field" id="cf-exec" style="display:none">
+                  <input type="text" id="r-exec" placeholder="Executive producer name(s)" class="credits-input">
+                </div>
+
+                <!-- PUBLISHER -->
+                <div class="credits-toggle-row" onclick="toggleCredit('publisher')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon"><i class="ti ti-building"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">Publisher</div>
+                      <div class="credits-toggle-sub">Music publishing company</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-publisher"></div>
+                </div>
+                <div class="credits-field" id="cf-publisher" style="display:none">
+                  <input type="text" id="r-publisher" placeholder="Publisher / PRO name" class="credits-input">
+                </div>
+
+                <!-- ISWC -->
+                <div class="credits-toggle-row" onclick="toggleCredit('iswc')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon"><i class="ti ti-barcode"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">ISWC Code</div>
+                      <div class="credits-toggle-sub">International Standard Musical Work Code</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-iswc"></div>
+                </div>
+                <div class="credits-field" id="cf-iswc" style="display:none">
+                  <input type="text" id="r-iswc" placeholder="e.g. T-034.524.680-1" class="credits-input" style="font-family:monospace">
+                </div>
+
+                <!-- SAMPLED WORK -->
+                <div class="credits-toggle-row" onclick="toggleCredit('sample')">
+                  <div class="credits-toggle-left">
+                    <div class="credits-toggle-icon" style="background:rgba(239,68,68,.15)"><i class="ti ti-alert-triangle" style="color:#f87171"></i></div>
+                    <div>
+                      <div class="credits-toggle-title">Contains a Sample</div>
+                      <div class="credits-toggle-sub">Declare any interpolations or samples used</div>
+                    </div>
+                  </div>
+                  <div class="credits-toggle-switch" id="sw-sample"></div>
+                </div>
+                <div class="credits-field" id="cf-sample" style="display:none">
+                  <input type="text" id="r-sample" placeholder='e.g. "Gold Digger" by Kanye West — cleared' class="credits-input">
+                  <div style="font-size:11px;color:#fbbf24;margin-top:5px"><i class="ti ti-info-circle"></i> You must have written clearance before distribution. Uncleared samples will result in takedown.</div>
+                </div>
+
+              </div>
+            </div>
+
             <!-- TRACKLIST -->
             <div style="margin-top:1.75rem;padding-top:1.75rem;border-top:1px solid rgba(255,255,255,.07)">
               <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:1rem">Tracklist</div>
@@ -2451,6 +2633,39 @@ function checkTitleFormat(input,warnId){
   warnEl.innerHTML='';
 }
 
+// ── CREDITS TOGGLES ──────────────────────────────────
+const _creditStates={};
+function toggleCredits(){
+  const body=document.getElementById('credits-body');
+  const chevron=document.getElementById('credits-chevron');
+  if(!body)return;
+  const open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  if(chevron) chevron.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+function toggleCredit(key){
+  _creditStates[key]=!_creditStates[key];
+  const sw=document.getElementById('sw-'+key);
+  const field=document.getElementById('cf-'+key);
+  if(sw) sw.classList.toggle('on',_creditStates[key]);
+  if(field) field.style.display=_creditStates[key]?'block':'none';
+  if(_creditStates[key]){
+    const input=document.getElementById('r-'+key);
+    if(input) setTimeout(()=>input.focus(),50);
+  }
+}
+function getCreditsData(){
+  const keys=['producer','songwriter','composer','mixing','mastering','recording','exec','publisher','iswc','sample'];
+  const data={};
+  keys.forEach(k=>{
+    if(_creditStates[k]){
+      const val=document.getElementById('r-'+k)?.value?.trim();
+      if(val) data[k]=val;
+    }
+  });
+  return data;
+}
+
 function toggleFaq(el){
   const isOpen=el.classList.contains('open');
   document.querySelectorAll('.faq-item').forEach(f=>f.classList.remove('open'));
@@ -3220,6 +3435,16 @@ function filterStores(type,btn){
   document.querySelectorAll('.store-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   document.querySelectorAll('.store-chip').forEach(el=>{const sn=el.querySelector('.store-chip-name')?.textContent;const store=ALL_STORES.find(s=>s.name===sn);if(!store)return;el.style.display=(type==='all'||store.type===type)?'flex':'none';});
 }
+function buildCreditsReview(){
+  const credits=getCreditsData();
+  if(!Object.keys(credits).length) return '';
+  const labels={producer:'Producer',songwriter:'Songwriter',composer:'Composer',
+    mixing:'Mix Engineer',mastering:'Master Engineer',recording:'Recording Engineer',
+    exec:'Exec Producer',publisher:'Publisher',iswc:'ISWC',sample:'Sample'};
+  const rows=Object.entries(credits).map(([k,v])=>'<div class="review-row"><span class="review-label">'+labels[k]+'</span><span class="review-val">'+esc(v)+'</span></div>').join('');
+  return '<div style="border-top:1px solid rgba(255,255,255,.07);margin-top:.5rem;padding-top:.5rem">'+rows+'</div>';
+}
+
 function buildReview(){
   const title=document.getElementById('r-title')?.value||'—';const artist=document.getElementById('r-artist')?.value||'—';
   const genre=document.getElementById('r-genre')?.value||'—';const date=document.getElementById('r-date')?.value||'—';
@@ -3246,9 +3471,21 @@ async function submitRelease(){
       const {error:ae}=await sb.storage.from('audio').upload(ap,track.file);if(ae)throw new Error('Audio upload failed: '+ae.message);
       audioPaths.push(ap);
     }
+    const credits=getCreditsData();
+    const creditLines=Object.entries(credits).map(([k,v])=>{
+      const labels={producer:'Producer',songwriter:'Songwriter',composer:'Composer',
+        mixing:'Mix Engineer',mastering:'Master Engineer',recording:'Recording Engineer',
+        exec:'Exec Producer',publisher:'Publisher',iswc:'ISWC',sample:'Sample'};
+      return (labels[k]||k)+': '+v;
+    });
+    const featArtist=document.getElementById('r-feat')?.value?.trim();
+    const remixer=document.getElementById('r-remixer')?.value?.trim();
     const extraInfo=[
       document.getElementById('r-label')?.value?'Label: '+document.getElementById('r-label').value:'',
       document.getElementById('r-copyright')?.value?'(c) '+document.getElementById('r-copyright').value:'',
+      featArtist?'Feat: '+featArtist:'',
+      remixer?'Remixer: '+remixer:'',
+      ...creditLines,
       wizToggleState['explicit']==='yes'?'EXPLICIT CONTENT':'',
       'Stores: '+wizStores.join(', ')
     ].filter(Boolean).join(' | ');
