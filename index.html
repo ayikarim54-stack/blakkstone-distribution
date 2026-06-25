@@ -798,6 +798,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .wiz-row{grid-template-columns:1fr}
   .wiz-center{padding:1.25rem}
 }
+
+/* ── ANALYTICS RANGE BUTTONS ── */
+.an-range-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.12);color:rgba(255,255,255,.45);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
+.an-range-btn:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.an-range-btn.active{background:var(--gold);border-color:var(--gold);color:#000}
+.an-store-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);background:transparent;font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+.an-store-pill:hover{border-color:rgba(255,255,255,.3);color:#fff}
+.an-store-pill.active{border-color:var(--gold);color:var(--gold);background:rgba(212,175,55,.1)}
 </style>
 </head>
 <body>
@@ -2017,63 +2025,90 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- ANALYTICS -->
     <div class="page" id="page-analytics">
-      <div class="ph">
+      <!-- PAGE HEADER -->
+      <div class="ph" style="margin-bottom:1.5rem">
         <div>
           <h1>Analytics</h1>
-          <p>Streaming performance across all your releases.</p>
+          <p>Real streaming performance across all your releases.</p>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <div style="background:#1e1e35;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 12px;font-size:12px;color:rgba(255,255,255,.4)">
-            <i class="ti ti-calendar"></i> All time
+        <!-- TIME RANGE FILTER -->
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button class="an-range-btn active" id="an-btn-7" onclick="setAnalyticsRange(7,this)">7 days</button>
+          <button class="an-range-btn" id="an-btn-28" onclick="setAnalyticsRange(28,this)">28 days</button>
+          <button class="an-range-btn" id="an-btn-90" onclick="setAnalyticsRange(90,this)">3 months</button>
+          <button class="an-range-btn" id="an-btn-365" onclick="setAnalyticsRange(365,this)">1 year</button>
+          <button class="an-range-btn" id="an-btn-0" onclick="setAnalyticsRange(0,this)">All time</button>
+        </div>
+      </div>
+
+      <!-- HERO STAT CARDS -->
+      <div class="overview-cards" style="margin-bottom:1.5rem">
+        <div class="ov-card ov-card-1">
+          <div class="ov-card-icon"><i class="ti ti-wavesaw-mono"></i></div>
+          <div style="flex:1">
+            <div class="ov-card-label">Total Streams</div>
+            <div class="ov-card-value" id="a-streams">—</div>
+            <div class="ov-card-sub" id="a-streams-sub">All stores · selected period</div>
+          </div>
+        </div>
+        <div class="ov-card ov-card-2">
+          <div class="ov-card-icon"><i class="ti ti-trending-up"></i></div>
+          <div style="flex:1">
+            <div class="ov-card-label">Daily Average</div>
+            <div class="ov-card-value" id="a-daily-avg">—</div>
+            <div class="ov-card-sub">Streams per day</div>
+          </div>
+        </div>
+        <div class="ov-card ov-card-3">
+          <div class="ov-card-icon"><i class="ti ti-music"></i></div>
+          <div style="flex:1">
+            <div class="ov-card-label">Live Releases</div>
+            <div class="ov-card-value" id="a-live">—</div>
+            <div class="ov-card-sub">On DSPs now</div>
+          </div>
+        </div>
+        <div class="ov-card ov-card-4">
+          <div class="ov-card-icon"><i class="ti ti-star"></i></div>
+          <div style="flex:1">
+            <div class="ov-card-label">Best Store</div>
+            <div class="ov-card-value" id="a-best-store" style="font-size:18px">—</div>
+            <div class="ov-card-sub" id="a-best-store-streams">Most streams</div>
           </div>
         </div>
       </div>
 
-      <!-- TOP STREAM STATS -->
-      <div class="an-hero-stats">
-        <div class="an-hero-main">
-          <div class="an-hero-label">Total Streams</div>
-          <div class="an-hero-val" id="a-streams">0</div>
-          <div class="an-hero-sub">Across all live releases · all stores</div>
-        </div>
-        <div class="an-hero-side">
-          <div class="an-mini-stat">
-            <div class="an-mini-label">Daily Average</div>
-            <div class="an-mini-val" id="a-daily-avg">0</div>
-          </div>
-          <div class="an-mini-stat">
-            <div class="an-mini-label">Live Releases</div>
-            <div class="an-mini-val" id="a-live">0</div>
-          </div>
-          <div class="an-mini-stat">
-            <div class="an-mini-label">Best Store</div>
-            <div class="an-mini-val" id="a-best-store" style="font-size:13px">—</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- STREAMS CHART -->
+      <!-- STREAM PERFORMANCE CHART -->
       <div class="chart-card" style="margin-bottom:1.5rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px">
           <div>
             <div style="font-size:15px;font-weight:700;color:#fff">Stream Performance</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px">Estimated monthly streams</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px" id="an-chart-subtitle">Real daily stream data</div>
           </div>
-          <div style="display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <!-- Store filter pills -->
+            <div id="an-store-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.4)">
               <span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span> Streams
             </div>
           </div>
         </div>
-        <canvas id="analytics-chart" height="200"></canvas>
+        <div style="position:relative;height:280px">
+          <canvas id="analytics-chart" style="width:100%;height:280px"></canvas>
+          <div id="an-chart-empty" style="display:none;position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.3)">
+            <i class="ti ti-chart-line" style="font-size:40px;margin-bottom:.75rem;opacity:.3"></i>
+            <div style="font-size:14px;font-weight:600">No stream data yet</div>
+            <div style="font-size:12px;margin-top:4px;opacity:.6">Admin can add daily stream entries in the Admin panel</div>
+          </div>
+        </div>
       </div>
 
-      <!-- STORE BREAKDOWN + TOP RELEASES side by side -->
+      <!-- STORE BREAKDOWN + TOP RELEASES -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
-        <!-- STORE BREAKDOWN -->
+        <!-- REAL STORE BREAKDOWN -->
         <div class="chart-card" style="margin-bottom:0">
           <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
             <i class="ti ti-chart-bar" style="color:var(--gold)"></i> Streams by Store
+            <span style="font-size:11px;font-weight:400;color:rgba(255,255,255,.35);margin-left:4px">Real data</span>
           </div>
           <div id="an-stores-breakdown"></div>
         </div>
@@ -2086,13 +2121,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
 
-      <!-- PER RELEASE TABLE -->
+      <!-- ALL RELEASES TABLE -->
       <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
         <i class="ti ti-list" style="color:var(--gold)"></i> All Releases
       </div>
       <div class="dark-table-wrap" style="margin-bottom:1.5rem">
         <table>
-          <thead><tr><th>Release</th><th>Artist</th><th>Genre</th><th>Streams</th><th>Share</th><th>Status</th></tr></thead>
+          <thead><tr><th>Release</th><th>Artist</th><th>Genre</th><th>Total Streams</th><th>Share</th><th>Status</th></tr></thead>
           <tbody id="an-releases-tbody"></tbody>
         </table>
       </div>
@@ -2337,6 +2372,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="atab" id="atab-releases" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
         <div class="atab" id="atab-users" onclick="switchAdminTab('users',this)"><i class="ti ti-users"></i> Artists</div>
         <div class="atab" id="atab-payouts" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts <span id="payout-alert" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
+        <div class="atab" id="atab-streams" onclick="switchAdminTab('streams',this)"><i class="ti ti-wavesaw-mono"></i> Streams</div>
         <div class="atab" id="atab-subs" onclick="switchAdminTab('subs',this)"><i class="ti ti-crown"></i> Subscriptions</div>
         <div class="atab" id="atab-reports" onclick="switchAdminTab('reports',this)"><i class="ti ti-file-analytics"></i> Reports</div>
         <div class="atab" id="atab-messages" onclick="switchAdminTab('messages',this)"><i class="ti ti-message"></i> Messages <span id="msg-alert" style="display:none;background:#3b82f6;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
@@ -2419,6 +2455,76 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <thead><tr><th>Account ID</th><th>Artist</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
           <tbody id="admin-payouts-tbody"></tbody>
         </table></div>
+      </div>
+
+      <!-- ── STREAMS TAB ── -->
+      <div class="admin-section" id="admin-streams">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
+          <!-- ADD DAILY STREAMS FORM -->
+          <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-plus"></i> Add Daily Stream Entry</div>
+            <div class="fg" style="margin-top:.75rem">
+              <label>Artist / User</label>
+              <select id="str-user-select" class="stsel" style="width:100%;padding:9px 12px;font-size:13px;background:#131320;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff">
+                <option value="">Select artist...</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Release</label>
+              <select id="str-release-select" class="stsel" style="width:100%;padding:9px 12px;font-size:13px;background:#131320;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff">
+                <option value="">Select release...</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Date</label>
+              <input type="date" id="str-date" style="width:100%;background:#131320;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 12px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none">
+            </div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin:.875rem 0 .5rem">Streams per Store</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="str-store-inputs">
+              <!-- Generated by JS -->
+            </div>
+            <div class="fg" style="margin-top:.875rem">
+              <label>Notes (optional)</label>
+              <input type="text" id="str-notes" placeholder="e.g. from promo campaign" style="background:#131320;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 12px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;width:100%">
+            </div>
+            <div style="display:flex;gap:8px;margin-top:1rem">
+              <button class="btn btn-purple" onclick="submitStreamEntry()" style="flex:1;justify-content:center"><i class="ti ti-device-floppy"></i> Save Entry</button>
+              <button class="btn" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="clearStreamForm()"><i class="ti ti-x"></i> Clear</button>
+            </div>
+          </div>
+          <!-- QUICK STATS -->
+          <div>
+            <div class="adm-card" style="margin-bottom:1rem">
+              <div class="adm-card-title"><i class="ti ti-chart-bar"></i> Platform Totals</div>
+              <div id="str-platform-totals" style="margin-top:.5rem"></div>
+            </div>
+            <div class="adm-card">
+              <div class="adm-card-title"><i class="ti ti-history"></i> Recent Entries</div>
+              <div id="str-recent-entries" style="margin-top:.5rem;font-size:12px;color:rgba(255,255,255,.4)">Loading...</div>
+            </div>
+          </div>
+        </div>
+        <!-- ALL STREAM ENTRIES TABLE -->
+        <div class="adm-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+            <div class="adm-card-title" style="margin-bottom:0"><i class="ti ti-table"></i> All Stream Entries</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="str-filter-user" class="stsel" style="padding:6px 10px" onchange="loadStreamEntries()">
+                <option value="">All artists</option>
+              </select>
+              <select id="str-filter-release" class="stsel" style="padding:6px 10px" onchange="loadStreamEntries()">
+                <option value="">All releases</option>
+              </select>
+              <button class="btn adm-btn-sec btn-sm" onclick="exportCSV('streams')"><i class="ti ti-download"></i> Export</button>
+            </div>
+          </div>
+          <div class="tw">
+            <table>
+              <thead><tr><th>Date</th><th>Artist</th><th>Release</th><th>Spotify</th><th>Apple Music</th><th>YouTube</th><th>Audiomack</th><th>Boomplay</th><th>Others</th><th>Total</th><th>Actions</th></tr></thead>
+              <tbody id="str-entries-tbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- ── SUBSCRIPTIONS TAB ── -->
@@ -3163,45 +3269,217 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal()
 
 
 // ── ANALYTICS ──────────────────────────────────────────
+let anRangeDays=7, anFilterStore='all', anStreamData=[], anReleaseData=[];
+
+function setAnalyticsRange(days,btn){
+  anRangeDays=days;
+  document.querySelectorAll('.an-range-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderAnalyticsChart();
+  updateAnalyticsStats();
+}
+
+function setAnalyticsStore(store,btn){
+  anFilterStore=store;
+  document.querySelectorAll('.an-store-pill').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderAnalyticsChart();
+}
+
 async function loadAnalytics(){
-  const {data}=await sb.from('releases').select('*').eq('user_id',user.id);
-  const live=(data||[]).filter(r=>r.status==='live');const all=data||[];
-  const ts=live.reduce((a,r)=>a+(r.streams||0),0);
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('a-streams',ts.toLocaleString());set('a-live',live.length);set('a-daily-avg',Math.round(ts/30).toLocaleString());
-  const bsEl=document.getElementById('a-best-store');
-  if(bsEl) bsEl.innerHTML=DSP_STORES[0].logo?'<img src="'+DSP_STORES[0].logo+'" width="16" height="16" style="object-fit:contain;vertical-align:middle;margin-right:4px">'+DSP_STORES[0].name:DSP_STORES[0].name;
-  const stEl=document.getElementById('an-stores-breakdown');
-  if(stEl){
-    if(!live.length){stEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No live releases yet</div>';}
-    else{stEl.innerHTML=DSP_STORES.slice(0,7).map(s=>{
-      const est=Math.round(ts*s.share);const barW=Math.round((s.share/DSP_STORES[0].share)*100);
-      const logo=s.logo?'<img src="'+s.logo+'" width="18" height="18" style="object-fit:contain;display:block">':'';
-      return '<div class="an-store-row"><div class="an-store-logo">'+logo+'</div><div class="an-store-name">'+s.name+'</div><div class="an-store-bar-wrap"><div class="an-store-bar-fill" style="width:'+barW+'%"></div></div><div class="an-store-count">'+est.toLocaleString()+'</div></div>';
-    }).join('');}
-  }
-  const topEl=document.getElementById('an-top-releases');
-  if(topEl){
-    const sorted=[...live].sort((a,b)=>(b.streams||0)-(a.streams||0));
-    if(!sorted.length){topEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No live releases yet</div>';}
-    else topEl.innerHTML=sorted.slice(0,5).map((r,i)=>'<div class="an-release-row"><div class="an-release-rank">'+(i+1)+'</div><div class="an-release-art">'+(r.artwork_url?'<img src="'+r.artwork_url+'" alt="">':'')+'</div><div class="an-release-info"><div class="an-release-title">'+esc(r.title)+'</div><div class="an-release-artist">'+esc(r.artist)+'</div></div><div class="an-release-streams">'+(r.streams||0).toLocaleString()+'</div></div>').join('');
-  }
-  const tbody=document.getElementById('an-releases-tbody');
-  if(tbody){
-    if(!all.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';}
-    else tbody.innerHTML=all.map(r=>{
-      const pct=ts>0?Math.round(((r.streams||0)/ts)*100):0;
-      const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
-      const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
-      const art=r.artwork_url?'<img src="'+r.artwork_url+'" style="width:32px;height:32px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:8px">':'';
-      return '<tr><td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong></td><td style="color:rgba(255,255,255,.5)">'+esc(r.artist)+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'—')+'</td><td style="font-weight:700;color:#fff">'+(r.streams||0).toLocaleString()+'</td><td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#D4AF37"></div></div><span style="font-size:11px;color:rgba(255,255,255,.35);width:28px">'+pct+'%</span></div></td><td><span class="badge '+bc+'">'+bl+'</span></td></tr>';
+  const [relRes, streamRes] = await Promise.all([
+    sb.from('releases').select('*').eq('user_id',user.id),
+    sb.from('stream_entries').select('*').eq('user_id',user.id).order('date',{ascending:true}).catch(()=>({data:[]}))
+  ]);
+  anReleaseData = relRes.data||[];
+  anStreamData = streamRes.data||[];
+
+  // Build store filter pills
+  const pillEl = document.getElementById('an-store-pills');
+  if(pillEl){
+    const stores = ['All','Spotify','Apple Music','YouTube Music','Audiomack','Boomplay'];
+    pillEl.innerHTML = stores.map((s,i)=>{
+      const val = i===0?'all':s;
+      return '<button class="an-store-pill'+(val===anFilterStore?' active':'')+(i===0?' active':'')+'" onclick="setAnalyticsStore(\''+val+'\',this)">'+s+'</button>';
     }).join('');
   }
+
+  renderAnalyticsChart();
+  updateAnalyticsStats();
+  renderStoreBreakdown();
+  renderTopReleases();
+  renderReleasesTable();
+}
+
+function getFilteredDates(){
+  const now = new Date();
+  if(anRangeDays===0) return null; // all time
+  const cutoff = new Date(now);
+  cutoff.setDate(cutoff.getDate() - anRangeDays);
+  return cutoff.toISOString().split('T')[0];
+}
+
+function getFilteredStreamData(){
+  const cutoff = getFilteredDates();
+  return anStreamData.filter(e => !cutoff || e.date >= cutoff);
+}
+
+function renderAnalyticsChart(){
+  const filtered = getFilteredStreamData();
+  const canvas = document.getElementById('analytics-chart');
+  const emptyEl = document.getElementById('an-chart-empty');
+  if(!canvas) return;
+
+  if(!filtered.length){
+    if(emptyEl) emptyEl.style.display='flex';
+    canvas.style.display='none';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display='none';
+  canvas.style.display='block';
+
+  // Group by date
+  const byDate={};
+  filtered.forEach(e=>{
+    const streams = anFilterStore==='all'
+      ? (e.total||0)
+      : (e[storeKey(anFilterStore)]||0);
+    byDate[e.date]=(byDate[e.date]||0)+streams;
+  });
+
+  // Build label/data arrays — fill gaps with 0
+  const dates = Object.keys(byDate).sort();
+  let labels=[], vals=[];
+
+  if(anRangeDays>0 && dates.length){
+    // Fill every day in range
+    const start = new Date(getFilteredDates());
+    const end = new Date();
+    const d = new Date(start);
+    while(d<=end){
+      const key = d.toISOString().split('T')[0];
+      labels.push(fmtDateShort(key, anRangeDays));
+      vals.push(byDate[key]||0);
+      d.setDate(d.getDate()+1);
+    }
+    // Thin labels if too many
+    if(labels.length>30){
+      const step=Math.ceil(labels.length/12);
+      labels=labels.map((l,i)=>i%step===0?l:'');
+    }
+  } else {
+    // All time — group by month
+    const byMonth={};
+    Object.entries(byDate).forEach(([date,v])=>{
+      const m=date.slice(0,7);byMonth[m]=(byMonth[m]||0)+v;
+    });
+    Object.entries(byMonth).sort().forEach(([m,v])=>{
+      const [y,mo]=m.split('-');
+      const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      labels.push(months[parseInt(mo)-1]+' '+y.slice(2));
+      vals.push(v);
+    });
+  }
+
+  // Render
+  const subtitle=document.getElementById('an-chart-subtitle');
+  if(subtitle) subtitle.textContent=(anRangeDays===0?'All time':anRangeDays+' day')+' · '+(anFilterStore==='all'?'All stores':anFilterStore);
+
+  setTimeout(()=>renderLineChart('analytics-chart',labels,vals,'#D4AF37',''),50);
+}
+
+function storeKey(storeName){
+  const map={'Spotify':'spotify','Apple Music':'apple_music','YouTube Music':'youtube_music','Audiomack':'audiomack','Boomplay':'boomplay'};
+  return map[storeName]||'total';
+}
+
+function fmtDateShort(dateStr, rangeDays){
+  const d=new Date(dateStr+'T00:00:00');
+  if(rangeDays<=28) return d.getDate()+'/'+(d.getMonth()+1);
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now=new Date();
-  const lbls=Array.from({length:7},(_,i)=>months[(now.getMonth()-6+i+12)%12]);
-  const cd=[0,0,0,0,0,0,ts].map((v,i)=>i===6?v:Math.round(ts*Math.random()*.4));
-  setTimeout(()=>renderLineChart('analytics-chart',lbls,cd,'#D4AF37',''),100);
+  return months[d.getMonth()]+' '+d.getDate();
+}
+
+function updateAnalyticsStats(){
+  const filtered = getFilteredStreamData();
+  const live = anReleaseData.filter(r=>r.status==='live');
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+
+  // Total streams from real entries in range
+  const totalStreams = filtered.reduce((a,e)=>a+(e.total||0),0);
+  const days = anRangeDays||Math.max(1,filtered.length);
+  const daily = filtered.length ? Math.round(totalStreams/Math.max(1,days)) : 0;
+
+  // Best store from real data
+  const storeTotals={spotify:0,apple_music:0,youtube_music:0,audiomack:0,boomplay:0,others:0};
+  filtered.forEach(e=>{
+    Object.keys(storeTotals).forEach(k=>{storeTotals[k]+=(e[k]||0);});
+  });
+  const bestKey=Object.entries(storeTotals).sort((a,b)=>b[1]-a[1])[0];
+  const storeNameMap={spotify:'Spotify',apple_music:'Apple Music',youtube_music:'YouTube Music',audiomack:'Audiomack',boomplay:'Boomplay',others:'Others'};
+  const bestName=bestKey?storeNameMap[bestKey[0]]||'Spotify':'Spotify';
+  const bestCount=bestKey?bestKey[1]:0;
+
+  set('a-streams',totalStreams.toLocaleString());
+  set('a-daily-avg',daily.toLocaleString());
+  set('a-live',live.length);
+  set('a-best-store',bestName);
+  set('a-best-store-streams',bestCount.toLocaleString()+' streams');
+  set('a-streams-sub',(anRangeDays?'Last '+anRangeDays+' days':'All time')+' · all stores');
+}
+
+function renderStoreBreakdown(){
+  const stEl=document.getElementById('an-stores-breakdown');
+  if(!stEl)return;
+
+  const filtered=getFilteredStreamData();
+  const stores=[
+    {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954'},
+    {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44'},
+    {key:'youtube_music',name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000'},
+    {key:'audiomack',name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200'},
+    {key:'boomplay',name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF'},
+    {key:'others',name:'Others',logo:''},
+  ];
+  const totals={};
+  stores.forEach(s=>{totals[s.key]=filtered.reduce((a,e)=>a+(e[s.key]||0),0);});
+  const maxVal=Math.max(...Object.values(totals),1);
+  const totalAll=Object.values(totals).reduce((a,v)=>a+v,0);
+
+  if(!totalAll){
+    stEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No stream data yet for this period</div>';
+    return;
+  }
+  stEl.innerHTML=stores.map(s=>{
+    const v=totals[s.key];if(!v)return'';
+    const barW=Math.round((v/maxVal)*100);
+    const logo=s.logo?'<img src="'+s.logo+'" width="18" height="18" style="object-fit:contain;display:block" onerror="this.style.display=\'none\'">':'';
+    const pct=totalAll>0?Math.round((v/totalAll)*100):0;
+    return '<div class="an-store-row"><div class="an-store-logo">'+logo+'</div><div class="an-store-name">'+s.name+'</div><div class="an-store-bar-wrap"><div class="an-store-bar-fill" style="width:'+barW+'%"></div></div><div class="an-store-count">'+v.toLocaleString()+'<span style="font-size:10px;color:rgba(255,255,255,.3);margin-left:4px">'+pct+'%</span></div></div>';
+  }).filter(Boolean).join('');
+}
+
+function renderTopReleases(){
+  const topEl=document.getElementById('an-top-releases');
+  if(!topEl)return;
+  const live=anReleaseData.filter(r=>r.status==='live').sort((a,b)=>(b.streams||0)-(a.streams||0));
+  if(!live.length){topEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No live releases yet</div>';return;}
+  topEl.innerHTML=live.slice(0,5).map((r,i)=>'<div class="an-release-row"><div class="an-release-rank">'+(i+1)+'</div><div class="an-release-art">'+(r.artwork_url?'<img src="'+r.artwork_url+'" alt="">':'')+'</div><div class="an-release-info"><div class="an-release-title">'+esc(r.title)+'</div><div class="an-release-artist">'+esc(r.artist)+'</div></div><div class="an-release-streams">'+(r.streams||0).toLocaleString()+'</div></div>').join('');
+}
+
+function renderReleasesTable(){
+  const tbody=document.getElementById('an-releases-tbody');
+  if(!tbody)return;
+  const all=anReleaseData;
+  const total=all.reduce((a,r)=>a+(r.streams||0),0);
+  if(!all.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
+  tbody.innerHTML=all.map(r=>{
+    const pct=total>0?Math.round(((r.streams||0)/total)*100):0;
+    const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+    const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+    const art=r.artwork_url?'<img src="'+r.artwork_url+'" style="width:32px;height:32px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:8px">':'';
+    return '<tr><td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong></td><td style="color:rgba(255,255,255,.5)">'+esc(r.artist)+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'—')+'</td><td style="font-weight:700;color:#fff">'+(r.streams||0).toLocaleString()+'</td><td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#D4AF37"></div></div><span style="font-size:11px;color:rgba(255,255,255,.35);width:28px">'+pct+'%</span></div></td><td><span class="badge '+bc+'">'+bl+'</span></td></tr>';
+  }).join('');
 }
 
 // ── ROYALTIES ──────────────────────────────────────────
@@ -4104,6 +4382,7 @@ function switchAdminTab(tab,el){
   if(el) el.classList.add('active');
   if(tab==='reports')loadAdminReports();
   if(tab==='broadcast')loadBroadcastHistory();
+  if(tab==='streams'){initAdminStreams();loadAdminStreamsRecent();}
 }
 function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();toast('Refreshed','ok');}
 async function loadAdminStats(){
@@ -4361,6 +4640,169 @@ async function exportCSV(type){
 }
 function exportArtistsCSV(){exportCSV('artists');}function exportReleasesCSV(){exportCSV('releases');}function exportPayoutsCSV(){exportCSV('payouts');}function exportSubsCSV(){exportCSV('subscriptions');}
 
+
+// ── ADMIN STREAM ENTRIES ──────────────────────────────────
+const STREAM_STORES=[
+  {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954'},
+  {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44'},
+  {key:'youtube_music',name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000'},
+  {key:'audiomack',name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200'},
+  {key:'boomplay',name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF'},
+  {key:'amazon_music',name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA'},
+  {key:'tidal',name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000'},
+  {key:'deezer',name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF'},
+  {key:'others',name:'Others',logo:''},
+];
+
+async function initAdminStreams(){
+  // Populate user selector
+  const {data:profiles}=await sb.from('profiles').select('id,artist_name,full_name,email,account_id');
+  const sel=document.getElementById('str-user-select');
+  const filterSel=document.getElementById('str-filter-user');
+  if(sel){
+    sel.innerHTML='<option value="">Select artist...</option>'+
+      (profiles||[]).map(p=>'<option value="'+p.id+'">'+esc(p.artist_name||p.full_name||p.email)+' ('+esc(p.account_id||'')+')</option>').join('');
+    sel.onchange=()=>loadReleasesForStream(sel.value);
+  }
+  if(filterSel){
+    filterSel.innerHTML='<option value="">All artists</option>'+
+      (profiles||[]).map(p=>'<option value="'+p.id+'">'+esc(p.artist_name||p.full_name||p.email)+'</option>').join('');
+  }
+  // Set today's date
+  const dateInput=document.getElementById('str-date');
+  if(dateInput) dateInput.value=new Date().toISOString().split('T')[0];
+  // Build store inputs
+  buildStreamStoreInputs();
+  // Load entries
+  loadStreamEntries();
+  loadStreamPlatformTotals();
+}
+
+function buildStreamStoreInputs(){
+  const el=document.getElementById('str-store-inputs');
+  if(!el)return;
+  el.innerHTML=STREAM_STORES.map(s=>{
+    const logo=s.logo?'<img src="'+s.logo+'" width="14" height="14" style="object-fit:contain;vertical-align:middle;margin-right:4px">':'';
+    return '<div class="track-fg"><label style="display:flex;align-items:center">'+logo+s.name+'</label><input type="number" id="str-'+s.key+'" min="0" placeholder="0" style="background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;width:100%"></div>';
+  }).join('');
+}
+
+async function loadReleasesForStream(userId){
+  const sel=document.getElementById('str-release-select');
+  if(!sel)return;
+  if(!userId){sel.innerHTML='<option value="">Select release...</option>';return;}
+  const {data}=await sb.from('releases').select('id,title,artist').eq('user_id',userId).order('submitted_at',{ascending:false});
+  sel.innerHTML='<option value="">Select release...</option>'+(data||[]).map(r=>'<option value="'+r.id+'">'+esc(r.title)+' — '+esc(r.artist)+'</option>').join('');
+}
+
+async function submitStreamEntry(){
+  const userId=document.getElementById('str-user-select').value;
+  const releaseId=document.getElementById('str-release-select').value;
+  const date=document.getElementById('str-date').value;
+  if(!userId||!date){toast('Select an artist and date','err');return;}
+
+  const entry={user_id:userId,release_id:releaseId||null,date};
+  let total=0;
+  STREAM_STORES.forEach(s=>{
+    const v=parseInt(document.getElementById('str-'+s.key)?.value||0)||0;
+    entry[s.key]=v;total+=v;
+  });
+  entry.total=total;
+  entry.notes=document.getElementById('str-notes')?.value||null;
+
+  if(!total){toast('Enter streams for at least one store','err');return;}
+
+  try{
+    // Check if entry exists for this user+release+date and upsert
+    const {error}=await sb.from('stream_entries').upsert(entry,{onConflict:'user_id,release_id,date'});
+    if(error)throw error;
+
+    // Update the releases.streams total
+    if(releaseId){
+      const {data:existing}=await sb.from('stream_entries').select('total').eq('release_id',releaseId);
+      const newTotal=(existing||[]).reduce((a,e)=>a+(e.total||0),0);
+      await sb.from('releases').update({streams:newTotal}).eq('id',releaseId);
+    }
+
+    toast('Stream entry saved!','ok');
+    clearStreamForm();
+    loadStreamEntries();
+    loadStreamPlatformTotals();
+  }catch(e){
+    if(e.message?.includes('does not exist')){
+      toast('Run the stream_entries SQL first (see below)','err');
+    } else {
+      toast('Error: '+e.message,'err');
+    }
+  }
+}
+
+function clearStreamForm(){
+  document.getElementById('str-user-select').value='';
+  document.getElementById('str-release-select').innerHTML='<option value="">Select release...</option>';
+  document.getElementById('str-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('str-notes').value='';
+  STREAM_STORES.forEach(s=>{const el=document.getElementById('str-'+s.key);if(el)el.value='';});
+}
+
+async function loadStreamEntries(){
+  const tbody=document.getElementById('str-entries-tbody');
+  if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
+  try{
+    const userFilter=document.getElementById('str-filter-user')?.value;
+    const relFilter=document.getElementById('str-filter-release')?.value;
+    let q=sb.from('stream_entries').select('*, profiles(artist_name,full_name,account_id), releases(title)').order('date',{ascending:false}).limit(100);
+    if(userFilter) q=q.eq('user_id',userFilter);
+    if(relFilter) q=q.eq('release_id',relFilter);
+    const {data,error}=await q;
+    if(error)throw error;
+    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No stream entries yet.</td></tr>';return;}
+    tbody.innerHTML=data.map(e=>{
+      const name=e.profiles?.artist_name||e.profiles?.full_name||'—';
+      const accId=e.profiles?.account_id||'';
+      const rel=e.releases?.title||'(all releases)';
+      return '<tr><td style="color:rgba(255,255,255,.7);font-weight:600">'+esc(e.date)+'</td><td style="font-size:12px"><div style="color:#fff">'+esc(name)+'</div><div style="color:var(--gold);font-size:10px">'+esc(accId)+'</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(rel)+'</td><td style="color:#1DB954">'+((e.spotify||0).toLocaleString())+'</td><td style="color:#FC3C44">'+((e.apple_music||0).toLocaleString())+'</td><td style="color:#FF0000">'+((e.youtube_music||0).toLocaleString())+'</td><td style="color:#FFA200">'+((e.audiomack||0).toLocaleString())+'</td><td style="color:#00C2FF">'+((e.boomplay||0).toLocaleString())+'</td><td style="color:rgba(255,255,255,.4)">'+((e.others||0).toLocaleString())+'</td><td style="font-weight:700;color:var(--gold)">'+((e.total||0).toLocaleString())+'</td><td><button class="btn-danger-outline" style="font-size:10px;padding:2px 6px" onclick="deleteStreamEntry(\''+e.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    }).join('');
+  }catch(e){
+    tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:#fbbf24;padding:1.5rem;font-size:12px">Run the SQL below to create stream_entries table first.</td></tr>';
+  }
+}
+
+async function deleteStreamEntry(id){
+  if(!confirm('Delete this stream entry?'))return;
+  await sb.from('stream_entries').delete().eq('id',id);
+  toast('Entry deleted','ok');
+  loadStreamEntries();loadStreamPlatformTotals();
+}
+
+async function loadStreamPlatformTotals(){
+  const el=document.getElementById('str-platform-totals');
+  if(!el)return;
+  try{
+    const {data}=await sb.from('stream_entries').select('spotify,apple_music,youtube_music,audiomack,boomplay,others,total');
+    if(!data||!data.length){el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">No data yet</div>';return;}
+    const totals={};
+    STREAM_STORES.forEach(s=>{totals[s.key]=data.reduce((a,e)=>a+(e[s.key]||0),0);});
+    const grand=Object.values(totals).reduce((a,v)=>a+v,0);
+    el.innerHTML=STREAM_STORES.map(s=>{
+      if(!totals[s.key])return'';
+      const pct=grand>0?Math.round((totals[s.key]/grand)*100):0;
+      const logo=s.logo?'<img src="'+s.logo+'" width="14" height="14" style="object-fit:contain;vertical-align:middle;margin-right:5px">':'';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px"><span>'+logo+s.name+'</span><span style="color:#fff;font-weight:600">'+totals[s.key].toLocaleString()+' <span style="color:rgba(255,255,255,.3);font-weight:400">('+pct+'%)</span></span></div>';
+    }).filter(Boolean).join('');
+  }catch(e){el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">Run SQL to enable</div>';}
+}
+
+async function loadAdminStreamsRecent(){
+  const el=document.getElementById('str-recent-entries');
+  if(!el)return;
+  try{
+    const {data}=await sb.from('stream_entries').select('date,total,profiles(artist_name)').order('created_at',{ascending:false}).limit(5);
+    if(!data||!data.length){el.innerHTML='No entries yet';return;}
+    el.innerHTML=data.map(e=>'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span>'+esc(e.date)+' · '+esc(e.profiles?.artist_name||'—')+'</span><span style="color:var(--gold);font-weight:600">'+e.total.toLocaleString()+'</span></div>').join('');
+  }catch(e){}
+}
 
 // ── PAYSTACK ──────────────────────────────────────────────
 function openPaystack(plan){
