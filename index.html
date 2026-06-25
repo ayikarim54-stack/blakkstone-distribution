@@ -2062,10 +2062,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <!-- TIME RANGE FILTER -->
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <button class="an-range-btn" id="an-btn-7" onclick="setAnalyticsRange(7,this)">7 days</button>
-          <button class="an-range-btn" id="an-btn-28" onclick="setAnalyticsRange(28,this)">28 days</button>
+          <button class="an-range-btn active" id="an-btn-28" onclick="setAnalyticsRange(28,this)">28 days</button>
           <button class="an-range-btn" id="an-btn-90" onclick="setAnalyticsRange(90,this)">3 months</button>
           <button class="an-range-btn" id="an-btn-365" onclick="setAnalyticsRange(365,this)">1 year</button>
-          <button class="an-range-btn active" id="an-btn-0" onclick="setAnalyticsRange(0,this)">All time</button>
+          <button class="an-range-btn" id="an-btn-0" onclick="setAnalyticsRange(0,this)">All time</button>
         </div>
       </div>
 
@@ -3344,7 +3344,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal()
 
 
 // ── ANALYTICS ──────────────────────────────────────────
-let anRangeDays=0, anFilterStore='all', anStreamData=[], anReleaseData=[];
+let anRangeDays=28, anFilterStore='all', anStreamData=[], anReleaseData=[];
 
 function setAnalyticsRange(days,btn){
   anRangeDays=days;
