@@ -2041,13 +2041,31 @@ tr:hover td{background:rgba(255,255,255,.02)}
             </div>
           </div>
 
+          <!-- STORE + COUNTRY BREAKDOWN -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
+            <!-- STORE BREAKDOWN -->
+            <div class="chart-card" style="margin-bottom:0">
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+                <i class="ti ti-chart-bar" style="color:var(--gold)"></i> Earnings by Store
+              </div>
+              <div id="roy-stores-breakdown"></div>
+            </div>
+            <!-- COUNTRY BREAKDOWN -->
+            <div class="chart-card" style="margin-bottom:0">
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+                <i class="ti ti-world" style="color:var(--gold)"></i> Top Countries
+              </div>
+              <div id="roy-countries-breakdown"></div>
+            </div>
+          </div>
+
           <!-- RELEASE BREAKDOWN TABLE -->
           <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
             <i class="ti ti-music" style="color:var(--gold)"></i> Earnings by Release
           </div>
           <div class="dark-table-wrap" style="margin-bottom:1.5rem">
             <table>
-              <thead><tr><th>Release</th><th>Streams</th><th>Gross</th><th>Commission</th><th>Your Payout</th><th>Status</th></tr></thead>
+              <thead><tr><th>Release</th><th>Streams Paid</th><th>Gross</th><th>Commission</th><th>Your Payout</th><th>Period</th><th>Status</th></tr></thead>
               <tbody id="royalty-tbody"></tbody>
             </table>
           </div>
@@ -2665,6 +2683,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
                   style="width:110px;background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:14px;font-weight:700;color:#fff;font-family:Inter,sans-serif;outline:none;text-align:right">
               </div>
             </div>
+
+            <!-- COUNTRY BREAKDOWN -->
+            <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin:.875rem 0 .5rem">
+              <i class="ti ti-world" style="margin-right:4px"></i>Top Countries (streams + earnings)
+            </div>
+            <div id="roy-country-rows">
+              <!-- rows added by JS -->
+            </div>
+            <button class="btn btn-sm" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);margin-top:6px;font-size:12px" onclick="addRoyCountryRow()">
+              <i class="ti ti-plus"></i> Add Country
+            </button>
 
             <div class="fg" style="margin-top:.875rem">
               <label>Notes (optional)</label>
@@ -3780,20 +3809,25 @@ function renderReleasesTable(){
 
 // ── ROYALTIES ──────────────────────────────────────────
 async function loadRoyalties(){
-  const [{data:relData},{data:payoutData}]=await Promise.all([
+  const [{data:relData},{data:payoutData},{data:royEntries}]=await Promise.all([
     sb.from('releases').select('*').eq('user_id',user.id),
-    sb.from('payouts').select('amount,status').eq('user_id',user.id)
+    sb.from('payouts').select('amount,status').eq('user_id',user.id),
+    sb.from('royalty_entries').select('*').eq('user_id',user.id).order('date_start',{ascending:false}).catch(()=>({data:[]}))
   ]);
-  const rl=(relData||[]).filter(r=>(r.earnings||0)>0);const allRel=relData||[];
+  const allRel=relData||[];
+  const entries=royEntries||[];
   const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
-  const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
+  const gross=allRel.reduce((a,r)=>a+(r.earnings||0),0);
   const comm=isPaid?0:gross*COMM;const totalPayout=gross-comm;
   const paidOut3=(payoutData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingP=(payoutData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const available=Math.max(0,totalPayout-paidOut3-pendingP);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('r-gross','$'+gross.toFixed(2));set('r-commission',isPaid?'$0.00':'-$'+comm.toFixed(2));
-  set('r-payout','$'+available.toFixed(2));set('r-updated',rl.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—');
+  set('r-gross','$'+gross.toFixed(2));
+  set('r-commission',isPaid?'$0.00':'-$'+comm.toFixed(2));
+  set('r-payout','$'+available.toFixed(2));
+  const latestEntry=entries[0];
+  set('r-updated',latestEntry?latestEntry.date_start.slice(0,7):new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}));
   const cSub=document.getElementById('r-comm-sub');if(cSub) cSub.textContent=isPaid?'No commission (paid plan)':'Blakkstone 9% commission';
   const commBar=document.getElementById('commission-bar');
   if(commBar){
@@ -3801,25 +3835,144 @@ async function loadRoyalties(){
     else if(pendingP>0) commBar.innerHTML='<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1.25rem"><i class="ti ti-clock"></i> $'+pendingP.toFixed(2)+' pending payout.</div>';
     else commBar.innerHTML='';
   }
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // ── Earnings chart from real entries
+  const byMonth={};
+  entries.forEach(e=>{
+    const m=e.date_start.slice(0,7);
+    byMonth[m]=(byMonth[m]||0)+(e.total||0);
+  });
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const now=new Date();
-  const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
-  const cd=[0,0,0,0,0,gross].map((v,i)=>i===5?v:parseFloat((gross*Math.random()*.3).toFixed(2)));
-  requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('earnings-chart',labels,cd,'#D4AF37')));
+  const chartLabels=Array.from({length:6},(_,i)=>{
+    const d=new Date(now.getFullYear(),now.getMonth()-5+i,1);
+    return MONTHS[d.getMonth()];
+  });
+  const chartVals=Array.from({length:6},(_,i)=>{
+    const d=new Date(now.getFullYear(),now.getMonth()-5+i,1);
+    const key=d.toISOString().slice(0,7);
+    return byMonth[key]||0;
+  });
+  requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('earnings-chart',chartLabels,chartVals,'#D4AF37')));
+
+  // ── Real store breakdown from royalty_entries
+  const royStoreEl=document.getElementById('roy-stores-breakdown');
+  if(royStoreEl){
+    const storeTotals={spotify:0,apple_music:0,youtube_music:0,audiomack:0,boomplay:0,amazon_music:0,tidal:0,deezer:0,others:0};
+    entries.forEach(e=>{Object.keys(storeTotals).forEach(k=>{storeTotals[k]+=(e[k]||0);});});
+    const grandTotal=Object.values(storeTotals).reduce((a,v)=>a+v,0);
+    const maxVal=Math.max(...Object.values(storeTotals),0.01);
+    if(!grandTotal){
+      royStoreEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No store data yet</div>';
+    } else {
+      const storeMap=[
+        {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954'},
+        {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44'},
+        {key:'youtube_music',name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000'},
+        {key:'audiomack',name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200'},
+        {key:'boomplay',name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF'},
+        {key:'amazon_music',name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA'},
+        {key:'tidal',name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000'},
+        {key:'deezer',name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF'},
+        {key:'others',name:'Others',logo:''},
+      ];
+      royStoreEl.innerHTML=storeMap.map(s=>{
+        const v=storeTotals[s.key];if(!v)return'';
+        const pct=Math.round((v/grandTotal)*100);
+        const barW=Math.round((v/maxVal)*100);
+        const logo=s.logo?'<img src="'+s.logo+'" width="16" height="16" style="object-fit:contain;display:block">':'';
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+          +'<div style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:3px;flex-shrink:0">'+logo+'</div>'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.7);width:90px;flex-shrink:0">'+s.name+'</div>'
+          +'<div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:var(--gold);border-radius:3px"></div></div>'
+          +'<div style="font-size:12px;font-weight:700;color:#34d399;width:55px;text-align:right">$'+v.toFixed(2)+'</div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3);width:28px;text-align:right">'+pct+'%</div>'
+          +'</div>';
+      }).filter(Boolean).join('');
+    }
+  }
+
+  // ── Real country breakdown from royalty_entries.countries JSON
+  const countryEl=document.getElementById('roy-countries-breakdown');
+  if(countryEl){
+    const countryTotals={};
+    entries.forEach(e=>{
+      if(!e.countries)return;
+      let countries=e.countries;
+      if(typeof countries==='string'){try{countries=JSON.parse(countries);}catch(err){return;}}
+      (countries||[]).forEach(row=>{
+        if(!row.country)return;
+        if(!countryTotals[row.country]) countryTotals[row.country]={streams:0,earnings:0};
+        countryTotals[row.country].streams+=(parseInt(row.streams)||0);
+        countryTotals[row.country].earnings+=(parseFloat(row.earnings)||0);
+      });
+    });
+    const sorted=Object.entries(countryTotals).sort((a,b)=>b[1].earnings-a[1].earnings);
+    const totalCountryEarnings=sorted.reduce((a,[,v])=>a+v.earnings,0);
+    const flags={'Ghana':'🇬🇭','Nigeria':'🇳🇬','USA':'🇺🇸','United States':'🇺🇸','UK':'🇬🇧','United Kingdom':'🇬🇧','South Africa':'🇿🇦','Kenya':'🇰🇪','Cameroon':'🇨🇲','Tanzania':'🇹🇿','Uganda':'🇺🇬','Senegal':'🇸🇳','Canada':'🇨🇦','Germany':'🇩🇪','France':'🇫🇷','Other':'🌍'};
+    if(!sorted.length){
+      countryEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0"><i class="ti ti-world-off" style="font-size:28px;opacity:.3;display:block;margin-bottom:.5rem"></i>No country data yet.<br><span style="font-size:12px;opacity:.7">Add country breakdown in Admin → Royalties.</span></div>';
+    } else {
+      const maxEarn=sorted[0][1].earnings||0.01;
+      countryEl.innerHTML=sorted.slice(0,8).map(([country,data])=>{
+        const pct=totalCountryEarnings>0?Math.round((data.earnings/totalCountryEarnings)*100):0;
+        const barW=Math.round((data.earnings/maxEarn)*100);
+        const flag=flags[country]||'🌍';
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+          +'<span style="font-size:18px;flex-shrink:0;width:24px;text-align:center">'+flag+'</span>'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.8);width:90px;flex-shrink:0;font-weight:500">'+esc(country)+'</div>'
+          +'<div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:#60a5fa;border-radius:3px"></div></div>'
+          +'<div style="text-align:right;flex-shrink:0">'
+          +'<div style="font-size:12px;font-weight:700;color:#34d399">$'+data.earnings.toFixed(2)+'</div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">'+data.streams.toLocaleString()+' streams</div>'
+          +'</div>'
+          +'</div>';
+      }).join('');
+    }
+  }
+
+  // ── Best stores (legacy sidebar card still on chart side)
   const bestEl=document.getElementById('best-stores');
-  if(bestEl) bestEl.innerHTML=DSP_STORES.slice(0,5).map(s=>{
-    const rev=(gross*s.share);const logo=s.logo?'<img src="'+s.logo+'" width="18" height="18" style="object-fit:contain;display:block">':'';
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:4px">'+logo+'</div><span style="font-size:13px;color:rgba(255,255,255,.8)">'+s.name+'</span></div><span style="font-size:13px;font-weight:700;color:#34d399">$'+rev.toFixed(2)+'</span></div>';
-  }).join('')||'<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1rem">No earnings yet</div>';
+  if(bestEl){
+    const storeTotals2={spotify:0,apple_music:0,youtube_music:0,audiomack:0,boomplay:0};
+    entries.forEach(e=>{Object.keys(storeTotals2).forEach(k=>{storeTotals2[k]+=(e[k]||0);});});
+    const grandBest=Object.values(storeTotals2).reduce((a,v)=>a+v,0);
+    if(!grandBest){
+      bestEl.innerHTML=DSP_STORES.slice(0,5).map(s=>{
+        const rev=(gross*s.share);const logo=s.logo?'<img src="'+s.logo+'" width="18" height="18" style="object-fit:contain;display:block">':'';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:4px">'+logo+'</div><span style="font-size:13px;color:rgba(255,255,255,.8)">'+s.name+'</span></div><span style="font-size:13px;font-weight:700;color:#34d399">$'+rev.toFixed(2)+'</span></div>';
+      }).join('');
+    } else {
+      bestEl.innerHTML=DSP_STORES.slice(0,5).map(s=>{
+        const k=s.name.toLowerCase().replace(/ /g,'_');const v=storeTotals2[k]||0;if(!v)return'';
+        const logo=s.logo?'<img src="'+s.logo+'" width="18" height="18" style="object-fit:contain;display:block">':'';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:4px">'+logo+'</div><span style="font-size:13px;color:rgba(255,255,255,.8)">'+s.name+'</span></div><span style="font-size:13px;font-weight:700;color:#34d399">$'+v.toFixed(2)+'</span></div>';
+      }).filter(Boolean).join('')||'<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1rem">No data yet</div>';
+    }
+  }
+
+  // ── Earnings by release table — now shows streams paid and period
   const tbody=document.getElementById('royalty-tbody');
   if(tbody){
-    if(!allRel.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
+    if(!allRel.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
     tbody.innerHTML=allRel.map(r=>{
       const rc=isPaid?0:(r.earnings||0)*COMM;const rp=(r.earnings||0)-rc;
       const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
       const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
       const art=r.artwork_url?'<img src="'+r.artwork_url+'" style="width:30px;height:30px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:7px">':'';
-      return '<tr><td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;margin-left:37px">'+esc(r.artist)+'</div></td><td style="color:rgba(255,255,255,.6)">'+(r.streams||0).toLocaleString()+'</td><td>$'+(r.earnings||0).toFixed(2)+'</td><td style="color:#f87171">-$'+rc.toFixed(2)+'</td><td style="color:#34d399;font-weight:700">$'+rp.toFixed(2)+'</td><td><span class="badge '+bc+'">'+bl+'</span></td></tr>';
+      // Get latest entry period for this release
+      const relEntries=entries.filter(e=>e.release_id===r.id);
+      const latestPeriod=relEntries.length?relEntries[0].date_start.slice(0,7):'—';
+      const paidStreams=relEntries.reduce((a,e)=>a+(e.streams||0),0);
+      return '<tr>'
+        +'<td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;margin-left:37px">'+esc(r.artist)+'</div></td>'
+        +'<td style="color:rgba(255,255,255,.6)">'+(paidStreams||r.streams||0).toLocaleString()+'</td>'
+        +'<td>$'+(r.earnings||0).toFixed(2)+'</td>'
+        +'<td style="color:#f87171">-$'+rc.toFixed(2)+'</td>'
+        +'<td style="color:#34d399;font-weight:700">$'+rp.toFixed(2)+'</td>'
+        +'<td style="color:rgba(255,255,255,.4);font-size:12px">'+latestPeriod+'</td>'
+        +'<td><span class="badge '+bc+'">'+bl+'</span></td>'
+        +'</tr>';
     }).join('');
   }
 }
@@ -5423,6 +5576,48 @@ const ROY_STORES=[
   {key:'others',name:'Others',logo:''},
 ];
 
+// Country row management for admin royalty form
+let royCountryRows=[];
+
+function addRoyCountryRow(){
+  const id='rc_'+Date.now();
+  royCountryRows.push(id);
+  const el=document.getElementById('roy-country-rows');
+  if(!el)return;
+  const div=document.createElement('div');
+  div.id='row-'+id;
+  div.style.cssText='display:grid;grid-template-columns:1fr 80px 80px 24px;gap:6px;margin-bottom:6px;align-items:center';
+  div.innerHTML='<input type="text" placeholder="Country (e.g. Ghana)" data-field="country" '
+    +'style="background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none">'
+    +'<input type="number" placeholder="Streams" data-field="streams" min="0" '
+    +'style="background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;text-align:right">'
+    +'<input type="number" placeholder="$0.00" data-field="earnings" min="0" step="0.01" '
+    +'style="background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;text-align:right">'
+    +'<button onclick="removeRoyCountryRow(this.dataset.rid)" data-rid="'+id+'" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.25);font-size:18px;padding:0;line-height:1">×</button>';
+  el.appendChild(div);
+}
+
+function removeRoyCountryRow(id){
+  const el=document.getElementById('row-'+id);if(el)el.remove();
+  royCountryRows=royCountryRows.filter(r=>r!==id);
+}
+
+function getRoyCountryData(){
+  return royCountryRows.map(id=>{
+    const row=document.getElementById('row-'+id);if(!row)return null;
+    const country=row.querySelector('[data-field="country"]')?.value?.trim();
+    const streams=parseInt(row.querySelector('[data-field="streams"]')?.value||0)||0;
+    const earnings=parseFloat(row.querySelector('[data-field="earnings"]')?.value||0)||0;
+    if(!country)return null;
+    return {country,streams,earnings};
+  }).filter(Boolean);
+}
+
+function clearRoyCountryRows(){
+  const el=document.getElementById('roy-country-rows');if(el)el.innerHTML='';
+  royCountryRows=[];
+}
+
 async function initAdminRoyalties(){
   const {data:profiles}=await sb.from('profiles').select('id,artist_name,full_name,email,account_id');
   const sel=document.getElementById('roy-user-select');
@@ -5491,6 +5686,8 @@ async function submitRoyaltyEntry(){
   entry.total=parseFloat(total.toFixed(2));
   entry.streams=parseInt(document.getElementById('roy-streams')?.value||0)||0;
   entry.notes=document.getElementById('roy-notes')?.value||null;
+  const countryData=getRoyCountryData();
+  entry.countries=countryData.length?JSON.stringify(countryData):null;
 
   if(!entry.total){toast('Enter earnings for at least one store','err');return;}
 
@@ -5526,6 +5723,7 @@ async function submitRoyaltyEntry(){
 }
 
 function clearRoyForm(){
+  clearRoyCountryRows();
   document.getElementById('roy-user-select').value='';
   document.getElementById('roy-release-select').innerHTML='<option value="">Select release...</option>';
   document.getElementById('roy-notes').value='';
