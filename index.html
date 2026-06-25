@@ -3284,11 +3284,16 @@ async function loadReleases(){
   const pending=releases.filter(r=>r.status==='pending').length;
   const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
   const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
-  const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
-  const payout=isPaid?earnings:earnings*(1-COMM);
+  const isPaidPlan=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
+  const grossEarnings=isPaidPlan?earnings:earnings*(1-COMM);
+  // Subtract paid payouts so balance stays accurate
+  const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',user.id);
+  const paidOut2=(payoutsData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const pendingOut=(payoutsData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const availableBalance=Math.max(0,grossEarnings-paidOut2-pendingOut);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   set('s-total',releases.length);set('s-live-sub',live+' live on DSPs');
-  set('s-pending',pending);set('s-streams',streams.toLocaleString());set('s-earnings','$'+payout.toFixed(2));
+  set('s-pending',pending);set('s-streams',streams.toLocaleString());set('s-earnings','$'+availableBalance.toFixed(2));
   const rcb=document.getElementById('releases-count-badge');if(rcb) rcb.textContent=releases.length>0?releases.length+' total':'';
   const grid=document.getElementById('ov-releases-grid');
   if(grid){const cards=releases.slice(0,8).map(r=>releaseGridCard(r)).join('');grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';}
@@ -3646,8 +3651,9 @@ async function loadRoyalties(){
   const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
   const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
   const comm=isPaid?0:gross*COMM;const totalPayout=gross-comm;
+  const paidOut3=(payoutData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingP=(payoutData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
-  const available=Math.max(0,totalPayout-pendingP);
+  const available=Math.max(0,totalPayout-paidOut3-pendingP);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   set('r-gross','$'+gross.toFixed(2));set('r-commission',isPaid?'$0.00':'-$'+comm.toFixed(2));
   set('r-payout','$'+available.toFixed(2));set('r-updated',rl.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—');
@@ -3695,8 +3701,10 @@ async function loadPayout(){
   const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
   const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
   const afterComm=isPaid?gross:gross*(1-COMM);
+  // Subtract ALL non-failed/cancelled payouts from balance
+  const paidOut=(payoutData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingP=(payoutData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
-  const bal=Math.max(0,afterComm-pendingP);
+  const bal=Math.max(0,afterComm-paidOut-pendingP);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   set('payout-balance','$'+bal.toFixed(2));set('payout-available-label','$'+bal.toFixed(2));set('payout-pending-label','$'+pendingP.toFixed(2));
   const barEl=document.getElementById('payout-bar');if(barEl) barEl.style.width=Math.min(100,(bal/(afterComm||1))*100)+'%';
@@ -4910,10 +4918,41 @@ async function updateField(id,field,value){
   await sb.from('releases').update({[field]:val}).eq('id',id);
   toast(field+' saved','ok');
 }
-async function deleteRelease(id){if(!confirm('Remove this release?'))return;await sb.from('releases').delete().eq('id',id);toast('Release removed');loadAdminReleases();loadReleases();loadAdminStats();}
-async function deletePayout(id){if(!confirm('Delete payout?'))return;await sb.from('payouts').delete().eq('id',id);toast('Payout deleted');loadAdminPayouts();loadAdminStats();}
+async function deleteRelease(id){
+  if(!confirm('Remove this release?'))return;
+  const {error}=await sb.from('releases').delete().eq('id',id);
+  if(error){
+    toast('Delete failed — run the admin RLS fix SQL in Supabase','err');
+    console.error('deleteRelease error:',error);
+    return;
+  }
+  toast('Release removed','ok');
+  loadAdminReleases();
+  loadReleases();
+  loadAdminStats();
+}
+async function deletePayout(id){
+  if(!confirm('Delete this payout request?'))return;
+  const {error}=await sb.from('payouts').delete().eq('id',id);
+  if(error){
+    toast('Delete failed — run the admin RLS fix SQL in Supabase','err');
+    console.error('deletePayout error:',error);
+    return;
+  }
+  toast('Payout deleted','ok');
+  loadAdminPayouts();
+  loadAdminStats();
+  loadNotifications();
+}
 async function updateUserPlan(id,plan){await sb.from('profiles').update({plan}).eq('id',id);toast('Plan updated','ok');loadAdminStats();}
-async function updatePayoutStatus(id,status){await sb.from('payouts').update({status}).eq('id',id);toast('Payout updated','ok');loadAdminStats();}
+async function updatePayoutStatus(id,status){
+  const {error}=await sb.from('payouts').update({status}).eq('id',id);
+  if(error){toast('Update failed: '+error.message,'err');return;}
+  toast('Payout marked as '+status,'ok');
+  loadAdminPayouts();
+  loadAdminStats();
+  loadNotifications();
+}
 
 
 async function loadAdminUsers(){
