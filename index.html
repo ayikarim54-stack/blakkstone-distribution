@@ -2092,13 +2092,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
             </div>
           </div>
         </div>
-        <div style="position:relative;height:280px">
-          <canvas id="analytics-chart" height="280" style="width:100%;display:block"></canvas>
-          <div id="an-chart-empty" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.3)">
-            <i class="ti ti-chart-line" style="font-size:40px;margin-bottom:.75rem;opacity:.3"></i>
-            <div style="font-size:14px;font-weight:600">No stream data yet</div>
-            <div style="font-size:12px;margin-top:4px;opacity:.6">Admin can add daily stream entries in the Admin panel</div>
-          </div>
+        <div id="analytics-chart-wrap" style="width:100%;min-height:280px">
+          <div id="analytics-chart"></div>
         </div>
       </div>
 
@@ -3349,72 +3344,117 @@ function getFilteredStreamData(){
 
 function renderAnalyticsChart(){
   const filtered = getFilteredStreamData();
-  const canvas = document.getElementById('analytics-chart');
-  const emptyEl = document.getElementById('an-chart-empty');
-  if(!canvas) return;
+  const wrap = document.getElementById('analytics-chart');
+  if(!wrap) return;
+
+  const subtitle = document.getElementById('an-chart-subtitle');
+  const hasSynthetic = anStreamData.some(e=>e._synthetic);
+  if(subtitle) subtitle.textContent = (anRangeDays===0?'All time':'Last '+anRangeDays+' days')+' · '+(anFilterStore==='all'?'All stores':anFilterStore)+(hasSynthetic?' · estimated':'');
 
   if(!filtered.length){
-    if(emptyEl) emptyEl.style.display='flex';
-    canvas.style.display='none';
+    wrap.innerHTML='<div style="height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.3)"><i class="ti ti-chart-line" style="font-size:40px;margin-bottom:.75rem;opacity:.3"></i><div style="font-size:14px;font-weight:600">No stream data yet</div><div style="font-size:12px;margin-top:4px;opacity:.6">Add real data in Admin → Streams</div></div>';
     return;
   }
-  if(emptyEl) emptyEl.style.display='none';
-  canvas.style.display='block';
 
-  // Group by date
+  // Group by date or month
   const byDate={};
   filtered.forEach(e=>{
-    const streams = anFilterStore==='all'
-      ? (e.total||0)
-      : (e[storeKey(anFilterStore)]||0);
+    const streams=anFilterStore==='all'?(e.total||0):(e[storeKey(anFilterStore)]||0);
     byDate[e.date]=(byDate[e.date]||0)+streams;
   });
 
-  // Build label/data arrays — fill gaps with 0
-  const dates = Object.keys(byDate).sort();
-  let labels=[], vals=[];
-
-  if(anRangeDays>0 && dates.length){
-    // Fill every day in range
-    const start = new Date(getFilteredDates());
-    const end = new Date();
-    const d = new Date(start);
+  let points=[];
+  if(anRangeDays>0){
+    const cutoff=getFilteredDates();
+    const end=new Date();
+    const d=new Date(cutoff+'T00:00:00');
     while(d<=end){
-      const key = d.toISOString().split('T')[0];
-      labels.push(fmtDateShort(key, anRangeDays));
-      vals.push(byDate[key]||0);
+      const key=d.toISOString().split('T')[0];
+      points.push({label:fmtDateShort(key,anRangeDays),val:byDate[key]||0});
       d.setDate(d.getDate()+1);
     }
-    // Thin labels if too many
-    if(labels.length>30){
-      const step=Math.ceil(labels.length/12);
-      labels=labels.map((l,i)=>i%step===0?l:'');
-    }
   } else {
-    // All time — group by month
     const byMonth={};
     Object.entries(byDate).forEach(([date,v])=>{
       const m=date.slice(0,7);byMonth[m]=(byMonth[m]||0)+v;
     });
+    const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     Object.entries(byMonth).sort().forEach(([m,v])=>{
-      const [y,mo]=m.split('-');
-      const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      labels.push(months[parseInt(mo)-1]+' '+y.slice(2));
-      vals.push(v);
+      const mo=parseInt(m.split('-')[1])-1;
+      const yr=m.split('-')[0].slice(2);
+      points.push({label:MONTHS[mo]+' ''+yr,val:v});
     });
   }
 
-  // Render
-  const subtitle=document.getElementById('an-chart-subtitle');
-  const hasSynthetic=anStreamData.some(e=>e._synthetic);
-  if(subtitle) subtitle.textContent=(anRangeDays===0?'All time':'Last '+anRangeDays+' days')+' · '+(anFilterStore==='all'?'All stores':anFilterStore)+(hasSynthetic?' (estimated — add real data in Admin)':'');
+  if(!points.length){wrap.innerHTML='<div style="height:280px"></div>';return;}
 
-  // Use requestAnimationFrame to ensure canvas is visible and sized correctly
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>{
-      renderLineChart('analytics-chart',labels,vals,'#D4AF37','');
-    });
+  // Build SVG chart — always 100% wide, no sizing issues
+  const W=800, H=280, padL=52, padR=20, padT=20, padB=36;
+  const cW=W-padL-padR, cH=H-padT-padB;
+  const vals=points.map(p=>p.val);
+  const maxVal=Math.max(...vals,1);
+  const step=Math.max(1,Math.floor(points.length/10));
+
+  // Y grid lines + labels
+  let gridLines='', yLabels='';
+  for(let i=0;i<=4;i++){
+    const y=padT+(i/4)*cH;
+    const v=Math.round(maxVal*(1-i/4));
+    const label=v>=1000?(v/1000).toFixed(1)+'k':v.toString();
+    gridLines+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,.07)" stroke-width="1"/>`;
+    yLabels+=`<text x="${padL-6}" y="${y+4}" text-anchor="end" fill="rgba(255,255,255,.3)" font-size="11" font-family="Inter,sans-serif">${label}</text>`;
+  }
+
+  // Data points
+  const coords=points.map((p,i)=>({
+    x:padL+i*(cW/(points.length-1||1)),
+    y:padT+cH-(p.val/maxVal)*cH
+  }));
+
+  // Line path
+  const linePath=coords.map((c,i)=>(i===0?'M':'L')+c.x.toFixed(1)+','+c.y.toFixed(1)).join(' ');
+
+  // Fill path
+  const fillPath=linePath+` L${coords[coords.length-1].x.toFixed(1)},${(padT+cH).toFixed(1)} L${coords[0].x.toFixed(1)},${(padT+cH).toFixed(1)} Z`;
+
+  // X labels
+  let xLabels='';
+  points.forEach((p,i)=>{
+    if(i%step===0||i===points.length-1){
+      const x=padL+i*(cW/(points.length-1||1));
+      xLabels+=`<text x="${x.toFixed(1)}" y="${H-8}" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="11" font-family="Inter,sans-serif">${p.label}</text>`;
+    }
   });
+
+  // Dots (only if not too many points)
+  let dots='';
+  if(points.length<=60){
+    dots=coords.map(co=>`<circle cx="${co.x.toFixed(1)}" cy="${co.y.toFixed(1)}" r="3.5" fill="#111118" stroke="#D4AF37" stroke-width="2"/>`).join('');
+  }
+
+  // Tooltip overlay rects (invisible, for hover)
+  let tooltips='';
+  const bw=Math.max(4,cW/points.length);
+  points.forEach((p,i)=>{
+    const x=padL+i*(cW/(points.length-1||1));
+    tooltips+=`<rect x="${(x-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${cH}" fill="transparent" class="an-chart-hover" data-label="${p.label}" data-val="${p.val.toLocaleString()}"><title>${p.label}: ${p.val.toLocaleString()} streams</title></rect>`;
+  });
+
+  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible">
+    <defs>
+      <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#D4AF37" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+    ${gridLines}
+    ${yLabels}
+    ${xLabels}
+    <path d="${fillPath}" fill="url(#chartGrad)"/>
+    <path d="${linePath}" fill="none" stroke="#D4AF37" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    ${tooltips}
+  </svg>`;
 }
 
 function storeKey(storeName){
