@@ -806,6 +806,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .an-store-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);background:transparent;font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
 .an-store-pill:hover{border-color:rgba(255,255,255,.3);color:#fff}
 .an-store-pill.active{border-color:var(--gold);color:var(--gold);background:rgba(212,175,55,.1)}
+
+/* ── WIZARD VALIDATION ── */
+.wiz-error{border-color:#ef4444!important;background:rgba(239,68,68,.05)!important}
+.wiz-error-msg{font-size:12px;color:#f87171;margin-top:5px;display:flex;align-items:center;gap:5px}
+.wiz-error-msg i{font-size:13px;flex-shrink:0}
+.wiz-validation-banner{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:.875rem 1rem;margin-bottom:1.25rem;display:none}
+.wiz-validation-banner.show{display:block}
+.wiz-validation-title{font-size:13px;font-weight:700;color:#f87171;margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+.wiz-validation-list{list-style:none;display:flex;flex-direction:column;gap:4px}
+.wiz-validation-list li{font-size:12px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px;cursor:pointer}
+.wiz-validation-list li:hover{color:#fff}
+.wiz-validation-list li::before{content:'•';color:#f87171;font-size:16px;line-height:1}
 </style>
 </head>
 <body>
@@ -1509,6 +1521,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="wizard-panel active" id="wpanel-1">
         <div style="text-align:center;max-width:600px;margin:0 auto">
           <h2 style="font-size:32px;font-weight:800;color:#fff;margin-bottom:.75rem">Upload Your Music</h2>
+          <div class="wiz-validation-banner" id="val-banner-1">
+            <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fix before continuing</div>
+            <ul class="wiz-validation-list" id="val-list-1"></ul>
+          </div>
           <p style="font-size:14px;color:rgba(255,255,255,.4);margin-bottom:2.5rem">Make sure you have high quality audio files. We recommend 16-bit, 44.1kHz stereo WAV, MP3 or FLAC files.</p>
           <div class="wiz-drop-zone" id="audio-drop-zone" onclick="document.getElementById('audio-input-multi').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleAudioDrop(event)">
             <i class="ti ti-file-music" style="font-size:56px;color:rgba(255,255,255,.2);display:block;margin-bottom:1rem"></i>
@@ -1529,17 +1545,21 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="wpanel-inner">
           <div class="wpanel-form">
             <h2 class="wiz-h1">Release Details</h2>
+            <div class="wiz-validation-banner" id="val-banner-2">
+              <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fill in the missing fields</div>
+              <ul class="wiz-validation-list" id="val-list-2"></ul>
+            </div>
             <div class="fg" style="margin-bottom:1.5rem">
   <label style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4)">Release Title *</label>
   <input id="r-title" type="text" placeholder="e.g. Midnight Stories" oninput="checkTitleFormat(this,'title-warn');updateArtPreviewTitle()" style="font-size:18px;font-weight:600;border:none;border-bottom:2px solid rgba(255,255,255,.15);border-radius:0;background:transparent;padding:10px 0;color:#fff" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.15)'">
   <div id="title-warn" class="field-warn" style="display:none"></div>
 </div>
             <div class="frow">
-              <div class="fg"><label>© Copyright Holder</label><input id="r-copyright" type="text" placeholder="Name"></div>
+              <div class="fg"><label>© Copyright Holder *</label><input id="r-copyright" type="text" placeholder="Name"></div>
               <div class="fg"><label>Copyright Year</label><input id="r-copyright-year" type="number" placeholder="2025" value="2025"></div>
             </div>
             <div class="frow">
-              <div class="fg"><label>℗ Copyright Holder</label><input id="r-pcopyright" type="text" placeholder="Name"></div>
+              <div class="fg"><label>℗ Copyright Holder *</label><input id="r-pcopyright" type="text" placeholder="Name"></div>
               <div class="fg"><label>Production Year</label><input id="r-prod-year" type="number" placeholder="2025" value="2025"></div>
             </div>
             <div class="fg"><label>Record Label</label><input id="r-label" type="text" placeholder="Independent"></div>
@@ -1778,6 +1798,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="wizard-panel" id="wpanel-3">
         <div style="max-width:640px">
           <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Plan Your Release</h2>
+          <div class="wiz-validation-banner" id="val-banner-3">
+            <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fix before continuing</div>
+            <ul class="wiz-validation-list" id="val-list-3"></ul>
+          </div>
           <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
             <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:1.1rem">Choose a <strong style="color:var(--gold)">release date</strong></div>
             <div class="fg"><input id="r-date" type="date" style="font-size:15px"></div>
@@ -3835,25 +3859,111 @@ function initWizard(){
   const ai=document.getElementById('r-artist');
   if(ai&&profile){ai.value=profile.artist_name||profile.full_name||user?.email?.split('@')[0]||'';ai.readOnly=true;ai.style.cursor='not-allowed';ai.style.opacity='.75';}
 }
-function goWizard(step){
-  if(step>wizStep){
-    if(wizStep===1&&!wizTracks.length){toast('Upload at least one audio track','err');return;}
-    if(wizStep===2){
-      const title=document.getElementById('r-title')?.value.trim();const artist=document.getElementById('r-artist')?.value.trim();const genre=document.getElementById('r-genre')?.value;
-      if(!title||!artist||!genre){toast('Fill in Release Title, Artist and Genre','err');return;}
+// ── WIZARD VALIDATION HELPERS ──────────────────────────
+function wizClearErrors(step){
+  const banner=document.getElementById('val-banner-'+step);
+  const list=document.getElementById('val-list-'+step);
+  if(banner) banner.classList.remove('show');
+  if(list) list.innerHTML='';
+  // Clear any field-level error highlights
+  document.querySelectorAll('#wpanel-'+step+' .wiz-error').forEach(el=>el.classList.remove('wiz-error'));
+  document.querySelectorAll('#wpanel-'+step+' .wiz-error-msg').forEach(el=>el.remove());
+}
+
+function wizShowErrors(step, errors){
+  const banner=document.getElementById('val-banner-'+step);
+  const list=document.getElementById('val-list-'+step);
+  if(!banner||!list) return;
+
+  list.innerHTML = errors.map(e=>
+    `<li onclick="document.getElementById('${e.fieldId}')?.focus();document.getElementById('${e.fieldId}')?.scrollIntoView({behavior:'smooth',block:'center'})">${e.label}</li>`
+  ).join('');
+  banner.classList.add('show');
+  banner.scrollIntoView({behavior:'smooth', block:'start'});
+
+  // Highlight individual fields
+  errors.forEach(e=>{
+    const el=document.getElementById(e.fieldId);
+    if(!el) return;
+    el.classList.add('wiz-error');
+    // Add inline error message below the field
+    const existing=el.parentElement.querySelector('.wiz-error-msg');
+    if(!existing){
+      const msg=document.createElement('div');
+      msg.className='wiz-error-msg';
+      msg.innerHTML='<i class="ti ti-alert-circle"></i>'+e.label;
+      el.parentElement.insertBefore(msg, el.nextSibling);
     }
-    if(wizStep===3&&!document.getElementById('r-date')?.value){toast('Select a release date','err');return;}
+    // Auto-clear highlight when user fixes it
+    el.addEventListener('input',function fix(){
+      el.classList.remove('wiz-error');
+      const m=el.parentElement.querySelector('.wiz-error-msg');
+      if(m) m.remove();
+      el.removeEventListener('input',fix);
+    },{once:true});
+    el.addEventListener('change',function fix(){
+      el.classList.remove('wiz-error');
+      const m=el.parentElement.querySelector('.wiz-error-msg');
+      if(m) m.remove();
+      el.removeEventListener('change',fix);
+    },{once:true});
+  });
+}
+
+function validateStep(step){
+  wizClearErrors(step);
+  const errors=[];
+
+  if(step===1){
+    if(!wizTracks.length)
+      errors.push({fieldId:'audio-drop-zone', label:'Upload at least one audio track'});
   }
+
+  if(step===2){
+    const title=document.getElementById('r-title')?.value.trim();
+    const genre=document.getElementById('r-genre')?.value;
+    const artist=document.getElementById('r-artist')?.value.trim();
+    const copyright=document.getElementById('r-copyright')?.value.trim();
+    const pcopyright=document.getElementById('r-pcopyright')?.value.trim();
+    const artwork=wizData.artFile||wizData.artUrl;
+
+    if(!title)   errors.push({fieldId:'r-title',     label:'Release title is required'});
+    if(!artist)  errors.push({fieldId:'r-artist',    label:'Primary artist name is required'});
+    if(!genre)   errors.push({fieldId:'r-genre',     label:'Primary genre is required'});
+    if(!copyright) errors.push({fieldId:'r-copyright', label:'© Copyright holder is required'});
+    if(!pcopyright) errors.push({fieldId:'r-pcopyright', label:'℗ Copyright holder is required'});
+    if(!artwork) errors.push({fieldId:'art-input',   label:'Cover artwork is required (3000×3000px)'});
+  }
+
+  if(step===3){
+    const date=document.getElementById('r-date')?.value;
+    if(!date) errors.push({fieldId:'r-date', label:'Release date is required'});
+  }
+
+  return errors;
+}
+
+function goWizard(step){
+  // Validate current step before moving forward
+  if(step > wizStep){
+    const errors = validateStep(wizStep);
+    if(errors.length){
+      wizShowErrors(wizStep, errors);
+      return;
+    }
+    wizClearErrors(wizStep);
+  }
+
   wizStep=step;
   document.querySelectorAll('.wizard-panel').forEach(p=>p.classList.remove('active'));
-  const panel=document.getElementById('wpanel-'+step);if(panel){panel.classList.add('active');panel.scrollIntoView({behavior:'smooth',block:'start'});}
+  const panel=document.getElementById('wpanel-'+step);
+  if(panel){panel.classList.add('active');panel.scrollIntoView({behavior:'smooth',block:'start'});}
   for(let i=1;i<=5;i++){
     const s=document.getElementById('wstep-'+i);const l=document.getElementById('wsline-'+i);
     if(s){s.classList.toggle('active',i===step);s.classList.toggle('done',i<step);}
     if(l) l.classList.toggle('done',i<step);
   }
-  if(step===5)buildReview();
-  // Auto-save draft when moving forward
+  if(step===5) buildReview();
   if(step>1&&user) saveDraftSilent();
 }
 async function saveDraftSilent(){
@@ -4368,12 +4478,18 @@ function buildReview(){
   el.innerHTML='<div style="display:flex;gap:1.5rem;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,.07)"><div style="width:80px;height:80px;border-radius:10px;background:#1a1a22;overflow:hidden;flex-shrink:0">'+(wizData.artFile?'<img src="'+URL.createObjectURL(wizData.artFile)+'" style="width:100%;height:100%;object-fit:cover">':'')+'</div><div><div style="font-size:18px;font-weight:700;color:#fff">'+esc(title)+'</div><div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:4px">'+esc(artist)+'</div><div style="font-size:12px;color:var(--gold);margin-top:4px">'+wizTracks.length+' track'+(wizTracks.length!==1?'s':'')+'</div></div></div><div class="review-row"><span class="review-label">Genre</span><span class="review-val">'+esc(genre)+'</span></div><div class="review-row"><span class="review-label">Release Date</span><span class="review-val">'+date+'</span></div><div class="review-row"><span class="review-label">Label</span><span class="review-val">'+esc(label)+'</span></div><div class="review-row"><span class="review-label">Language</span><span class="review-val">'+lang+'</span></div><div class="review-row"><span class="review-label">Stores</span><span class="review-val">'+wizStores.length+' selected</span></div><div class="review-row"><span class="review-label">Tracks</span><span class="review-val">'+wizTracks.map(t=>esc(t.name)).join(', ')+'</span></div>';
 }
 async function submitRelease(){
-  if(!document.getElementById('r-terms')?.checked){toast('Please agree to the terms','err');return;}
-  const title=document.getElementById('r-title')?.value.trim();const artist=document.getElementById('r-artist')?.value.trim();
-  const genre=document.getElementById('r-genre')?.value;const date=document.getElementById('r-date')?.value;
-  if(!title||!artist||!genre||!date){toast('Complete all required fields','err');return;}
-  if(!wizTracks.length){toast('Upload at least one audio track','err');return;}
-  if(!wizData.artFile){toast('Upload cover artwork','err');return;}
+  // Re-validate all steps before final submit
+  const step1Errors=validateStep(1);
+  const step2Errors=validateStep(2);
+  const step3Errors=validateStep(3);
+  const allErrors=[...step1Errors,...step2Errors,...step3Errors];
+  if(allErrors.length){
+    // Show which step has errors and jump back to it
+    if(step1Errors.length){toast('Step 1: '+step1Errors.map(e=>e.label).join(', '),'err');goWizard(1);wizShowErrors(1,step1Errors);return;}
+    if(step2Errors.length){toast('Step 2: '+step2Errors.map(e=>e.label).join(', '),'err');goWizard(2);wizShowErrors(2,step2Errors);return;}
+    if(step3Errors.length){toast('Step 3: '+step3Errors.map(e=>e.label).join(', '),'err');goWizard(3);wizShowErrors(3,step3Errors);return;}
+  }
+  if(!document.getElementById('r-terms')?.checked){toast('Please agree to the terms and conditions','err');return;}
   const btn=document.getElementById('submit-btn');btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
   try{
     let artPublicUrl='';
