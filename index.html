@@ -828,7 +828,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .roy-tab{padding:.75rem 1.5rem;font-size:14px;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:Inter,sans-serif}
 .roy-tab:hover{color:rgba(255,255,255,.7)}
 .roy-tab.active{color:#fff;border-bottom-color:var(--gold)}
-.roy-tab-panel{display:none;max-width:960px;margin:0 auto}
+.roy-tab-panel{display:none}
 .roy-tab-panel.active{display:block}
 /* Centered content */
 .roy-center{max-width:960px;margin:0 auto}
@@ -3809,11 +3809,14 @@ function renderReleasesTable(){
 
 // ── ROYALTIES ──────────────────────────────────────────
 async function loadRoyalties(){
-  const [{data:relData},{data:payoutData},{data:royEntries}]=await Promise.all([
+  const [relRes, payoutRes, royRes] = await Promise.allSettled([
     sb.from('releases').select('*').eq('user_id',user.id),
     sb.from('payouts').select('amount,status').eq('user_id',user.id),
-    sb.from('royalty_entries').select('*').eq('user_id',user.id).order('date_start',{ascending:false}).catch(()=>({data:[]}))
+    sb.from('royalty_entries').select('*').eq('user_id',user.id).order('date_start',{ascending:false})
   ]);
+  const relData = relRes.status==='fulfilled' ? (relRes.value.data||[]) : [];
+  const payoutData = payoutRes.status==='fulfilled' ? (payoutRes.value.data||[]) : [];
+  const royEntries = royRes.status==='fulfilled' ? (royRes.value.data||[]) : [];
   const allRel=relData||[];
   const entries=royEntries||[];
   const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
