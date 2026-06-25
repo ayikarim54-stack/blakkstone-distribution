@@ -2769,13 +2769,13 @@ function renderLineChart(canvasId,labels,data,color,prefix){
   if(prefix===undefined)prefix='$';
   const canvas=document.getElementById(canvasId);if(!canvas)return;
   const ctx=canvas.getContext('2d');
-  // Get the true container width (parent element, not the canvas itself which may be 0)
-  const H=parseInt(canvas.getAttribute('height')||canvas.height||200);
-  const W=canvas.parentElement?.clientWidth||canvas.parentElement?.offsetWidth||canvas.offsetWidth||700;
+  // Walk up the DOM to find a container with a real width
+  let W=0,el=canvas.parentElement;
+  while(el&&W<100){W=el.getBoundingClientRect().width||el.clientWidth||el.offsetWidth;el=el.parentElement;}
+  W=Math.floor(W)||700;
+  const H=parseInt(canvas.getAttribute('height')||200);
   canvas.width=W;
   canvas.height=H;
-  canvas.style.width=W+'px';
-  canvas.style.height=H+'px';
   ctx.clearRect(0,0,W,H);
   if(!data||!data.length){ctx.fillStyle='rgba(255,255,255,.2)';ctx.font='13px Inter';ctx.fillText('No data yet',W/2-40,H/2);return;}
   const max=Math.max(...data,1);
@@ -3295,8 +3295,9 @@ function setAnalyticsStore(store,btn){
 async function loadAnalytics(){
   const [relRes, streamRes] = await Promise.all([
     sb.from('releases').select('*').eq('user_id',user.id),
-    sb.from('stream_entries').select('*').eq('user_id',user.id).order('date',{ascending:true}).catch(()=>({data:[]}))
+    sb.from('stream_entries').select('*').eq('user_id',user.id).order('date',{ascending:true}).catch(()=>({data:[],error:{message:'table missing'}}))
   ]);
+  console.log('[Analytics] releases:',relRes.data?.length,'stream_entries:',streamRes.data?.length,streamRes.error?.message||'ok');
   anReleaseData = relRes.data||[];
   anStreamData = streamRes.data||[];
   // If no stream_entries yet, synthesize from release totals so chart isn't empty
