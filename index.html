@@ -2769,8 +2769,14 @@ function renderLineChart(canvasId,labels,data,color,prefix){
   if(prefix===undefined)prefix='$';
   const canvas=document.getElementById(canvasId);if(!canvas)return;
   const ctx=canvas.getContext('2d');
-  const W=canvas.offsetWidth||600,H=canvas.getAttribute('height')?parseInt(canvas.getAttribute('height')):canvas.offsetHeight||280;
-  canvas.width=W;ctx.clearRect(0,0,W,H);
+  // Get the true container width (parent element, not the canvas itself which may be 0)
+  const H=parseInt(canvas.getAttribute('height')||canvas.height||200);
+  const W=canvas.parentElement?.clientWidth||canvas.parentElement?.offsetWidth||canvas.offsetWidth||700;
+  canvas.width=W;
+  canvas.height=H;
+  canvas.style.width=W+'px';
+  canvas.style.height=H+'px';
+  ctx.clearRect(0,0,W,H);
   if(!data||!data.length){ctx.fillStyle='rgba(255,255,255,.2)';ctx.font='13px Inter';ctx.fillText('No data yet',W/2-40,H/2);return;}
   const max=Math.max(...data,1);
   const padL=44,padR=20,padT=20,padB=30;
@@ -3261,7 +3267,7 @@ function openReleaseModal(r){
   const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
   const ts2=r.streams||0;
   const seed=ts2>0?[Math.round(ts2*.05),Math.round(ts2*.1),Math.round(ts2*.18),Math.round(ts2*.28),Math.round(ts2*.42),ts2]:[0,0,0,0,0,0];
-  setTimeout(()=>renderLineChart('rel-modal-chart',labels,seed,'#D4AF37',''),80);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('rel-modal-chart',labels,seed,'#D4AF37',''));));
   document.getElementById('release-overlay').classList.add('open');
 }
 function closeReleaseModal(){document.getElementById('release-overlay').classList.remove('open');}
@@ -3315,7 +3321,8 @@ async function loadAnalytics(){
     const stores = ['All','Spotify','Apple Music','YouTube Music','Audiomack','Boomplay'];
     pillEl.innerHTML = stores.map((s,i)=>{
       const val = i===0?'all':s;
-      return '<button class="an-store-pill'+(val===anFilterStore?' active':'')+(i===0?' active':'')+'" onclick="setAnalyticsStore(\''+val+'\',this)">'+s+'</button>';
+      const isActive=(i===0&&anFilterStore==='all')||(val===anFilterStore);
+      return '<button class="an-store-pill'+(isActive?' active':'')+'" onclick="setAnalyticsStore(\''+val+'\',this)">'+s+'</button>';
     }).join('');
   }
 
@@ -3401,7 +3408,12 @@ function renderAnalyticsChart(){
   const hasSynthetic=anStreamData.some(e=>e._synthetic);
   if(subtitle) subtitle.textContent=(anRangeDays===0?'All time':'Last '+anRangeDays+' days')+' · '+(anFilterStore==='all'?'All stores':anFilterStore)+(hasSynthetic?' (estimated — add real data in Admin)':'');
 
-  setTimeout(()=>renderLineChart('analytics-chart',labels,vals,'#D4AF37',''),50);
+  // Use requestAnimationFrame to ensure canvas is visible and sized correctly
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      renderLineChart('analytics-chart',labels,vals,'#D4AF37','');
+    });
+  });
 }
 
 function storeKey(storeName){
@@ -3524,7 +3536,7 @@ async function loadRoyalties(){
   const now=new Date();
   const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
   const cd=[0,0,0,0,0,gross].map((v,i)=>i===5?v:parseFloat((gross*Math.random()*.3).toFixed(2)));
-  setTimeout(()=>renderLineChart('earnings-chart',labels,cd,'#D4AF37'),100);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('earnings-chart',labels,cd,'#D4AF37'));));
   const bestEl=document.getElementById('best-stores');
   if(bestEl) bestEl.innerHTML=DSP_STORES.slice(0,5).map(s=>{
     const rev=(gross*s.share);const logo=s.logo?'<img src="'+s.logo+'" width="18" height="18" style="object-fit:contain;display:block">':'';
@@ -4454,7 +4466,7 @@ async function loadAdminDashboard(){
     const now=new Date();const revByMonth=Array(6).fill(0);
     (subs||[]).forEach(s=>{const d=new Date(s.created_at);const diff=(now.getMonth()-d.getMonth()+12)%12;if(diff<6)revByMonth[5-diff]+=parseFloat(s.amount_usd||0);});
     const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
-    setTimeout(()=>renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#D4AF37'),100);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#D4AF37'));));
   }catch(e){console.warn('loadAdminDashboard:',e);}
 }
 async function loadAdminReleases(){
