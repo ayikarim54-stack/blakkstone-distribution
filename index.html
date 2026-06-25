@@ -822,6 +822,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* ── PAYOUT METHODS ── */
 .btn-ghost-xs{background:none;border:1px solid rgba(255,255,255,.1);border-radius:5px;cursor:pointer;padding:3px 6px;color:rgba(255,255,255,.35);transition:all .15s;font-family:Inter,sans-serif}
 .btn-ghost-xs:hover{background:rgba(255,255,255,.07);color:#fff;border-color:rgba(255,255,255,.25)}
+
+/* ── ROYALTIES TABS ── */
+.roy-tabs{display:flex;gap:0;border-bottom:2px solid rgba(255,255,255,.08);margin-bottom:2rem;max-width:960px}
+.roy-tab{padding:.75rem 1.5rem;font-size:14px;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:Inter,sans-serif}
+.roy-tab:hover{color:rgba(255,255,255,.7)}
+.roy-tab.active{color:#fff;border-bottom-color:var(--gold)}
+.roy-tab-panel{display:none;max-width:960px;margin:0 auto}
+.roy-tab-panel.active{display:block}
+/* Centered content */
+.roy-center{max-width:960px;margin:0 auto}
 </style>
 </head>
 <body>
@@ -1334,7 +1344,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="tnav-sep"></div>
       <div class="tnav-item" onclick="goPage('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
       <div class="tnav-item" onclick="goPage('analytics',this)"><i class="ti ti-chart-bar"></i> Analytics</div>
-      <div class="tnav-item" onclick="goPage('payout',this)"><i class="ti ti-wallet"></i> Payouts</div>
+
       <div class="tnav-sep"></div>
       <div class="tnav-item" onclick="goPage('upgrade',this)" id="upgrade-nav"><i class="ti ti-crown"></i> Upgrade</div>
       <div class="tnav-item" onclick="goPage('profile',this)"><i class="ti ti-user"></i> Profile</div>
@@ -1950,105 +1960,233 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- ROYALTIES -->
     <div class="page" id="page-royalties">
-      <div class="ph">
-        <div><h1>Royalties</h1><p>Your earnings from streaming platforms.</p></div>
-        <button class="btn btn-purple" onclick="goPage('payout',null)"><i class="ti ti-wallet"></i> Request Payout</button>
-      </div>
-
-      <!-- INFO BANNER -->
-      <div class="yellow-banner" style="margin-bottom:1.5rem">
-        <i class="ti ti-info-circle" style="flex-shrink:0"></i>
-        Stores pay out royalties with a minimum delay of two months. Figures shown are estimates until confirmed by DSPs.
-      </div>
-
-      <!-- COMMISSION NOTICE -->
-      <div id="commission-bar"></div>
-
-      <!-- EARNINGS HERO CARDS -->
-      <div class="roy-hero-grid">
-        <div class="roy-hero-card roy-hero-gross">
-          <div class="roy-hero-icon"><i class="ti ti-trending-up"></i></div>
-          <div>
-            <div class="roy-hero-label">Gross Earnings</div>
-            <div class="roy-hero-val" id="r-gross">$0.00</div>
-            <div class="roy-hero-sub">Total before deductions</div>
-          </div>
+      <!-- HEADER -->
+      <div class="roy-center">
+        <div class="ph" style="margin-bottom:1.25rem">
+          <div><h1>Royalties</h1><p>Your earnings from streaming platforms.</p></div>
         </div>
-        <div class="roy-hero-card roy-hero-comm">
-          <div class="roy-hero-icon"><i class="ti ti-percentage"></i></div>
-          <div>
-            <div class="roy-hero-label">Commission</div>
-            <div class="roy-hero-val" id="r-commission" style="color:#f87171">$0.00</div>
-            <div class="roy-hero-sub" id="r-comm-sub">Blakkstone 9% commission</div>
-          </div>
-        </div>
-        <div class="roy-hero-card roy-hero-payout">
-          <div class="roy-hero-icon"><i class="ti ti-coin"></i></div>
-          <div>
-            <div class="roy-hero-label">Your Payout</div>
-            <div class="roy-hero-val" id="r-payout" style="color:#34d399">$0.00</div>
-            <div class="roy-hero-sub">Available to withdraw</div>
-          </div>
-        </div>
-        <div class="roy-hero-card roy-hero-period">
-          <div class="roy-hero-icon"><i class="ti ti-calendar"></i></div>
-          <div>
-            <div class="roy-hero-label">Last Reporting</div>
-            <div class="roy-hero-val" id="r-updated" style="font-size:16px;font-weight:700">—</div>
-            <div class="roy-hero-sub">DSP reporting period</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- EARNINGS CHART + BEST STORES -->
-      <div style="display:grid;grid-template-columns:1fr 320px;gap:1.25rem;margin-bottom:1.5rem">
-        <div class="chart-card" style="margin-bottom:0">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-            <div>
-              <div style="font-size:15px;font-weight:700;color:#fff">Earnings Overview</div>
-              <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px">Monthly earnings estimate</div>
+        <!-- TABS -->
+        <div class="roy-tabs">
+          <button class="roy-tab active" id="rtab-sales" onclick="switchRoyTab('sales',this)">Sales</button>
+          <button class="roy-tab" id="rtab-reports" onclick="switchRoyTab('reports',this)">Reports</button>
+          <button class="roy-tab" id="rtab-payouts" onclick="switchRoyTab('payouts',this)">Payouts</button>
+        </div>
+
+        <!-- ── SALES TAB ── -->
+        <div class="roy-tab-panel active" id="rtpanel-sales">
+
+          <!-- INFO BANNER -->
+          <div class="yellow-banner" style="margin-bottom:1.5rem">
+            <i class="ti ti-info-circle" style="flex-shrink:0"></i>
+            Stores pay out royalties with a minimum delay of two months. Figures shown are estimates until confirmed by DSPs.
+          </div>
+
+          <!-- COMMISSION NOTICE -->
+          <div id="commission-bar"></div>
+
+          <!-- EARNINGS HERO CARDS -->
+          <div class="roy-hero-grid">
+            <div class="roy-hero-card roy-hero-gross">
+              <div class="roy-hero-icon"><i class="ti ti-trending-up"></i></div>
+              <div>
+                <div class="roy-hero-label">Gross Earnings</div>
+                <div class="roy-hero-val" id="r-gross">$0.00</div>
+                <div class="roy-hero-sub">Total before deductions</div>
+              </div>
             </div>
-            <div style="font-size:12px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.05);padding:4px 10px;border-radius:6px">Last 6 months</div>
+            <div class="roy-hero-card roy-hero-comm">
+              <div class="roy-hero-icon"><i class="ti ti-percentage"></i></div>
+              <div>
+                <div class="roy-hero-label">Commission</div>
+                <div class="roy-hero-val" id="r-commission" style="color:#f87171">$0.00</div>
+                <div class="roy-hero-sub" id="r-comm-sub">Blakkstone 9% commission</div>
+              </div>
+            </div>
+            <div class="roy-hero-card roy-hero-payout">
+              <div class="roy-hero-icon"><i class="ti ti-coin"></i></div>
+              <div>
+                <div class="roy-hero-label">Your Payout</div>
+                <div class="roy-hero-val" id="r-payout" style="color:#34d399">$0.00</div>
+                <div class="roy-hero-sub">Available to withdraw</div>
+              </div>
+            </div>
+            <div class="roy-hero-card roy-hero-period">
+              <div class="roy-hero-icon"><i class="ti ti-calendar"></i></div>
+              <div>
+                <div class="roy-hero-label">Last Reporting</div>
+                <div class="roy-hero-val" id="r-updated" style="font-size:16px;font-weight:700">—</div>
+                <div class="roy-hero-sub">DSP reporting period</div>
+              </div>
+            </div>
           </div>
-          <canvas id="earnings-chart" height="180"></canvas>
-        </div>
-        <div class="chart-card" style="margin-bottom:0">
-          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
-            <i class="ti ti-award" style="color:#fbbf24"></i> Best Stores
+
+          <!-- EARNINGS CHART + BEST STORES -->
+          <div style="display:grid;grid-template-columns:1fr 300px;gap:1.25rem;margin-bottom:1.5rem">
+            <div class="chart-card" style="margin-bottom:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+                <div>
+                  <div style="font-size:15px;font-weight:700;color:#fff">Earnings Overview</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px">Monthly earnings estimate</div>
+                </div>
+                <div style="font-size:12px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.05);padding:4px 10px;border-radius:6px">Last 6 months</div>
+              </div>
+              <canvas id="earnings-chart" height="180" style="width:100%;display:block"></canvas>
+            </div>
+            <div class="chart-card" style="margin-bottom:0">
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+                <i class="ti ti-award" style="color:#fbbf24"></i> Best Stores
+              </div>
+              <div id="best-stores"></div>
+            </div>
           </div>
-          <div id="best-stores"></div>
-        </div>
-      </div>
 
-      <!-- RELEASE BREAKDOWN TABLE -->
-      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
-        <i class="ti ti-music" style="color:var(--gold)"></i> Earnings by Release
-      </div>
-      <div class="dark-table-wrap" style="margin-bottom:1.5rem">
-        <table>
-          <thead>
-            <tr>
-              <th>Release</th>
-              <th>Streams</th>
-              <th>Gross</th>
-              <th>Commission</th>
-              <th>Your Payout</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="royalty-tbody"></tbody>
-        </table>
-      </div>
-
-      <!-- REPORTS NOTE -->
-      <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.25rem;display:flex;align-items:flex-start;gap:12px">
-        <i class="ti ti-file-analytics" style="font-size:22px;color:var(--gold);flex-shrink:0;margin-top:2px"></i>
-        <div>
-          <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">About Royalty Reports</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.4);line-height:1.7">Detailed monthly reports are generated after DSP reporting cycles complete (typically 2–3 months after streaming). Figures shown are estimates based on current stream counts. Final amounts may vary.</div>
-          <button class="btn btn-purple btn-sm" style="margin-top:.875rem" onclick="goPage('payout',null)"><i class="ti ti-wallet"></i> View Payout History</button>
+          <!-- RELEASE BREAKDOWN TABLE -->
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-music" style="color:var(--gold)"></i> Earnings by Release
+          </div>
+          <div class="dark-table-wrap" style="margin-bottom:1.5rem">
+            <table>
+              <thead><tr><th>Release</th><th>Streams</th><th>Gross</th><th>Commission</th><th>Your Payout</th><th>Status</th></tr></thead>
+              <tbody id="royalty-tbody"></tbody>
+            </table>
+          </div>
         </div>
-      </div>
+
+        <!-- ── REPORTS TAB ── -->
+        <div class="roy-tab-panel" id="rtpanel-reports">
+          <div style="background:#111118;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:2rem;display:flex;align-items:flex-start;gap:1.25rem;margin-bottom:1.5rem">
+            <i class="ti ti-file-analytics" style="font-size:28px;color:var(--gold);flex-shrink:0;margin-top:2px"></i>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:.5rem">Royalty Reports</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.8">Detailed monthly reports are generated after DSP reporting cycles complete (typically 2–3 months after streaming). Figures shown are estimates based on current stream counts. Final amounts may vary.</div>
+            </div>
+          </div>
+          <div style="background:#111118;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden">
+            <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:14px;font-weight:700;color:#fff">Monthly Statements</div>
+              <span style="font-size:11px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:3px 10px;border-radius:20px">Auto-generated</span>
+            </div>
+            <div id="roy-reports-list" style="padding:1.5rem">
+              <div style="text-align:center;color:rgba(255,255,255,.25);font-size:13px;padding:2rem 0">
+                <i class="ti ti-file-off" style="font-size:36px;display:block;margin-bottom:.75rem;opacity:.3"></i>
+                Reports will appear here once DSP data is confirmed.<br>
+                <span style="font-size:12px;opacity:.7">Typically available 2–3 months after streaming.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PAYOUTS TAB ── -->
+        <div class="roy-tab-panel" id="rtpanel-payouts">
+          <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
+            <!-- LEFT: Balance + withdraw + history -->
+            <div>
+              <div class="payout-balance-card">
+                <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:.5rem">Your Current Balance</div>
+                <div style="font-size:44px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.875rem" id="payout-balance">$0.00</div>
+                <div class="payout-bar-wrap"><div class="payout-bar-fill" id="payout-bar" style="width:100%"></div></div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:1.5rem">
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span> Available: <strong style="color:#fff" id="payout-available-label">$0.00</strong></div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:50%;background:#4a4a6a;display:inline-block"></span> Pending: <strong style="color:#fff" id="payout-pending-label">$0.00</strong></div>
+                </div>
+                <div class="fg" style="margin-bottom:1rem">
+                  <label>Amount to Withdraw (USD)</label>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:20px;font-weight:700;color:rgba(255,255,255,.4)">$</span>
+                    <input id="withdraw-amount" type="number" min="1" step="0.01" placeholder="0.00" style="font-size:20px;font-weight:700;background:#131320;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;color:#fff;width:100%;font-family:Inter,sans-serif;outline:none">
+                  </div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:5px">Min. $1.00</div>
+                </div>
+                <button class="btn btn-purple" style="width:100%;justify-content:center" id="payout-submit-btn" onclick="showPayoutMethods()"><i class="ti ti-wallet"></i> Withdraw</button>
+              </div>
+              <!-- PAYOUT METHOD FIELDS -->
+              <div id="payout-method-section" style="display:none">
+                <div class="payout-balance-card">
+                  <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:1rem">Choose payout method</div>
+                  <div id="saved-method-quickpick" style="display:none;margin-bottom:1rem">
+                    <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.5rem">Your saved methods</div>
+                    <div id="quickpick-list"></div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:.5rem;cursor:pointer" onclick="document.getElementById('new-method-toggle').style.display='block';this.style.display='none'"><i class="ti ti-plus"></i> Use a different method</div>
+                  </div>
+                  <div id="new-method-toggle">
+                    <div class="pmethods">
+                      <div class="popt" id="opt-momo" onclick="selectPayout('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div><div class="popt-sub">MTN, Vodafone, AirtelTigo</div></div>
+                      <div class="popt" id="opt-bank" onclick="selectPayout('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank Transfer</div><div class="popt-sub">Ghana local bank</div></div>
+                    </div>
+                  </div>
+                  <div id="momo-fields" style="display:none">
+                    <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:.625rem">Select network</div>
+                    <div class="momo-nets"><div class="mnet" id="mtn-btn" onclick="selNet('MTN')">MTN</div><div class="mnet" id="voda-btn" onclick="selNet('Vodafone')">Vodafone</div><div class="mnet" id="airtel-btn" onclick="selNet('AirtelTigo')">AirtelTigo</div></div>
+                    <div class="fg"><label>Mobile Money Number</label><input id="momo-number" type="tel" placeholder="0241234567"></div>
+                    <div class="fg"><label>Account Name</label><input id="momo-name" type="text" placeholder="Name on MoMo account"></div>
+                  </div>
+                  <div id="bank-fields" style="display:none">
+                    <div class="fg"><label>Bank Name</label><input id="bank-name" type="text" placeholder="e.g. GCB Bank"></div>
+                    <div class="fg"><label>Account Number</label><input id="bank-acc" type="text" placeholder="Account number"></div>
+                    <div class="fg"><label>Account Name</label><input id="bank-acc-name" type="text" placeholder="Name on bank account"></div>
+                    <div class="fg"><label>Branch (optional)</label><input id="bank-branch" type="text" placeholder="Branch name"></div>
+                  </div>
+                  <div id="payout-submit-wrap" style="display:none;margin-top:.5rem">
+                    <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Processed within 5–7 business days.</div>
+                    <button class="btn btn-purple" onclick="submitPayout()"><i class="ti ti-send"></i> Submit Payout Request</button>
+                    <button class="btn" style="background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1);margin-left:8px" onclick="document.getElementById('payout-method-section').style.display='none'">Cancel</button>
+                  </div>
+                </div>
+              </div>
+              <!-- HISTORY -->
+              <div style="background:#111118;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:1.5rem">
+                <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:1rem">Your History</div>
+                <div class="dark-table-wrap">
+                  <table>
+                    <thead><tr><th>Payout</th><th>Payout Type</th><th>Requested On</th><th>Status</th></tr></thead>
+                    <tbody id="payout-history-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- RIGHT: Saved methods -->
+            <div class="pmethod-card">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+                <div style="font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px"><i class="ti ti-wallet" style="color:var(--gold)"></i> Payout Methods</div>
+                <button class="btn btn-sm" style="background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2);font-size:11px;padding:4px 10px" onclick="showAddMethodForm()"><i class="ti ti-plus"></i> Add new</button>
+              </div>
+              <div id="saved-methods-list">
+                <div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">
+                  <i class="ti ti-wallet-off" style="font-size:28px;opacity:.3;display:block;margin-bottom:.5rem"></i>
+                  No saved methods.<br>Add one to speed up withdrawals.
+                </div>
+              </div>
+              <div id="add-method-form" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.07)">
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:.875rem">Add Payout Method</div>
+                <div class="pmethods" style="margin-bottom:.875rem">
+                  <div class="popt" id="new-opt-momo" onclick="selectNewMethod('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div></div>
+                  <div class="popt" id="new-opt-bank" onclick="selectNewMethod('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank</div></div>
+                </div>
+                <div id="new-momo-fields" style="display:none">
+                  <div class="momo-nets" style="margin-bottom:.75rem">
+                    <div class="mnet" id="new-mtn" onclick="selNewNet('MTN')">MTN</div>
+                    <div class="mnet" id="new-voda" onclick="selNewNet('Vodafone')">Vodafone</div>
+                    <div class="mnet" id="new-airtel" onclick="selNewNet('AirtelTigo')">AirtelTigo</div>
+                  </div>
+                  <div class="fg"><label>Mobile Money Number</label><input id="new-momo-number" type="tel" placeholder="0241234567"></div>
+                  <div class="fg"><label>Account Name</label><input id="new-momo-name" type="text" placeholder="Name on MoMo"></div>
+                </div>
+                <div id="new-bank-fields" style="display:none">
+                  <div class="fg"><label>Bank Name</label><input id="new-bank-name" type="text" placeholder="e.g. GCB Bank"></div>
+                  <div class="fg"><label>Account Number</label><input id="new-bank-acc" type="text" placeholder="Account number"></div>
+                  <div class="fg"><label>Account Name</label><input id="new-bank-acc-name" type="text" placeholder="Name on account"></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:.875rem">
+                  <button class="btn btn-purple btn-sm" style="flex:1;justify-content:center" onclick="savePayoutMethod()"><i class="ti ti-device-floppy"></i> Save</button>
+                  <button class="btn btn-sm" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4)" onclick="hideAddMethodForm()">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /roy-center -->
     </div>
 
     <!-- ANALYTICS -->
@@ -2156,119 +2294,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
     </div>
 
-    <!-- PAYOUT -->
-    <div class="page" id="page-payout">
-      <div class="ph"><div><h1>Payouts</h1><p>Withdraw your royalties.</p></div></div>
-      <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;max-width:900px">
-        <div>
-          <div class="payout-balance-card">
-            <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:.5rem">Your Current Balance</div>
-            <div style="font-size:44px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.875rem" id="payout-balance">$0.00</div>
-            <div class="payout-bar-wrap"><div class="payout-bar-fill" id="payout-bar" style="width:100%"></div></div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:1.5rem">
-              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span> Available: <strong style="color:#fff" id="payout-available-label">$0.00</strong></div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:50%;background:#4a4a6a;display:inline-block"></span> Pending: <strong style="color:#fff" id="payout-pending-label">$0.00</strong></div>
-            </div>
-            <div class="fg" style="margin-bottom:1rem">
-              <label>Amount to Withdraw (USD)</label>
-              <div style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:20px;font-weight:700;color:rgba(255,255,255,.4)">$</span>
-                <input id="withdraw-amount" type="number" min="1" step="0.01" placeholder="0.00" style="font-size:20px;font-weight:700;background:#131320;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;color:#fff;width:100%;font-family:Inter,sans-serif;outline:none">
-              </div>
-              <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:5px">Min. $1.00</div>
-            </div>
-            <button class="btn btn-purple" style="width:100%;justify-content:center" id="payout-submit-btn" onclick="showPayoutMethods()"><i class="ti ti-wallet"></i> Withdraw</button>
-          </div>
-          <!-- PAYOUT METHOD FIELDS (shown after clicking Withdraw) -->
-          <div id="payout-method-section" style="display:none">
-            <div class="payout-balance-card">
-              <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:1rem">Choose payout method</div>
-              <!-- Saved method quick-select (shown if saved methods exist) -->
-              <div id="saved-method-quickpick" style="display:none;margin-bottom:1rem">
-                <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.5rem">Your saved methods</div>
-                <div id="quickpick-list"></div>
-                <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:.5rem;cursor:pointer" onclick="document.getElementById('new-method-toggle').style.display='block';this.style.display='none'"><i class="ti ti-plus"></i> Use a different method</div>
-              </div>
-              <!-- Manual method selector -->
-              <div id="new-method-toggle">
-                <div class="pmethods">
-                  <div class="popt" id="opt-momo" onclick="selectPayout('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div><div class="popt-sub">MTN, Vodafone, AirtelTigo</div></div>
-                  <div class="popt" id="opt-bank" onclick="selectPayout('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank Transfer</div><div class="popt-sub">Ghana local bank</div></div>
-                </div>
-              </div>
-              <div id="momo-fields" style="display:none">
-                <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:.625rem">Select network</div>
-                <div class="momo-nets"><div class="mnet" id="mtn-btn" onclick="selNet('MTN')">MTN</div><div class="mnet" id="voda-btn" onclick="selNet('Vodafone')">Vodafone</div><div class="mnet" id="airtel-btn" onclick="selNet('AirtelTigo')">AirtelTigo</div></div>
-                <div class="fg"><label>Mobile Money Number</label><input id="momo-number" type="tel" placeholder="0241234567"></div>
-                <div class="fg"><label>Account Name</label><input id="momo-name" type="text" placeholder="Name on MoMo account"></div>
-              </div>
-              <div id="bank-fields" style="display:none">
-                <div class="fg"><label>Bank Name</label><input id="bank-name" type="text" placeholder="e.g. GCB Bank"></div>
-                <div class="fg"><label>Account Number</label><input id="bank-acc" type="text" placeholder="Account number"></div>
-                <div class="fg"><label>Account Name</label><input id="bank-acc-name" type="text" placeholder="Name on bank account"></div>
-                <div class="fg"><label>Branch (optional)</label><input id="bank-branch" type="text" placeholder="Branch name"></div>
-              </div>
-              <div id="payout-submit-wrap" style="display:none;margin-top:.5rem">
-                <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Processed within 5–7 business days.</div>
-                <button class="btn btn-purple" onclick="submitPayout()"><i class="ti ti-send"></i> Submit Payout Request</button>
-                <button class="btn" style="background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1);margin-left:8px" onclick="document.getElementById('payout-method-section').style.display='none'">Cancel</button>
-              </div>
-            </div>
-          </div>
-          <!-- HISTORY -->
-          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:1.5rem">
-            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:1rem">Your History</div>
-            <div class="dark-table-wrap">
-              <table>
-                <thead><tr><th>Payout</th><th>Payout Type</th><th>Requested On</th><th>Status</th></tr></thead>
-                <tbody id="payout-history-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <!-- SAVED PAYOUT METHODS -->
-        <div class="pmethod-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-            <div style="font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px"><i class="ti ti-wallet" style="color:var(--gold)"></i> Saved Methods</div>
-            <button class="btn btn-sm" style="background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2);font-size:11px;padding:4px 10px" onclick="showAddMethodForm()"><i class="ti ti-plus"></i> Add</button>
-          </div>
-          <div id="saved-methods-list">
-            <div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">
-              <i class="ti ti-wallet-off" style="font-size:28px;opacity:.3;display:block;margin-bottom:.5rem"></i>
-              No saved methods.<br>Add one to speed up withdrawals.
-            </div>
-          </div>
-          <!-- ADD METHOD FORM (hidden by default) -->
-          <div id="add-method-form" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.07)">
-            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:.875rem">Add Payout Method</div>
-            <div class="pmethods" style="margin-bottom:.875rem">
-              <div class="popt" id="new-opt-momo" onclick="selectNewMethod('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div></div>
-              <div class="popt" id="new-opt-bank" onclick="selectNewMethod('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank</div></div>
-            </div>
-            <!-- MoMo fields -->
-            <div id="new-momo-fields" style="display:none">
-              <div class="momo-nets" style="margin-bottom:.75rem">
-                <div class="mnet" id="new-mtn" onclick="selNewNet('MTN')">MTN</div>
-                <div class="mnet" id="new-voda" onclick="selNewNet('Vodafone')">Vodafone</div>
-                <div class="mnet" id="new-airtel" onclick="selNewNet('AirtelTigo')">AirtelTigo</div>
-              </div>
-              <div class="fg"><label>Mobile Money Number</label><input id="new-momo-number" type="tel" placeholder="0241234567"></div>
-              <div class="fg"><label>Account Name</label><input id="new-momo-name" type="text" placeholder="Name on MoMo"></div>
-            </div>
-            <!-- Bank fields -->
-            <div id="new-bank-fields" style="display:none">
-              <div class="fg"><label>Bank Name</label><input id="new-bank-name" type="text" placeholder="e.g. GCB Bank"></div>
-              <div class="fg"><label>Account Number</label><input id="new-bank-acc" type="text" placeholder="Account number"></div>
-              <div class="fg"><label>Account Name</label><input id="new-bank-acc-name" type="text" placeholder="Name on account"></div>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:.875rem">
-              <button class="btn btn-purple btn-sm" style="flex:1;justify-content:center" onclick="savePayoutMethod()"><i class="ti ti-device-floppy"></i> Save</button>
-              <button class="btn btn-sm" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4)" onclick="hideAddMethodForm()">Cancel</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- UPGRADE -->
     <div class="page" id="page-upgrade">
@@ -3201,7 +3226,7 @@ function goPage(id,el){
   history.pushState({page:id},'',window.location.pathname+'#'+id);
   if(id==='analytics')loadAnalytics();
   if(id==='submit')initWizard();
-  if(id==='royalties')loadRoyalties();
+  if(id==='royalties'){loadRoyalties();}
   if(id==='payout')loadPayout();
   if(id==='artists')loadArtists();
   if(id==='profile')loadProfileStats();
@@ -4803,6 +4828,15 @@ function toast(msg,type){
 
 // ── ADMIN ──────────────────────────────────────────────
 let allReleasesCache=[],allUsersCache=[],allPayoutsCache=[];
+function switchRoyTab(tab,el){
+  document.querySelectorAll('.roy-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.roy-tab-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('rtpanel-'+tab);
+  if(panel) panel.classList.add('active');
+  if(el) el.classList.add('active');
+  if(tab==='payouts') loadPayout();
+}
+
 function switchAdminTab(tab,el){
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
