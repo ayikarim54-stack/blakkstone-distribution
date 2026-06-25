@@ -3382,7 +3382,7 @@ function renderAnalyticsChart(){
     Object.entries(byMonth).sort().forEach(([m,v])=>{
       const mo=parseInt(m.split('-')[1])-1;
       const yr=m.split('-')[0].slice(2);
-      points.push({label:MONTHS[mo]+' ''+yr,val:v});
+      points.push({label:MONTHS[mo]+"'"+yr,val:v});
     });
   }
 
