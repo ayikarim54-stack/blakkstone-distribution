@@ -116,7 +116,7 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .auth-r .fg select option{background:#fff;color:var(--text)}
 .fg{margin-bottom:.875rem}
 .fg label{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
-.fg input,.fg select,.fg textarea{width:100%;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+.fg input,.fg select,.fg textarea{width:100%;background:#0e0e14;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 11px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(201,168,76,.6);background:#1a1a2e}
 .fg input::placeholder{color:rgba(255,255,255,.25)}
 .fg textarea::placeholder{color:rgba(255,255,255,.25)}
@@ -410,8 +410,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .r-art{width:38px;height:38px}
 
   /* SUBMIT WIZARD */
-  #page-submit .wizard-panel>div[style*="grid-template-columns:1fr 280px"]{grid-template-columns:1fr!important}
-  #page-submit>div:first-child{margin:-1rem -1rem 1.5rem;padding:0 1rem}
+  #page-submit{margin:-1rem -1rem -1rem}
+  .wpanel-inner{grid-template-columns:1fr!important}
+  .wpanel-sidebar{position:static}
+  .wiz-center{padding:1.25rem 1rem}
   .wizard-step{padding:.75rem .5rem}
   .ws-label{display:none}
   .ws-num{width:28px;height:28px;font-size:12px}
@@ -757,6 +759,42 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .track-remove-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.2);font-size:13px;padding:4px 8px;border-radius:6px;font-family:Inter,sans-serif;display:flex;align-items:center;gap:4px;margin-top:.5rem}
 .track-remove-btn:hover{color:#f87171;background:rgba(239,68,68,.1)}
 @media(max-width:600px){.track-meta-grid{grid-template-columns:1fr}}
+
+/* ── WIZARD CENTERED LAYOUT ── */
+#page-submit{
+  margin:-2.5rem -2.5rem -2.5rem;  /* break out of dash-body padding */
+  min-height:calc(100vh - 62px);
+}
+.wiz-center{max-width:960px;margin:0 auto;padding:2rem 2.5rem}
+.wpanel-inner{display:grid;grid-template-columns:1fr 280px;gap:3rem;align-items:start}
+.wpanel-form{min-width:0}
+.wpanel-sidebar{position:sticky;top:80px}
+.wiz-h1{font-size:30px;font-weight:800;color:#fff;margin-bottom:2rem;letter-spacing:-.5px}
+/* underline input style like Ditto */
+.wiz-field-ul{background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,.12);border-radius:0;padding:10px 2px;font-size:15px;color:#fff;font-family:Inter,sans-serif;outline:none;width:100%;transition:border-color .15s}
+.wiz-field-ul:focus{border-bottom-color:var(--gold)}
+.wiz-field-ul::placeholder{color:rgba(255,255,255,.25)}
+/* labels */
+.wiz-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block}
+/* section divider */
+.wiz-section{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.3);padding:1.5rem 0 .75rem;border-top:1px solid rgba(255,255,255,.07);margin-top:1.5rem}
+.wiz-section:first-child{border-top:none;padding-top:0;margin-top:0}
+/* 2-col field row */
+.wiz-row{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.wiz-row.wiz-row-3{grid-template-columns:1fr 1fr 1fr}
+.wiz-col{display:flex;flex-direction:column;gap:4px}
+.wiz-col.full{grid-column:1/-1}
+/* artwork sidebar */
+.wiz-art-box{background:#111118;border:1.5px dashed rgba(255,255,255,.1);border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:border-color .15s;margin-bottom:.75rem}
+.wiz-art-box:hover{border-color:rgba(212,175,55,.3)}
+.wiz-art-title{font-size:14px;font-weight:600;color:#fff;text-align:center;margin-bottom:2px}
+.wiz-art-sub{font-size:11px;color:rgba(255,255,255,.3);text-align:center}
+@media(max-width:700px){
+  .wpanel-inner{grid-template-columns:1fr}
+  .wpanel-sidebar{position:static}
+  .wiz-row{grid-template-columns:1fr}
+  .wiz-center{padding:1.25rem}
+}
 </style>
 </head>
 <body>
@@ -1030,7 +1068,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
   <!-- FAQ -->
   <section class="section" id="faq-sec" style="background:var(--off)">
-    <div style="max-width:700px;margin:0 auto">
+    <div style="width:100%">
       <div style="text-align:center;margin-bottom:2.5rem">
         <div class="section-tag">FAQ</div>
         <div class="section-h">Common questions</div>
@@ -1428,8 +1466,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <!-- SUBMIT - 5 STEP WIZARD -->
     <div class="page" id="page-submit">
       <!-- STEP PROGRESS BAR -->
-      <div style="background:#1a1a2e;border-bottom:1px solid rgba(255,255,255,.07);margin:-2rem -2rem 2rem;padding:0 2rem">
-        <div style="display:flex;align-items:stretch;max-width:900px">
+      <div style="background:#08080C;border-bottom:1px solid rgba(255,255,255,.07);padding:0 2.5rem;position:sticky;top:62px;z-index:100">
+        <div style="display:flex;align-items:stretch;max-width:960px;margin:0 auto">
           <div class="wizard-step active" id="wstep-1" onclick="goWizard(1)"><span class="ws-num">1</span><span class="ws-label">Upload</span></div>
           <div class="ws-line" id="wsline-1"></div>
           <div class="wizard-step" id="wstep-2" onclick="goWizard(2)"><span class="ws-num">2</span><span class="ws-label">Details</span></div>
@@ -1442,6 +1480,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
 
+      <div class="wiz-center">
       <!-- DRAFT RESUME BANNER -->
       <div id="draft-banner" style="display:none;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
         <div>
@@ -1475,12 +1514,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
       <!-- STEP 2: DETAILS -->
       <div class="wizard-panel" id="wpanel-2">
-        <div style="display:grid;grid-template-columns:1fr 280px;gap:2rem;max-width:900px">
-          <div>
-            <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Release Details</h2>
-            <div class="fg">
-  <label>Release Title *</label>
-  <input id="r-title" type="text" placeholder="e.g. Midnight Stories" oninput="checkTitleFormat(this,'title-warn')">
+        <div class="wpanel-inner">
+          <div class="wpanel-form">
+            <h2 class="wiz-h1">Release Details</h2>
+            <div class="fg" style="margin-bottom:1.5rem">
+  <label style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4)">Release Title *</label>
+  <input id="r-title" type="text" placeholder="e.g. Midnight Stories" oninput="checkTitleFormat(this,'title-warn');updateArtPreviewTitle()" style="font-size:18px;font-weight:600;border:none;border-bottom:2px solid rgba(255,255,255,.15);border-radius:0;background:transparent;padding:10px 0;color:#fff" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.15)'">
   <div id="title-warn" class="field-warn" style="display:none"></div>
 </div>
             <div class="frow">
@@ -1696,20 +1735,27 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div class="fg" style="margin-top:1.5rem"><label>Admin Notes (optional)</label><textarea id="r-notes" placeholder="Explicit content, special instructions..."></textarea></div>
           </div>
           <!-- ARTWORK PREVIEW -->
-          <div>
-            <div style="font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.75rem">Your Preview</div>
-            <div style="background:#2a2a45;border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;overflow:hidden;cursor:pointer;border:2px dashed rgba(255,255,255,.1)" id="artwork-preview-wrap" onclick="document.getElementById('art-input').click()">
-              <div id="artwork-preview-inner" style="text-align:center;padding:1rem">
-                <i class="ti ti-photo-plus" style="font-size:36px;color:rgba(255,255,255,.2);display:block;margin-bottom:.5rem"></i>
-                <div style="font-size:12px;color:rgba(255,255,255,.3)">Click to add artwork</div>
+          <div class="wpanel-sidebar">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:1rem">Your Preview</div>
+            <div style="background:var(--card);border:2px dashed rgba(255,255,255,.12);border-radius:14px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:border-color .15s;margin-bottom:.875rem" id="artwork-preview-wrap" onclick="document.getElementById('art-input').click()" onmouseover="this.style.borderColor='rgba(212,175,55,.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)'">
+              <div id="artwork-preview-inner" style="text-align:center;padding:1.5rem">
+                <i class="ti ti-photo-plus" style="font-size:44px;color:rgba(255,255,255,.15);display:block;margin-bottom:.75rem"></i>
+                <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.3)">Click to add artwork</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:4px">3000×3000px · JPG or PNG</div>
               </div>
             </div>
             <input type="file" id="art-input" accept=".jpg,.jpeg,.png,image/*" style="display:none" onchange="previewArtwork(this)">
-            <div style="font-size:13px;font-weight:600;color:#fff;text-align:center" id="artwork-title-preview">—</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:3px">3000 × 3000px recommended</div>
+            <div style="font-size:15px;font-weight:700;color:#fff;text-align:center;margin-bottom:2px" id="artwork-title-preview">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.3);text-align:center">Your release title will appear here</div>
+            <!-- Track list mini preview -->
+            <div id="art-track-preview" style="margin-top:1rem;display:none">
+              <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:.75rem"></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:.5rem">Tracks</div>
+              <div id="art-track-list" style="font-size:12px;color:rgba(255,255,255,.5);display:flex;flex-direction:column;gap:4px"></div>
+            </div>
           </div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:2rem;max-width:900px;flex-wrap:wrap">
+        <div style="display:flex;gap:10px;margin-top:2rem;flex-wrap:wrap">
           <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(1)"><i class="ti ti-arrow-left"></i> Back</button>
           <button class="btn btn-purple" onclick="goWizard(3)">Next: Schedule <i class="ti ti-arrow-right"></i></button>
           <button class="btn btn-sm" style="margin-left:auto;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2)" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save draft</button>
@@ -1853,6 +1899,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
       </div>
+      </div><!-- /centering wrapper -->
     </div>
 
     <!-- ARTISTS -->
@@ -2669,6 +2716,22 @@ function checkTitleFormat(input,warnId){
   warnEl.innerHTML='';
 }
 
+// ── ARTWORK PREVIEW SYNC ──────────────────────────────
+function updateArtPreviewTitle(){
+  const title=document.getElementById('r-title')?.value||'—';
+  const tp=document.getElementById('artwork-title-preview');
+  if(tp) tp.textContent=title||'—';
+  // Update track mini-list in preview
+  if(wizTracks.length>0){
+    const preview=document.getElementById('art-track-preview');
+    const list=document.getElementById('art-track-list');
+    if(preview) preview.style.display='block';
+    if(list) list.innerHTML=wizTracks.map((t,i)=>
+      '<div style="display:flex;align-items:center;gap:6px"><span style="color:rgba(255,255,255,.25);width:16px;text-align:right">'+(i+1)+'</span><span>'+esc(t.name)+'</span></div>'
+    ).join('');
+  }
+}
+
 // ── CREDITS TOGGLES ──────────────────────────────────
 const _creditStates={};
 function toggleCredits(){
@@ -3449,6 +3512,7 @@ async function addTrack(file){
   if(wizTracks.length===1){
     const titleEl=document.getElementById('r-title');if(titleEl&&!titleEl.value) titleEl.value=cleanName;
   }
+  updateArtPreviewTitle();
   // Upload to Supabase Storage immediately so draft can reference it
   try{
     const ext=file.name.split('.').pop();
