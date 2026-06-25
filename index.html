@@ -2043,20 +2043,21 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
           <!-- STORE + COUNTRY BREAKDOWN -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
-            <!-- STORE BREAKDOWN -->
+
+            <!-- WORLD MAP + COUNTRY BARS -->
             <div class="chart-card" style="margin-bottom:0">
-              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
-                <i class="ti ti-chart-bar" style="color:var(--gold)"></i> Earnings by Store
-              </div>
-              <div id="roy-stores-breakdown"></div>
-            </div>
-            <!-- COUNTRY BREAKDOWN -->
-            <div class="chart-card" style="margin-bottom:0">
-              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
-                <i class="ti ti-world" style="color:var(--gold)"></i> Top Countries
-              </div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:1rem">Best Performing Countries</div>
+              <div id="roy-world-map" style="margin-bottom:1rem"></div>
               <div id="roy-countries-breakdown"></div>
             </div>
+
+            <!-- DONUT CHART + STORE LEGEND -->
+            <div class="chart-card" style="margin-bottom:0">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:1rem">Best Performing Stores</div>
+              <div id="roy-donut-wrap" style="display:flex;justify-content:center;margin-bottom:1.25rem"></div>
+              <div id="roy-stores-breakdown"></div>
+            </div>
+
           </div>
 
           <!-- RELEASE BREAKDOWN TABLE -->
@@ -3858,76 +3859,186 @@ async function loadRoyalties(){
   });
   requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('earnings-chart',chartLabels,chartVals,'#D4AF37')));
 
-  // ── Real store breakdown from royalty_entries
+  // ── Store breakdown + donut chart
+  const STORE_MAP=[
+    {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954',color:'#1DB954'},
+    {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44',color:'#FC3C44'},
+    {key:'youtube_music',name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000',color:'#FF0000'},
+    {key:'audiomack',name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200',color:'#FFA200'},
+    {key:'boomplay',name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF',color:'#00C2FF'},
+    {key:'amazon_music',name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA',color:'#25D1DA'},
+    {key:'tidal',name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/ffffff',color:'#aaaaaa'},
+    {key:'deezer',name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF',color:'#A238FF'},
+    {key:'others',name:'Others',logo:'',color:'#6b7280'},
+  ];
+  const storeTotals={};
+  STORE_MAP.forEach(s=>{storeTotals[s.key]=0;});
+  entries.forEach(e=>{STORE_MAP.forEach(s=>{storeTotals[s.key]+=(e[s.key]||0);});});
+  const grandTotal=Object.values(storeTotals).reduce((a,v)=>a+v,0);
   const royStoreEl=document.getElementById('roy-stores-breakdown');
-  if(royStoreEl){
-    const storeTotals={spotify:0,apple_music:0,youtube_music:0,audiomack:0,boomplay:0,amazon_music:0,tidal:0,deezer:0,others:0};
-    entries.forEach(e=>{Object.keys(storeTotals).forEach(k=>{storeTotals[k]+=(e[k]||0);});});
-    const grandTotal=Object.values(storeTotals).reduce((a,v)=>a+v,0);
-    const maxVal=Math.max(...Object.values(storeTotals),0.01);
+  const donutWrap=document.getElementById('roy-donut-wrap');
+
+  if(donutWrap){
     if(!grandTotal){
-      royStoreEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No store data yet</div>';
+      donutWrap.innerHTML='<div style="width:180px;height:180px;border-radius:50%;border:3px dashed rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.3);text-align:center">No store<br>data yet</div>';
     } else {
-      const storeMap=[
-        {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954'},
-        {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44'},
-        {key:'youtube_music',name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000'},
-        {key:'audiomack',name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200'},
-        {key:'boomplay',name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF'},
-        {key:'amazon_music',name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA'},
-        {key:'tidal',name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000'},
-        {key:'deezer',name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF'},
-        {key:'others',name:'Others',logo:''},
-      ];
-      royStoreEl.innerHTML=storeMap.map(s=>{
-        const v=storeTotals[s.key];if(!v)return'';
-        const pct=Math.round((v/grandTotal)*100);
-        const barW=Math.round((v/maxVal)*100);
-        const logo=s.logo?'<img src="'+s.logo+'" width="16" height="16" style="object-fit:contain;display:block">':'';
-        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
-          +'<div style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:3px;flex-shrink:0">'+logo+'</div>'
-          +'<div style="font-size:12px;color:rgba(255,255,255,.7);width:90px;flex-shrink:0">'+s.name+'</div>'
-          +'<div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:var(--gold);border-radius:3px"></div></div>'
-          +'<div style="font-size:12px;font-weight:700;color:#34d399;width:55px;text-align:right">$'+v.toFixed(2)+'</div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.3);width:28px;text-align:right">'+pct+'%</div>'
-          +'</div>';
-      }).filter(Boolean).join('');
+      // Build donut SVG
+      const R=80,r=48,cx=90,cy=90;
+      const slices=STORE_MAP.map(s=>({...s,val:storeTotals[s.key]})).filter(s=>s.val>0);
+      let cumAngle=-Math.PI/2;
+      let paths='';
+      slices.forEach(s=>{
+        const angle=(s.val/grandTotal)*2*Math.PI;
+        const x1=cx+R*Math.cos(cumAngle),y1=cy+R*Math.sin(cumAngle);
+        const x2=cx+R*Math.cos(cumAngle+angle),y2=cy+R*Math.sin(cumAngle+angle);
+        const xi1=cx+r*Math.cos(cumAngle),yi1=cy+r*Math.sin(cumAngle);
+        const xi2=cx+r*Math.cos(cumAngle+angle),yi2=cy+r*Math.sin(cumAngle+angle);
+        const lg=angle>Math.PI?1:0;
+        paths+=`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${lg},1 ${x2.toFixed(1)},${y2.toFixed(1)} L${xi2.toFixed(1)},${yi2.toFixed(1)} A${r},${r} 0 ${lg},0 ${xi1.toFixed(1)},${yi1.toFixed(1)} Z" fill="${s.color}" opacity="0.9"/>`;
+        cumAngle+=angle;
+      });
+      // Center text
+      const topStore=slices[0];
+      const topPct=Math.round((topStore.val/grandTotal)*100);
+      donutWrap.innerHTML=`<svg width="180" height="180" viewBox="0 0 180 180" style="display:block">
+        <circle cx="90" cy="90" r="80" fill="rgba(255,255,255,.03)"/>
+        ${paths}
+        <circle cx="90" cy="90" r="48" fill="#111118"/>
+        <text x="90" y="84" text-anchor="middle" fill="#fff" font-size="22" font-weight="800" font-family="Inter,sans-serif">${topPct}%</text>
+        <text x="90" y="100" text-anchor="middle" fill="rgba(255,255,255,.4)" font-size="10" font-family="Inter,sans-serif">${topStore.name}</text>
+      </svg>`;
     }
   }
 
-  // ── Real country breakdown from royalty_entries.countries JSON
+  if(royStoreEl){
+    if(!grandTotal){
+      royStoreEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1rem 0">No store data yet</div>';
+    } else {
+      const sorted=STORE_MAP.map(s=>({...s,val:storeTotals[s.key]})).filter(s=>s.val>0).sort((a,b)=>b.val-a.val);
+      royStoreEl.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+        sorted.map(s=>{
+          const pct=Math.round((s.val/grandTotal)*100);
+          const logo=s.logo?'<img src="'+s.logo+'" width="16" height="16" style="object-fit:contain;display:block">':'';
+          return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0">'
+            +'<div style="width:10px;height:10px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div>'
+            +'<div style="width:20px;height:20px;border-radius:4px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:2px;flex-shrink:0">'+logo+'</div>'
+            +'<div style="flex:1;min-width:0"><div style="font-size:12px;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+s.name+'</div>'
+            +'<div style="font-size:11px;color:#34d399;font-weight:600">$'+s.val.toFixed(2)+' <span style="color:rgba(255,255,255,.3);font-weight:400">'+pct+'%</span></div></div>'
+            +'</div>';
+        }).join('')
+      +'</div>';
+    }
+  }
+
+  // ── Country breakdown: world map dots + horizontal bars
   const countryEl=document.getElementById('roy-countries-breakdown');
-  if(countryEl){
-    const countryTotals={};
-    entries.forEach(e=>{
-      if(!e.countries)return;
-      let countries=e.countries;
-      if(typeof countries==='string'){try{countries=JSON.parse(countries);}catch(err){return;}}
-      (countries||[]).forEach(row=>{
-        if(!row.country)return;
-        if(!countryTotals[row.country]) countryTotals[row.country]={streams:0,earnings:0};
-        countryTotals[row.country].streams+=(parseInt(row.streams)||0);
-        countryTotals[row.country].earnings+=(parseFloat(row.earnings)||0);
-      });
+  const mapEl=document.getElementById('roy-world-map');
+  const countryTotals={};
+  entries.forEach(e=>{
+    if(!e.countries)return;
+    let countries=e.countries;
+    if(typeof countries==='string'){try{countries=JSON.parse(countries);}catch(err){return;}}
+    (countries||[]).forEach(row=>{
+      if(!row.country)return;
+      if(!countryTotals[row.country]) countryTotals[row.country]={streams:0,earnings:0};
+      countryTotals[row.country].streams+=(parseInt(row.streams)||0);
+      countryTotals[row.country].earnings+=(parseFloat(row.earnings)||0);
     });
-    const sorted=Object.entries(countryTotals).sort((a,b)=>b[1].earnings-a[1].earnings);
-    const totalCountryEarnings=sorted.reduce((a,[,v])=>a+v.earnings,0);
-    const flags={'Ghana':'🇬🇭','Nigeria':'🇳🇬','USA':'🇺🇸','United States':'🇺🇸','UK':'🇬🇧','United Kingdom':'🇬🇧','South Africa':'🇿🇦','Kenya':'🇰🇪','Cameroon':'🇨🇲','Tanzania':'🇹🇿','Uganda':'🇺🇬','Senegal':'🇸🇳','Canada':'🇨🇦','Germany':'🇩🇪','France':'🇫🇷','Other':'🌍'};
+  });
+  const sorted=Object.entries(countryTotals).sort((a,b)=>b[1].earnings-a[1].earnings);
+  const totalCountryEarnings=sorted.reduce((a,[,v])=>a+v.earnings,0);
+
+  // Country flags + ISO codes for map dots
+  const COUNTRY_DATA={
+    'Ghana':{flag:'🇬🇭',x:44.5,y:52},
+    'Nigeria':{flag:'🇳🇬',x:47,y:51},
+    'South Africa':{flag:'🇿🇦',x:50,y:66},
+    'Kenya':{flag:'🇰🇪',x:53,y:54},
+    'Tanzania':{flag:'🇹🇿',x:52,y:57},
+    'Uganda':{flag:'🇺🇬',x:52,y:53},
+    'Cameroon':{flag:'🇨🇲',x:48,y:52.5},
+    'Senegal':{flag:'🇸🇳',x:41,y:49},
+    'Ethiopia':{flag:'🇪🇹',x:53,y:50},
+    'Ivory Coast':{flag:'🇨🇮',x:43,y:52},
+    'USA':{flag:'🇺🇸',x:20,y:38},
+    'United States':{flag:'🇺🇸',x:20,y:38},
+    'Canada':{flag:'🇨🇦',x:18,y:29},
+    'UK':{flag:'🇬🇧',x:45,y:28},
+    'United Kingdom':{flag:'🇬🇧',x:45,y:28},
+    'Germany':{flag:'🇩🇪',x:47.5,y:29},
+    'France':{flag:'🇫🇷',x:46,y:31},
+    'Netherlands':{flag:'🇳🇱',x:47,y:28},
+    'Sweden':{flag:'🇸🇪',x:49,y:24},
+    'Norway':{flag:'🇳🇴',x:48,y:23},
+    'Denmark':{flag:'🇩🇰',x:48,y:26},
+    'Italy':{flag:'🇮🇹',x:48.5,y:33},
+    'Spain':{flag:'🇪🇸',x:44.5,y:33},
+    'Brazil':{flag:'🇧🇷',x:28,y:60},
+    'Australia':{flag:'🇦🇺',x:77,y:65},
+    'Japan':{flag:'🇯🇵',x:80,y:36},
+    'China':{flag:'🇨🇳',x:73,y:37},
+    'India':{flag:'🇮🇳',x:65,y:42},
+    'Other':{flag:'🌍',x:50,y:50},
+  };
+
+  // ── World map SVG
+  if(mapEl){
     if(!sorted.length){
-      countryEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0"><i class="ti ti-world-off" style="font-size:28px;opacity:.3;display:block;margin-bottom:.5rem"></i>No country data yet.<br><span style="font-size:12px;opacity:.7">Add country breakdown in Admin → Royalties.</span></div>';
+      mapEl.innerHTML='<div style="height:140px;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.25);text-align:center"><div><i class="ti ti-world" style="font-size:32px;display:block;margin-bottom:.5rem;opacity:.2"></i>No country data yet.<br>Add in Admin → Royalties.</div></div>';
     } else {
       const maxEarn=sorted[0][1].earnings||0.01;
-      countryEl.innerHTML=sorted.slice(0,8).map(([country,data])=>{
+      // Simple SVG world outline (simplified continents as paths)
+      const dots=sorted.slice(0,12).map(([country,data])=>{
+        const cd=COUNTRY_DATA[country];
+        if(!cd)return'';
+        const r=3+Math.round((data.earnings/maxEarn)*9); // 3-12px radius
+        const opacity=0.4+((data.earnings/maxEarn)*0.6);
+        return `<circle cx="${cd.x}%" cy="${cd.y}%" r="${r}" fill="var(--gold)" opacity="${opacity.toFixed(2)}" stroke="rgba(212,175,55,.3)" stroke-width="1">
+          <title>${country}: $${data.earnings.toFixed(2)} · ${data.streams.toLocaleString()} streams</title>
+        </circle>`;
+      }).join('');
+
+      mapEl.innerHTML=`<div style="position:relative;width:100%;background:rgba(255,255,255,.02);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.06)">
+        <svg viewBox="0 0 100 60" width="100%" style="display:block;opacity:.18" xmlns="http://www.w3.org/2000/svg">
+          <!-- Simplified world continents -->
+          <!-- North America -->
+          <path d="M5,18 Q8,14 14,15 Q20,12 22,18 Q24,24 20,28 Q18,32 16,35 Q14,38 17,42 Q15,46 12,44 Q8,40 7,36 Q5,30 5,24 Z" fill="#4a9eff" opacity=".5"/>
+          <!-- South America -->
+          <path d="M20,44 Q24,42 28,44 Q32,46 33,52 Q34,58 30,60 Q26,60 23,56 Q19,52 20,48 Z" fill="#4a9eff" opacity=".5"/>
+          <!-- Europe -->
+          <path d="M42,22 Q44,20 48,20 Q52,20 54,24 Q53,28 50,30 Q46,30 44,28 Q42,26 42,22 Z" fill="#4a9eff" opacity=".5"/>
+          <!-- Africa -->
+          <path d="M42,34 Q44,32 48,32 Q52,32 54,36 Q56,42 54,50 Q52,56 48,58 Q44,56 42,52 Q40,46 40,40 Q40,36 42,34 Z" fill="#4a9eff" opacity=".5"/>
+          <!-- Asia -->
+          <path d="M54,18 Q60,14 70,16 Q78,16 84,20 Q88,24 86,30 Q82,34 76,34 Q68,34 62,30 Q56,26 54,22 Z" fill="#4a9eff" opacity=".5"/>
+          <!-- Australia -->
+          <path d="M72,54 Q76,52 80,54 Q84,56 84,60 Q80,62 76,60 Q72,58 72,54 Z" fill="#4a9eff" opacity=".5"/>
+        </svg>
+        <svg viewBox="0 0 100 60" width="100%" style="position:absolute;top:0;left:0;display:block" xmlns="http://www.w3.org/2000/svg">
+          ${dots}
+        </svg>
+      </div>`;
+    }
+  }
+
+  // ── Country horizontal bars
+  if(countryEl){
+    if(!sorted.length){
+      countryEl.innerHTML='';
+    } else {
+      const maxEarn=sorted[0][1].earnings||0.01;
+      countryEl.innerHTML=sorted.slice(0,6).map(([country,data])=>{
         const pct=totalCountryEarnings>0?Math.round((data.earnings/totalCountryEarnings)*100):0;
         const barW=Math.round((data.earnings/maxEarn)*100);
-        const flag=flags[country]||'🌍';
-        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
-          +'<span style="font-size:18px;flex-shrink:0;width:24px;text-align:center">'+flag+'</span>'
-          +'<div style="font-size:12px;color:rgba(255,255,255,.8);width:90px;flex-shrink:0;font-weight:500">'+esc(country)+'</div>'
-          +'<div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:#60a5fa;border-radius:3px"></div></div>'
-          +'<div style="text-align:right;flex-shrink:0">'
+        const cd=COUNTRY_DATA[country];
+        const flag=cd?cd.flag:'🌍';
+        return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0">'
+          +'<span style="font-size:16px;width:22px;text-align:center;flex-shrink:0">'+flag+'</span>'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.7);width:80px;flex-shrink:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(country)+'</div>'
+          +'<div style="flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden">'
+          +'<div style="width:'+barW+'%;height:100%;background:linear-gradient(90deg,#4a9eff,#7ec8ff);border-radius:3px"></div></div>'
+          +'<div style="text-align:right;flex-shrink:0;min-width:60px">'
           +'<div style="font-size:12px;font-weight:700;color:#34d399">$'+data.earnings.toFixed(2)+'</div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">'+data.streams.toLocaleString()+' streams</div>'
           +'</div>'
           +'</div>';
       }).join('');
