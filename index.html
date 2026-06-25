@@ -832,6 +832,22 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .roy-tab-panel.active{display:block}
 /* Centered content */
 .roy-center{max-width:960px;margin:0 auto}
+
+/* ── ROY RELEASE TABLE (Ditto style) ── */
+.roy-release-table{display:flex;flex-direction:column;gap:0;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+.roy-rel-header{display:grid;grid-template-columns:2fr 100px 90px 90px 100px 80px 80px;gap:0;padding:.625rem 1rem;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)}
+.roy-rel-header span{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.roy-rel-row{display:grid;grid-template-columns:2fr 100px 90px 90px 100px 80px 80px;gap:0;padding:.875rem 1rem;border-bottom:1px solid rgba(255,255,255,.05);align-items:center;transition:background .15s}
+.roy-rel-row:last-child{border-bottom:none}
+.roy-rel-row:hover{background:rgba(255,255,255,.02)}
+.roy-rel-art{width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.roy-rel-art-placeholder{width:36px;height:36px;border-radius:6px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.roy-rel-title{font-size:13px;font-weight:600;color:#fff}
+.roy-rel-artist{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px}
+@media(max-width:700px){
+  .roy-rel-header{display:none}
+  .roy-rel-row{grid-template-columns:1fr 1fr;gap:4px 12px;padding:.75rem}
+}
 </style>
 </head>
 <body>
@@ -2061,15 +2077,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
 
           <!-- RELEASE BREAKDOWN TABLE -->
-          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:6px">
             <i class="ti ti-music" style="color:var(--gold)"></i> Earnings by Release
           </div>
-          <div class="dark-table-wrap" style="margin-bottom:1.5rem">
-            <table>
-              <thead><tr><th>Release</th><th>Streams Paid</th><th>Gross</th><th>Commission</th><th>Your Payout</th><th>Period</th><th>Status</th></tr></thead>
-              <tbody id="royalty-tbody"></tbody>
-            </table>
-          </div>
+          <div class="roy-release-table" id="royalty-tbody"></div>
         </div>
 
         <!-- ── REPORTS TAB ── -->
@@ -3981,41 +3992,40 @@ async function loadRoyalties(){
     'Other':{flag:'🌍',x:50,y:50},
   };
 
-  // ── World map SVG
+  // ── Bubble chart (Ditto style — sized circles on dark bg)
   if(mapEl){
     if(!sorted.length){
-      mapEl.innerHTML='<div style="height:140px;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.25);text-align:center"><div><i class="ti ti-world" style="font-size:32px;display:block;margin-bottom:.5rem;opacity:.2"></i>No country data yet.<br>Add in Admin → Royalties.</div></div>';
+      mapEl.innerHTML='<div style="height:160px;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.25);text-align:center"><div><i class="ti ti-world" style="font-size:32px;display:block;margin-bottom:.5rem;opacity:.2"></i>No country data yet.<br>Add in Admin → Royalties.</div></div>';
     } else {
       const maxEarn=sorted[0][1].earnings||0.01;
-      // Simple SVG world outline (simplified continents as paths)
-      const dots=sorted.slice(0,12).map(([country,data])=>{
-        const cd=COUNTRY_DATA[country];
-        if(!cd)return'';
-        const r=3+Math.round((data.earnings/maxEarn)*9); // 3-12px radius
-        const opacity=0.4+((data.earnings/maxEarn)*0.6);
-        return `<circle cx="${cd.x}%" cy="${cd.y}%" r="${r}" fill="var(--gold)" opacity="${opacity.toFixed(2)}" stroke="rgba(212,175,55,.3)" stroke-width="1">
-          <title>${country}: $${data.earnings.toFixed(2)} · ${data.streams.toLocaleString()} streams</title>
-        </circle>`;
+      const W=340,H=170;
+      // Pack bubbles using a simple layout — place them left to right, largest first
+      const bubbles=sorted.slice(0,8).map(([country,data],i)=>{
+        const pct=data.earnings/maxEarn;
+        const r=Math.max(12,Math.round(pct*62)); // 12–62px radius
+        return {country,data,r,pct};
+      });
+      // Simple placement: arrange in a loose organic cluster
+      const positions=[
+        {x:80,y:85},{x:170,y:75},{x:255,y:90},
+        {x:120,y:135},{x:210,y:140},{x:295,y:50},
+        {x:50,y:50},{x:310,y:135}
+      ];
+      const circles=bubbles.map((b,i)=>{
+        const pos=positions[i]||{x:50+i*60,y:85};
+        const alpha=0.25+b.pct*0.75;
+        const goldAlpha=Math.round(alpha*255).toString(16).padStart(2,'0');
+        const cd=COUNTRY_DATA[b.country];
+        const flag=cd?cd.flag:'🌍';
+        return `<g>
+          <circle cx="${pos.x}" cy="${pos.y}" r="${b.r}" fill="#D4AF37" fill-opacity="${alpha.toFixed(2)}" stroke="#D4AF37" stroke-opacity="0.3" stroke-width="1.5"/>
+          <text x="${pos.x}" y="${pos.y}" text-anchor="middle" dominant-baseline="middle" font-size="${b.r>30?13:10}" font-family="Inter,sans-serif" fill="rgba(255,255,255,0.9)">${flag}</text>
+          <title>${b.country}: $${b.data.earnings.toFixed(2)}</title>
+        </g>`;
       }).join('');
-
-      mapEl.innerHTML=`<div style="position:relative;width:100%;background:rgba(255,255,255,.02);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.06)">
-        <svg viewBox="0 0 100 60" width="100%" style="display:block;opacity:.18" xmlns="http://www.w3.org/2000/svg">
-          <!-- Simplified world continents -->
-          <!-- North America -->
-          <path d="M5,18 Q8,14 14,15 Q20,12 22,18 Q24,24 20,28 Q18,32 16,35 Q14,38 17,42 Q15,46 12,44 Q8,40 7,36 Q5,30 5,24 Z" fill="#4a9eff" opacity=".5"/>
-          <!-- South America -->
-          <path d="M20,44 Q24,42 28,44 Q32,46 33,52 Q34,58 30,60 Q26,60 23,56 Q19,52 20,48 Z" fill="#4a9eff" opacity=".5"/>
-          <!-- Europe -->
-          <path d="M42,22 Q44,20 48,20 Q52,20 54,24 Q53,28 50,30 Q46,30 44,28 Q42,26 42,22 Z" fill="#4a9eff" opacity=".5"/>
-          <!-- Africa -->
-          <path d="M42,34 Q44,32 48,32 Q52,32 54,36 Q56,42 54,50 Q52,56 48,58 Q44,56 42,52 Q40,46 40,40 Q40,36 42,34 Z" fill="#4a9eff" opacity=".5"/>
-          <!-- Asia -->
-          <path d="M54,18 Q60,14 70,16 Q78,16 84,20 Q88,24 86,30 Q82,34 76,34 Q68,34 62,30 Q56,26 54,22 Z" fill="#4a9eff" opacity=".5"/>
-          <!-- Australia -->
-          <path d="M72,54 Q76,52 80,54 Q84,56 84,60 Q80,62 76,60 Q72,58 72,54 Z" fill="#4a9eff" opacity=".5"/>
-        </svg>
-        <svg viewBox="0 0 100 60" width="100%" style="position:absolute;top:0;left:0;display:block" xmlns="http://www.w3.org/2000/svg">
-          ${dots}
+      mapEl.innerHTML=`<div style="background:#08080C;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.06)">
+        <svg width="100%" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="display:block">
+          ${circles}
         </svg>
       </div>`;
     }
@@ -4065,29 +4075,46 @@ async function loadRoyalties(){
     }
   }
 
-  // ── Earnings by release table — now shows streams paid and period
+  // ── Earnings by release (Ditto style)
   const tbody=document.getElementById('royalty-tbody');
   if(tbody){
-    if(!allRel.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
-    tbody.innerHTML=allRel.map(r=>{
-      const rc=isPaid?0:(r.earnings||0)*COMM;const rp=(r.earnings||0)-rc;
+    if(!allRel.length){
+      tbody.innerHTML='<div style="padding:2.5rem;text-align:center;color:rgba(255,255,255,.3)"><i class="ti ti-music-off" style="font-size:28px;display:block;margin-bottom:.75rem;opacity:.3"></i>No releases yet.</div>';
+      return;
+    }
+    const header='<div class="roy-rel-header">'
+      +'<span>Release</span>'
+      +'<span>Streams Paid</span>'
+      +'<span>Gross</span>'
+      +'<span>Commission</span>'
+      +'<span>Your Payout</span>'
+      +'<span>Period</span>'
+      +'<span>Status</span>'
+      +'</div>';
+    const rows=allRel.map(r=>{
+      const rc=isPaid?0:(r.earnings||0)*COMM;
+      const rp=(r.earnings||0)-rc;
       const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
       const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
-      const art=r.artwork_url?'<img src="'+r.artwork_url+'" style="width:30px;height:30px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:7px">':'';
-      // Get latest entry period for this release
+      const artImg=r.artwork_url
+        ?'<img src="'+r.artwork_url+'" class="roy-rel-art">'
+        :'<div class="roy-rel-art-placeholder"><i class="ti ti-music" style="font-size:14px;color:rgba(255,255,255,.3)"></i></div>';
       const relEntries=entries.filter(e=>e.release_id===r.id);
       const latestPeriod=relEntries.length?relEntries[0].date_start.slice(0,7):'—';
       const paidStreams=relEntries.reduce((a,e)=>a+(e.streams||0),0);
-      return '<tr>'
-        +'<td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;margin-left:37px">'+esc(r.artist)+'</div></td>'
-        +'<td style="color:rgba(255,255,255,.6)">'+(paidStreams||r.streams||0).toLocaleString()+'</td>'
-        +'<td>$'+(r.earnings||0).toFixed(2)+'</td>'
-        +'<td style="color:#f87171">-$'+rc.toFixed(2)+'</td>'
-        +'<td style="color:#34d399;font-weight:700">$'+rp.toFixed(2)+'</td>'
-        +'<td style="color:rgba(255,255,255,.4);font-size:12px">'+latestPeriod+'</td>'
-        +'<td><span class="badge '+bc+'">'+bl+'</span></td>'
-        +'</tr>';
+      return '<div class="roy-rel-row">'
+        +'<div style="display:flex;align-items:center;gap:10px">'+artImg
+        +'<div><div class="roy-rel-title">'+esc(r.title)+'</div>'
+        +'<div class="roy-rel-artist">'+esc(r.artist)+'</div></div></div>'
+        +'<div style="font-size:13px;color:rgba(255,255,255,.65)">'+(paidStreams||r.streams||0).toLocaleString()+'</div>'
+        +'<div style="font-size:13px;color:#fff">$'+(r.earnings||0).toFixed(2)+'</div>'
+        +'<div style="font-size:13px;color:#f87171">-$'+rc.toFixed(2)+'</div>'
+        +'<div style="font-size:14px;font-weight:700;color:#34d399">$'+rp.toFixed(2)+'</div>'
+        +'<div style="font-size:12px;color:rgba(255,255,255,.4)">'+latestPeriod+'</div>'
+        +'<div><span class="badge '+bc+'">'+bl+'</span></div>'
+        +'</div>';
     }).join('');
+    tbody.innerHTML=header+rows;
   }
 }
 
