@@ -828,26 +828,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .roy-tab{padding:.75rem 1.5rem;font-size:14px;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:Inter,sans-serif}
 .roy-tab:hover{color:rgba(255,255,255,.7)}
 .roy-tab.active{color:#fff;border-bottom-color:var(--gold)}
-.roy-tab-panel{display:none}
+.roy-tab-panel{display:none;max-width:960px;margin:0 auto}
 .roy-tab-panel.active{display:block}
 /* Centered content */
 .roy-center{max-width:960px;margin:0 auto}
-
-/* ── ROY RELEASE TABLE (Ditto style) ── */
-.roy-release-table{display:flex;flex-direction:column;gap:0;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
-.roy-rel-header{display:grid;grid-template-columns:2fr 100px 90px 90px 100px 80px 80px;gap:0;padding:.625rem 1rem;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)}
-.roy-rel-header span{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.3)}
-.roy-rel-row{display:grid;grid-template-columns:2fr 100px 90px 90px 100px 80px 80px;gap:0;padding:.875rem 1rem;border-bottom:1px solid rgba(255,255,255,.05);align-items:center;transition:background .15s}
-.roy-rel-row:last-child{border-bottom:none}
-.roy-rel-row:hover{background:rgba(255,255,255,.02)}
-.roy-rel-art{width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0}
-.roy-rel-art-placeholder{width:36px;height:36px;border-radius:6px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.roy-rel-title{font-size:13px;font-weight:600;color:#fff}
-.roy-rel-artist{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px}
-@media(max-width:700px){
-  .roy-rel-header{display:none}
-  .roy-rel-row{grid-template-columns:1fr 1fr;gap:4px 12px;padding:.75rem}
-}
 </style>
 </head>
 <body>
@@ -2059,28 +2043,32 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
           <!-- STORE + COUNTRY BREAKDOWN -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
-
-            <!-- WORLD MAP + COUNTRY BARS -->
+            <!-- STORE BREAKDOWN -->
             <div class="chart-card" style="margin-bottom:0">
-              <div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:1rem">Best Performing Countries</div>
-              <div id="roy-world-map" style="margin-bottom:1rem"></div>
-              <div id="roy-countries-breakdown"></div>
-            </div>
-
-            <!-- DONUT CHART + STORE LEGEND -->
-            <div class="chart-card" style="margin-bottom:0">
-              <div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:1rem">Best Performing Stores</div>
-              <div id="roy-donut-wrap" style="display:flex;justify-content:center;margin-bottom:1.25rem"></div>
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+                <i class="ti ti-chart-bar" style="color:var(--gold)"></i> Earnings by Store
+              </div>
               <div id="roy-stores-breakdown"></div>
             </div>
-
+            <!-- COUNTRY BREAKDOWN -->
+            <div class="chart-card" style="margin-bottom:0">
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+                <i class="ti ti-world" style="color:var(--gold)"></i> Top Countries
+              </div>
+              <div id="roy-countries-breakdown"></div>
+            </div>
           </div>
 
           <!-- RELEASE BREAKDOWN TABLE -->
-          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:6px">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
             <i class="ti ti-music" style="color:var(--gold)"></i> Earnings by Release
           </div>
-          <div class="roy-release-table" id="royalty-tbody"></div>
+          <div class="dark-table-wrap" style="margin-bottom:1.5rem">
+            <table>
+              <thead><tr><th>Release</th><th>Streams Paid</th><th>Gross</th><th>Commission</th><th>Your Payout</th><th>Period</th><th>Status</th></tr></thead>
+              <tbody id="royalty-tbody"></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- ── REPORTS TAB ── -->
@@ -3821,14 +3809,11 @@ function renderReleasesTable(){
 
 // ── ROYALTIES ──────────────────────────────────────────
 async function loadRoyalties(){
-  const [relRes, payoutRes, royRes] = await Promise.allSettled([
+  const [{data:relData},{data:payoutData},{data:royEntries}]=await Promise.all([
     sb.from('releases').select('*').eq('user_id',user.id),
     sb.from('payouts').select('amount,status').eq('user_id',user.id),
-    sb.from('royalty_entries').select('*').eq('user_id',user.id).order('date_start',{ascending:false})
+    sb.from('royalty_entries').select('*').eq('user_id',user.id).order('date_start',{ascending:false}).catch(()=>({data:[]}))
   ]);
-  const relData = relRes.status==='fulfilled' ? (relRes.value.data||[]) : [];
-  const payoutData = payoutRes.status==='fulfilled' ? (payoutRes.value.data||[]) : [];
-  const royEntries = royRes.status==='fulfilled' ? (royRes.value.data||[]) : [];
   const allRel=relData||[];
   const entries=royEntries||[];
   const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
@@ -3870,185 +3855,76 @@ async function loadRoyalties(){
   });
   requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('earnings-chart',chartLabels,chartVals,'#D4AF37')));
 
-  // ── Store breakdown + donut chart
-  const STORE_MAP=[
-    {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954',color:'#1DB954'},
-    {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44',color:'#FC3C44'},
-    {key:'youtube_music',name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000',color:'#FF0000'},
-    {key:'audiomack',name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200',color:'#FFA200'},
-    {key:'boomplay',name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF',color:'#00C2FF'},
-    {key:'amazon_music',name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA',color:'#25D1DA'},
-    {key:'tidal',name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/ffffff',color:'#aaaaaa'},
-    {key:'deezer',name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF',color:'#A238FF'},
-    {key:'others',name:'Others',logo:'',color:'#6b7280'},
-  ];
-  const storeTotals={};
-  STORE_MAP.forEach(s=>{storeTotals[s.key]=0;});
-  entries.forEach(e=>{STORE_MAP.forEach(s=>{storeTotals[s.key]+=(e[s.key]||0);});});
-  const grandTotal=Object.values(storeTotals).reduce((a,v)=>a+v,0);
+  // ── Real store breakdown from royalty_entries
   const royStoreEl=document.getElementById('roy-stores-breakdown');
-  const donutWrap=document.getElementById('roy-donut-wrap');
-
-  if(donutWrap){
-    if(!grandTotal){
-      donutWrap.innerHTML='<div style="width:180px;height:180px;border-radius:50%;border:3px dashed rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.3);text-align:center">No store<br>data yet</div>';
-    } else {
-      // Build donut SVG
-      const R=80,r=48,cx=90,cy=90;
-      const slices=STORE_MAP.map(s=>({...s,val:storeTotals[s.key]})).filter(s=>s.val>0);
-      let cumAngle=-Math.PI/2;
-      let paths='';
-      slices.forEach(s=>{
-        const angle=(s.val/grandTotal)*2*Math.PI;
-        const x1=cx+R*Math.cos(cumAngle),y1=cy+R*Math.sin(cumAngle);
-        const x2=cx+R*Math.cos(cumAngle+angle),y2=cy+R*Math.sin(cumAngle+angle);
-        const xi1=cx+r*Math.cos(cumAngle),yi1=cy+r*Math.sin(cumAngle);
-        const xi2=cx+r*Math.cos(cumAngle+angle),yi2=cy+r*Math.sin(cumAngle+angle);
-        const lg=angle>Math.PI?1:0;
-        paths+=`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${lg},1 ${x2.toFixed(1)},${y2.toFixed(1)} L${xi2.toFixed(1)},${yi2.toFixed(1)} A${r},${r} 0 ${lg},0 ${xi1.toFixed(1)},${yi1.toFixed(1)} Z" fill="${s.color}" opacity="0.9"/>`;
-        cumAngle+=angle;
-      });
-      // Center text
-      const topStore=slices[0];
-      const topPct=Math.round((topStore.val/grandTotal)*100);
-      donutWrap.innerHTML=`<svg width="180" height="180" viewBox="0 0 180 180" style="display:block">
-        <circle cx="90" cy="90" r="80" fill="rgba(255,255,255,.03)"/>
-        ${paths}
-        <circle cx="90" cy="90" r="48" fill="#111118"/>
-        <text x="90" y="84" text-anchor="middle" fill="#fff" font-size="22" font-weight="800" font-family="Inter,sans-serif">${topPct}%</text>
-        <text x="90" y="100" text-anchor="middle" fill="rgba(255,255,255,.4)" font-size="10" font-family="Inter,sans-serif">${topStore.name}</text>
-      </svg>`;
-    }
-  }
-
   if(royStoreEl){
+    const storeTotals={spotify:0,apple_music:0,youtube_music:0,audiomack:0,boomplay:0,amazon_music:0,tidal:0,deezer:0,others:0};
+    entries.forEach(e=>{Object.keys(storeTotals).forEach(k=>{storeTotals[k]+=(e[k]||0);});});
+    const grandTotal=Object.values(storeTotals).reduce((a,v)=>a+v,0);
+    const maxVal=Math.max(...Object.values(storeTotals),0.01);
     if(!grandTotal){
-      royStoreEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1rem 0">No store data yet</div>';
+      royStoreEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No store data yet</div>';
     } else {
-      const sorted=STORE_MAP.map(s=>({...s,val:storeTotals[s.key]})).filter(s=>s.val>0).sort((a,b)=>b.val-a.val);
-      royStoreEl.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
-        sorted.map(s=>{
-          const pct=Math.round((s.val/grandTotal)*100);
-          const logo=s.logo?'<img src="'+s.logo+'" width="16" height="16" style="object-fit:contain;display:block">':'';
-          return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0">'
-            +'<div style="width:10px;height:10px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div>'
-            +'<div style="width:20px;height:20px;border-radius:4px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:2px;flex-shrink:0">'+logo+'</div>'
-            +'<div style="flex:1;min-width:0"><div style="font-size:12px;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+s.name+'</div>'
-            +'<div style="font-size:11px;color:#34d399;font-weight:600">$'+s.val.toFixed(2)+' <span style="color:rgba(255,255,255,.3);font-weight:400">'+pct+'%</span></div></div>'
-            +'</div>';
-        }).join('')
-      +'</div>';
-    }
-  }
-
-  // ── Country breakdown: world map dots + horizontal bars
-  const countryEl=document.getElementById('roy-countries-breakdown');
-  const mapEl=document.getElementById('roy-world-map');
-  const countryTotals={};
-  entries.forEach(e=>{
-    if(!e.countries)return;
-    let countries=e.countries;
-    if(typeof countries==='string'){try{countries=JSON.parse(countries);}catch(err){return;}}
-    (countries||[]).forEach(row=>{
-      if(!row.country)return;
-      if(!countryTotals[row.country]) countryTotals[row.country]={streams:0,earnings:0};
-      countryTotals[row.country].streams+=(parseInt(row.streams)||0);
-      countryTotals[row.country].earnings+=(parseFloat(row.earnings)||0);
-    });
-  });
-  const sorted=Object.entries(countryTotals).sort((a,b)=>b[1].earnings-a[1].earnings);
-  const totalCountryEarnings=sorted.reduce((a,[,v])=>a+v.earnings,0);
-
-  // Country flags + ISO codes for map dots
-  const COUNTRY_DATA={
-    'Ghana':{flag:'🇬🇭',x:44.5,y:52},
-    'Nigeria':{flag:'🇳🇬',x:47,y:51},
-    'South Africa':{flag:'🇿🇦',x:50,y:66},
-    'Kenya':{flag:'🇰🇪',x:53,y:54},
-    'Tanzania':{flag:'🇹🇿',x:52,y:57},
-    'Uganda':{flag:'🇺🇬',x:52,y:53},
-    'Cameroon':{flag:'🇨🇲',x:48,y:52.5},
-    'Senegal':{flag:'🇸🇳',x:41,y:49},
-    'Ethiopia':{flag:'🇪🇹',x:53,y:50},
-    'Ivory Coast':{flag:'🇨🇮',x:43,y:52},
-    'USA':{flag:'🇺🇸',x:20,y:38},
-    'United States':{flag:'🇺🇸',x:20,y:38},
-    'Canada':{flag:'🇨🇦',x:18,y:29},
-    'UK':{flag:'🇬🇧',x:45,y:28},
-    'United Kingdom':{flag:'🇬🇧',x:45,y:28},
-    'Germany':{flag:'🇩🇪',x:47.5,y:29},
-    'France':{flag:'🇫🇷',x:46,y:31},
-    'Netherlands':{flag:'🇳🇱',x:47,y:28},
-    'Sweden':{flag:'🇸🇪',x:49,y:24},
-    'Norway':{flag:'🇳🇴',x:48,y:23},
-    'Denmark':{flag:'🇩🇰',x:48,y:26},
-    'Italy':{flag:'🇮🇹',x:48.5,y:33},
-    'Spain':{flag:'🇪🇸',x:44.5,y:33},
-    'Brazil':{flag:'🇧🇷',x:28,y:60},
-    'Australia':{flag:'🇦🇺',x:77,y:65},
-    'Japan':{flag:'🇯🇵',x:80,y:36},
-    'China':{flag:'🇨🇳',x:73,y:37},
-    'India':{flag:'🇮🇳',x:65,y:42},
-    'Other':{flag:'🌍',x:50,y:50},
-  };
-
-  // ── Bubble chart (Ditto style — sized circles on dark bg)
-  if(mapEl){
-    if(!sorted.length){
-      mapEl.innerHTML='<div style="height:160px;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.25);text-align:center"><div><i class="ti ti-world" style="font-size:32px;display:block;margin-bottom:.5rem;opacity:.2"></i>No country data yet.<br>Add in Admin → Royalties.</div></div>';
-    } else {
-      const maxEarn=sorted[0][1].earnings||0.01;
-      const W=340,H=170;
-      // Pack bubbles using a simple layout — place them left to right, largest first
-      const bubbles=sorted.slice(0,8).map(([country,data],i)=>{
-        const pct=data.earnings/maxEarn;
-        const r=Math.max(12,Math.round(pct*62)); // 12–62px radius
-        return {country,data,r,pct};
-      });
-      // Simple placement: arrange in a loose organic cluster
-      const positions=[
-        {x:80,y:85},{x:170,y:75},{x:255,y:90},
-        {x:120,y:135},{x:210,y:140},{x:295,y:50},
-        {x:50,y:50},{x:310,y:135}
+      const storeMap=[
+        {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954'},
+        {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44'},
+        {key:'youtube_music',name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000'},
+        {key:'audiomack',name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200'},
+        {key:'boomplay',name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF'},
+        {key:'amazon_music',name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA'},
+        {key:'tidal',name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000'},
+        {key:'deezer',name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF'},
+        {key:'others',name:'Others',logo:''},
       ];
-      const circles=bubbles.map((b,i)=>{
-        const pos=positions[i]||{x:50+i*60,y:85};
-        const alpha=0.25+b.pct*0.75;
-        const goldAlpha=Math.round(alpha*255).toString(16).padStart(2,'0');
-        const cd=COUNTRY_DATA[b.country];
-        const flag=cd?cd.flag:'🌍';
-        return `<g>
-          <circle cx="${pos.x}" cy="${pos.y}" r="${b.r}" fill="#D4AF37" fill-opacity="${alpha.toFixed(2)}" stroke="#D4AF37" stroke-opacity="0.3" stroke-width="1.5"/>
-          <text x="${pos.x}" y="${pos.y}" text-anchor="middle" dominant-baseline="middle" font-size="${b.r>30?13:10}" font-family="Inter,sans-serif" fill="rgba(255,255,255,0.9)">${flag}</text>
-          <title>${b.country}: $${b.data.earnings.toFixed(2)}</title>
-        </g>`;
-      }).join('');
-      mapEl.innerHTML=`<div style="background:#08080C;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.06)">
-        <svg width="100%" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="display:block">
-          ${circles}
-        </svg>
-      </div>`;
+      royStoreEl.innerHTML=storeMap.map(s=>{
+        const v=storeTotals[s.key];if(!v)return'';
+        const pct=Math.round((v/grandTotal)*100);
+        const barW=Math.round((v/maxVal)*100);
+        const logo=s.logo?'<img src="'+s.logo+'" width="16" height="16" style="object-fit:contain;display:block">':'';
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+          +'<div style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:3px;flex-shrink:0">'+logo+'</div>'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.7);width:90px;flex-shrink:0">'+s.name+'</div>'
+          +'<div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:var(--gold);border-radius:3px"></div></div>'
+          +'<div style="font-size:12px;font-weight:700;color:#34d399;width:55px;text-align:right">$'+v.toFixed(2)+'</div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3);width:28px;text-align:right">'+pct+'%</div>'
+          +'</div>';
+      }).filter(Boolean).join('');
     }
   }
 
-  // ── Country horizontal bars
+  // ── Real country breakdown from royalty_entries.countries JSON
+  const countryEl=document.getElementById('roy-countries-breakdown');
   if(countryEl){
+    const countryTotals={};
+    entries.forEach(e=>{
+      if(!e.countries)return;
+      let countries=e.countries;
+      if(typeof countries==='string'){try{countries=JSON.parse(countries);}catch(err){return;}}
+      (countries||[]).forEach(row=>{
+        if(!row.country)return;
+        if(!countryTotals[row.country]) countryTotals[row.country]={streams:0,earnings:0};
+        countryTotals[row.country].streams+=(parseInt(row.streams)||0);
+        countryTotals[row.country].earnings+=(parseFloat(row.earnings)||0);
+      });
+    });
+    const sorted=Object.entries(countryTotals).sort((a,b)=>b[1].earnings-a[1].earnings);
+    const totalCountryEarnings=sorted.reduce((a,[,v])=>a+v.earnings,0);
+    const flags={'Ghana':'🇬🇭','Nigeria':'🇳🇬','USA':'🇺🇸','United States':'🇺🇸','UK':'🇬🇧','United Kingdom':'🇬🇧','South Africa':'🇿🇦','Kenya':'🇰🇪','Cameroon':'🇨🇲','Tanzania':'🇹🇿','Uganda':'🇺🇬','Senegal':'🇸🇳','Canada':'🇨🇦','Germany':'🇩🇪','France':'🇫🇷','Other':'🌍'};
     if(!sorted.length){
-      countryEl.innerHTML='';
+      countryEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0"><i class="ti ti-world-off" style="font-size:28px;opacity:.3;display:block;margin-bottom:.5rem"></i>No country data yet.<br><span style="font-size:12px;opacity:.7">Add country breakdown in Admin → Royalties.</span></div>';
     } else {
       const maxEarn=sorted[0][1].earnings||0.01;
-      countryEl.innerHTML=sorted.slice(0,6).map(([country,data])=>{
+      countryEl.innerHTML=sorted.slice(0,8).map(([country,data])=>{
         const pct=totalCountryEarnings>0?Math.round((data.earnings/totalCountryEarnings)*100):0;
         const barW=Math.round((data.earnings/maxEarn)*100);
-        const cd=COUNTRY_DATA[country];
-        const flag=cd?cd.flag:'🌍';
-        return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0">'
-          +'<span style="font-size:16px;width:22px;text-align:center;flex-shrink:0">'+flag+'</span>'
-          +'<div style="font-size:12px;color:rgba(255,255,255,.7);width:80px;flex-shrink:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(country)+'</div>'
-          +'<div style="flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden">'
-          +'<div style="width:'+barW+'%;height:100%;background:linear-gradient(90deg,#4a9eff,#7ec8ff);border-radius:3px"></div></div>'
-          +'<div style="text-align:right;flex-shrink:0;min-width:60px">'
+        const flag=flags[country]||'🌍';
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+          +'<span style="font-size:18px;flex-shrink:0;width:24px;text-align:center">'+flag+'</span>'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.8);width:90px;flex-shrink:0;font-weight:500">'+esc(country)+'</div>'
+          +'<div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:#60a5fa;border-radius:3px"></div></div>'
+          +'<div style="text-align:right;flex-shrink:0">'
           +'<div style="font-size:12px;font-weight:700;color:#34d399">$'+data.earnings.toFixed(2)+'</div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.3)">'+data.streams.toLocaleString()+' streams</div>'
           +'</div>'
           +'</div>';
       }).join('');
@@ -4075,46 +3951,29 @@ async function loadRoyalties(){
     }
   }
 
-  // ── Earnings by release (Ditto style)
+  // ── Earnings by release table — now shows streams paid and period
   const tbody=document.getElementById('royalty-tbody');
   if(tbody){
-    if(!allRel.length){
-      tbody.innerHTML='<div style="padding:2.5rem;text-align:center;color:rgba(255,255,255,.3)"><i class="ti ti-music-off" style="font-size:28px;display:block;margin-bottom:.75rem;opacity:.3"></i>No releases yet.</div>';
-      return;
-    }
-    const header='<div class="roy-rel-header">'
-      +'<span>Release</span>'
-      +'<span>Streams Paid</span>'
-      +'<span>Gross</span>'
-      +'<span>Commission</span>'
-      +'<span>Your Payout</span>'
-      +'<span>Period</span>'
-      +'<span>Status</span>'
-      +'</div>';
-    const rows=allRel.map(r=>{
-      const rc=isPaid?0:(r.earnings||0)*COMM;
-      const rp=(r.earnings||0)-rc;
+    if(!allRel.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
+    tbody.innerHTML=allRel.map(r=>{
+      const rc=isPaid?0:(r.earnings||0)*COMM;const rp=(r.earnings||0)-rc;
       const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
       const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
-      const artImg=r.artwork_url
-        ?'<img src="'+r.artwork_url+'" class="roy-rel-art">'
-        :'<div class="roy-rel-art-placeholder"><i class="ti ti-music" style="font-size:14px;color:rgba(255,255,255,.3)"></i></div>';
+      const art=r.artwork_url?'<img src="'+r.artwork_url+'" style="width:30px;height:30px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:7px">':'';
+      // Get latest entry period for this release
       const relEntries=entries.filter(e=>e.release_id===r.id);
       const latestPeriod=relEntries.length?relEntries[0].date_start.slice(0,7):'—';
       const paidStreams=relEntries.reduce((a,e)=>a+(e.streams||0),0);
-      return '<div class="roy-rel-row">'
-        +'<div style="display:flex;align-items:center;gap:10px">'+artImg
-        +'<div><div class="roy-rel-title">'+esc(r.title)+'</div>'
-        +'<div class="roy-rel-artist">'+esc(r.artist)+'</div></div></div>'
-        +'<div style="font-size:13px;color:rgba(255,255,255,.65)">'+(paidStreams||r.streams||0).toLocaleString()+'</div>'
-        +'<div style="font-size:13px;color:#fff">$'+(r.earnings||0).toFixed(2)+'</div>'
-        +'<div style="font-size:13px;color:#f87171">-$'+rc.toFixed(2)+'</div>'
-        +'<div style="font-size:14px;font-weight:700;color:#34d399">$'+rp.toFixed(2)+'</div>'
-        +'<div style="font-size:12px;color:rgba(255,255,255,.4)">'+latestPeriod+'</div>'
-        +'<div><span class="badge '+bc+'">'+bl+'</span></div>'
-        +'</div>';
+      return '<tr>'
+        +'<td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;margin-left:37px">'+esc(r.artist)+'</div></td>'
+        +'<td style="color:rgba(255,255,255,.6)">'+(paidStreams||r.streams||0).toLocaleString()+'</td>'
+        +'<td>$'+(r.earnings||0).toFixed(2)+'</td>'
+        +'<td style="color:#f87171">-$'+rc.toFixed(2)+'</td>'
+        +'<td style="color:#34d399;font-weight:700">$'+rp.toFixed(2)+'</td>'
+        +'<td style="color:rgba(255,255,255,.4);font-size:12px">'+latestPeriod+'</td>'
+        +'<td><span class="badge '+bc+'">'+bl+'</span></td>'
+        +'</tr>';
     }).join('');
-    tbody.innerHTML=header+rows;
   }
 }
 
