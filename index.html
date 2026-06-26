@@ -848,6 +848,50 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .roy-rel-header{display:none}
   .roy-rel-row{grid-template-columns:1fr 1fr;gap:4px 12px;padding:.75rem}
 }
+
+/* ── REPORT MODAL ── */
+.report-modal-tab{padding:.75rem 1.25rem;font-size:14px;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1px;background:none;font-family:Inter,sans-serif;transition:color .15s,border-color .15s}
+.report-modal-tab:hover{color:rgba(255,255,255,.7)}
+.report-modal-tab.active{color:#fff;border-bottom-color:var(--gold)}
+.rmt-panel{display:none}
+.rmt-panel.active{display:block}
+.report-row{display:grid;align-items:center;padding:.875rem 0;border-bottom:1px solid rgba(255,255,255,.05);transition:background .1s}
+.report-row:last-child{border-bottom:none}
+.report-row:hover{background:rgba(255,255,255,.02)}
+.report-row-releases{grid-template-columns:2fr 90px 90px 100px 110px}
+.report-row-stores{grid-template-columns:2fr 100px 110px}
+.report-row-countries{grid-template-columns:2fr 100px 110px}
+/* Monthly statement row */
+.roy-report-row{display:grid;grid-template-columns:1.5fr 90px 90px 100px 110px 110px;padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);align-items:center;cursor:pointer;transition:background .15s}
+.roy-report-row:last-child{border-bottom:none}
+.roy-report-row:hover{background:rgba(255,255,255,.03)}
+
+/* ── REPORTS TAB ── */
+.report-month-row{display:grid;grid-template-columns:1.5fr 90px 90px 100px 110px 110px;padding:.875rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);align-items:center;transition:background .15s;cursor:default}
+.report-month-row:last-child{border-bottom:none}
+.report-month-row:hover{background:rgba(255,255,255,.02)}
+.report-modal-tab{background:none;border:none;border-bottom:2.5px solid transparent;color:rgba(255,255,255,.45);font-size:14px;font-weight:600;padding:.875rem 1.25rem;cursor:pointer;font-family:Inter,sans-serif;margin-bottom:-1px;transition:color .15s,border-color .15s}
+.report-modal-tab:hover{color:rgba(255,255,255,.8)}
+.report-modal-tab.active{color:#fff;border-bottom-color:var(--gold)}
+.rmt-panel{display:none}
+.rmt-panel.active{display:block}
+.rmt-row{display:grid;align-items:center;padding:.875rem 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.rmt-row:last-child{border-bottom:none}
+.rmt-row:hover{background:rgba(255,255,255,.02);border-radius:6px;padding-left:6px;margin:0 -6px}
+
+/* ── REPORT MODAL ── */
+.rmt-tab{padding:.875rem 1.25rem;font-size:14px;font-weight:600;color:#888;cursor:pointer;border:none;background:none;border-bottom:2.5px solid transparent;margin-bottom:-2px;font-family:Inter,sans-serif;transition:color .15s,border-color .15s}
+.rmt-tab:hover{color:#333}
+.rmt-tab.active{color:#7B5EA7;border-bottom-color:#7B5EA7}
+.rmt-panel{display:block}
+.rmt-rel-row{display:grid;grid-template-columns:2fr 100px 100px 100px 110px;padding:.875rem 1.75rem;border-bottom:1px solid rgba(0,0,0,.06);align-items:center;transition:background .1s}
+.rmt-rel-row:hover{background:rgba(0,0,0,.025)}
+.rmt-rel-row:last-child{border-bottom:none}
+.rmt-store-row{display:grid;grid-template-columns:2fr 100px 110px;padding:.875rem 1.75rem;border-bottom:1px solid rgba(0,0,0,.06);align-items:center}
+.rmt-store-row:last-child{border-bottom:none}
+.rmt-earn{color:#7B5EA7;font-weight:700;font-size:14px}
+.rmt-num{color:#333;font-size:14px}
+.rmt-muted{color:#999;font-size:14px}
 </style>
 </head>
 <body>
@@ -2085,23 +2129,68 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
         <!-- ── REPORTS TAB ── -->
         <div class="roy-tab-panel" id="rtpanel-reports">
-          <div style="background:#111118;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:2rem;display:flex;align-items:flex-start;gap:1.25rem;margin-bottom:1.5rem">
-            <i class="ti ti-file-analytics" style="font-size:28px;color:var(--gold);flex-shrink:0;margin-top:2px"></i>
-            <div>
-              <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:.5rem">Royalty Reports</div>
-              <div style="font-size:13px;color:rgba(255,255,255,.45);line-height:1.8">Detailed monthly reports are generated after DSP reporting cycles complete (typically 2–3 months after streaming). Figures shown are estimates based on current stream counts. Final amounts may vary.</div>
+          <div style="border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1.5fr 90px 90px 110px 110px 110px;padding:.75rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)">
+              <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.3)">Period</span>
+              <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.3)">Downloads</span>
+              <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.3)">Track DL</span>
+              <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.3)">Streams</span>
+              <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gold)">Earnings</span>
+              <span></span>
+            </div>
+            <div id="roy-reports-list">
+              <div style="text-align:center;color:rgba(255,255,255,.25);font-size:13px;padding:3rem 0">
+                <i class="ti ti-file-off" style="font-size:36px;display:block;margin-bottom:.75rem;opacity:.3"></i>
+                No reports yet. Add royalty entries in Admin → Royalties.
+              </div>
             </div>
           </div>
-          <div style="background:#111118;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden">
-            <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
-              <div style="font-size:14px;font-weight:700;color:#fff">Monthly Statements</div>
-              <span style="font-size:11px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:3px 10px;border-radius:20px">Auto-generated</span>
+        </div>
+
+        <!-- ── REPORT DETAIL MODAL ── -->
+        <div id="report-modal-overlay" onclick="if(event.target===this)closeReportModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)">
+          <div style="background:#fff;border-radius:16px;width:100%;max-width:820px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.4)">
+            <!-- Modal header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:1.5rem 1.75rem;border-bottom:1px solid rgba(0,0,0,.08)">
+              <h2 id="report-modal-title" style="font-size:22px;font-weight:800;color:#111;margin:0">April 2026</h2>
+              <button onclick="closeReportModal()" style="background:rgba(0,0,0,.06);border:none;cursor:pointer;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#555;font-size:20px;line-height:1">×</button>
             </div>
-            <div id="roy-reports-list" style="padding:1.5rem">
-              <div style="text-align:center;color:rgba(255,255,255,.25);font-size:13px;padding:2rem 0">
-                <i class="ti ti-file-off" style="font-size:36px;display:block;margin-bottom:.75rem;opacity:.3"></i>
-                Reports will appear here once DSP data is confirmed.<br>
-                <span style="font-size:12px;opacity:.7">Typically available 2–3 months after streaming.</span>
+            <!-- Modal tabs -->
+            <div style="display:flex;gap:0;border-bottom:2px solid rgba(0,0,0,.08);padding:0 1.75rem">
+              <button class="rmt-tab active" id="rmt-releases" onclick="switchReportTab('releases',this)">Releases</button>
+              <button class="rmt-tab" id="rmt-stores" onclick="switchReportTab('stores',this)">Stores</button>
+              <button class="rmt-tab" id="rmt-countries" onclick="switchReportTab('countries',this)">Countries</button>
+            </div>
+            <!-- Modal body -->
+            <div style="overflow-y:auto;flex:1">
+              <!-- Releases tab -->
+              <div id="rmt-panel-releases" class="rmt-panel">
+                <div style="display:grid;grid-template-columns:2fr 100px 100px 100px 110px;padding:.75rem 1.75rem;border-bottom:1px solid rgba(0,0,0,.07);position:sticky;top:0;background:#fff">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999">Release</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999">Release DL</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999">Track DL</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999">Streams</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#7B5EA7">Earnings</span>
+                </div>
+                <div id="rmt-releases-body"></div>
+              </div>
+              <!-- Stores tab -->
+              <div id="rmt-panel-stores" class="rmt-panel" style="display:none">
+                <div style="display:grid;grid-template-columns:2fr 100px 110px;padding:.75rem 1.75rem;border-bottom:1px solid rgba(0,0,0,.07);position:sticky;top:0;background:#fff">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999">Store</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999">Streams</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#7B5EA7">Earnings</span>
+                </div>
+                <div id="rmt-stores-body"></div>
+              </div>
+              <!-- Countries tab -->
+              <div id="rmt-panel-countries" class="rmt-panel" style="display:none">
+                <div style="display:grid;grid-template-columns:2fr 100px 110px;padding:.75rem 1.75rem;border-bottom:1px solid rgba(0,0,0,.07);position:sticky;top:0;background:#fff">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999">Country</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999">Streams</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#7B5EA7">Earnings</span>
+                </div>
+                <div id="rmt-countries-body"></div>
               </div>
             </div>
           </div>
@@ -3369,6 +3458,120 @@ function enterDashboard(){
 }
 
 let selectedPlan='artist_plus',billing='yearly',payoutMethod=null,momoNetwork=null;
+function switchRoyTab(tab,el){
+  document.querySelectorAll('.roy-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.roy-tab-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('rtpanel-'+tab);
+  if(panel) panel.classList.add('active');
+  if(el) el.classList.add('active');
+  if(tab==='payouts') loadPayout();
+  if(tab==='reports') loadRoyReports();
+}
+
+async function loadRoyReports(){
+  const listEl=document.getElementById('roy-reports-list');
+  if(!listEl)return;
+  listEl.innerHTML='<div style="padding:2rem;text-align:center;color:rgba(255,255,255,.3)"><span class="loader"></span></div>';
+  try{
+    const {data:entries}=await sb.from('royalty_entries')
+      .select('*, releases(title,artist,artwork_url)')
+      .eq('user_id',user.id)
+      .order('date_start',{ascending:false});
+    if(!entries||!entries.length){
+      listEl.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.25);font-size:13px;padding:3rem 0"><i class="ti ti-file-off" style="font-size:36px;display:block;margin-bottom:.75rem;opacity:.3"></i>No reports yet. Add royalty entries in Admin → Royalties.</div>';
+      return;
+    }
+    const byMonth={};
+    entries.forEach(e=>{
+      const key=e.date_start.slice(0,7);
+      if(!byMonth[key]) byMonth[key]={period:key,streams:0,earnings:0,entries:[]};
+      byMonth[key].streams+=(e.streams||0);
+      byMonth[key].earnings+=(e.total||0);
+      byMonth[key].entries.push(e);
+    });
+    const months=Object.keys(byMonth).sort().reverse();
+    const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    listEl.innerHTML=months.map(m=>{
+      const row=byMonth[m];
+      const [yr,mo]=m.split('-');
+      const label=MN[parseInt(mo)-1]+' '+yr;
+      const dataStr=encodeURIComponent(JSON.stringify(row));
+      return '<div style="display:grid;grid-template-columns:1.5fr 90px 90px 110px 110px 110px;padding:1rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.06);align-items:center;cursor:pointer" onmouseover="this.style.background='rgba(255,255,255,.02)'" onmouseout="this.style.background=''">'
+        +'<div style="font-size:14px;font-weight:600;color:#fff">'+label+'</div>'
+        +'<div style="font-size:13px;color:rgba(255,255,255,.4)">0</div>'
+        +'<div style="font-size:13px;color:rgba(255,255,255,.4)">0</div>'
+        +'<div style="font-size:13px;color:rgba(255,255,255,.7)">'+row.streams.toLocaleString()+'</div>'
+        +'<div style="font-size:14px;font-weight:700;color:var(--gold)">$'+row.earnings.toFixed(2)+'</div>'
+        +'<div style="text-align:right"><button class="btn btn-sm" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.1);font-size:12px;padding:5px 16px;border-radius:20px" onclick="openReportModal(''+m+'',decodeURIComponent(''+dataStr+''))">Details</button></div>'
+        +'</div>';
+    }).join('');
+  }catch(e){
+    listEl.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.25);font-size:13px;padding:3rem 0">Error: '+esc(e.message)+'</div>';
+  }
+}
+
+function openReportModal(monthKey,rowDataStr){
+  const row=JSON.parse(decodeURIComponent(typeof rowDataStr==='string'&&rowDataStr.includes('%')?rowDataStr:encodeURIComponent(rowDataStr)));
+  const [yr,mo]=monthKey.split('-');
+  const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('report-modal-title').textContent=MN[parseInt(mo)-1]+' '+yr;
+  document.getElementById('report-modal-overlay').style.display='flex';
+  document.body.style.overflow='hidden';
+  switchReportTab('releases',document.getElementById('rmt-releases'));
+  const relBody=document.getElementById('rmt-releases-body');
+  if(relBody){
+    relBody.innerHTML=(row.entries||[]).map(e=>{
+      const art=e.releases?.artwork_url
+        ?'<img src="'+e.releases.artwork_url+'" style="width:34px;height:34px;border-radius:6px;object-fit:cover;flex-shrink:0">'
+        :'<div style="width:34px;height:34px;border-radius:6px;background:#eee;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="color:#ccc;font-size:14px"></i></div>';
+      return '<div class="rmt-rel-row"><div style="display:flex;align-items:center;gap:10px">'+art
+        +'<div><div style="font-size:13px;font-weight:600;color:#111">'+esc(e.releases?.title||'—')+'</div>'
+        +'<div style="font-size:11px;color:#999">'+esc(e.releases?.artist||'')+'</div></div></div>'
+        +'<div class="rmt-muted">0</div><div class="rmt-muted">0</div>'
+        +'<div class="rmt-num">'+(e.streams||0).toLocaleString()+'</div>'
+        +'<div class="rmt-earn">$'+(e.total||0).toFixed(2)+'</div></div>';
+    }).join('')||'<div style="padding:2rem;text-align:center;color:#bbb;font-size:13px">No releases for this period.</div>';
+  }
+  const storeBody=document.getElementById('rmt-stores-body');
+  if(storeBody){
+    const st={spotify:0,apple_music:0,youtube_music:0,audiomack:0,boomplay:0,amazon_music:0,tidal:0,deezer:0,others:0};
+    (row.entries||[]).forEach(e=>{Object.keys(st).forEach(k=>{st[k]+=(e[k]||0);});});
+    const SMAP=[{k:'spotify',n:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954'},{k:'apple_music',n:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44'},{k:'youtube_music',n:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000'},{k:'audiomack',n:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200'},{k:'boomplay',n:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF'},{k:'amazon_music',n:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA'},{k:'tidal',n:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000'},{k:'deezer',n:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF'},{k:'others',n:'Others',logo:''}];
+    storeBody.innerHTML=SMAP.map(s=>{
+      const v=st[s.k];if(!v)return'';
+      const logo=s.logo?'<img src="'+s.logo+'" width="20" height="20" style="object-fit:contain">':'';
+      const streams=Math.round((row.streams||0)*(v/(row.earnings||1)));
+      return '<div class="rmt-store-row"><div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:6px;background:#f4f4f7;display:flex;align-items:center;justify-content:center;padding:3px">'+logo+'</div><span style="font-size:13px;font-weight:500;color:#111">'+s.n+'</span></div><div class="rmt-num">'+streams.toLocaleString()+'</div><div class="rmt-earn">$'+v.toFixed(2)+'</div></div>';
+    }).filter(Boolean).join('')||'<div style="padding:2rem;text-align:center;color:#bbb;font-size:13px">No store data.</div>';
+  }
+  const cBody=document.getElementById('rmt-countries-body');
+  if(cBody){
+    const ct={};
+    (row.entries||[]).forEach(e=>{
+      if(!e.countries)return;
+      let cc=e.countries;if(typeof cc==='string'){try{cc=JSON.parse(cc);}catch(err){return;}}
+      (cc||[]).forEach(r=>{if(!r.country)return;if(!ct[r.country])ct[r.country]={streams:0,earnings:0};ct[r.country].streams+=(parseInt(r.streams)||0);ct[r.country].earnings+=(parseFloat(r.earnings)||0);});
+    });
+    const cs=Object.entries(ct).sort((a,b)=>b[1].earnings-a[1].earnings);
+    const FL={'Ghana':'🇬🇭','Nigeria':'🇳🇬','USA':'🇺🇸','United States':'🇺🇸','UK':'🇬🇧','United Kingdom':'🇬🇧','South Africa':'🇿🇦','Kenya':'🇰🇪','Cameroon':'🇨🇲','Canada':'🇨🇦','Germany':'🇩🇪','France':'🇫🇷','Netherlands':'🇳🇱','Sweden':'🇸🇪','Brazil':'🇧🇷','Australia':'🇦🇺','Japan':'🇯🇵','India':'🇮🇳','Tanzania':'🇹🇿','Uganda':'🇺🇬','Senegal':'🇸🇳'};
+    cBody.innerHTML=cs.map(([country,data])=>'<div class="rmt-store-row"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">'+(FL[country]||'🌍')+'</span><span style="font-size:13px;font-weight:500;color:#111">'+esc(country)+'</span></div><div class="rmt-num">'+data.streams.toLocaleString()+'</div><div class="rmt-earn">$'+data.earnings.toFixed(2)+'</div></div>').join('')
+      ||'<div style="padding:2rem;text-align:center;color:#bbb;font-size:13px">No country data for this period.</div>';
+  }
+}
+
+function closeReportModal(){
+  document.getElementById('report-modal-overlay').style.display='none';
+  document.body.style.overflow='';
+}
+
+function switchReportTab(tab,el){
+  document.querySelectorAll('.rmt-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.rmt-panel').forEach(p=>p.style.display='none');
+  const panel=document.getElementById('rmt-panel-'+tab);
+  if(panel) panel.style.display='block';
+  if(el) el.classList.add('active');
+}
+
 function goPage(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pageEl=document.getElementById('page-'+id);if(!pageEl)return;
@@ -5234,910 +5437,50 @@ function toast(msg,type){
 
 // ── ADMIN ──────────────────────────────────────────────
 let allReleasesCache=[],allUsersCache=[],allPayoutsCache=[];
-function switchRoyTab(tab,el){
-  document.querySelectorAll('.roy-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.roy-tab-panel').forEach(p=>p.classList.remove('active'));
-  const panel=document.getElementById('rtpanel-'+tab);
-  if(panel) panel.classList.add('active');
-  if(el) el.classList.add('active');
-  if(tab==='payouts') loadPayout();
+// ── REPORTS ──────────────────────────────────────────────
+let _allReportEntries=[], _allReportReleases=[];
+
+async function loadReports(){
+  try{
+    const [{data:entries},{data:releases}]=await Promise.all([
+      sb.from('royalty_entries').select('*').eq('user_id',user.id).order('date_start',{ascending:false}),
+      sb.from('releases').select('id,title,artist,artwork_url,streams').eq('user_id',user.id)
+    ]);
+    _allReportEntries=entries||[];
+    _allReportReleases=releases||[];
+    renderReportsList();
+  }catch(e){
+    const el=document.getElementById('roy-reports-list');
+    if(el) el.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.25);font-size:13px;padding:2rem 0">No reports yet. Add royalty entries in Admin → Royalties.</div>';
+  }
 }
 
-function switchAdminTab(tab,el){
-  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
-  const sec=document.getElementById('admin-'+tab);if(sec) sec.classList.add('active');
-  if(el) el.classList.add('active');
-  if(tab==='reports')loadAdminReports();
-  if(tab==='broadcast')loadBroadcastHistory();
-  if(tab==='streams'){initAdminStreams();loadAdminStreamsRecent();}
-  if(tab==='royalties'){initAdminRoyalties();}
-}
-function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();toast('Refreshed','ok');}
-async function loadAdminStats(){
-  try{
-    const [{data:profiles},{data:releases},{data:payouts},{data:subs}]=await Promise.all([
-      sb.from('profiles').select('id,plan,created_at'),
-      sb.from('releases').select('id,status,streams,earnings'),
-      sb.from('payouts').select('id,status,amount').catch(()=>({data:[]})),
-      sb.from('subscriptions').select('id,amount_usd').catch(()=>({data:[]}))
-    ]);
-    const now=new Date(),m=now.getMonth(),y=now.getFullYear();
-    const newM=(profiles||[]).filter(p=>{const d=new Date(p.created_at);return d.getMonth()===m&&d.getFullYear()===y;}).length;
-    const liveRel=(releases||[]).filter(r=>r.status==='live').length;
-    const pendingRel=(releases||[]).filter(r=>r.status==='pending').length;
-    const paidPlans=(profiles||[]).filter(p=>['artist_plus','label','solo_paid'].includes(p.plan)).length;
-    const pendingPay=(payouts||[]).filter(p=>p.status==='pending');
-    const pendingAmt=pendingPay.reduce((a,p)=>a+parseFloat(p.amount||0),0);
-    const totalRev=(subs||[]).reduce((a,s)=>a+parseFloat(s.amount_usd||0),0);
-    const totalStreams=(releases||[]).reduce((a,r)=>a+(r.streams||0),0);
-    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-    set('adm-artists',(profiles||[]).length);set('adm-artists-sub',newM+' new this month');
-    set('adm-releases',(releases||[]).length);set('adm-releases-sub',liveRel+' live on DSPs');
-    set('adm-pending',pendingRel);set('adm-paid',paidPlans);
-    set('adm-revenue-sub','$'+totalRev.toFixed(2)+' total revenue');
-    set('adm-payouts',pendingPay.length);set('adm-payout-amount','$'+pendingAmt.toFixed(2)+' pending');
-    set('adm-streams',totalStreams.toLocaleString());
-    const pa=document.getElementById('payout-alert');if(pa){pa.style.display=pendingPay.length>0?'inline':'none';pa.textContent=pendingPay.length;}
-  }catch(e){console.warn('loadAdminStats:',e);}
-}
-async function loadAdminDashboard(){
-  try{
-    const [{data:profiles},{data:releases},{data:subs}]=await Promise.all([
-      sb.from('profiles').select('id,plan,created_at'),
-      sb.from('releases').select('id,status,streams,earnings,title,user_id,submitted_at'),
-      sb.from('subscriptions').select('amount_usd,created_at,plan').catch(()=>({data:[]}))
-    ]);
-    const plans={solo_paid:0,artist_plus:0,label:0,admin:0,free:0};
-    (profiles||[]).forEach(p=>plans[p.plan]=(plans[p.plan]||0)+1);
-    const totalP=(profiles||[]).length||1;
-    const planEl=document.getElementById('adm-plan-breakdown');
-    if(planEl) planEl.innerHTML=[{k:'Solo',v:plans.solo_paid,c:'#D4AF37'},{k:'Artist+',v:plans.artist_plus,c:'#34d399'},{k:'Label',v:plans.label,c:'#059669'},{k:'Free',v:plans.free,c:'#6b7280'}].map(p=>'<div class="adm-bar-row"><div class="adm-bar-label">'+p.k+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round((p.v/totalP)*100)+'%;background:'+p.c+'"></div></div><div class="adm-bar-val">'+p.v+'</div></div>').join('');
-    const statuses={pending:0,review:0,live:0,rejected:0};
-    (releases||[]).forEach(r=>statuses[r.status]=(statuses[r.status]||0)+1);
-    const totalR=(releases||[]).length||1;
-    const relEl=document.getElementById('adm-release-breakdown');
-    if(relEl) relEl.innerHTML=[{k:'Live',v:statuses.live,c:'#10b981'},{k:'Pending',v:statuses.pending,c:'#f59e0b'},{k:'In Review',v:statuses.review,c:'#3b82f6'},{k:'Rejected',v:statuses.rejected,c:'#ef4444'}].map(p=>'<div class="adm-bar-row"><div class="adm-bar-label">'+p.k+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round((p.v/totalR)*100)+'%;background:'+p.c+'"></div></div><div class="adm-bar-val">'+p.v+'</div></div>').join('');
-    const actEl=document.getElementById('adm-recent-activity');
-    if(actEl){
-      const recent=[...(profiles||[]).slice(-3).map(p=>({text:'New artist joined',time:p.created_at,color:'#D4AF37'})),...(releases||[]).filter(r=>r.status==='pending').slice(-3).map(r=>({text:'"'+(r.title||'Unknown')+'" submitted',time:r.submitted_at||new Date().toISOString(),color:'#fbbf24'}))].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,8);
-      actEl.innerHTML=recent.map(a=>'<div class="activity-item"><div class="activity-dot" style="background:'+a.color+'"></div><div><div class="activity-text">'+a.text+'</div><div class="activity-time">'+(a.time?new Date(a.time).toLocaleDateString('en-GB'):'')+'</div></div></div>').join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No recent activity</div>';
-    }
-    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const now=new Date();const revByMonth=Array(6).fill(0);
-    (subs||[]).forEach(s=>{const d=new Date(s.created_at);const diff=(now.getMonth()-d.getMonth()+12)%12;if(diff<6)revByMonth[5-diff]+=parseFloat(s.amount_usd||0);});
-    const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#D4AF37')));
-  }catch(e){console.warn('loadAdminDashboard:',e);}
-}
-async function loadAdminReleases(){
-  const tbody=document.getElementById('admin-tbody');if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
-  const [{data:releases,error},{data:profiles}]=await Promise.all([
-    sb.from('releases').select('*').order('submitted_at',{ascending:false}),
-    sb.from('profiles').select('id,full_name,artist_name,email,account_id')
-  ]);
-  if(error){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:#f87171;padding:1.5rem">Error: '+error.message+'</td></tr>';return;}
-  if(!releases||!releases.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No releases yet.</td></tr>';return;}
-  const profMap={};(profiles||[]).forEach(p=>{profMap[p.id]=p;});
-  const data=releases.map(r=>({...r,profiles:profMap[r.user_id]||null}));
-  allReleasesCache=data;renderAdminReleases(data);
-}
-function renderAdminReleases(data){
-  const tbody=document.getElementById('admin-tbody');if(!tbody)return;
-  if(!data.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No releases found.</td></tr>';return;}
-  tbody.innerHTML=data.map(r=>{
-    const pName=r.profiles?.artist_name||r.profiles?.full_name||'—';const accId=r.profiles?.account_id||'—';
-    const sub=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
-    const rd=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB'):'—';
-    const art=r.artwork_url?'<img src="'+r.artwork_url+'" style="width:32px;height:32px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:6px">':'';
-    return '<tr><td><input type="checkbox" class="rel-cb" data-id="'+r.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(accId)+'</td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(pName)+'</td><td style="white-space:nowrap">'+art+esc(r.title)+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'')+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+sub+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+rd+'</td><td><select class="stsel" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></td><td><input type="number" class="num-in" value="'+(r.streams||0)+'" min="0" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></td><td><input type="number" class="num-in" value="'+(r.earnings||0)+'" min="0" step="0.01" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></td><td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((r.notes||'').slice(0,30))+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+r.user_id+'\',\''+esc(pName)+'\')"><i class="ti ti-eye"></i></button><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease(\''+r.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
-  }).join('');
-}
-function filterReleases(){
-  const q=(document.getElementById('rel-search')?.value||'').toLowerCase();const st=document.getElementById('rel-status-filter')?.value||'';
-  let data=allReleasesCache;
-  if(q) data=data.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q)||((r.profiles?.artist_name||r.profiles?.full_name||'')).toLowerCase().includes(q));
-  if(st) data=data.filter(r=>r.status===st);
-  renderAdminReleases(data);
-}
-async function bulkStatusUpdate(status){
-  const checked=Array.from(document.querySelectorAll('.rel-cb:checked')).map(c=>c.dataset.id);
-  if(!checked.length){toast('Select releases first','err');return;}
-  if(!confirm('Set '+checked.length+' release(s) to "'+status+'"?'))return;
-  for(const id of checked) await sb.from('releases').update({status}).eq('id',id);
-  toast(checked.length+' updated','ok');loadAdminReleases();loadAdminStats();
-}
-async function updateStatus(id,status,sel){
-  await sb.from('releases').update({status}).eq('id',id);
-  const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',takendown:'color:#9ca3af'};
-  if(sel) sel.style.cssText=sc[status]||'';
-  toast('Status updated','ok');loadReleases();loadAdminStats();
-}
-async function updateField(id,field,value){
-  const val=field==='earnings'?parseFloat(value)||0:parseInt(value)||0;
-  await sb.from('releases').update({[field]:val}).eq('id',id);
-  toast(field+' saved','ok');
-}
-async function deleteRelease(id){
-  if(!confirm('Remove this release?'))return;
-  const {error}=await sb.from('releases').delete().eq('id',id);
-  if(error){
-    toast('Delete failed — run the admin RLS fix SQL in Supabase','err');
-    console.error('deleteRelease error:',error);
+function renderReportsList(){
+  const el=document.getElementById('roy-reports-list');
+  if(!el)return;
+  if(!_allReportEntries.length){
+    el.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.25);font-size:13px;padding:3rem 0"><i class="ti ti-file-off" style="font-size:36px;display:block;margin-bottom:.75rem;opacity:.3"></i>No reports yet. Add royalty entries in Admin → Royalties.</div>';
     return;
   }
-  toast('Release removed','ok');
-  loadAdminReleases();
-  loadReleases();
-  loadAdminStats();
-}
-async function deletePayout(id){
-  if(!confirm('Delete this payout request?'))return;
-  const {error}=await sb.from('payouts').delete().eq('id',id);
-  if(error){
-    toast('Delete failed — run the admin RLS fix SQL in Supabase','err');
-    console.error('deletePayout error:',error);
-    return;
-  }
-  toast('Payout deleted','ok');
-  loadAdminPayouts();
-  loadAdminStats();
-  loadNotifications();
-}
-async function updateUserPlan(id,plan){await sb.from('profiles').update({plan}).eq('id',id);toast('Plan updated','ok');loadAdminStats();}
-async function updatePayoutStatus(id,status){
-  const {error}=await sb.from('payouts').update({status}).eq('id',id);
-  if(error){toast('Update failed: '+error.message,'err');return;}
-  toast('Payout marked as '+status,'ok');
-  loadAdminPayouts();
-  loadAdminStats();
-  loadNotifications();
-}
-
-
-async function loadAdminUsers(){
-  const tbody=document.getElementById('admin-users-tbody');if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
-  const {data}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
-  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists yet.</td></tr>';return;}
-  const [{data:allRel}]=await Promise.all([sb.from('releases').select('user_id,streams,earnings')]);
-  const relCount={},relStreams={},relEarn={};
-  (allRel||[]).forEach(r=>{relCount[r.user_id]=(relCount[r.user_id]||0)+1;relStreams[r.user_id]=(relStreams[r.user_id]||0)+(r.streams||0);relEarn[r.user_id]=(relEarn[r.user_id]||0)+(r.earnings||0);});
-  allUsersCache=data;
-  tbody.innerHTML=data.map(p=>{
-    const name=p.artist_name||p.full_name||p.email;const joined=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
-    return '<tr><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(p.account_id||'—')+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(p.email||'')+'</div></td><td><select class="stsel" onchange="updateUserPlan(\''+p.id+'\',this.value)"><option value="free" '+(p.plan==='free'?'selected':'')+'>Free</option><option value="solo_paid" '+(p.plan==='solo_paid'?'selected':'')+'>Solo</option><option value="artist_plus" '+(p.plan==='artist_plus'?'selected':'')+'>Artist+</option><option value="label" '+(p.plan==='label'?'selected':'')+'>Label</option><option value="admin" '+(p.plan==='admin'?'selected':'')+'>Admin</option></select></td><td style="text-align:center;font-weight:600;color:#fff">'+(relCount[p.id]||0)+'</td><td style="color:rgba(255,255,255,.6)">'+(relStreams[p.id]||0).toLocaleString()+'</td><td style="color:#34d399;font-weight:600">$'+(relEarn[p.id]||0).toFixed(2)+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+joined+'</td><td><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px" onclick="openArtistModal(\''+p.id+'\',\''+esc(name)+'\')"><i class="ti ti-eye"></i></button></td></tr>';
-  }).join('');
-}
-async function loadAdminPayouts(){
-  const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
-  try{
-    const [{data:payouts,error},{data:profiles}]=await Promise.all([
-      sb.from('payouts').select('*').order('created_at',{ascending:false}),
-      sb.from('profiles').select('id,artist_name,full_name,email,account_id')
-    ]);
-    if(error){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#f87171;padding:1.5rem">'+error.message+'</td></tr>';return;}
-    allPayoutsCache=payouts||[];
-    const profileMap={};(profiles||[]).forEach(p=>{profileMap[p.id]=p;});
-    const pending=(payouts||[]).filter(p=>p.status==='pending').length;
-    const notice=document.getElementById('payout-pending-notice');
-    if(notice&&pending>0) notice.innerHTML='<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1rem"><i class="ti ti-alert-circle"></i> <strong>'+pending+' pending payout(s)</strong></div>';
-    else if(notice) notice.innerHTML='';
-    if(!payouts||!payouts.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payout requests yet.</td></tr>';return;}
-    tbody.innerHTML=payouts.map(p=>{
-      const prof=profileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||prof.email||'—';const accId=prof.account_id||'—';
-      const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
-      const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
-      return '<tr><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+(p.method==='momo'?'📱 Mobile Money':'🏦 Bank')+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
-    }).join('');
-  }catch(e){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Error loading payouts.</td></tr>';}
-}
-async function loadAdminSubs(){
-  const tbody=document.getElementById('admin-subs-tbody');if(!tbody)return;
-  try{
-    const {data}=await sb.from('subscriptions').select('*, profiles(artist_name,full_name,email,account_id)').order('created_at',{ascending:false});
-    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No subscriptions yet.</td></tr>';return;}
-    tbody.innerHTML=data.map(s=>{
-      const name=s.profiles?.artist_name||s.profiles?.full_name||s.profiles?.email||'—';
-      const d=s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'—';
-      return '<tr><td style="font-weight:600;color:#fff">'+esc(name)+'</td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(s.profiles?.account_id||'—')+'</td><td style="color:var(--gold)">'+s.plan+'</td><td>'+esc(s.billing_cycle||'annual')+'</td><td style="color:#34d399;font-weight:700">$'+parseFloat(s.amount_usd||0).toFixed(2)+'</td><td>GHS '+parseFloat(s.amount_ghs||0).toFixed(2)+'</td><td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">'+esc(s.paystack_ref||'—')+'</td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td></tr>';
-    }).join('');
-  }catch(e){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Run subscriptions SQL first.</td></tr>';}
-}
-async function loadAdminReports(){
-  try{
-    const {data:releases}=await sb.from('releases').select('*, profiles(artist_name,full_name,account_id)').order('streams',{ascending:false});
-    const allRel=releases||[];
-    const totalEarnings=allRel.reduce((a,r)=>a+(r.earnings||0),0);
-    const totalStreams=allRel.reduce((a,r)=>a+(r.streams||0),0);
-    const totalComm=totalEarnings*COMM;
-    const revEl=document.getElementById('adm-revenue-summary');
-    if(revEl) revEl.innerHTML='<div class="adm-bar-row"><div class="adm-bar-label">Gross Earnings</div><div class="adm-bar-val" style="color:#34d399">$'+totalEarnings.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Commission (9%)</div><div class="adm-bar-val" style="color:var(--gold)">$'+totalComm.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Total Streams</div><div class="adm-bar-val" style="color:#60a5fa">'+totalStreams.toLocaleString()+'</div></div>';
-    const maxRS=allRel[0]?.streams||1;
-    const trEl=document.getElementById('adm-top-releases');
-    if(trEl) trEl.innerHTML=allRel.slice(0,5).map(r=>'<div class="adm-bar-row"><div class="adm-bar-label" style="width:120px">'+esc(r.title)+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round(((r.streams||0)/maxRS)*100)+'%"></div></div><div class="adm-bar-val">'+(r.streams||0).toLocaleString()+'</div></div>').join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No releases yet</div>';
-  }catch(e){}
-}
-async function loadAdminMessages(){
-  const container=document.getElementById('messages-list');if(!container)return;
-  try{
-    const {data}=await sb.from('messages').select('*').order('created_at',{ascending:false}).limit(50).catch(()=>({data:[]}));
-    const unread=(data||[]).filter(m=>!m.read_at&&m.direction==='in').length;
-    const msgAlert=document.getElementById('msg-alert');if(msgAlert){msgAlert.style.display=unread>0?'inline':'none';msgAlert.textContent=unread;}
-    if(!data||!data.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
-    container.innerHTML=data.map(m=>{
-      const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';const isIn=m.direction==='in';
-      return '<div style="background:#0e0e14;border:1px solid var(--line);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px'+((!m.read_at&&isIn)?';border-left:3px solid var(--gold)':'')+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem"><div><div style="font-size:13px;font-weight:600;color:#fff">'+(isIn?'📨 Incoming':'📤 Sent to: '+esc(m.to_email||''))+'</div></div><div style="display:flex;gap:6px;align-items:center"><span style="font-size:11px;color:rgba(255,255,255,.25)">'+d+'</span>'+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:3px 8px;font-size:11px" onclick="markRead(\''+m.id+'\')">Mark read</button>':'')+'</div></div><div style="font-size:13px;color:rgba(255,255,255,.6)">'+esc(m.body||'')+'</div></div>';
-    }).join('');
-  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>Run messages SQL to enable.</p></div>';}
-}
-async function loadNotifications(){
-  const container=document.getElementById('notifications-list');if(!container)return;
-  try{
-    const [{data:payouts},{data:releases}]=await Promise.all([
-      sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
-      sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false})
-    ]);
-    const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,account_id');
-    const profileMap={};(profList||[]).forEach(p=>{profileMap[p.id]=p;});
-    const total=(payouts?.length||0)+(releases?.length||0);
-    const badge=document.getElementById('notif-badge');if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
-    let html='';
-    if(payouts?.length){
-      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem">Pending Payouts ('+payouts.length+')</div>';
-      html+=payouts.map(p=>{const prof=profileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||'—';const accId=prof.account_id||'';const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';return '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#fff">'+(accId?'<span style="color:var(--gold)">'+esc(accId)+'</span> — ':'')+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+p.method+' — $'+parseFloat(p.amount||0).toFixed(2)+' · '+d+'</div></div><button class="btn btn-purple btn-sm" onclick="switchAdminTab(\'payouts\',document.getElementById(\'atab-payouts\'))">Process</button></div>';}).join('');
-    }
-    if(releases?.length){
-      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem;margin-top:1rem">Pending Releases ('+releases.length+')</div>';
-      html+=releases.map(r=>{const name=r.profiles?.artist_name||r.profiles?.full_name||'—';const d=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';return '<div style="background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#fff">"'+esc(r.title)+'" by '+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(r.genre||'')+' · '+d+'</div></div><button class="btn adm-btn-sec btn-sm" onclick="switchAdminTab(\'releases\',document.getElementById(\'atab-releases\'))">Review</button></div>';}).join('');
-    }
-    if(!html) html='<div class="empty"><i class="ti ti-check"></i><p>All caught up!</p></div>';
-    container.innerHTML=html;
-  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-bell-off"></i><p>Unable to load.</p></div>';}
-}
-async function markRead(id){await sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',id);toast('Marked read','ok');loadAdminMessages();}
-async function sendAdminMessage(){
-  const to=document.getElementById('msg-to').value.trim();const body=document.getElementById('msg-body').value.trim();const subject=document.getElementById('msg-subject')?.value.trim()||'Message from Blakkstone';
-  if(!to||!body){toast('Fill in email and message','err');return;}
-  try{
-    await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:new Date().toISOString()});
-    document.getElementById('msg-body').value='';toast('Message sent','ok');loadAdminMessages();
-  }catch(e){toast('Run messages SQL first','err');}
-}
-async function sendBroadcast(){
-  const subject=document.getElementById('bc-subject')?.value.trim();const body=document.getElementById('bc-body')?.value.trim();
-  if(!subject||!body){toast('Fill in subject and message','err');return;}
-  const {data:allProfiles}=await sb.from('profiles').select('id,email,artist_name,plan');
-  let targets=allProfiles||[];
-  const toAll=document.getElementById('bc-all')?.checked;const toSolo=document.getElementById('bc-solo')?.checked;const toPaid=document.getElementById('bc-paid')?.checked;
-  if(!toAll) targets=targets.filter(p=>(toSolo&&p.plan==='solo_paid')||(toPaid&&(p.plan==='artist_plus'||p.plan==='label')));
-  if(!targets.length){toast('No artists match','err');return;}
-  if(!confirm('Send to '+targets.length+' artist(s)?'))return;
-  let sent=0;
-  for(const p of targets){try{await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:new Date().toISOString()});sent++;}catch(e){}}
-  document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
-  toast('Broadcast sent to '+sent+' artist(s)!','ok');loadBroadcastHistory();
-}
-async function loadBroadcastHistory(){
-  const el=document.getElementById('broadcast-history');if(!el)return;
-  try{
-    const {data}=await sb.from('messages').select('*').eq('direction','out').eq('from_id',user.id).order('created_at',{ascending:false}).limit(10).catch(()=>({data:[]}));
-    if(!data||!data.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">No broadcasts yet.</div>';return;}
-    el.innerHTML=data.map(m=>'<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(m.subject||'No subject')+'</div><div style="font-size:11px;color:rgba(255,255,255,.3)">'+esc(m.to_email||'')+' · '+(m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'')+'</div></div>').join('');
-  }catch(e){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Run messages SQL first.</div>';}
-}
-async function exportCSV(type){
-  let data=[],filename='',headers=[];
-  if(type==='artists'){const {data:d}=await sb.from('profiles').select('*').order('created_at',{ascending:false});data=d||[];filename='blakkstone-artists.csv';headers=['Account ID','Name','Email','Plan','Created'];data=data.map(p=>[p.account_id||'',p.artist_name||p.full_name||'',p.email||'',p.plan||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);}
-  else if(type==='releases'){const {data:d}=await sb.from('releases').select('*, profiles(artist_name,account_id)').order('submitted_at',{ascending:false});data=d||[];filename='blakkstone-releases.csv';headers=['Account ID','Artist','Title','Genre','Release Date','Status','Streams','Earnings'];data=data.map(r=>[r.profiles?.account_id||'',r.profiles?.artist_name||'',r.title||'',r.genre||'',r.release_date||'',r.status||'',r.streams||0,r.earnings||0]);}
-  else if(type==='payouts'){const {data:d}=await sb.from('payouts').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));data=d||[];filename='blakkstone-payouts.csv';headers=['Account ID','Artist','Method','Amount','Status','Date'];data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.amount||0,p.status||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);}
-  else if(type==='subscriptions'){const {data:d}=await sb.from('subscriptions').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));data=d||[];filename='blakkstone-subscriptions.csv';headers=['Account ID','Artist','Plan','USD','GHS','Ref','Date'];data=data.map(s=>[s.profiles?.account_id||'',s.profiles?.artist_name||'',s.plan||'',s.amount_usd||0,s.amount_ghs||0,s.paystack_ref||'',s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'']);}
-  const csv=[headers,...data].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);toast('Exported '+filename,'ok');
-}
-function exportArtistsCSV(){exportCSV('artists');}function exportReleasesCSV(){exportCSV('releases');}function exportPayoutsCSV(){exportCSV('payouts');}function exportSubsCSV(){exportCSV('subscriptions');}
-
-
-// ── ADMIN STREAM ENTRIES ──────────────────────────────────
-const STREAM_STORES=[
-  {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954'},
-  {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44'},
-  {key:'youtube_music',name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000'},
-  {key:'audiomack',name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200'},
-  {key:'boomplay',name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF'},
-  {key:'amazon_music',name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA'},
-  {key:'tidal',name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000'},
-  {key:'deezer',name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF'},
-  {key:'others',name:'Others',logo:''},
-];
-
-async function initAdminStreams(){
-  // Populate user selector
-  const {data:profiles}=await sb.from('profiles').select('id,artist_name,full_name,email,account_id');
-  const sel=document.getElementById('str-user-select');
-  const filterSel=document.getElementById('str-filter-user');
-  if(sel){
-    sel.innerHTML='<option value="">Select artist...</option>'+
-      (profiles||[]).map(p=>'<option value="'+p.id+'">'+esc(p.artist_name||p.full_name||p.email)+' ('+esc(p.account_id||'')+')</option>').join('');
-    sel.onchange=()=>loadReleasesForStream(sel.value);
-  }
-  if(filterSel){
-    filterSel.innerHTML='<option value="">All artists</option>'+
-      (profiles||[]).map(p=>'<option value="'+p.id+'">'+esc(p.artist_name||p.full_name||p.email)+'</option>').join('');
-  }
-  // Set today's date
-  const dateInput=document.getElementById('str-date');
-  if(dateInput) dateInput.value=new Date().toISOString().split('T')[0];
-  // Build store inputs
-  buildStreamStoreInputs();
-  // Load entries
-  loadStreamEntries();
-  loadStreamPlatformTotals();
-}
-
-function buildStreamStoreInputs(){
-  const el=document.getElementById('str-store-inputs');
-  if(!el)return;
-  el.innerHTML=STREAM_STORES.map(s=>{
-    const logo=s.logo?'<img src="'+s.logo+'" width="14" height="14" style="object-fit:contain;vertical-align:middle;margin-right:4px">':'';
-    return '<div class="track-fg"><label style="display:flex;align-items:center">'+logo+s.name+'</label><input type="number" id="str-'+s.key+'" min="0" placeholder="0" style="background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;width:100%"></div>';
-  }).join('');
-}
-
-async function loadReleasesForStream(userId){
-  const sel=document.getElementById('str-release-select');
-  if(!sel)return;
-  if(!userId){sel.innerHTML='<option value="">Select release...</option>';return;}
-  const {data}=await sb.from('releases').select('id,title,artist').eq('user_id',userId).order('submitted_at',{ascending:false});
-  sel.innerHTML='<option value="">Select release...</option>'+(data||[]).map(r=>'<option value="'+r.id+'">'+esc(r.title)+' — '+esc(r.artist)+'</option>').join('');
-}
-
-async function submitStreamEntry(){
-  const userId=document.getElementById('str-user-select').value;
-  const releaseId=document.getElementById('str-release-select').value;
-  const date=document.getElementById('str-date').value;
-  if(!userId||!date){toast('Select an artist and date','err');return;}
-
-  const entry={user_id:userId,release_id:releaseId||null,date};
-  let total=0;
-  STREAM_STORES.forEach(s=>{
-    const v=parseInt(document.getElementById('str-'+s.key)?.value||0)||0;
-    entry[s.key]=v;total+=v;
+  // Group entries by month (date_start YYYY-MM)
+  const byMonth={};
+  _allReportEntries.forEach(e=>{
+    const m=e.date_start.slice(0,7);
+    if(!byMonth[m]) byMonth[m]={entries:[],streams:0,earnings:0};
+    byMonth[m].entries.push(e);
+    byMonth[m].streams+=(e.streams||0);
+    byMonth[m].earnings+=(e.total||0);
   });
-  entry.total=total;
-  entry.notes=document.getElementById('str-notes')?.value||null;
-
-  if(!total){toast('Enter streams for at least one store','err');return;}
-
-  try{
-    // Check if entry exists for this user+release+date and upsert
-    const {error}=await sb.from('stream_entries').upsert(entry,{onConflict:'user_id,release_id,date'});
-    if(error)throw error;
-
-    // Update the releases.streams total
-    if(releaseId){
-      const {data:existing}=await sb.from('stream_entries').select('total').eq('release_id',releaseId);
-      const newTotal=(existing||[]).reduce((a,e)=>a+(e.total||0),0);
-      await sb.from('releases').update({streams:newTotal}).eq('id',releaseId);
-    }
-
-    toast('Stream entry saved!','ok');
-    clearStreamForm();
-    loadStreamEntries();
-    loadStreamPlatformTotals();
-  }catch(e){
-    if(e.message?.includes('does not exist')){
-      toast('Run the stream_entries SQL first (see below)','err');
-    } else {
-      toast('Error: '+e.message,'err');
-    }
-  }
-}
-
-function clearStreamForm(){
-  document.getElementById('str-user-select').value='';
-  document.getElementById('str-release-select').innerHTML='<option value="">Select release...</option>';
-  document.getElementById('str-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('str-notes').value='';
-  STREAM_STORES.forEach(s=>{const el=document.getElementById('str-'+s.key);if(el)el.value='';});
-}
-
-async function loadStreamEntries(){
-  const tbody=document.getElementById('str-entries-tbody');
-  if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
-  try{
-    const userFilter=document.getElementById('str-filter-user')?.value;
-    const relFilter=document.getElementById('str-filter-release')?.value;
-    let q=sb.from('stream_entries').select('*, profiles(artist_name,full_name,account_id), releases(title)').order('date',{ascending:false}).limit(100);
-    if(userFilter) q=q.eq('user_id',userFilter);
-    if(relFilter) q=q.eq('release_id',relFilter);
-    const {data,error}=await q;
-    if(error)throw error;
-    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No stream entries yet.</td></tr>';return;}
-    tbody.innerHTML=data.map(e=>{
-      const name=e.profiles?.artist_name||e.profiles?.full_name||'—';
-      const accId=e.profiles?.account_id||'';
-      const rel=e.releases?.title||'(all releases)';
-      return '<tr><td style="color:rgba(255,255,255,.7);font-weight:600">'+esc(e.date)+'</td><td style="font-size:12px"><div style="color:#fff">'+esc(name)+'</div><div style="color:var(--gold);font-size:10px">'+esc(accId)+'</div></td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(rel)+'</td><td style="color:#1DB954">'+((e.spotify||0).toLocaleString())+'</td><td style="color:#FC3C44">'+((e.apple_music||0).toLocaleString())+'</td><td style="color:#FF0000">'+((e.youtube_music||0).toLocaleString())+'</td><td style="color:#FFA200">'+((e.audiomack||0).toLocaleString())+'</td><td style="color:#00C2FF">'+((e.boomplay||0).toLocaleString())+'</td><td style="color:rgba(255,255,255,.4)">'+((e.others||0).toLocaleString())+'</td><td style="font-weight:700;color:var(--gold)">'+((e.total||0).toLocaleString())+'</td><td><button class="btn-danger-outline" style="font-size:10px;padding:2px 6px" onclick="deleteStreamEntry(\''+e.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
-    }).join('');
-  }catch(e){
-    tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:#fbbf24;padding:1.5rem;font-size:12px">Run the SQL below to create stream_entries table first.</td></tr>';
-  }
-}
-
-async function deleteStreamEntry(id){
-  if(!confirm('Delete this stream entry?'))return;
-  await sb.from('stream_entries').delete().eq('id',id);
-  toast('Entry deleted','ok');
-  loadStreamEntries();loadStreamPlatformTotals();
-}
-
-async function loadStreamPlatformTotals(){
-  const el=document.getElementById('str-platform-totals');
-  if(!el)return;
-  try{
-    const {data}=await sb.from('stream_entries').select('spotify,apple_music,youtube_music,audiomack,boomplay,others,total');
-    if(!data||!data.length){el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">No data yet</div>';return;}
-    const totals={};
-    STREAM_STORES.forEach(s=>{totals[s.key]=data.reduce((a,e)=>a+(e[s.key]||0),0);});
-    const grand=Object.values(totals).reduce((a,v)=>a+v,0);
-    el.innerHTML=STREAM_STORES.map(s=>{
-      if(!totals[s.key])return'';
-      const pct=grand>0?Math.round((totals[s.key]/grand)*100):0;
-      const logo=s.logo?'<img src="'+s.logo+'" width="14" height="14" style="object-fit:contain;vertical-align:middle;margin-right:5px">':'';
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px"><span>'+logo+s.name+'</span><span style="color:#fff;font-weight:600">'+totals[s.key].toLocaleString()+' <span style="color:rgba(255,255,255,.3);font-weight:400">('+pct+'%)</span></span></div>';
-    }).filter(Boolean).join('');
-  }catch(e){el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">Run SQL to enable</div>';}
-}
-
-async function loadAdminStreamsRecent(){
-  const el=document.getElementById('str-recent-entries');
-  if(!el)return;
-  try{
-    const {data}=await sb.from('stream_entries').select('date,total,profiles(artist_name)').order('created_at',{ascending:false}).limit(5);
-    if(!data||!data.length){el.innerHTML='No entries yet';return;}
-    el.innerHTML=data.map(e=>'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span>'+esc(e.date)+' · '+esc(e.profiles?.artist_name||'—')+'</span><span style="color:var(--gold);font-weight:600">'+e.total.toLocaleString()+'</span></div>').join('');
-  }catch(e){}
-}
-
-// ── ADMIN ROYALTY ENTRIES ──────────────────────────────────
-const ROY_STORES=[
-  {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954'},
-  {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44'},
-  {key:'youtube_music',name:'YouTube Music',logo:'https://cdn.simpleicons.org/youtubemusic/FF0000'},
-  {key:'audiomack',name:'Audiomack',logo:'https://cdn.simpleicons.org/audiomack/FFA200'},
-  {key:'boomplay',name:'Boomplay',logo:'https://cdn.simpleicons.org/boomplay/00C2FF'},
-  {key:'amazon_music',name:'Amazon Music',logo:'https://cdn.simpleicons.org/amazonmusic/25D1DA'},
-  {key:'tidal',name:'Tidal',logo:'https://cdn.simpleicons.org/tidal/000000'},
-  {key:'deezer',name:'Deezer',logo:'https://cdn.simpleicons.org/deezer/A238FF'},
-  {key:'others',name:'Others',logo:''},
-];
-
-// Country row management for admin royalty form
-let royCountryRows=[];
-
-function addRoyCountryRow(){
-  const id='rc_'+Date.now();
-  royCountryRows.push(id);
-  const el=document.getElementById('roy-country-rows');
-  if(!el)return;
-  const div=document.createElement('div');
-  div.id='row-'+id;
-  div.style.cssText='display:grid;grid-template-columns:1fr 80px 80px 24px;gap:6px;margin-bottom:6px;align-items:center';
-  div.innerHTML='<input type="text" placeholder="Country (e.g. Ghana)" data-field="country" '
-    +'style="background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none">'
-    +'<input type="number" placeholder="Streams" data-field="streams" min="0" '
-    +'style="background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;text-align:right">'
-    +'<input type="number" placeholder="$0.00" data-field="earnings" min="0" step="0.01" '
-    +'style="background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;text-align:right">'
-    +'<button onclick="removeRoyCountryRow(this.dataset.rid)" data-rid="'+id+'" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.25);font-size:18px;padding:0;line-height:1">×</button>';
-  el.appendChild(div);
-}
-
-function removeRoyCountryRow(id){
-  const el=document.getElementById('row-'+id);if(el)el.remove();
-  royCountryRows=royCountryRows.filter(r=>r!==id);
-}
-
-function getRoyCountryData(){
-  return royCountryRows.map(id=>{
-    const row=document.getElementById('row-'+id);if(!row)return null;
-    const country=row.querySelector('[data-field="country"]')?.value?.trim();
-    const streams=parseInt(row.querySelector('[data-field="streams"]')?.value||0)||0;
-    const earnings=parseFloat(row.querySelector('[data-field="earnings"]')?.value||0)||0;
-    if(!country)return null;
-    return {country,streams,earnings};
-  }).filter(Boolean);
-}
-
-function clearRoyCountryRows(){
-  const el=document.getElementById('roy-country-rows');if(el)el.innerHTML='';
-  royCountryRows=[];
-}
-
-async function initAdminRoyalties(){
-  const {data:profiles}=await sb.from('profiles').select('id,artist_name,full_name,email,account_id');
-  const sel=document.getElementById('roy-user-select');
-  const filterSel=document.getElementById('roy-filter-user');
-  if(sel){
-    sel.innerHTML='<option value="">Select artist...</option>'+
-      (profiles||[]).map(p=>'<option value="'+p.id+'">'+esc(p.artist_name||p.full_name||p.email)+' ('+esc(p.account_id||'')+')</option>').join('');
-    sel.onchange=()=>loadReleasesForRoy(sel.value);
-  }
-  if(filterSel){
-    filterSel.innerHTML='<option value="">All artists</option>'+
-      (profiles||[]).map(p=>'<option value="'+p.id+'">'+esc(p.artist_name||p.full_name||p.email)+'</option>').join('');
-  }
-  // Set default dates (first and last day of current month)
-  const now=new Date();
-  const firstDay=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
-  const lastDay=new Date(now.getFullYear(),now.getMonth()+1,0).toISOString().split('T')[0];
-  const ds=document.getElementById('roy-date-start');if(ds) ds.value=firstDay;
-  const de=document.getElementById('roy-date-end');if(de) de.value=lastDay;
-  buildRoyStoreInputs();
-  loadRoyaltyEntries();
-  loadRoyStoreTotals();
-  loadRoyRecentEntries();
-}
-
-function buildRoyStoreInputs(){
-  const el=document.getElementById('roy-store-inputs');
-  if(!el)return;
-  el.innerHTML=ROY_STORES.map(s=>{
-    const logo=s.logo?'<img src="'+s.logo+'" width="14" height="14" style="object-fit:contain;vertical-align:middle;margin-right:4px">':'';
-    return '<div class="track-fg"><label style="display:flex;align-items:center">'+logo+s.name+'</label>'
-      +'<div style="display:flex;align-items:center;gap:4px"><span style="color:rgba(255,255,255,.3);font-size:13px">$</span>'
-      +'<input type="number" id="roy-'+s.key+'" min="0" step="0.01" placeholder="0.00" oninput="updateRoyTotalPreview()" '
-      +'style="background:#0e0e14;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:7px 10px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;width:100%"></div></div>';
-  }).join('');
-}
-
-function updateRoyTotalPreview(){
-  let total=0;
-  ROY_STORES.forEach(s=>{total+=parseFloat(document.getElementById('roy-'+s.key)?.value||0)||0;});
-  const el=document.getElementById('roy-total-preview');
-  if(el) el.textContent='$'+total.toFixed(2);
-}
-
-async function loadReleasesForRoy(userId){
-  const sel=document.getElementById('roy-release-select');
-  if(!sel)return;
-  if(!userId){sel.innerHTML='<option value="">Select release...</option>';return;}
-  const {data}=await sb.from('releases').select('id,title,artist').eq('user_id',userId).order('submitted_at',{ascending:false});
-  sel.innerHTML='<option value="">Select release...</option>'+(data||[]).map(r=>'<option value="'+r.id+'">'+esc(r.title)+' — '+esc(r.artist)+'</option>').join('');
-}
-
-async function submitRoyaltyEntry(){
-  const userId=document.getElementById('roy-user-select').value;
-  const releaseId=document.getElementById('roy-release-select').value;
-  const dateStart=document.getElementById('roy-date-start').value;
-  const dateEnd=document.getElementById('roy-date-end').value;
-  if(!userId||!dateStart||!dateEnd){toast('Select an artist and period','err');return;}
-
-  const entry={user_id:userId,release_id:releaseId||null,date_start:dateStart,date_end:dateEnd};
-  let total=0;
-  ROY_STORES.forEach(s=>{
-    const v=parseFloat(document.getElementById('roy-'+s.key)?.value||0)||0;
-    entry[s.key]=v;total+=v;
-  });
-  entry.total=parseFloat(total.toFixed(2));
-  entry.streams=parseInt(document.getElementById('roy-streams')?.value||0)||0;
-  entry.notes=document.getElementById('roy-notes')?.value||null;
-  const countryData=getRoyCountryData();
-  entry.countries=countryData.length?JSON.stringify(countryData):null;
-
-  if(!entry.total){toast('Enter earnings for at least one store','err');return;}
-
-  try{
-    const {error}=await sb.from('royalty_entries').insert(entry);
-    if(error)throw error;
-
-    // Update the release earnings total
-    if(releaseId){
-      const {data:existing}=await sb.from('royalty_entries').select('total').eq('release_id',releaseId);
-      const newTotal=parseFloat((existing||[]).reduce((a,e)=>a+(e.total||0),0).toFixed(2));
-      await sb.from('releases').update({earnings:newTotal}).eq('id',releaseId);
-      // Also update streams if provided
-      if(entry.streams>0){
-        const {data:strData}=await sb.from('royalty_entries').select('streams').eq('release_id',releaseId);
-        const totalStreams=(strData||[]).reduce((a,e)=>a+(e.streams||0),0);
-        await sb.from('releases').update({streams:totalStreams}).eq('id',releaseId);
-      }
-    }
-
-    toast('Royalty entry saved!','ok');
-    clearRoyForm();
-    loadRoyaltyEntries();
-    loadRoyStoreTotals();
-    loadRoyRecentEntries();
-  }catch(e){
-    if(e.message?.includes('does not exist')){
-      toast('Run the royalty_entries SQL in Supabase first','err');
-    } else {
-      toast('Error: '+e.message,'err');
-    }
-  }
-}
-
-function clearRoyForm(){
-  clearRoyCountryRows();
-  document.getElementById('roy-user-select').value='';
-  document.getElementById('roy-release-select').innerHTML='<option value="">Select release...</option>';
-  document.getElementById('roy-notes').value='';
-  document.getElementById('roy-streams').value='';
-  document.getElementById('roy-total-preview').textContent='$0.00';
-  ROY_STORES.forEach(s=>{const el=document.getElementById('roy-'+s.key);if(el)el.value='';});
-}
-
-async function loadRoyaltyEntries(){
-  const tbody=document.getElementById('roy-entries-tbody');
-  if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
-  try{
-    const userFilter=document.getElementById('roy-filter-user')?.value;
-    const relFilter=document.getElementById('roy-filter-release')?.value;
-    let q=sb.from('royalty_entries')
-      .select('*, profiles(artist_name,full_name,account_id), releases(title)')
-      .order('date_start',{ascending:false}).limit(100);
-    if(userFilter) q=q.eq('user_id',userFilter);
-    if(relFilter) q=q.eq('release_id',relFilter);
-    const {data,error}=await q;
-    if(error)throw error;
-    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No royalty entries yet.</td></tr>';return;}
-    tbody.innerHTML=data.map(e=>{
-      const name=e.profiles?.artist_name||e.profiles?.full_name||'—';
-      const accId=e.profiles?.account_id||'';
-      const rel=e.releases?.title||'(all releases)';
-      const period=e.date_start+(e.date_end&&e.date_end!==e.date_start?' → '+e.date_end:'');
-      return '<tr>'
-        +'<td style="color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap">'+esc(period)+'</td>'
-        +'<td style="font-size:12px"><div style="color:#fff">'+esc(name)+'</div><div style="color:var(--gold);font-size:10px">'+esc(accId)+'</div></td>'
-        +'<td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(rel)+'</td>'
-        +'<td style="color:#1DB954">$'+((e.spotify||0).toFixed(2))+'</td>'
-        +'<td style="color:#FC3C44">$'+((e.apple_music||0).toFixed(2))+'</td>'
-        +'<td style="color:#FF0000">$'+((e.youtube_music||0).toFixed(2))+'</td>'
-        +'<td style="color:#FFA200">$'+((e.audiomack||0).toFixed(2))+'</td>'
-        +'<td style="color:#00C2FF">$'+((e.boomplay||0).toFixed(2))+'</td>'
-        +'<td style="color:rgba(255,255,255,.4)">$'+((e.others||0).toFixed(2))+'</td>'
-        +'<td style="font-weight:700;color:var(--gold)">$'+((e.total||0).toFixed(2))+'</td>'
-        +'<td style="color:rgba(255,255,255,.5)">'+(e.streams||0).toLocaleString()+'</td>'
-        +'<td><button class="btn-danger-outline" style="font-size:10px;padding:2px 6px" onclick="deleteRoyaltyEntry(this.dataset.id)" data-id="'+e.id+'"><i class="ti ti-trash"></i></button></td>'
-        +'</tr>';
-    }).join('');
-  }catch(e){
-    tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:#fbbf24;padding:1.5rem;font-size:12px">Run the royalty_entries SQL in Supabase to enable this feature.</td></tr>';
-  }
-}
-
-async function deleteRoyaltyEntry(id){
-  if(!confirm('Delete this royalty entry?'))return;
-  const {data:entry}=await sb.from('royalty_entries').select('release_id,total,streams').eq('id',id).single().catch(()=>({data:null}));
-  await sb.from('royalty_entries').delete().eq('id',id);
-  // Recalculate release earnings
-  if(entry?.release_id){
-    const {data:remaining}=await sb.from('royalty_entries').select('total,streams').eq('release_id',entry.release_id);
-    const newTotal=parseFloat(((remaining||[]).reduce((a,e)=>a+(e.total||0),0)).toFixed(2));
-    const newStreams=(remaining||[]).reduce((a,e)=>a+(e.streams||0),0);
-    await sb.from('releases').update({earnings:newTotal,streams:newStreams}).eq('id',entry.release_id);
-  }
-  toast('Entry deleted','ok');
-  loadRoyaltyEntries();loadRoyStoreTotals();loadRoyRecentEntries();
-}
-
-async function loadRoyStoreTotals(){
-  const el=document.getElementById('roy-store-totals');
-  if(!el)return;
-  try{
-    const {data}=await sb.from('royalty_entries').select('spotify,apple_music,youtube_music,audiomack,boomplay,amazon_music,tidal,deezer,others,total');
-    if(!data||!data.length){el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">No data yet</div>';return;}
-    const totals={};
-    ROY_STORES.forEach(s=>{totals[s.key]=parseFloat(data.reduce((a,e)=>a+(e[s.key]||0),0).toFixed(2));});
-    const grand=Object.values(totals).reduce((a,v)=>a+v,0);
-    const maxVal=Math.max(...Object.values(totals),0.01);
-    el.innerHTML=ROY_STORES.map(s=>{
-      if(!totals[s.key])return'';
-      const pct=grand>0?Math.round((totals[s.key]/grand)*100):0;
-      const barW=Math.round((totals[s.key]/maxVal)*100);
-      const logo=s.logo?'<img src="'+s.logo+'" width="14" height="14" style="object-fit:contain;vertical-align:middle;margin-right:5px">':'';
-      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
-        +'<div style="width:90px;font-size:12px;display:flex;align-items:center">'+logo+s.name+'</div>'
-        +'<div style="flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:var(--gold);border-radius:3px"></div></div>'
-        +'<div style="font-size:12px;color:#fff;font-weight:600;width:70px;text-align:right">$'+totals[s.key].toFixed(2)+'</div>'
-        +'<div style="font-size:10px;color:rgba(255,255,255,.3);width:30px;text-align:right">'+pct+'%</div>'
-        +'</div>';
-    }).filter(Boolean).join('')||'<div style="font-size:12px;color:rgba(255,255,255,.3)">No earnings yet</div>';
-  }catch(e){el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">Run SQL to enable</div>';}
-}
-
-async function loadRoyRecentEntries(){
-  const el=document.getElementById('roy-recent-entries');
-  if(!el)return;
-  try{
-    const {data}=await sb.from('royalty_entries')
-      .select('date_start,date_end,total,streams,profiles(artist_name)')
-      .order('created_at',{ascending:false}).limit(5);
-    if(!data||!data.length){el.innerHTML='No entries yet';return;}
-    el.innerHTML=data.map(e=>{
-      const period=e.date_start+(e.date_end&&e.date_end!==e.date_start?' → '+e.date_end.slice(5):'');
-      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
-        +'<div><div style="color:rgba(255,255,255,.7);font-size:12px">'+esc(e.profiles?.artist_name||'—')+'</div>'
-        +'<div style="color:rgba(255,255,255,.3);font-size:11px">'+esc(period)+'</div></div>'
-        +'<div style="text-align:right"><div style="color:var(--gold);font-weight:700;font-size:13px">$'+e.total.toFixed(2)+'</div>'
-        +(e.streams?'<div style="color:rgba(255,255,255,.3);font-size:11px">'+e.streams.toLocaleString()+' streams</div>':'')
-        +'</div></div>';
-    }).join('');
-  }catch(e){}
-}
-
-// ── PAYSTACK ──────────────────────────────────────────────
-function openPaystack(plan){
-  selectedPlan=plan||'artist_plus';
-  const p=PLANS[selectedPlan];
-  document.getElementById('pay-modal-title').textContent='Get '+p.label+' Plan';
-  const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5+ artists, 0% commission, priority support.'};
-  document.getElementById('pay-modal-desc').textContent=descs[selectedPlan]||'';
-  document.getElementById('b-monthly-price').textContent='$'+p.monthly;
-  document.getElementById('b-yearly-price').textContent='$'+p.yearly;
-  billing='yearly';
-  document.getElementById('b-yearly')?.classList.add('sel');
-  if(user) document.getElementById('pay-em').value=user.email||'';
-  updateRateNote();
-  document.getElementById('pay-overlay').classList.add('open');
-}
-function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');}
-function setBilling(cycle){
-  billing=cycle;
-  document.getElementById('b-monthly')?.classList.toggle('sel',cycle==='monthly');
-  document.getElementById('b-yearly')?.classList.toggle('sel',cycle==='yearly');
-  updateRateNote();
-}
-function updateRateNote(){
-  const p=PLANS[selectedPlan];if(!p)return;
-  const usd=billing==='monthly'?p.monthly:p.yearly;
-  const ghs=(usd*GHS_RATE).toFixed(2);
-  const rn=document.getElementById('rate-note');if(rn) rn.textContent='GHS '+ghs+' at current rate. Charged in GHS via Paystack.';
-}
-async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas){
-  try{
-    if(user){
-      const dbPlan=planKey==='solo'?'solo_paid':planKey;
-      await sb.from('profiles').update({plan:dbPlan}).eq('id',user.id);
-      if(profile) profile.plan=dbPlan;
-    }
-    await sb.from('subscriptions').insert({user_id:user?.id,plan:planKey,billing_cycle:billingCycle,amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),paystack_ref:ref,status:'active'}).catch(()=>{});
-    const planLabel=PLANS[planKey]?.label||planKey;
-    toast('Payment confirmed! Welcome to Blakkstone! 🎉','ok');
-    closePaystack();
-    const paywallEl=document.getElementById('paywall');
-    if(paywallEl&&paywallEl.classList.contains('active')) enterDashboard();
-  }catch(e){toast('Plan activated! Refresh if needed.','ok');closePaystack();}
-}
-function doPaystack(){
-  const email=document.getElementById('pay-em').value.trim();
-  if(!email){toast('Enter your email','err');return;}
-  const p=PLANS[selectedPlan];
-  const usd=billing==='monthly'?p.monthly:p.yearly;
-  const pesewas=Math.round(usd*GHS_RATE*100);
-  const btn=document.getElementById('pay-btn');
-  if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your connection.','err');return;}
-  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
-  const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas;
-  try{
-    const handler=PaystackPop.setup({
-      key:PK,email,amount:pesewas,currency:'GHS',ref,
-      callback:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas);},
-      onClose:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
-    });
-    handler.openIframe();
-  }catch(e){toast('Payment error: '+e.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
-}
-
-// ── REAL-TIME ──────────────────────────────────────────────
-let _realtimeChannel=null;
-function startRealtimeAdmin(){
-  if(_realtimeChannel){try{sb.removeChannel(_realtimeChannel);}catch(e){}}
-  _realtimeChannel=sb.channel('admin-rt-'+Date.now())
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'payouts'},payload=>{
-      showAdminAlert('New Payout Request',(payload.new.method==='momo'?'Mobile Money':'Bank')+' — $'+parseFloat(payload.new.amount||0).toFixed(2));
-      loadAdminStats();loadNotifications();
-    })
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'releases'},payload=>{
-      showAdminAlert('New Release Submitted','"'+(payload.new.title||'Unknown')+'" submitted');
-      loadAdminStats();loadNotifications();
-    })
-    .subscribe();
-}
-function showAdminAlert(title,body){
-  const existing=document.getElementById('admin-realtime-alert');if(existing) existing.remove();
-  const el=document.createElement('div');el.id='admin-realtime-alert';
-  el.style.cssText='position:fixed;top:70px;right:1.25rem;background:var(--card);border:1.5px solid var(--gold);border-radius:12px;padding:1rem 1.25rem;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:9999';
-  el.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">'+title+'</div><div style="font-size:12px;color:rgba(255,255,255,.5)">'+body+'</div></div><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:18px;color:rgba(255,255,255,.4)">×</button></div>';
-  document.body.appendChild(el);setTimeout(()=>el.remove(),8000);
-}
-async function requestNotifPermission(){if(Notification.permission==='default') await Notification.requestPermission();}
-
-// ── SPLIT-SHEET ──────────────────────────────────────────────
-let splitRows=[];
-function splitInit(){
-  const artistName=document.getElementById('r-artist')?.value||profile?.artist_name||'Primary Artist';
-  splitRows=[{id:'primary',name:artistName,bp:10000,locked:true}];
-  renderSplitRows();splitRecalc();
-}
-function splitAddRow(){
-  splitRows.push({id:'s_'+Date.now(),name:'',bp:0,locked:false});
-  const used=splitRows.filter(r=>r.id!=='primary').reduce((a,r)=>a+r.bp,0);
-  const pr=splitRows.find(r=>r.id==='primary');if(pr) pr.bp=Math.max(0,10000-used);
-  renderSplitRows();splitRecalc();
-}
-function splitRemoveRow(id){
-  const row=splitRows.find(r=>r.id===id);if(!row)return;
-  const pr=splitRows.find(r=>r.id==='primary');if(pr) pr.bp=Math.min(10000,pr.bp+row.bp);
-  splitRows=splitRows.filter(r=>r.id!==id);renderSplitRows();splitRecalc();
-}
-function splitUpdateBp(id,val){
-  const bp=Math.max(0,Math.min(10000,Math.round(parseFloat(val)*100)));
-  const row=splitRows.find(r=>r.id===id);if(row) row.bp=bp;
-  const used=splitRows.filter(r=>r.id!=='primary').reduce((a,r)=>a+r.bp,0);
-  const pr=splitRows.find(r=>r.id==='primary');if(pr) pr.bp=Math.max(0,10000-used);
-  renderSplitRows();splitRecalc();
-}
-function splitUpdateName(id,val){const row=splitRows.find(r=>r.id===id);if(row) row.name=val;}
-function splitDistributeRemaining(){
-  const secondary=splitRows.filter(r=>r.id!=='primary'&&r.bp===0);
-  if(!secondary.length){toast('No 0% rows to distribute to','err');return;}
-  const pr=splitRows.find(r=>r.id==='primary');const avail=pr?pr.bp:0;
-  if(avail<=0){toast('Nothing left','err');return;}
-  const perRow=Math.floor(avail/secondary.length);let rem=avail-(perRow*secondary.length);
-  secondary.forEach((r,i)=>{r.bp=perRow+(i===0?rem:0);});if(pr) pr.bp=0;
-  renderSplitRows();splitRecalc();toast('Distributed equally','ok');
-}
-function splitClaimRemainder(){
-  const totalUsed=splitRows.reduce((a,r)=>a+r.bp,0);const gap=10000-totalUsed;
-  const pr=splitRows.find(r=>r.id==='primary');if(pr) pr.bp+=gap;
-  renderSplitRows();splitRecalc();toast('Remainder claimed','ok');
-}
-function splitRecalc(){
-  const totalBp=splitRows.reduce((a,r)=>a+r.bp,0);const pct=(totalBp/100).toFixed(2);
-  const fill=document.getElementById('split-bar-fill');const label=document.getElementById('split-ledger-label');const status=document.getElementById('split-ledger-status');const submitBtn=document.getElementById('submit-btn');
-  if(fill){fill.style.width=Math.min(100,totalBp/100)+'%';fill.style.background=totalBp===10000?'#34d399':totalBp>10000?'#f87171':'#fbbf24';}
-  if(label){if(totalBp===10000){label.className='split-ledger-ok';label.textContent='Ledger Balanced: 100%';}else if(totalBp>10000){label.className='split-ledger-over';label.textContent='Over-allocated: '+pct+'%';}else{label.className='split-ledger-warn';label.textContent='Allocated: '+pct+'%';}}
-  if(status) status.textContent=totalBp.toLocaleString()+' of 10,000 bp';
-  if(submitBtn) submitBtn.disabled=totalBp!==10000;
-  const lw=document.getElementById('split-legal-wrap');if(lw) lw.style.display=splitRows.length>1?'block':'none';
-}
-function renderSplitRows(){
-  const el=document.getElementById('split-rows');if(!el)return;
-  el.innerHTML=splitRows.map(r=>{
-    const pct=(r.bp/100).toFixed(2);const isPrimary=r.id==='primary';
-    return '<div style="display:flex;align-items:center;gap:8px;background:#08080C;border:1px solid var(--line);border-radius:8px;padding:.625rem .875rem"><div style="width:24px;height:24px;border-radius:50%;background:'+(isPrimary?'rgba(212,175,55,.15)':'rgba(255,255,255,.07)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-'+(isPrimary?'crown':'user')+'" style="font-size:11px;color:'+(isPrimary?'var(--gold)':'rgba(255,255,255,.4)')+'"></i></div><input type="text" value="'+esc(r.name)+'" placeholder="Contributor name" '+(isPrimary?'readonly style="font-weight:600;color:var(--gold);background:transparent;border:none;outline:none;flex:1"':'style="flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:13px"')+' onchange="splitUpdateName(\''+r.id+'\',this.value)"><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><input type="number" value="'+pct+'" min="0" max="100" step="0.01" style="width:70px;background:#111118;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;color:#fff;text-align:right" onchange="splitUpdateBp(\''+r.id+'\',this.value)" '+(isPrimary?'readonly':'')+'>  <span style="font-size:11px;color:rgba(255,255,255,.3)">%</span></div>'+(isPrimary?'':'<button onclick="splitRemoveRow(\''+r.id+'\')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.25);font-size:16px;padding:0">×</button>')+'</div>';
-  }).join('');
-}
-
-
-// ── INIT ──────────────────────────────────────────────
-(async()=>{
-  // Add slideIn animation
-  const style=document.createElement('style');
-  style.textContent='@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}';
-  document.head.appendChild(style);
-  const {data:{session}}=await sb.auth.getSession();
-  if(session?.user)await loadProfile(session.user);
-  sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_IN'&&session?.user&&!user)await loadProfile(session.user);
-  });
-  // Poll every 30s for new payout requests as realtime fallback
-  setInterval(async()=>{
-    const isAdmin=profile?.plan==='admin'||user?.email===ADMIN_EMAIL;
-    if(!isAdmin||!user)return;
-    await loadAdminStats();
-    await loadNotifications();
-  },30000);
-})();
-</script>
-</body>
-</html>
+  const months=Object.keys(byMonth).sort().reverse();
+  const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  el.innerHTML=months.map(m=>{
+    const d=byMonth[m];
+    const [yr,mo]=m.split('-');
+    const label=MONTH_NAMES[parseInt(mo)-1]+' '+yr;
+    return '<div class="report-month-row" onclick="openReportModal(this.dataset.month)" data-month="'+m+'">'
+      +'<div style="font-size:14px;font-weight:600;color:#fff">'+label+'</div>'
+      +'<div style="font-size:13px;color:rgba(255,255,255,.5)">0</div>'
+      +'<div style="font-size:13px;color:rgba(255,255,255,.5)">0</div>'
+      +'<div style="font-size:13px;color:rgba(255,255,255,.7)">'+d.streams.toLocaleString()+'</div>'
+      +'<div style="font-size:14px;font-weight:700;color:var(--gold)">$'+d.earnings.toFixed(2)+'</div>'
+      +'<div>'+('<button class="btn btn-sm" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:12px;padding:5px 14px;border-radius:20px;cursor:pointer;font-family:Inter,sans-serif" onclick="openReportModal(\'' +m+ '\')" >Details</button>')+'</div>'
