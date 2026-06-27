@@ -3695,8 +3695,17 @@ function switchAdminTab(tab,el){
   document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
   const sec=document.getElementById('admin-'+tab);if(sec) sec.classList.add('active');
   if(el) el.classList.add('active');
-  if(tab==='reports')loadAdminReports();
-  if(tab==='broadcast')loadBroadcastHistory();
+  if(tab==='dashboard') loadAdminDashboard();
+  if(tab==='releases') loadAdminReleases();
+  if(tab==='users') loadAdminUsers();
+  if(tab==='payouts') loadAdminPayouts();
+  if(tab==='streams'){initAdminStreams();loadAdminStreamsRecent();}
+  if(tab==='royalties') initAdminRoyalties();
+  if(tab==='subs') loadAdminSubs();
+  if(tab==='reports') loadAdminReports();
+  if(tab==='messages') loadAdminMessages();
+  if(tab==='broadcast') loadBroadcastHistory();
+  if(tab==='notif') loadNotifications();
 }
 
 function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();toast('Refreshed','ok');}
