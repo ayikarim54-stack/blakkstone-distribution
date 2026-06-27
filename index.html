@@ -1477,7 +1477,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <!-- QUICK ACTIONS -->
       <div class="quick-actions">
-        <div class="qa-btn" onclick="goPage('payout',document.querySelectorAll('.tnav-item')[6])"><i class="ti ti-wallet"></i> Request Payout</div>
+        <div class="qa-btn" onclick="goPage('royalties',null);setTimeout(()=>switchRoyTab('payouts',document.getElementById('rtab-payouts')),100);void(document.querySelectorAll('.tnav-item')[6])"><i class="ti ti-wallet"></i> Request Payout</div>
         <div class="qa-btn" onclick="goPage('analytics',document.querySelectorAll('.tnav-item')[5])"><i class="ti ti-chart-bar"></i> View Analytics</div>
         <div class="qa-btn" onclick="goPage('royalties',document.querySelectorAll('.tnav-item')[4])"><i class="ti ti-coin"></i> Royalties</div>
         <div class="qa-btn" onclick="goPage('releases',document.querySelectorAll('.tnav-item')[1])"><i class="ti ti-music"></i> My Music</div>
@@ -2857,6 +2857,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
       </div>
+
+      <div class="admin-section" id="admin-notif"><div class="adm-card"><div class="adm-card-title"><i class="ti ti-bell"></i> Push Notifications</div><div id="notif-admin-list" style="margin-top:.5rem;font-size:13px;color:rgba(255,255,255,.4)">Notifications sent to users appear here.</div></div></div>
 
       <!-- ── SUBSCRIPTIONS TAB ── -->
       <div class="admin-section" id="admin-subs">
@@ -4631,6 +4633,126 @@ async function submitRelease(){
     initWizard();goPage('overview',null);loadReleases();
   }catch(e){toast('Error: '+e.message,'err');}
   finally{if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Release';}}
+}
+
+
+// ── MISSING FUNCTIONS ────────────────────────────────────
+async function saveProfile(){
+  const fn=document.getElementById('p-fn')?.value.trim()||'';
+  const ln=document.getElementById('p-ln')?.value.trim()||'';
+  const fullName=(fn+' '+ln).trim();
+  const artistName=document.getElementById('p-an')?.value.trim()||'';
+  const btn=document.getElementById('profile-save-btn');
+  if(btn){btn.disabled=true;btn.textContent='Saving...';}
+  try{
+    const {error}=await sb.from('profiles').update({full_name:fullName,artist_name:artistName}).eq('id',user.id);
+    if(error)throw error;
+    profile={...profile,full_name:fullName,artist_name:artistName};
+    const pdn=document.getElementById('profile-display-name');if(pdn)pdn.textContent=artistName||fullName;
+    toast('Profile saved','ok');
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{if(btn){btn.disabled=false;btn.textContent='Save Changes';}}
+}
+
+async function changePassword(){
+  const pw=document.getElementById('p-pw')?.value;
+  const pw2=document.getElementById('p-pw2')?.value;
+  if(!pw){toast('Enter a new password','err');return;}
+  if(pw.length<6){toast('Password must be at least 6 characters','err');return;}
+  if(pw!==pw2){toast('Passwords do not match','err');return;}
+  try{
+    const {error}=await sb.auth.updateUser({password:pw});
+    if(error)throw error;
+    toast('Password updated','ok');
+    const f1=document.getElementById('p-pw');if(f1)f1.value='';
+    const f2=document.getElementById('p-pw2');if(f2)f2.value='';
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+function filterRelTab(filter,el){
+  document.querySelectorAll('.rel-tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  renderReleasesList(allRelData,filter);
+}
+
+function filterStores(type,btn){
+  document.querySelectorAll('.store-filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.querySelectorAll('.store-chip').forEach(el=>{
+    el.style.display=(type==='all'||el.dataset.type===type)?'':'none';
+  });
+}
+
+function closeReleaseModal(){
+  const el=document.getElementById('release-overlay');
+  if(el)el.classList.remove('open');
+}
+
+function closeArtistModal(){
+  const el=document.getElementById('artist-overlay');
+  if(el)el.classList.remove('open');
+}
+
+let wizToggleState={};
+function setToggle(key,val){
+  wizToggleState[key]=val;
+  const prefix={'country-restrict':'cr','prev-released':'pr','explicit':'exp'}[key];
+  if(prefix){
+    document.getElementById(prefix+'-no')?.classList.toggle('active',!val);
+    document.getElementById(prefix+'-yes')?.classList.toggle('active',val);
+  }
+}
+
+function selectAllStores(sel){
+  if(typeof wizStores==='undefined') window.wizStores=[];
+  wizStores=sel?(typeof ALL_STORES!=='undefined'?ALL_STORES.map(s=>s.name):[]):[]; 
+  document.querySelectorAll('.store-chip').forEach(el=>el.classList.toggle('selected',sel));
+}
+
+function exportPayoutsCSV(){exportCSV('payouts');}
+function exportSubsCSV(){exportCSV('subscriptions');}
+function exportStreamsCSV(){exportCSV('streams');}
+function exportRoyaltiesCSV(){exportCSV('royalties');}
+
+function splitClaimRemainder(){
+  const totalUsed=splitRows.reduce((a,r)=>a+r.bp,0);
+  const gap=10000-totalUsed;
+  const pr=splitRows.find(r=>r.id==='primary');
+  if(pr){pr.bp+=gap;renderSplitRows();splitRecalc();}
+}
+
+function splitDistributeRemaining(){
+  const secondary=splitRows.filter(r=>r.id!=='primary'&&r.bp===0);
+  if(!secondary.length){toast('No 0% rows to distribute to','err');return;}
+  const pr=splitRows.find(r=>r.id==='primary');if(!pr)return;
+  const totalUsed=splitRows.filter(r=>r.id!=='primary').reduce((a,r)=>a+r.bp,0);
+  const available=pr.bp-1000;
+  if(available<=0){toast('Primary artist needs more than 10% to distribute','err');return;}
+  const each=Math.floor(available/secondary.length);
+  secondary.forEach(r=>{r.bp+=each;});
+  pr.bp-=(each*secondary.length);
+  renderSplitRows();splitRecalc();
+}
+
+function saveDraft(){
+  try{localStorage.setItem('wiz_draft_'+user.id,JSON.stringify({step:wizStep,tracks:wizTracks.map(t=>({id:t.id,title:t.title})),data:wizData}));}catch(e){}
+  toast('Draft saved','ok');
+}
+async function loadDraft(){
+  try{const d=localStorage.getItem('wiz_draft_'+user.id);return d?JSON.parse(d):null;}catch(e){return null;}
+}
+async function resumeDraft(){
+  const state=await loadDraft();
+  if(!state){toast('No draft found','err');return;}
+  wizStep=state.step||1;wizData=state.data||{};
+  const banner=document.getElementById('draft-banner');if(banner)banner.style.display='none';
+  goWizard(wizStep);toast('Draft restored','ok');
+}
+function discardDraft(){
+  if(!confirm('Discard your saved draft?'))return;
+  try{localStorage.removeItem('wiz_draft_'+user.id);}catch(e){}
+  const banner=document.getElementById('draft-banner');if(banner)banner.style.display='none';
+  toast('Draft discarded','ok');
 }
 
 // ── INIT ─────────────────────────────────────────────────
