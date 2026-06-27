@@ -4755,6 +4755,131 @@ function discardDraft(){
   toast('Draft discarded','ok');
 }
 
+async function loadReleases(){
+  const el=document.getElementById('s-total');
+  if(el) el.textContent='…';
+  const {data,error}=await sb.from('releases').select('*').eq('user_id',user.id).order('submitted_at',{ascending:false});
+  if(error){toast('Error loading releases','err');return;}
+  allRelData=data||[];
+  const releases=allRelData;
+  const banner=document.getElementById('announcement-banner');
+  if(banner&&releases.length===0&&profile){banner.style.display='flex';}
+  const live=releases.filter(r=>r.status==='live').length;
+  const pending=releases.filter(r=>r.status==='pending').length;
+  const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
+  const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
+  const isPaidPlan=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
+  const grossEarnings=isPaidPlan?earnings:earnings*(1-COMM);
+  // Subtract paid payouts so balance stays accurate
+  const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',user.id).catch(()=>({data:[]}));
+  const paidOut=(payoutsData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const pendingOut=(payoutsData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const payout=Math.max(0,grossEarnings-paidOut-pendingOut);
+  if(document.getElementById('s-total')) document.getElementById('s-total').textContent=releases.length;
+  const rcb=document.getElementById('releases-count-badge');
+  if(rcb) rcb.textContent=releases.length>0?releases.length+' total':'';
+  if(document.getElementById('s-live-sub')) document.getElementById('s-live-sub').textContent=live+' live on DSPs';
+  if(document.getElementById('s-pending')) document.getElementById('s-pending').textContent=pending;
+  if(document.getElementById('s-streams')) document.getElementById('s-streams').textContent=streams.toLocaleString();
+  if(document.getElementById('s-earnings')) document.getElementById('s-earnings').textContent='$'+payout.toFixed(2);
+  const grid=document.getElementById('ov-releases-grid');
+  if(grid){
+    const cards=releases.slice(0,8).map(r=>releaseGridCard(r)).join('');
+    grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet. Hit <strong>Create Release</strong> to get started.</p></div>';
+  }
+  renderReleasesList(releases,'all');
+}
+
+function releaseGridCard(r){
+  const bc={pending:'rg-badge-pending',review:'rg-badge-review',live:'rg-badge-live',rejected:'rg-badge-rejected',takendown:'rg-badge-takendown'}[r.status]||'rg-badge-pending';
+  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+  const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
+  _releaseMap[r.id]=r;
+  return `<div class="rg-card" onclick="openReleaseById('${r.id}')" style="cursor:pointer"><div class="rg-art">${art}<span class="rg-badge ${bc}">${bl}</span></div><div class="rg-info"><div class="rg-title">${esc(r.title)}</div><div class="rg-meta">${esc(r.artist)}</div></div></div>`;
+}
+
+function renderReleasesList(releases,filter){
+  const list=document.getElementById('all-releases');if(!list)return;
+  let filtered=releases;
+  if(filter==='live') filtered=releases.filter(r=>r.status==='live');
+  else if(filter==='pending') filtered=releases.filter(r=>r.status==='pending'||r.status==='review');
+  else if(filter==='rejected') filtered=releases.filter(r=>r.status==='rejected');
+  else if(filter==='takendown') filtered=releases.filter(r=>r.status==='takendown');
+  list.innerHTML=filtered.length?'<div class="rl">'+filtered.map(r=>releaseRow(r)).join('')+'</div>':emptyState('No releases found.');
+}
+
+function filterOvSearch(){
+  const q=(document.getElementById('ov-search-input')?.value||'').toLowerCase();
+  const grid=document.getElementById('ov-releases-grid');if(!grid)return;
+  if(!q){const cards=allRelData.slice(0,8).map(r=>releaseGridCard(r)).join('');grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';return;}
+  const filtered=allRelData.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
+  grid.innerHTML=filtered.map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-search"></i><p>No releases match your search.</p></div>';
+}
+
+function filterRelTab(filter,el){
+  document.querySelectorAll('.rel-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');renderReleasesList(allRelData,filter);
+}
+
+function filterReleasesBySearch(){
+  const q=(document.getElementById('rel-search-input')?.value||'').toLowerCase();
+  const filtered=allRelData.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q)||(r.genre||'').toLowerCase().includes(q));
+  document.getElementById('all-releases').innerHTML=filtered.length?'<div class="rl">'+filtered.map(r=>releaseRow(r)).join('')+'</div>':emptyState('No releases found.');
+}
+
+function releaseRow(r){
+  const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+  const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
+  const art=r.artwork_url?`<img src="${r.artwork_url}" alt="art">`:`<i class="ti ti-music"></i>`;
+  _releaseMap[r.id]=r;
+  return `<div class="rr" onclick="openReleaseById('${r.id}')" style="cursor:pointer"><div class="r-art">${art}</div><div class="r-info"><div class="r-title">${esc(r.title)}</div><div class="r-meta">${esc(r.artist)} · ${esc(r.genre||'')} · ${d}</div></div><span class="badge ${bc}">${bl}</span><i class="ti ti-chevron-right" style="color:rgba(255,255,255,.2);font-size:16px;flex-shrink:0"></i></div>`;
+}
+function emptyState(msg){return `<div class="empty"><i class="ti ti-music-off"></i><p>${msg}</p></div>`;}
+
+function openReleaseById(id){const r=_releaseMap[id];if(r)openReleaseModal(r);}
+
+function openReleaseModal(r){
+  const isPaid=profile?.plan==='label'||profile?.plan==='artist_plus'||profile?.plan==='admin'||profile?.plan==='solo_paid'||user.email===ADMIN_EMAIL;
+  const comm=isPaid?0:(r.earnings||0)*COMM;
+  const payout=(r.earnings||0)-comm;
+  const artEl=document.getElementById('rel-modal-art');
+  if(artEl) artEl.innerHTML=r.artwork_url?`<img src="${r.artwork_url}" style="width:100%;height:100%;object-fit:cover">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="font-size:32px;color:rgba(255,255,255,.2)"></i></div>`;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('rel-modal-title',r.title||'—');set('rel-modal-artist',r.artist||'—');
+  const genrePill=document.getElementById('rel-modal-genre-pill');if(genrePill) genrePill.textContent=r.genre||'';
+  const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+  const sb2=document.getElementById('rel-modal-status-badge');
+  if(sb2) sb2.innerHTML=`<span class="badge ${bc}" style="font-size:12px;padding:4px 12px">${bl}</span>`;
+  set('rel-modal-streams',(r.streams||0).toLocaleString());
+  set('rel-modal-earnings','$'+(r.earnings||0).toFixed(2));
+  set('rel-modal-payout','$'+payout.toFixed(2));
+  set('rel-modal-payout-sub',isPaid?'100% yours':'After 9% commission');
+  set('rel-modal-date',r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—');
+  set('rel-modal-status-text',bl);
+  set('rel-modal-submitted',r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—');
+  const isrcCell=document.getElementById('rel-modal-isrc-cell');if(isrcCell) isrcCell.style.display=r.isrc?'block':'none';
+  set('rel-modal-isrc',r.isrc||'');
+  const notesWrap=document.getElementById('rel-modal-notes-wrap');if(notesWrap) notesWrap.style.display=r.notes?'block':'none';
+  set('rel-modal-notes',r.notes||'');
+  const storesEl=document.getElementById('rel-modal-stores');
+  if(storesEl){
+    const ts=r.streams||0;
+    if(ts===0){storesEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);padding:.5rem 0">No streams recorded yet.</div>';}
+    else{
+      const topStores=DSP_STORES.slice(0,5);const maxShare=topStores[0].share;
+      storesEl.innerHTML=topStores.map(s=>{const est=Math.round(ts*s.share);const barW=Math.round((s.share/maxShare)*100);const logo=s.logo?`<img src="${s.logo}" width="16" height="16" style="object-fit:contain;display:block" onerror="this.style.display='none'">` :'';return `<div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:3px">${logo}</div><div style="font-size:12px;color:rgba(255,255,255,.6);width:100px;flex-shrink:0">${s.name}</div><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:${barW}%;height:100%;background:linear-gradient(90deg,#D4AF37,#e8c97a);border-radius:2px"></div></div><div style="font-size:12px;color:rgba(255,255,255,.5);width:50px;text-align:right;flex-shrink:0">${est.toLocaleString()}</div></div>`;}).join('');
+    }
+  }
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
+  const ts=r.streams||0;
+  const seed=ts>0?[Math.round(ts*.05),Math.round(ts*.1),Math.round(ts*.18),Math.round(ts*.28),Math.round(ts*.42),ts]:[0,0,0,0,0,0];
+  setTimeout(()=>renderLineChart('rel-modal-chart',labels,seed,'#D4AF37',''),80);
+  document.getElementById('release-overlay').classList.add('open');
+}
+
 // ── INIT ─────────────────────────────────────────────────
 let _resizeTimer;
 window.addEventListener('resize',()=>{clearTimeout(_resizeTimer);_resizeTimer=setTimeout(()=>{if(anStreamData&&anStreamData.length)renderAnalyticsChart();},200);});
