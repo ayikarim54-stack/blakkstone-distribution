@@ -4883,12 +4883,6 @@ function openReleaseModal(r){
       storesEl.innerHTML=topStores.map(s=>{const est=Math.round(ts*s.share);const barW=Math.round((s.share/maxShare)*100);const logo=s.logo?`<img src="${s.logo}" width="16" height="16" style="object-fit:contain;display:block" onerror="this.style.display='none'">` :'';return `<div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:3px">${logo}</div><div style="font-size:12px;color:rgba(255,255,255,.6);width:100px;flex-shrink:0">${s.name}</div><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:${barW}%;height:100%;background:linear-gradient(90deg,#D4AF37,#e8c97a);border-radius:2px"></div></div><div style="font-size:12px;color:rgba(255,255,255,.5);width:50px;text-align:right;flex-shrink:0">${est.toLocaleString()}</div></div>`;}).join('');
     }
   }
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now=new Date();const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
-  const ts=r.streams||0;
-  const seed=ts>0?[Math.round(ts*.05),Math.round(ts*.1),Math.round(ts*.18),Math.round(ts*.28),Math.round(ts*.42),ts]:[0,0,0,0,0,0];
-  setTimeout(()=>renderLineChart('rel-modal-chart',labels,seed,'#D4AF37',''),80);
-  document.getElementById('release-overlay').classList.add('open');
 }
 
 // ── INIT ─────────────────────────────────────────────────
