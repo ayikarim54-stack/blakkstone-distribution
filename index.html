@@ -2528,9 +2528,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <p style="font-size:13px;color:rgba(255,255,255,.4);margin-top:2px">Blakkstone Distribution — Full Control Center</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn adm-btn-sec" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
+          <button class="btn adm-btn-sec" onclick="showExportMenu(this)"><i class="ti ti-download"></i> Export CSV</button>
           <button class="btn adm-btn-sec" onclick="refreshAdmin()"><i class="ti ti-refresh"></i> Refresh</button>
-          <button class="btn btn-purple" onclick="switchAdminTab('notifications',document.getElementById('atab-notif'))"><i class="ti ti-bell"></i> Alerts <span id="notif-badge-admin" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></button>
+          <button class="btn btn-purple" onclick="switchAdminTab('notif',document.getElementById('atab-notif'))"><i class="ti ti-bell"></i> Alerts <span id="notif-badge-admin" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></button>
         </div>
       </div>
 
@@ -3460,7 +3460,7 @@ function enterDashboard(){
 }
 
 let selectedPlan='artist_plus',billing='yearly',payoutMethod=null,momoNetwork=null;
-let allRelData=[], _releaseMap={};
+let allRelData=[], _releaseMap={}, allReleasesCache=[];
 let wizStores=[], splitRows=[];
 
 
@@ -4883,6 +4883,32 @@ function openReleaseModal(r){
       storesEl.innerHTML=topStores.map(s=>{const est=Math.round(ts*s.share);const barW=Math.round((s.share/maxShare)*100);const logo=s.logo?`<img src="${s.logo}" width="16" height="16" style="object-fit:contain;display:block" onerror="this.style.display='none'">` :'';return `<div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:3px">${logo}</div><div style="font-size:12px;color:rgba(255,255,255,.6);width:100px;flex-shrink:0">${s.name}</div><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:${barW}%;height:100%;background:linear-gradient(90deg,#D4AF37,#e8c97a);border-radius:2px"></div></div><div style="font-size:12px;color:rgba(255,255,255,.5);width:50px;text-align:right;flex-shrink:0">${est.toLocaleString()}</div></div>`;}).join('');
     }
   }
+}
+
+
+function showExportMenu(btn){
+  const existing=document.getElementById('export-dropdown');
+  if(existing){existing.remove();return;}
+  const types=[
+    {label:'Artists',type:'artists'},{label:'Releases',type:'releases'},
+    {label:'Payouts',type:'payouts'},{label:'Subscriptions',type:'subscriptions'},
+    {label:'Streams',type:'streams'},{label:'Royalties',type:'royalties'},
+  ];
+  const rect=btn.getBoundingClientRect();
+  const dd=document.createElement('div');
+  dd.id='export-dropdown';
+  dd.style.cssText='position:fixed;top:'+(rect.bottom+6)+'px;left:'+rect.left+'px;background:#1a1a2e;border:1px solid rgba(255,255,255,.12);border-radius:10px;overflow:hidden;z-index:9999;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.4)';
+  types.forEach(t=>{
+    const row=document.createElement('div');
+    row.style.cssText='padding:10px 16px;font-size:13px;color:rgba(255,255,255,.8);cursor:pointer';
+    row.textContent=t.label;
+    row.onmouseover=()=>row.style.background='rgba(255,255,255,.07)';
+    row.onmouseout=()=>row.style.background='';
+    row.onclick=()=>{exportCSV(t.type);dd.remove();};
+    dd.appendChild(row);
+  });
+  document.body.appendChild(dd);
+  setTimeout(()=>document.addEventListener('click',function rm(e){if(!dd.contains(e.target)){dd.remove();document.removeEventListener('click',rm);}},{once:true}),50);
 }
 
 // ── INIT ─────────────────────────────────────────────────
