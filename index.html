@@ -5276,7 +5276,8 @@ async function loadAdminReports(){
 async function loadAdminMessages(){
   const container=document.getElementById('messages-list');if(!container)return;
   try{
-    const {data}=await sb.from('messages').select('*').order('created_at',{ascending:false}).limit(50).catch(()=>({data:[]}));
+    const {data,error}=await sb.from('messages').select('*').order('created_at',{ascending:false}).limit(50);
+    if(error)throw error;
     const unread=(data||[]).filter(m=>!m.read_at&&m.direction==='in').length;
     const msgAlert=document.getElementById('msg-alert');if(msgAlert){msgAlert.style.display=unread>0?'inline':'none';msgAlert.textContent=unread;}
     if(!data||!data.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
@@ -5284,7 +5285,10 @@ async function loadAdminMessages(){
       const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';const isIn=m.direction==='in';
       return '<div style="background:#0e0e14;border:1px solid var(--line);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px'+((!m.read_at&&isIn)?';border-left:3px solid var(--gold)':'')+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem"><div><div style="font-size:13px;font-weight:600;color:#fff">'+(isIn?'📨 Incoming':'📤 Sent to: '+esc(m.to_email||''))+'</div></div><div style="display:flex;gap:6px;align-items:center"><span style="font-size:11px;color:rgba(255,255,255,.25)">'+d+'</span>'+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:3px 8px;font-size:11px" onclick="markRead(\''+m.id+'\')">Mark read</button>':'')+'</div></div><div style="font-size:13px;color:rgba(255,255,255,.6)">'+esc(m.body||'')+'</div></div>';
     }).join('');
-  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>Run messages SQL to enable.</p></div>';}
+  }catch(e){
+    console.error('Messages load error:',e);
+    container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>'+esc("Couldn't load messages: "+(e.message||e.details||JSON.stringify(e)))+'</p></div>';
+  }
 }
 async function loadNotifications(){
   const container=document.getElementById('notifications-list');if(!container)return;
@@ -5370,11 +5374,15 @@ async function sendSupportMessage(){
   if(!body){toast('Write a message first','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Sending...';
   try{
-    await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:ADMIN_EMAIL,subject:subject||'Message from '+(profile?.artist_name||profile?.full_name||user.email),body,direction:'in',read_at:null});
+    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:ADMIN_EMAIL,subject:subject||'Message from '+(profile?.artist_name||profile?.full_name||user.email),body,direction:'in',read_at:null});
+    if(error)throw error;
     document.getElementById('sup-subject').value='';document.getElementById('sup-body').value='';
     toast("Message sent! We'll get back to you soon.",'ok');
     loadMySupportMessages();
-  }catch(e){toast('Could not send message. Please try again.','err');}
+  }catch(e){
+    console.error('Send support message error:',e);
+    toast('Could not send: '+(e.message||'please try again.'),'err');
+  }
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Send Message';
 }
 async function exportCSV(type){
