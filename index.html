@@ -5289,17 +5289,23 @@ async function loadAdminMessages(){
 async function loadNotifications(){
   const container=document.getElementById('notifications-list');if(!container)return;
   try{
-    const [{data:payouts},{data:releases}]=await Promise.all([
+    const [{data:payouts},{data:releases},{data:messages}]=await Promise.all([
       sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
-      sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false})
+      sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false}),
+      sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false}).catch(()=>({data:[]}))
     ]);
     const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,account_id');
     const profileMap={};(profList||[]).forEach(p=>{profileMap[p.id]=p;});
-    const total=(payouts?.length||0)+(releases?.length||0);
+    const total=(payouts?.length||0)+(releases?.length||0)+(messages?.length||0);
     const badge=document.getElementById('notif-badge');if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
+    const badgeAdmin=document.getElementById('notif-badge-admin');if(badgeAdmin){badgeAdmin.style.display=total>0?'inline':'none';badgeAdmin.textContent=total;}
     let html='';
+    if(messages?.length){
+      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem">New Messages ('+messages.length+')</div>';
+      html+=messages.map(m=>{const prof=profileMap[m.from_id]||{};const name=prof.artist_name||prof.full_name||m.from_email||'—';const d=m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'—';return '<div style="background:rgba(13,110,253,.08);border:1px solid rgba(13,110,253,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(m.subject||'No subject')+' · '+d+'</div></div><button class="btn adm-btn-sec btn-sm" onclick="switchAdminTab(\'messages\',document.getElementById(\'atab-messages\'))">View</button></div>';}).join('');
+    }
     if(payouts?.length){
-      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem">Pending Payouts ('+payouts.length+')</div>';
+      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem;margin-top:1rem">Pending Payouts ('+payouts.length+')</div>';
       html+=payouts.map(p=>{const prof=profileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||'—';const accId=prof.account_id||'';const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';return '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#fff">'+(accId?'<span style="color:var(--gold)">'+esc(accId)+'</span> — ':'')+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+p.method+' — $'+parseFloat(p.amount||0).toFixed(2)+' · '+d+'</div></div><button class="btn btn-purple btn-sm" onclick="switchAdminTab(\'payouts\',document.getElementById(\'atab-payouts\'))">Process</button></div>';}).join('');
     }
     if(releases?.length){
