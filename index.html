@@ -1284,6 +1284,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- ══════════════ ARTIST PAGE (PUBLIC, NO LOGIN) ══════════════ -->
+<div class="view" id="artistpage" style="background:var(--off);align-items:flex-start;justify-content:center;padding:3rem 1rem;overflow-y:auto">
+  <div style="max-width:480px;width:100%" id="artistpage-content">
+    <div style="padding:4rem 0;text-align:center"><span class="loader" style="width:24px;height:24px"></span></div>
+  </div>
+</div>
+
 <!-- ══════════════ PAYWALL ══════════════ -->
 <div class="view" id="paywall">
 
@@ -2442,6 +2449,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div style="font-size:11px;font-weight:700;color:var(--gold);padding:3px 8px;background:rgba(201,168,76,.15);border-radius:20px;display:inline-block" id="prof-plan-badge">Solo</div>
             <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:4px">Your Plan</div>
           </div>
+        </div>
+        <div class="divhr"></div>
+        <div class="slabel"><i class="ti ti-world"></i> Public Artist Page</div>
+        <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">One link, all your music — fans see your live releases and can sign up for notifications on what's coming.</p>
+        <div style="display:flex;gap:8px;margin-bottom:1.25rem">
+          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="copyArtistLink(user.id)"><i class="ti ti-link"></i> Copy My Page Link</button>
+          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="window.open(window.location.origin+window.location.pathname+'?artist='+user.id,'_blank')"><i class="ti ti-eye"></i> Preview</button>
         </div>
         <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-lock"></i> Change Password</div>
@@ -4345,6 +4359,42 @@ async function submitNotifyMe(releaseId){
     btn.disabled=false;btn.innerHTML='<i class="ti ti-bell"></i> Notify Me';
   }
 }
+// ── PUBLIC ARTIST PAGE ────────────────────────────────────
+function copyArtistLink(id){
+  if(!id)return;
+  const url=window.location.origin+window.location.pathname+'?artist='+id;
+  navigator.clipboard.writeText(url).then(()=>toast('Artist page link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
+}
+function artistPageNotFound(){
+  const content=document.getElementById('artistpage-content');
+  content.innerHTML='<div style="text-align:center;padding:4rem 0"><i class="ti ti-mood-sad" style="font-size:40px;color:rgba(255,255,255,.2)"></i><p style="color:rgba(255,255,255,.4);margin-top:1rem;font-size:14px">This page isn\'t available.</p></div>';
+}
+async function loadArtistPage(artistId){
+  try{
+    const {data,error}=await sb.from('public_artist_releases').select('*').eq('artist_id',artistId).order('release_date',{ascending:false});
+    if(error)throw error;
+    if(!data||!data.length){artistPageNotFound();return;}
+    renderArtistPage(data);
+  }catch(e){
+    console.error('Artist page load error:',e);
+    artistPageNotFound();
+  }
+}
+function renderArtistPage(rows){
+  const content=document.getElementById('artistpage-content');
+  const first=rows[0];
+  const name=first.artist_name||first.full_name||'Artist';
+  const av=first.avatar_url?'<img src="'+esc(first.avatar_url)+'" style="width:96px;height:96px;border-radius:50%;object-fit:cover">':'<div style="width:96px;height:96px;border-radius:50%;background:#242424;display:flex;align-items:center;justify-content:center"><i class="ti ti-user" style="font-size:32px;color:rgba(255,255,255,.2)"></i></div>';
+  const header='<div style="text-align:center;margin-bottom:2rem"><div style="margin:0 auto 1rem;width:96px">'+av+'</div><h1 style="font-size:22px;font-weight:800;color:#fff">'+esc(name)+'</h1></div>';
+  const bl={pending:'Coming Soon',review:'Coming Soon',live:'Live'};
+  const bc={pending:'b-pending',review:'b-pending',live:'b-live'};
+  const tiles=rows.map(r=>{
+    const art=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" style="width:56px;height:56px;border-radius:8px;object-fit:cover;flex-shrink:0">':'<div style="width:56px;height:56px;border-radius:8px;background:#242424;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-music" style="font-size:20px;color:rgba(255,255,255,.2)"></i></div>';
+    const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'';
+    return '<a href="?link='+r.release_id+'" style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:8px;text-decoration:none"><div style="width:56px;height:56px;flex-shrink:0">'+art+'</div><div style="flex:1;min-width:0"><div style="color:#fff;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.title||'')+'</div><div style="color:rgba(255,255,255,.4);font-size:11px;margin-top:2px">'+d+'</div></div><span class="badge '+(bc[r.status]||'b-pending')+'" style="font-size:10px;flex-shrink:0">'+(bl[r.status]||r.status)+'</span></a>';
+  }).join('');
+  content.innerHTML=header+tiles+'<p style="font-size:11px;color:rgba(255,255,255,.2);margin-top:1.5rem;text-align:center">Distributed by Blakkstone Music</p>';
+}
 async function uploadAvatar(input){
   if(!input.files[0])return;const file=input.files[0];const ext=file.name.split('.').pop();
   const path=user.id+'/avatar.'+ext;toast('Uploading photo...');
@@ -4377,7 +4427,7 @@ async function loadArtists(){
 async function openArtistModal(userId,name){
   const {data:rl}=await sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false});
   const releases=rl||[];
-  document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button>';
+  document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button>';
   if(!releases.length){document.getElementById('artist-modal-body').innerHTML='<p style="color:var(--muted);font-size:13px">No releases yet.</p>';document.getElementById('artist-overlay').classList.add('open');return;}
   document.getElementById('artist-modal-body').innerHTML=releases.map(r=>{
     const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
@@ -6063,6 +6113,12 @@ function renderSplitRows(){
   if(linkId){
     showView('smartlink');
     loadSmartLink(linkId);
+    return;
+  }
+  const artistId=new URLSearchParams(window.location.search).get('artist');
+  if(artistId){
+    showView('artistpage');
+    loadArtistPage(artistId);
     return;
   }
   const isRecovery=window.location.hash.includes('type=recovery');
