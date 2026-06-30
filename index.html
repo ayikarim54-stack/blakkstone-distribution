@@ -5296,7 +5296,7 @@ async function loadNotifications(){
     const [{data:payouts},{data:releases},{data:messages}]=await Promise.all([
       sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
       sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false}),
-      sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false}).catch(()=>({data:[]}))
+      sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications messages query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]}))
     ]);
     const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,account_id');
     const profileMap={};(profList||[]).forEach(p=>{profileMap[p.id]=p;});
@@ -5320,14 +5320,19 @@ async function loadNotifications(){
     container.innerHTML=html;
   }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-bell-off"></i><p>Unable to load.</p></div>';}
 }
-async function markRead(id){await sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',id);toast('Marked read','ok');loadAdminMessages();}
+async function markRead(id){
+  const {error}=await sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',id);
+  if(error){console.error('Mark read error:',error);toast('Could not mark read: '+error.message,'err');return;}
+  toast('Marked read','ok');loadAdminMessages();
+}
 async function sendAdminMessage(){
   const to=document.getElementById('msg-to').value.trim();const body=document.getElementById('msg-body').value.trim();const subject=document.getElementById('msg-subject')?.value.trim()||'Message from Blakkstone';
   if(!to||!body){toast('Fill in email and message','err');return;}
   try{
-    await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:new Date().toISOString()});
+    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:new Date().toISOString()});
+    if(error)throw error;
     document.getElementById('msg-body').value='';toast('Message sent','ok');loadAdminMessages();
-  }catch(e){toast('Run messages SQL first','err');}
+  }catch(e){console.error('Send admin message error:',e);toast('Could not send: '+(e.message||'please try again.'),'err');}
 }
 async function sendBroadcast(){
   const subject=document.getElementById('bc-subject')?.value.trim();const body=document.getElementById('bc-body')?.value.trim();
@@ -5338,27 +5343,37 @@ async function sendBroadcast(){
   if(!toAll) targets=targets.filter(p=>(toSolo&&p.plan==='solo_paid')||(toPaid&&(p.plan==='artist_plus'||p.plan==='label')));
   if(!targets.length){toast('No artists match','err');return;}
   if(!confirm('Send to '+targets.length+' artist(s)?'))return;
-  let sent=0;
-  for(const p of targets){try{await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:new Date().toISOString()});sent++;}catch(e){}}
+  let sent=0,lastError=null;
+  for(const p of targets){
+    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:new Date().toISOString()});
+    if(error){lastError=error;console.error('Broadcast send error for',p.email,':',error);}else{sent++;}
+  }
   document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
-  toast('Broadcast sent to '+sent+' artist(s)!','ok');loadBroadcastHistory();
+  if(sent>0){toast('Broadcast sent to '+sent+' artist(s)!','ok');}
+  else{toast('Broadcast failed: '+(lastError?.message||'unknown error'),'err');}
+  loadBroadcastHistory();
 }
 async function loadBroadcastHistory(){
   const el=document.getElementById('broadcast-history');if(!el)return;
   try{
-    const {data}=await sb.from('messages').select('*').eq('direction','out').eq('from_id',user.id).order('created_at',{ascending:false}).limit(10).catch(()=>({data:[]}));
+    const {data,error}=await sb.from('messages').select('*').eq('direction','out').eq('from_id',user.id).order('created_at',{ascending:false}).limit(10);
+    if(error)throw error;
     if(!data||!data.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">No broadcasts yet.</div>';return;}
     el.innerHTML=data.map(m=>'<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(m.subject||'No subject')+'</div><div style="font-size:11px;color:rgba(255,255,255,.3)">'+esc(m.to_email||'')+' · '+(m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'')+'</div></div>').join('');
-  }catch(e){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Run messages SQL first.</div>';}
+  }catch(e){console.error('Broadcast history load error:',e);el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">'+esc('Could not load: '+(e.message||'unknown error'))+'</div>';}
 }
 // ── SUPPORT (ARTIST-FACING) ──────────────────────────────
 async function loadMySupportMessages(){
   const container=document.getElementById('my-messages-list');if(!container||!user)return;
   try{
-    const {data}=await sb.from('messages').select('*').or('to_email.eq.'+user.email+',from_id.eq.'+user.id).order('created_at',{ascending:false}).limit(50).catch(()=>({data:[]}));
+    const {data,error}=await sb.from('messages').select('*').or('to_email.eq.'+user.email+',from_id.eq.'+user.id).order('created_at',{ascending:false}).limit(50);
+    if(error)throw error;
     renderMySupportMessages(data||[]);
-    (data||[]).filter(m=>m.direction==='out'&&!m.read_at).forEach(m=>{sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',m.id).catch(()=>{});});
-  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>Unable to load messages.</p></div>';}
+    (data||[]).filter(m=>m.direction==='out'&&!m.read_at).forEach(m=>{sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',m.id).then(({error})=>{if(error)console.error('Mark read error:',error);});});
+  }catch(e){
+    console.error('My support messages load error:',e);
+    container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>'+esc('Unable to load messages: '+(e.message||e.details||JSON.stringify(e)))+'</p></div>';
+  }
 }
 function renderMySupportMessages(data){
   const container=document.getElementById('my-messages-list');if(!container)return;
