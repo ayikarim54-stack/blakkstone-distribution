@@ -1211,12 +1211,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
         <div class="fg"><label>Artist / Label name</label><input id="an" type="text" placeholder="Your artist name" onkeydown="if(event.key==='Enter')document.getElementById('em').focus()"></div>
       </div>
-      <div class="fg"><label>Email</label><input id="em" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')document.getElementById('pw').focus()"></div>
-      <div class="fg"><label>Password</label>
-        <div style="position:relative">
-          <input id="pw" type="password" placeholder="Min. 6 characters" style="padding-right:44px" onkeydown="if(event.key==='Enter')doAuth()">
-          <button type="button" onclick="togglePwVis()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px"><i class="ti ti-eye" id="pw-eye"></i></button>
+      <div class="fg"><label>Email</label><input id="em" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter'){authMode==='forgot'?doAuth():document.getElementById('pw').focus()}"></div>
+      <div id="pw-field-group">
+        <div class="fg"><label>Password</label>
+          <div style="position:relative">
+            <input id="pw" type="password" placeholder="Min. 6 characters" style="padding-right:44px" onkeydown="if(event.key==='Enter')doAuth()">
+            <button type="button" onclick="togglePwVis()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px"><i class="ti ti-eye" id="pw-eye"></i></button>
+          </div>
         </div>
+        <p id="forgot-pw-link" style="display:none;text-align:right;font-size:12px;margin:-.5rem 0 .875rem"><a onclick="showAuth('forgot')" style="color:var(--gold);font-weight:600;cursor:pointer">Forgot password?</a></p>
       </div>
       <button class="btn btn-gold" id="auth-btn" style="width:100%;justify-content:center" onclick="doAuth()">Create account</button>
       <p class="auth-foot" id="auth-foot">Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a></p>
@@ -1233,6 +1236,41 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <p>We sent a confirmation link to <strong id="confirm-email"></strong>. Click the link to activate your account, then log in.</p>
     <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('login')">Go to Login</button>
     <p style="font-size:11px;color:var(--muted);margin-top:.875rem">Didn't get it? Check your spam folder.</p>
+  </div>
+</div>
+
+<!-- ══════════════ RESET LINK SENT ══════════════ -->
+<div class="view" id="reset-sent" style="background:var(--off);align-items:center;justify-content:center;padding:2rem">
+  <div class="conf-card">
+    <div class="conf-icon"><i class="ti ti-mail-check"></i></div>
+    <h2>Check your email</h2>
+    <p>If an account exists for <strong id="reset-sent-email"></strong>, we've sent a password reset link. Click it to choose a new password.</p>
+    <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('login')">Back to Login</button>
+    <p style="font-size:11px;color:var(--muted);margin-top:.875rem">Didn't get it? Check your spam folder, or <a onclick="showAuth('forgot')" style="color:var(--gold);font-weight:600;cursor:pointer">try again</a>.</p>
+  </div>
+</div>
+
+<!-- ══════════════ SET NEW PASSWORD ══════════════ -->
+<div class="view" id="set-new-pw" style="background:var(--off);align-items:center;justify-content:center;padding:2rem 1rem">
+  <div class="conf-card" style="max-width:420px">
+    <div class="conf-icon"><i class="ti ti-lock"></i></div>
+    <h2>Set a new password</h2>
+    <p>Choose a new password for <strong id="reset-pw-email"></strong>.</p>
+    <div class="auth-r" style="padding:0;background:transparent;text-align:left">
+      <div class="fg"><label>New password</label>
+        <div style="position:relative">
+          <input id="new-pw" type="password" placeholder="Min. 6 characters" style="padding-right:44px" onkeydown="if(event.key==='Enter')document.getElementById('new-pw2').focus()">
+          <button type="button" onclick="toggleVis('new-pw','new-pw-eye')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px"><i class="ti ti-eye" id="new-pw-eye"></i></button>
+        </div>
+      </div>
+      <div class="fg"><label>Confirm new password</label>
+        <div style="position:relative">
+          <input id="new-pw2" type="password" placeholder="Re-enter password" style="padding-right:44px" onkeydown="if(event.key==='Enter')doPasswordUpdate()">
+          <button type="button" onclick="toggleVis('new-pw2','new-pw2-eye')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px"><i class="ti ti-eye" id="new-pw2-eye"></i></button>
+        </div>
+      </div>
+      <button class="btn btn-gold" id="set-pw-btn" style="width:100%;justify-content:center" onclick="doPasswordUpdate()">Update password</button>
+    </div>
   </div>
 </div>
 
@@ -3170,23 +3208,32 @@ let authMode='signup';
 function showAuth(mode){
   authMode=mode;
   const isSignup=mode==='signup';
+  const isForgot=mode==='forgot';
   document.getElementById('signup-fields').style.display=isSignup?'block':'none';
-  document.getElementById('auth-btn').textContent=isSignup?'Create account':'Log in';
-  document.getElementById('auth-title').textContent=isSignup?'Create your account':'Welcome back';
-  document.getElementById('auth-foot').innerHTML=isSignup
-    ?'Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a>'
-    :'No account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Sign up</a>';
+  document.getElementById('pw-field-group').style.display=isForgot?'none':'block';
+  const forgotLink=document.getElementById('forgot-pw-link');
+  if(forgotLink) forgotLink.style.display=(mode==='login')?'block':'none';
+  document.getElementById('auth-btn').textContent=isForgot?'Send reset link':(isSignup?'Create account':'Log in');
+  document.getElementById('auth-title').textContent=isForgot?'Reset your password':(isSignup?'Create your account':'Welcome back');
+  document.getElementById('auth-sub').textContent=isForgot?"We'll email you a secure link to set a new password.":(isSignup?'Start distributing your music globally.':'Log in to manage your releases and royalties.');
+  document.getElementById('auth-foot').innerHTML=isForgot
+    ?'Remember your password? <a onclick="showAuth(\'login\')" style="color:var(--gold);font-weight:600">Log in</a>'
+    :isSignup
+      ?'Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a>'
+      :'No account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Sign up</a>';
   showView('auth');
 }
 function toggleAuth(){showAuth(authMode==='signup'?'login':'signup');}
-function togglePwVis(){
-  const pw=document.getElementById('pw');
-  const eye=document.getElementById('pw-eye');
+function toggleVis(id,eyeId){
+  const pw=document.getElementById(id);
+  const eye=document.getElementById(eyeId);
   if(!pw||!eye)return;
   if(pw.type==='password'){pw.type='text';eye.className='ti ti-eye-off';}
   else{pw.type='password';eye.className='ti ti-eye';}
 }
+function togglePwVis(){toggleVis('pw','pw-eye');}
 async function doAuth(){
+  if(authMode==='forgot')return doForgotPasswordRequest();
   const btn=document.getElementById('auth-btn');
   const email=document.getElementById('em').value.trim();
   const pass=document.getElementById('pw').value;
@@ -3224,6 +3271,22 @@ async function doAuth(){
     toast(e.message||'Login failed. Check your email and password.','err');
   }
   btn.disabled=false;btn.textContent=authMode==='signup'?'Create account':'Log in';
+}
+async function doForgotPasswordRequest(){
+  const btn=document.getElementById('auth-btn');
+  const email=document.getElementById('em').value.trim();
+  if(!email){toast('Please enter your email','err');return;}
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Please wait...';
+  try{
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:'https://blakkstonemusic.com'});
+    if(error)throw error;
+    document.getElementById('reset-sent-email').textContent=email;
+    showView('reset-sent');
+  }catch(e){
+    console.error('Reset request error:',e);
+    toast(e.message||'Could not send reset link. Please try again.','err');
+  }
+  btn.disabled=false;btn.textContent='Send reset link';
 }
 
 let user=null,profile=null;
@@ -4131,14 +4194,30 @@ async function saveProfile(){
   }
   btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save Changes';
 }
+async function updatePassword(pwId,pw2Id,onSuccess){
+  const pw=document.getElementById(pwId).value;const pw2=document.getElementById(pw2Id).value;
+  if(!pw){toast('Enter a new password','err');return false;}
+  if(pw.length<6){toast('Min 6 characters','err');return false;}
+  if(pw!==pw2){toast('Passwords do not match','err');return false;}
+  const {data,error}=await sb.auth.updateUser({password:pw});
+  if(error){toast('Update failed: '+error.message,'err');return false;}
+  document.getElementById(pwId).value='';document.getElementById(pw2Id).value='';
+  if(onSuccess)await onSuccess(data);
+  return true;
+}
 async function changePassword(){
-  const pw=document.getElementById('p-pw').value;const pw2=document.getElementById('p-pw2').value;
-  if(!pw){toast('Enter a new password','err');return;}
-  if(pw.length<6){toast('Min 6 characters','err');return;}
-  if(pw!==pw2){toast('Passwords do not match','err');return;}
-  const {error}=await sb.auth.updateUser({password:pw});
-  if(error){toast('Update failed: '+error.message,'err');return;}
-  document.getElementById('p-pw').value='';document.getElementById('p-pw2').value='';toast('Password updated!','ok');
+  await updatePassword('p-pw','p-pw2',()=>toast('Password updated!','ok'));
+}
+async function doPasswordUpdate(){
+  const btn=document.getElementById('set-pw-btn');
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Updating...';
+  await updatePassword('new-pw','new-pw2',async(data)=>{
+    history.replaceState(null,'',window.location.pathname);
+    toast('Password updated! Welcome back.','ok');
+    if(data.user)await loadProfile(data.user);
+    else showAuth('login');
+  });
+  btn.disabled=false;btn.textContent='Update password';
 }
 async function uploadAvatar(input){
   if(!input.files[0])return;const file=input.files[0];const ext=file.name.split('.').pop();
@@ -5786,10 +5865,22 @@ function renderSplitRows(){
   const style=document.createElement('style');
   style.textContent='@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}';
   document.head.appendChild(style);
+  const isRecovery=window.location.hash.includes('type=recovery');
   const {data:{session}}=await sb.auth.getSession();
-  if(session?.user)await loadProfile(session.user);
+  if(isRecovery){
+    if(session?.user){
+      const emEl=document.getElementById('reset-pw-email');
+      if(emEl) emEl.textContent=session.user.email||'';
+      showView('set-new-pw');
+    } else {
+      toast('This reset link has expired or already been used. Please request a new one.','err');
+      showAuth('forgot');
+    }
+  } else if(session?.user){
+    await loadProfile(session.user);
+  }
   sb.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_IN'&&session?.user&&!user)await loadProfile(session.user);
+    if(event==='SIGNED_IN'&&session?.user&&!user&&!isRecovery)await loadProfile(session.user);
   });
   // Poll every 30s for new payout requests as realtime fallback
   setInterval(async()=>{
