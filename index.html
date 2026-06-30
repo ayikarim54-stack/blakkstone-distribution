@@ -1660,6 +1660,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <input id="r-artist" type="text" placeholder="Artist name" readonly style="opacity:.75;cursor:not-allowed;border-color:rgba(212,175,55,.2)">
   <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px">Auto-filled from your profile. Change your artist name in <a onclick="goPage('profile',null)" style="color:var(--gold);cursor:pointer">Profile Settings</a>.</div>
 </div>
+            <!-- ADDITIONAL PRIMARY ARTISTS (plan-gated) -->
+            <div id="co-artists-wrap" style="margin-top:.75rem;display:none">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+                <label style="font-size:12px;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px">Additional Primary Artists</label>
+                <span id="co-artist-plan-badge" style="font-size:10px;font-weight:600;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 8px;border-radius:20px"></span>
+              </div>
+              <div id="co-artist-inputs"></div>
+              <button type="button" id="add-co-artist-btn" class="btn adm-btn-sec btn-sm" style="margin-top:6px" onclick="addCoArtistRow()"><i class="ti ti-plus"></i> Add Artist</button>
+            </div>
             <div style="margin-top:.5rem">
               <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" id="r-has-feat" style="accent-color:var(--gold)" onchange="document.getElementById('r-feat-wrap').style.display=this.checked?'block':'none'"> Add Featured artists</label>
               <div id="r-feat-wrap" style="display:none;margin-top:.75rem"><div class="fg"><label>Featured Artists</label><input id="r-feat" type="text" placeholder="Separate with commas"></div></div>
@@ -4477,6 +4486,43 @@ function initWizard(){
   });
   const ai=document.getElementById('r-artist');
   if(ai&&profile){ai.value=profile.artist_name||profile.full_name||user?.email?.split('@')[0]||'';ai.readOnly=true;ai.style.cursor='not-allowed';ai.style.opacity='.75';}
+  // Co-artist tier gating
+  const plan=profile?.plan||'';
+  const isAdmin=user?.email===ADMIN_EMAIL;
+  const coMax=isAdmin||plan==='label'?4:plan==='artist_plus'?1:0;
+  const coWrap=document.getElementById('co-artists-wrap');
+  const coBadge=document.getElementById('co-artist-plan-badge');
+  const coBtn=document.getElementById('add-co-artist-btn');
+  const coInputs=document.getElementById('co-artist-inputs');
+  if(coMax>0&&coWrap){
+    coWrap.style.display='block';
+    if(coBadge) coBadge.textContent=plan==='label'||isAdmin?'Up to 5 artists total':'Up to 2 artists total';
+    if(coInputs) coInputs.innerHTML='';
+  } else if(coWrap){
+    coWrap.style.display='none';
+  }
+  if(coBtn) coBtn.style.display=coMax>0?'':'none';
+}
+function getCoArtistMax(){
+  const plan=profile?.plan||'';
+  const isAdmin=user?.email===ADMIN_EMAIL;
+  return isAdmin||plan==='label'?4:plan==='artist_plus'?1:0;
+}
+function addCoArtistRow(){
+  const container=document.getElementById('co-artist-inputs');if(!container)return;
+  const current=container.querySelectorAll('.co-artist-row').length;
+  const max=getCoArtistMax();
+  if(current>=max){toast('Your plan supports up to '+(max+1)+' total primary artists','err');return;}
+  const row=document.createElement('div');
+  row.className='co-artist-row';
+  row.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:6px';
+  row.innerHTML='<input type="text" placeholder="Artist name" style="flex:1;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px"><button type="button" onclick="this.parentNode.remove()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:18px;line-height:1;padding:0 4px">×</button>';
+  container.appendChild(row);
+  row.querySelector('input').focus();
+}
+function getCoArtistNames(){
+  const inputs=document.querySelectorAll('#co-artist-inputs .co-artist-row input');
+  return Array.from(inputs).map(i=>i.value.trim()).filter(Boolean);
 }
 // ── WIZARD VALIDATION HELPERS ──────────────────────────
 function wizClearErrors(step){
@@ -4880,7 +4926,7 @@ function collectWizardState(){
   return {
     step: wizStep,
     title: document.getElementById('r-title')?.value||'',
-    artist: document.getElementById('r-artist')?.value||'',
+    artist: (()=>{const primary=document.getElementById('r-artist')?.value||'';const co=getCoArtistNames();return co.length?[primary,...co].join(' & '):primary;})(),
     copyright: document.getElementById('r-copyright')?.value||'',
     copyrightYear: document.getElementById('r-copyright-year')?.value||'',
     pcopyright: document.getElementById('r-pcopyright')?.value||'',
@@ -5090,7 +5136,10 @@ function buildCreditsReview(){
 }
 
 function buildReview(){
-  const title=document.getElementById('r-title')?.value||'—';const artist=document.getElementById('r-artist')?.value||'—';
+  const title=document.getElementById('r-title')?.value||'—';
+  const _primaryArtist=document.getElementById('r-artist')?.value||'—';
+  const _coArtists=getCoArtistNames();
+  const artist=_coArtists.length?[_primaryArtist,..._coArtists].join(' & '):_primaryArtist;
   const genre=document.getElementById('r-genre')?.value||'—';const date=document.getElementById('r-date')?.value||'—';
   const label=document.getElementById('r-label')?.value||'Independent';const lang=document.getElementById('r-language')?.value||'English';
   const el=document.getElementById('review-content');if(!el)return;
