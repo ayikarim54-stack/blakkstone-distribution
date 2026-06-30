@@ -2452,6 +2452,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div style="display:grid;grid-template-columns:1fr 360px;gap:1.25rem" id="support-grid">
         <div>
           <div class="slabel"><i class="ti ti-message-circle"></i> Your Messages</div>
+          <p style="font-size:11px;color:rgba(255,255,255,.3);margin:-.25rem 0 .75rem">Replies are matched to <strong id="support-my-email" style="color:rgba(255,255,255,.5)">your account email</strong> exactly.</p>
           <div id="my-messages-list"></div>
         </div>
         <div class="profcard" style="max-width:none;padding:1.5rem">
@@ -3456,6 +3457,7 @@ window.addEventListener('popstate',function(e){
 // ── RELEASES ──────────────────────────────────────────
 let allRelData=[];
 const _releaseMap={};
+const _messageMap={};
 
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
@@ -5283,12 +5285,20 @@ async function loadAdminMessages(){
     if(!data||!data.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
     container.innerHTML=data.map(m=>{
       const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';const isIn=m.direction==='in';
-      return '<div style="background:#0e0e14;border:1px solid var(--line);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px'+((!m.read_at&&isIn)?';border-left:3px solid var(--gold)':'')+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem"><div><div style="font-size:13px;font-weight:600;color:#fff">'+(isIn?'📨 Incoming':'📤 Sent to: '+esc(m.to_email||''))+'</div></div><div style="display:flex;gap:6px;align-items:center"><span style="font-size:11px;color:rgba(255,255,255,.25)">'+d+'</span>'+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:3px 8px;font-size:11px" onclick="markRead(\''+m.id+'\')">Mark read</button>':'')+'</div></div><div style="font-size:13px;color:rgba(255,255,255,.6)">'+esc(m.body||'')+'</div></div>';
+      _messageMap[m.id]=m;
+      return '<div style="background:#0e0e14;border:1px solid var(--line);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px'+((!m.read_at&&isIn)?';border-left:3px solid var(--gold)':'')+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem"><div><div style="font-size:13px;font-weight:600;color:#fff">'+(isIn?'📨 Incoming from '+esc(m.from_email||''):'📤 Sent to: '+esc(m.to_email||''))+'</div></div><div style="display:flex;gap:6px;align-items:center"><span style="font-size:11px;color:rgba(255,255,255,.25)">'+d+'</span>'+(isIn?'<button class="btn btn-purple btn-sm" style="padding:3px 8px;font-size:11px" onclick="replyToMessage(\''+m.id+'\')"><i class="ti ti-arrow-back-up"></i> Reply</button>':'')+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:3px 8px;font-size:11px" onclick="markRead(\''+m.id+'\')">Mark read</button>':'')+'</div></div><div style="font-size:13px;color:rgba(255,255,255,.6)">'+esc(m.body||'')+'</div></div>';
     }).join('');
   }catch(e){
     console.error('Messages load error:',e);
     container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>'+esc("Couldn't load messages: "+(e.message||e.details||JSON.stringify(e)))+'</p></div>';
   }
+}
+function replyToMessage(id){
+  const m=_messageMap[id];if(!m)return;
+  const toEl=document.getElementById('msg-to');if(toEl)toEl.value=m.from_email||'';
+  const subEl=document.getElementById('msg-subject');if(subEl)subEl.value=m.subject?('Re: '+m.subject):'';
+  const bodyEl=document.getElementById('msg-body');if(bodyEl){bodyEl.value='';bodyEl.focus();}
+  toEl?.closest('.adm-card')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function loadNotifications(){
   const container=document.getElementById('notifications-list');if(!container)return;
@@ -5329,7 +5339,7 @@ async function sendAdminMessage(){
   const to=document.getElementById('msg-to').value.trim();const body=document.getElementById('msg-body').value.trim();const subject=document.getElementById('msg-subject')?.value.trim()||'Message from Blakkstone';
   if(!to||!body){toast('Fill in email and message','err');return;}
   try{
-    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:new Date().toISOString()});
+    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:null});
     if(error)throw error;
     document.getElementById('msg-body').value='';toast('Message sent','ok');loadAdminMessages();
   }catch(e){console.error('Send admin message error:',e);toast('Could not send: '+(e.message||'please try again.'),'err');}
@@ -5345,7 +5355,7 @@ async function sendBroadcast(){
   if(!confirm('Send to '+targets.length+' artist(s)?'))return;
   let sent=0,lastError=null;
   for(const p of targets){
-    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:new Date().toISOString()});
+    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:null});
     if(error){lastError=error;console.error('Broadcast send error for',p.email,':',error);}else{sent++;}
   }
   document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
@@ -5365,6 +5375,7 @@ async function loadBroadcastHistory(){
 // ── SUPPORT (ARTIST-FACING) ──────────────────────────────
 async function loadMySupportMessages(){
   const container=document.getElementById('my-messages-list');if(!container||!user)return;
+  const emEl=document.getElementById('support-my-email');if(emEl)emEl.textContent=user.email||'your account email';
   try{
     const {data,error}=await sb.from('messages').select('*').or('to_email.eq.'+user.email+',from_id.eq.'+user.id).order('created_at',{ascending:false}).limit(50);
     if(error)throw error;
