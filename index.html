@@ -2532,7 +2532,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <button class="btn adm-btn-sec" onclick="refreshAdmin()"><i class="ti ti-refresh"></i> Refresh</button>
           <button class="btn btn-purple" onclick="switchAdminTab('notif',document.getElementById('atab-notif'))"><i class="ti ti-bell"></i> Alerts <span id="notif-badge-admin" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></button>
         </div>
-      </div>
 
       <!-- ADMIN DASHBOARD STATS -->
       <div class="adm-stats-grid">
@@ -2586,7 +2585,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="atab" id="atab-reports" onclick="switchAdminTab('reports',this)"><i class="ti ti-file-analytics"></i> Reports</div>
         <div class="atab" id="atab-messages" onclick="switchAdminTab('messages',this)"><i class="ti ti-message"></i> Messages <span id="msg-alert" style="display:none;background:#3b82f6;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
         <div class="atab" id="atab-broadcast" onclick="switchAdminTab('broadcast',this)"><i class="ti ti-speakerphone"></i> Broadcast</div>
-        <div class="atab" id="atab-notif" onclick="switchAdminTab('notifications',this)"><i class="ti ti-bell"></i> Notifications</div>
+        <div class="atab" id="atab-notif" onclick="switchAdminTab('notif',this)"><i class="ti ti-bell"></i> Notifications</div>
       </div>
 
       <!-- ── DASHBOARD TAB ── -->
@@ -2941,6 +2940,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- ── NOTIFICATIONS TAB ── -->
       <div class="admin-section" id="admin-notifications">
         <div id="notifications-list"></div>
+
+    </div><!-- /page-admin -->
       </div>
     </div>
   </div>
