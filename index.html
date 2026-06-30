@@ -1658,17 +1658,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <span id="artist-lock-badge" style="font-size:10px;font-weight:600;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 8px;border-radius:20px;letter-spacing:.5px;display:flex;align-items:center;gap:4px"><i class="ti ti-lock" style="font-size:10px"></i> Profile Anchored</span>
   </label>
   <input id="r-artist" type="text" placeholder="Artist name" readonly style="opacity:.75;cursor:not-allowed;border-color:rgba(212,175,55,.2)">
-  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px">Auto-filled from your profile. Change your artist name in <a onclick="goPage('profile',null)" style="color:var(--gold);cursor:pointer">Profile Settings</a>.</div>
+  <select id="r-artist-select" style="display:none"></select>
+  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px" id="artist-field-note">Auto-filled from your profile. Change your artist name in <a onclick="goPage('profile',null)" style="color:var(--gold);cursor:pointer">Profile Settings</a>.</div>
 </div>
-            <!-- ADDITIONAL PRIMARY ARTISTS (plan-gated) -->
-            <div id="co-artists-wrap" style="margin-top:.75rem;display:none">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-                <label style="font-size:12px;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px">Additional Primary Artists</label>
-                <span id="co-artist-plan-badge" style="font-size:10px;font-weight:600;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 8px;border-radius:20px"></span>
-              </div>
-              <div id="co-artist-inputs"></div>
-              <button type="button" id="add-co-artist-btn" class="btn adm-btn-sec btn-sm" style="margin-top:6px" onclick="addCoArtistRow()"><i class="ti ti-plus"></i> Add Artist</button>
-            </div>
             <div style="margin-top:.5rem">
               <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" id="r-has-feat" style="accent-color:var(--gold)" onchange="document.getElementById('r-feat-wrap').style.display=this.checked?'block':'none'"> Add Featured artists</label>
               <div id="r-feat-wrap" style="display:none;margin-top:.75rem"><div class="fg"><label>Featured Artists</label><input id="r-feat" type="text" placeholder="Separate with commas"></div></div>
@@ -2443,6 +2435,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="fg"><label>Artist / Label Name</label><input id="p-an" type="text"></div>
         <div class="fg"><label>Email</label><input id="p-em" type="email" disabled style="opacity:.4;cursor:not-allowed"></div>
         <button class="btn btn-purple" id="save-profile-btn" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Changes</button>
+        <div class="divhr" id="roster-divider" style="display:none"></div>
+        <div id="roster-section" style="display:none">
+          <div class="slabel"><i class="ti ti-users-group"></i> Your Artist Roster</div>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">The artist names you can release under. Pick one as the primary artist each time you submit.</p>
+          <div id="roster-list" style="margin-bottom:.75rem"></div>
+          <div style="display:flex;gap:8px">
+            <input id="roster-new-name" type="text" placeholder="New artist name" style="flex:1;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px" onkeydown="if(event.key==='Enter')addRosterArtist()">
+            <button class="btn btn-gold btn-sm" id="roster-add-btn" onclick="addRosterArtist()"><i class="ti ti-plus"></i> Add</button>
+          </div>
+          <p style="font-size:11px;color:rgba(255,255,255,.3);margin-top:6px" id="roster-limit-note"></p>
+        </div>
         <div class="divhr"></div>
         <!-- ACCOUNT STATS -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem">
@@ -4276,6 +4279,76 @@ async function loadProfileStats(){
     const pb=document.getElementById('prof-plan-badge');
     if(pb) pb.textContent={admin:'Admin',label:'Label',artist_plus:'Artist+',solo_paid:'Solo',free:'Free'}[profile?.plan]||'Free';
   }catch(e){}
+  loadRoster();
+}
+// ── ARTIST ROSTER ──────────────────────────────────────────
+function getRosterMax(){
+  const plan=profile?.plan||'';
+  const isAdmin=user?.email===ADMIN_EMAIL;
+  if(isAdmin||plan==='label')return 5;
+  if(plan==='artist_plus')return 2;
+  return 0;
+}
+let _rosterCache=[];
+async function loadRoster(){
+  const max=getRosterMax();
+  const section=document.getElementById('roster-section');
+  const divider=document.getElementById('roster-divider');
+  if(max===0){if(section)section.style.display='none';if(divider)divider.style.display='none';return;}
+  if(section)section.style.display='block';if(divider)divider.style.display='block';
+  try{
+    const {data,error}=await sb.from('roster_artists').select('*').eq('user_id',user.id).order('created_at',{ascending:true});
+    if(error)throw error;
+    _rosterCache=data||[];
+    renderRoster();
+  }catch(e){
+    console.error('Roster load error:',e);
+    const list=document.getElementById('roster-list');
+    if(list)list.innerHTML='<p style="font-size:12px;color:#ef4444">Could not load roster: '+esc(e.message||'unknown error')+'</p>';
+  }
+}
+function renderRoster(){
+  const list=document.getElementById('roster-list');if(!list)return;
+  const max=getRosterMax();
+  const note=document.getElementById('roster-limit-note');
+  if(note)note.textContent=_rosterCache.length+' of '+max+' artist names used';
+  const addBtn=document.getElementById('roster-add-btn');
+  if(addBtn)addBtn.disabled=_rosterCache.length>=max;
+  const input=document.getElementById('roster-new-name');
+  if(input)input.disabled=_rosterCache.length>=max;
+  if(!_rosterCache.length){list.innerHTML='<p style="font-size:12px;color:rgba(255,255,255,.3)">No artist names yet — add one below.</p>';return;}
+  list.innerHTML=_rosterCache.map(a=>'<div style="display:flex;align-items:center;justify-content:space-between;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:6px"><span style="font-size:13px;color:#fff">'+esc(a.name)+'</span><button onclick="deleteRosterArtist(\''+a.id+'\')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:16px" title="Remove"><i class="ti ti-trash"></i></button></div>').join('');
+}
+async function addRosterArtist(){
+  const input=document.getElementById('roster-new-name');
+  const name=input.value.trim();
+  if(!name){toast('Enter an artist name','err');return;}
+  const max=getRosterMax();
+  if(_rosterCache.length>=max){toast('Your plan supports up to '+max+' artist names','err');return;}
+  const btn=document.getElementById('roster-add-btn');
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span>';
+  try{
+    const {error}=await sb.from('roster_artists').insert({user_id:user.id,name});
+    if(error)throw error;
+    input.value='';
+    toast('Artist added','ok');
+    await loadRoster();
+  }catch(e){
+    console.error('Add roster artist error:',e);
+    toast('Could not add: '+(e.message||'please try again.'),'err');
+  }
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-plus"></i> Add';
+}
+async function deleteRosterArtist(id){
+  try{
+    const {error}=await sb.from('roster_artists').delete().eq('id',id);
+    if(error)throw error;
+    toast('Artist removed','ok');
+    await loadRoster();
+  }catch(e){
+    console.error('Delete roster artist error:',e);
+    toast('Could not remove: '+(e.message||'please try again.'),'err');
+  }
 }
 async function saveProfile(){
   const fn=document.getElementById('p-fn').value.trim();const ln=document.getElementById('p-ln').value.trim();
@@ -4484,48 +4557,57 @@ function initWizard(){
   if(user) loadDraft().then(state=>{
     if(state&&(state.title||state.tracks?.length)) updateDraftBanner(state);
   });
-  const ai=document.getElementById('r-artist');
-  if(ai&&profile){ai.value=profile.artist_name||profile.full_name||user?.email?.split('@')[0]||'';ai.readOnly=true;ai.style.cursor='not-allowed';ai.style.opacity='.75';}
-  // Co-artist tier gating — always re-read profile.plan fresh in case user just paid
-  setupCoArtistSection();
+  setupPrimaryArtistField();
 }
-function setupCoArtistSection(){
-  const plan=profile?.plan||'';
-  const isAdmin=!!(user?.email===ADMIN_EMAIL);
-  const coMax=isAdmin||plan==='label'?4:plan==='artist_plus'?1:0;
-  const coWrap=document.getElementById('co-artists-wrap');
-  const coBadge=document.getElementById('co-artist-plan-badge');
-  const coBtn=document.getElementById('add-co-artist-btn');
-  const coInputs=document.getElementById('co-artist-inputs');
-  if(coWrap) coWrap.style.display=coMax>0?'block':'none';
-  if(coBadge){
-    if(coMax>=4) coBadge.textContent='Up to 5 artists total';
-    else if(coMax===1) coBadge.textContent='Up to 2 artists total';
-    else coBadge.textContent='';
+// ── PRIMARY ARTIST FIELD (roster-aware) ────────────────────
+async function setupPrimaryArtistField(){
+  const input=document.getElementById('r-artist');
+  const select=document.getElementById('r-artist-select');
+  const note=document.getElementById('artist-field-note');
+  const badge=document.getElementById('artist-lock-badge');
+  const max=getRosterMax();
+  if(max===0){
+    // Solo: unchanged locked-input behavior
+    if(select)select.style.display='none';
+    if(input){
+      input.style.display='';
+      input.value=profile?.artist_name||profile?.full_name||user?.email?.split('@')[0]||'';
+      input.readOnly=true;input.style.cursor='not-allowed';input.style.opacity='.75';
+    }
+    if(note)note.innerHTML='Auto-filled from your profile. Change your artist name in <a onclick="goPage(\'profile\',null)" style="color:var(--gold);cursor:pointer">Profile Settings</a>.';
+    if(badge)badge.style.display='flex';
+    return;
   }
-  if(coInputs) coInputs.innerHTML='';
-  if(coBtn) coBtn.style.display=coMax>0?'':'none';
+  // Artist+/Label: dropdown sourced from roster
+  if(input)input.style.display='none';
+  if(badge)badge.style.display='none';
+  if(select){
+    select.style.display='';
+    select.innerHTML='<option value="">Loading roster…</option>';
+  }
+  try{
+    const {data,error}=await sb.from('roster_artists').select('*').eq('user_id',user.id).order('created_at',{ascending:true});
+    if(error)throw error;
+    const roster=data||[];
+    if(!roster.length){
+      if(select)select.innerHTML='<option value="">No artists yet</option>';
+      if(note)note.innerHTML='You haven\'t added any artist names yet. Add one in <a onclick="goPage(\'profile\',null)" style="color:var(--gold);cursor:pointer">Profile Settings</a> before submitting.';
+      return;
+    }
+    if(select){
+      select.innerHTML=roster.map(a=>'<option value="'+esc(a.name)+'">'+esc(a.name)+'</option>').join('');
+      select.value=roster[0].name;
+    }
+    if(note)note.innerHTML='Choose which of your roster artists this release is under. Manage your roster in <a onclick="goPage(\'profile\',null)" style="color:var(--gold);cursor:pointer">Profile Settings</a>.';
+  }catch(e){
+    console.error('Roster fetch error (wizard):',e);
+    if(select)select.innerHTML='<option value="">Could not load roster</option>';
+  }
 }
-function getCoArtistMax(){
-  const plan=profile?.plan||'';
-  const isAdmin=user?.email===ADMIN_EMAIL;
-  return isAdmin||plan==='label'?4:plan==='artist_plus'?1:0;
-}
-function addCoArtistRow(){
-  const container=document.getElementById('co-artist-inputs');if(!container)return;
-  const current=container.querySelectorAll('.co-artist-row').length;
-  const max=getCoArtistMax();
-  if(current>=max){toast('Your plan supports up to '+(max+1)+' total primary artists','err');return;}
-  const row=document.createElement('div');
-  row.className='co-artist-row';
-  row.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:6px';
-  row.innerHTML='<input type="text" placeholder="Artist name" style="flex:1;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px"><button type="button" onclick="this.parentNode.remove()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:18px;line-height:1;padding:0 4px">×</button>';
-  container.appendChild(row);
-  row.querySelector('input').focus();
-}
-function getCoArtistNames(){
-  const inputs=document.querySelectorAll('#co-artist-inputs .co-artist-row input');
-  return Array.from(inputs).map(i=>i.value.trim()).filter(Boolean);
+function getSelectedPrimaryArtist(){
+  const max=getRosterMax();
+  if(max===0)return document.getElementById('r-artist')?.value.trim()||'';
+  return document.getElementById('r-artist-select')?.value.trim()||'';
 }
 // ── WIZARD VALIDATION HELPERS ──────────────────────────
 function wizClearErrors(step){
@@ -4590,7 +4672,7 @@ function validateStep(step){
   if(step===2){
     const title=document.getElementById('r-title')?.value.trim();
     const genre=document.getElementById('r-genre')?.value;
-    const artist=document.getElementById('r-artist')?.value.trim();
+    const artist=getSelectedPrimaryArtist();
     const copyright=document.getElementById('r-copyright')?.value.trim();
     const pcopyright=document.getElementById('r-pcopyright')?.value.trim();
     const artwork=wizData.artFile||wizData.artUrl;
@@ -4929,7 +5011,7 @@ function collectWizardState(){
   return {
     step: wizStep,
     title: document.getElementById('r-title')?.value||'',
-    artist: (()=>{const primary=document.getElementById('r-artist')?.value||'';const co=getCoArtistNames();return co.length?[primary,...co].join(' & '):primary;})(),
+    artist: getSelectedPrimaryArtist(),
     copyright: document.getElementById('r-copyright')?.value||'',
     copyrightYear: document.getElementById('r-copyright-year')?.value||'',
     pcopyright: document.getElementById('r-pcopyright')?.value||'',
@@ -5140,9 +5222,7 @@ function buildCreditsReview(){
 
 function buildReview(){
   const title=document.getElementById('r-title')?.value||'—';
-  const _primaryArtist=document.getElementById('r-artist')?.value||'—';
-  const _coArtists=getCoArtistNames();
-  const artist=_coArtists.length?[_primaryArtist,..._coArtists].join(' & '):_primaryArtist;
+  const artist=getSelectedPrimaryArtist()||'—';
   const genre=document.getElementById('r-genre')?.value||'—';const date=document.getElementById('r-date')?.value||'—';
   const label=document.getElementById('r-label')?.value||'Independent';const lang=document.getElementById('r-language')?.value||'English';
   const el=document.getElementById('review-content');if(!el)return;
@@ -6043,7 +6123,7 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas){
       const dbPlan=planKey==='solo'?'solo_paid':planKey;
       await sb.from('profiles').update({plan:dbPlan}).eq('id',user.id);
       if(profile) profile.plan=dbPlan;
-      setupCoArtistSection();
+      if(document.getElementById('roster-section'))loadRoster();
     }
     await sb.from('subscriptions').insert({user_id:user?.id,plan:planKey,billing_cycle:billingCycle,amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),paystack_ref:ref,status:'active'}).catch(()=>{});
     const planLabel=PLANS[planKey]?.label||planKey;
@@ -6101,7 +6181,7 @@ async function requestNotifPermission(){if(Notification.permission==='default') 
 // ── SPLIT-SHEET ──────────────────────────────────────────────
 let splitRows=[];
 function splitInit(){
-  const artistName=document.getElementById('r-artist')?.value||profile?.artist_name||'Primary Artist';
+  const artistName=getSelectedPrimaryArtist()||profile?.artist_name||'Primary Artist';
   splitRows=[{id:'primary',name:artistName,bp:10000,locked:true}];
   renderSplitRows();splitRecalc();
 }
