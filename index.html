@@ -1397,7 +1397,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="tnav-item" onclick="goPage('releases',this)"><i class="ti ti-music"></i> Music</div>
       <div class="tnav-item" onclick="goPage('submit',this)"><i class="ti ti-upload"></i> Submit</div>
       <div class="tnav-item" id="myartists-nav" style="display:none" onclick="goPage('myartists',this)"><i class="ti ti-users-group"></i> My Artists</div>
-      <div class="tnav-item" onclick="goPage('artists',this)"><i class="ti ti-users"></i> Artists</div>
       <div class="tnav-sep"></div>
       <div class="tnav-item" onclick="goPage('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
       <div class="tnav-item" onclick="goPage('analytics',this)"><i class="ti ti-chart-bar"></i> Analytics</div>
@@ -2017,12 +2016,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="page" id="page-myartists">
       <div class="ph"><div><h1>My Artists</h1><p>The artist names you can release under.</p></div></div>
       <div id="my-artists-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem"></div>
-    </div>
-
-    <!-- ARTISTS (admin: every paying customer) -->
-    <div class="page" id="page-artists">
-      <div class="ph"><div><h1>Artists</h1><p>Artist accounts on Blakkstone Distribution.</p></div></div>
-      <div id="artists-list"></div>
     </div>
 
     <!-- ROYALTIES -->
@@ -3449,7 +3442,7 @@ function enterDashboard(){
     const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
     showView('dashboard');
     const hashPage=window.location.hash.replace('#','');
-    const validPages=['overview','releases','submit','myartists','artists','analytics','royalties','payout','upgrade','profile','support','admin'];
+    const validPages=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
     const page=validPages.includes(hashPage)?hashPage:'overview';
     history.replaceState({page},'',window.location.pathname+'#'+page);
     goPage(page,null);
@@ -3471,7 +3464,6 @@ function goPage(id,el){
   if(id==='submit')initWizard();
   if(id==='royalties'){loadRoyalties();}
   if(id==='payout')loadPayout();
-  if(id==='artists')loadArtists();
   if(id==='myartists')loadMyArtistsGrid();
   if(id==='profile')loadProfileStats();
   if(id==='support')loadMySupportMessages();
@@ -3482,14 +3474,14 @@ function goPage(id,el){
 window.addEventListener('popstate',function(e){
   if(!user)return;
   const page=e.state?.page||window.location.hash.replace('#','')||'overview';
-  const valid=['overview','releases','submit','myartists','artists','analytics','royalties','payout','upgrade','profile','support','admin'];
+  const valid=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
   if(!valid.includes(page))return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page)?.classList.add('active');
   document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+page+"'"))n.classList.add('active');});
   if(page==='analytics')loadAnalytics();if(page==='royalties')loadRoyalties();
-  if(page==='payout')loadPayout();if(page==='artists')loadArtists();
+  if(page==='payout')loadPayout();
   if(page==='myartists')loadMyArtistsGrid();
   if(page==='support')loadMySupportMessages();
   if(page==='submit')initWizard();
@@ -4492,24 +4484,6 @@ async function uploadAvatar(input){
 }
 
 // ── ARTISTS ──────────────────────────────────────────────
-async function loadArtists(){
-  const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
-  const container=document.getElementById('artists-list');if(!container)return;
-  if(isAdmin){
-    const {data,error}=await sb.from('profiles').select('*').order('created_at',{ascending:false});
-    if(error||!data){container.innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i><p style="color:#f87171">'+(error?.message||'No data')+'</p></div>';return;}
-    if(!data.length){container.innerHTML='<div class="empty"><i class="ti ti-users"></i><p>No artists yet.</p></div>';return;}
-    container.innerHTML=data.map(p=>{
-      const name=p.artist_name||p.full_name||p.email;
-      const planLabel={admin:'Admin',label:'Label',artist_plus:'Artist+',solo_paid:'Solo',free:'Free'}[p.plan]||'Free';
-      return '<div class="artist-row"><div class="artist-av">'+(p.avatar_url?'<img src="'+p.avatar_url+'" alt="a">':name.slice(0,2).toUpperCase())+'</div><div class="artist-info"><div class="artist-name">'+esc(name)+'</div><div class="artist-meta">'+esc(p.email||'')+'</div></div><span class="plan-pill">'+planLabel+'</span><button class="btn btn-ghost btn-sm" onclick="openArtistModal(\''+p.id+'\',\''+esc(name).replace(/'/g,"\'")+'\')"><i class="ti ti-eye"></i> View</button></div>';
-    }).join('');
-  } else {
-    const name=profile?.artist_name||profile?.full_name||user.email;
-    const planLabel={admin:'Admin',label:'Label',artist_plus:'Artist+',solo_paid:'Solo',free:'Free'}[profile?.plan]||'Free';
-    container.innerHTML='<div class="artist-row"><div class="artist-av">'+(profile?.avatar_url?'<img src="'+profile.avatar_url+'" alt="a">':name.slice(0,2).toUpperCase())+'</div><div class="artist-info"><div class="artist-name">'+esc(name)+'</div><div class="artist-meta">'+esc(user.email)+'</div></div><span class="plan-pill">'+planLabel+'</span><button class="btn btn-ghost btn-sm" onclick="goPage(\'profile\',null)"><i class="ti ti-settings"></i> Settings</button></div>';
-  }
-}
 async function openArtistModal(userId,name){
   const {data:rl}=await sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false});
   const releases=rl||[];
