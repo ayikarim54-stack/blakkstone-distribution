@@ -4486,21 +4486,24 @@ function initWizard(){
   });
   const ai=document.getElementById('r-artist');
   if(ai&&profile){ai.value=profile.artist_name||profile.full_name||user?.email?.split('@')[0]||'';ai.readOnly=true;ai.style.cursor='not-allowed';ai.style.opacity='.75';}
-  // Co-artist tier gating
+  // Co-artist tier gating — always re-read profile.plan fresh in case user just paid
+  setupCoArtistSection();
+}
+function setupCoArtistSection(){
   const plan=profile?.plan||'';
-  const isAdmin=user?.email===ADMIN_EMAIL;
+  const isAdmin=!!(user?.email===ADMIN_EMAIL);
   const coMax=isAdmin||plan==='label'?4:plan==='artist_plus'?1:0;
   const coWrap=document.getElementById('co-artists-wrap');
   const coBadge=document.getElementById('co-artist-plan-badge');
   const coBtn=document.getElementById('add-co-artist-btn');
   const coInputs=document.getElementById('co-artist-inputs');
-  if(coMax>0&&coWrap){
-    coWrap.style.display='block';
-    if(coBadge) coBadge.textContent=plan==='label'||isAdmin?'Up to 5 artists total':'Up to 2 artists total';
-    if(coInputs) coInputs.innerHTML='';
-  } else if(coWrap){
-    coWrap.style.display='none';
+  if(coWrap) coWrap.style.display=coMax>0?'block':'none';
+  if(coBadge){
+    if(coMax>=4) coBadge.textContent='Up to 5 artists total';
+    else if(coMax===1) coBadge.textContent='Up to 2 artists total';
+    else coBadge.textContent='';
   }
+  if(coInputs) coInputs.innerHTML='';
   if(coBtn) coBtn.style.display=coMax>0?'':'none';
 }
 function getCoArtistMax(){
@@ -6040,6 +6043,7 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas){
       const dbPlan=planKey==='solo'?'solo_paid':planKey;
       await sb.from('profiles').update({plan:dbPlan}).eq('id',user.id);
       if(profile) profile.plan=dbPlan;
+      setupCoArtistSection();
     }
     await sb.from('subscriptions').insert({user_id:user?.id,plan:planKey,billing_cycle:billingCycle,amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),paystack_ref:ref,status:'active'}).catch(()=>{});
     const planLabel=PLANS[planKey]?.label||planKey;
