@@ -1277,8 +1277,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- ══════════════ SMART LINK (PUBLIC, NO LOGIN) ══════════════ -->
+<div class="view" id="smartlink" style="background:var(--off);align-items:flex-start;justify-content:center;padding:3rem 1rem;overflow-y:auto">
+  <div style="max-width:420px;width:100%;text-align:center" id="smartlink-content">
+    <div style="padding:4rem 0"><span class="loader" style="width:24px;height:24px"></span></div>
+  </div>
+</div>
+
 <!-- ══════════════ PAYWALL ══════════════ -->
 <div class="view" id="paywall">
+
   <div style="min-height:100vh;background:#08080C;display:flex;flex-direction:column">
     <!-- Nav -->
     <div style="background:#000;border-bottom:1px solid rgba(255,255,255,.08);height:62px;display:flex;align-items:center;padding:0 2rem;justify-content:space-between">
@@ -2959,6 +2967,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div id="rel-modal-notes" style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7"></div>
     </div>
 
+    <!-- SMART LINK -->
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Smart Link</div>
+      <button class="btn adm-btn-sec btn-sm" style="margin-bottom:.875rem" onclick="copySmartLink()"><i class="ti ti-link"></i> Copy Shareable Link</button>
+      <div id="rel-modal-platform-links"></div>
+    </div>
+
     <!-- ACTIONS -->
     <div style="padding:1.25rem 1.5rem;display:flex;gap:8px">
       <button class="btn btn-purple" style="flex:1;justify-content:center" onclick="closeReleaseModal()"><i class="ti ti-x"></i> Close</button>
@@ -3533,6 +3548,7 @@ async function loadReleases(){
 // ── RELEASE MODAL ──────────────────────────────────────
 function openReleaseById(id){const r=_releaseMap[id];if(r)openReleaseModal(r);}
 function openReleaseModal(r){
+  _currentModalReleaseId=r.id;
   const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
   const comm=isPaid?0:(r.earnings||0)*COMM;const payout=(r.earnings||0)-comm;
   const artEl=document.getElementById('rel-modal-art');
@@ -3567,7 +3583,35 @@ function openReleaseModal(r){
   const ts2=r.streams||0;
   const seed=ts2>0?[Math.round(ts2*.05),Math.round(ts2*.1),Math.round(ts2*.18),Math.round(ts2*.28),Math.round(ts2*.42),ts2]:[0,0,0,0,0,0];
   requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('rel-modal-chart',labels,seed,'#D4AF37','')));
+  renderPlatformLinksEditor(r);
   document.getElementById('release-overlay').classList.add('open');
+}
+let _currentModalReleaseId=null;
+function copySmartLink(){
+  if(!_currentModalReleaseId)return;
+  const url=window.location.origin+window.location.pathname+'?link='+_currentModalReleaseId;
+  navigator.clipboard.writeText(url).then(()=>toast('Smart link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
+}
+function renderPlatformLinksEditor(r){
+  const wrap=document.getElementById('rel-modal-platform-links');if(!wrap)return;
+  const isAdmin=profile?.plan==='admin'||user?.email===ADMIN_EMAIL;
+  if(!isAdmin){wrap.innerHTML='';return;}
+  const links=r.platform_links||{};
+  wrap.innerHTML='<div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Paste platform URLs once this is live elsewhere — these power the buttons fans see on the smart link.</div>'
+    +DSP_STORES.filter(s=>s.logo).map(s=>{
+      const val=esc(links[s.name]||'');
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><img src="'+s.logo+'" width="18" height="18" style="flex-shrink:0;border-radius:4px"><input data-platform="'+esc(s.name)+'" value="'+val+'" placeholder="'+s.name+' URL" style="flex:1;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:12px;min-width:0"></div>';
+    }).join('')
+    +'<button class="btn btn-gold btn-sm" style="width:100%;justify-content:center;margin-top:6px" onclick="savePlatformLinks(\''+r.id+'\')">Save Links</button>';
+}
+async function savePlatformLinks(releaseId){
+  const inputs=document.querySelectorAll('#rel-modal-platform-links input[data-platform]');
+  const links={};
+  inputs.forEach(inp=>{const v=inp.value.trim();if(v)links[inp.dataset.platform]=v;});
+  const {error}=await sb.from('releases').update({platform_links:links}).eq('id',releaseId);
+  if(error){console.error('Save platform links error:',error);toast('Could not save: '+error.message,'err');return;}
+  if(_releaseMap[releaseId])_releaseMap[releaseId].platform_links=links;
+  toast('Smart link platforms saved','ok');
 }
 function closeReleaseModal(){document.getElementById('release-overlay').classList.remove('open');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal();closeArtistModal();closePaystack();}});
@@ -4248,6 +4292,58 @@ async function doPasswordUpdate(){
     else showAuth('login');
   });
   btn.disabled=false;btn.textContent='Update password';
+}
+// ── SMART LINK (PUBLIC) ──────────────────────────────────
+function smartLinkNotFound(){
+  const content=document.getElementById('smartlink-content');
+  content.innerHTML='<div style="padding:4rem 0"><i class="ti ti-mood-sad" style="font-size:40px;color:rgba(255,255,255,.2)"></i><p style="color:rgba(255,255,255,.4);margin-top:1rem;font-size:14px">This link isn\'t available.</p></div>';
+}
+async function loadSmartLink(releaseId){
+  try{
+    const {data,error}=await sb.from('public_release_links').select('*').eq('id',releaseId).maybeSingle();
+    if(error)throw error;
+    if(!data){smartLinkNotFound();return;}
+    renderSmartLink(data);
+  }catch(e){
+    console.error('Smart link load error:',e);
+    smartLinkNotFound();
+  }
+}
+function renderSmartLink(r){
+  const content=document.getElementById('smartlink-content');
+  const art=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" style="width:220px;height:220px;border-radius:16px;object-fit:cover;box-shadow:0 20px 50px rgba(0,0,0,.4)">':'<div style="width:220px;height:220px;border-radius:16px;background:#242424;display:flex;align-items:center;justify-content:center;margin:0 auto"><i class="ti ti-music" style="font-size:48px;color:rgba(255,255,255,.2)"></i></div>';
+  const genrePill=r.genre?'<span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);background:rgba(255,255,255,.07);padding:3px 10px;border-radius:20px;margin-top:6px;display:inline-block">'+esc(r.genre)+'</span>':'';
+  const header='<div style="margin:0 auto 1.5rem">'+art+'</div><h1 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:4px">'+esc(r.title||'')+'</h1><p style="font-size:15px;color:rgba(255,255,255,.5)">'+esc(r.artist||'')+'</p>'+genrePill;
+  const isLive=r.status==='live';
+  const links=r.platform_links||{};
+  let body='';
+  if(isLive){
+    const buttons=DSP_STORES.filter(s=>links[s.name]).map(s=>
+      '<a href="'+esc(links[s.name])+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin-bottom:8px;text-decoration:none"><img src="'+s.logo+'" width="24" height="24" style="border-radius:5px"><span style="color:#fff;font-size:14px;font-weight:600;flex:1;text-align:left">Listen on '+s.name+'</span><i class="ti ti-external-link" style="color:rgba(255,255,255,.3)"></i></a>'
+    ).join('');
+    body=buttons||'<p style="color:rgba(255,255,255,.35);font-size:13px">Platform links coming soon.</p>';
+  } else {
+    const dateStr=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'soon';
+    body='<p style="color:var(--gold);font-size:13px;font-weight:600;margin-bottom:1.25rem;text-align:center">Releasing '+dateStr+'</p>'
+      +'<div class="fg"><input id="notify-email" type="email" placeholder="your@email.com" style="background:#1a1a1a;border:1px solid rgba(255,255,255,.1);color:#fff;width:100%;padding:10px 12px;border-radius:8px;font-size:14px" onkeydown="if(event.key===\'Enter\')submitNotifyMe(\''+r.id+'\')"></div>'
+      +'<button class="btn btn-gold" id="notify-btn" style="width:100%;justify-content:center;margin-top:8px" onclick="submitNotifyMe(\''+r.id+'\')"><i class="ti ti-bell"></i> Notify Me</button>';
+  }
+  content.innerHTML=header+'<div id="smartlink-body" style="text-align:left;margin-top:1.75rem">'+body+'</div><p style="font-size:11px;color:rgba(255,255,255,.2);margin-top:2.5rem">Distributed by Blakkstone Music</p>';
+}
+async function submitNotifyMe(releaseId){
+  const btn=document.getElementById('notify-btn');
+  const email=document.getElementById('notify-email').value.trim();
+  if(!email){toast('Enter your email','err');return;}
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
+  try{
+    const {error}=await sb.from('presave_signups').insert({release_id:releaseId,email});
+    if(error)throw error;
+    document.getElementById('smartlink-body').innerHTML='<div style="text-align:center;padding:1rem 0"><i class="ti ti-circle-check" style="font-size:32px;color:#34d399"></i><p style="color:#fff;font-size:14px;font-weight:600;margin-top:.75rem">You\'re on the list!</p><p style="color:rgba(255,255,255,.4);font-size:12px;margin-top:.25rem">We\'ll let you know the moment it drops.</p></div>';
+  }catch(e){
+    console.error('Notify me error:',e);
+    toast('Could not sign up: '+(e.message||'please try again.'),'err');
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-bell"></i> Notify Me';
+  }
 }
 async function uploadAvatar(input){
   if(!input.files[0])return;const file=input.files[0];const ext=file.name.split('.').pop();
@@ -5963,6 +6059,12 @@ function renderSplitRows(){
   const style=document.createElement('style');
   style.textContent='@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}';
   document.head.appendChild(style);
+  const linkId=new URLSearchParams(window.location.search).get('link');
+  if(linkId){
+    showView('smartlink');
+    loadSmartLink(linkId);
+    return;
+  }
   const isRecovery=window.location.hash.includes('type=recovery');
   const {data:{session}}=await sb.auth.getSession();
   if(isRecovery){
