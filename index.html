@@ -447,6 +447,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
   #page-admin>div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr!important}
   .adm-topbar{flex-direction:column;align-items:flex-start;gap:.75rem}
 
+  /* SUPPORT */
+  #support-grid{grid-template-columns:1fr!important}
+
   /* MODALS */
   .modal{width:96%!important;padding:1.25rem}
   .pay-modal{width:96%!important;padding:1.25rem}
@@ -1386,6 +1389,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="tnav-sep"></div>
       <div class="tnav-item" onclick="goPage('upgrade',this)" id="upgrade-nav"><i class="ti ti-crown"></i> Upgrade</div>
       <div class="tnav-item" onclick="goPage('profile',this)"><i class="ti ti-user"></i> Profile</div>
+      <div class="tnav-item" onclick="goPage('support',this)"><i class="ti ti-headset"></i> Support</div>
       <div class="tnav-item" id="admin-nav" style="display:none" onclick="goPage('admin',this)"><i class="ti ti-shield-check"></i> Admin <span id="notif-badge" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></div>
     </div>
     <div class="dash-topnav-right">
@@ -2435,6 +2439,27 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="fg"><label>New Password</label><input id="p-pw" type="password" placeholder="Min. 6 characters"></div>
         <div class="fg"><label>Confirm Password</label><input id="p-pw2" type="password" placeholder="Repeat password"></div>
         <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1)" onclick="changePassword()"><i class="ti ti-lock"></i> Update Password</button>
+        <div class="divhr"></div>
+        <div class="slabel"><i class="ti ti-headset"></i> Need Help?</div>
+        <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="goPage('support',null)"><i class="ti ti-message-circle"></i> Contact Support</button>
+      </div>
+    </div>
+
+    <!-- SUPPORT -->
+    <div class="page" id="page-support">
+      <div class="ph"><div><h1>Support</h1><p>Get help from the Blakkstone team.</p></div></div>
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:1.25rem" id="support-grid">
+        <div>
+          <div class="slabel"><i class="ti ti-message-circle"></i> Your Messages</div>
+          <div id="my-messages-list"></div>
+        </div>
+        <div class="profcard" style="max-width:none;padding:1.5rem">
+          <div class="slabel" style="margin-bottom:1rem"><i class="ti ti-send"></i> New Message</div>
+          <div class="fg"><label>Subject</label><input id="sup-subject" type="text" placeholder="What's this about?"></div>
+          <div class="fg"><label>Message</label><textarea id="sup-body" placeholder="Describe your issue or question..." style="min-height:140px"></textarea></div>
+          <button class="btn btn-gold" id="sup-send-btn" style="width:100%;justify-content:center" onclick="sendSupportMessage()"><i class="ti ti-send"></i> Send Message</button>
+          <p style="font-size:11px;color:rgba(255,255,255,.3);margin-top:.75rem">We typically reply within 24 hours.</p>
+        </div>
       </div>
     </div>
 
@@ -3381,7 +3406,7 @@ function enterDashboard(){
     updateCommBar(isPaid,isAdmin);updateUpgradePage(profile?.plan);
     showView('dashboard');
     const hashPage=window.location.hash.replace('#','');
-    const validPages=['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','admin'];
+    const validPages=['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','support','admin'];
     const page=validPages.includes(hashPage)?hashPage:'overview';
     history.replaceState({page},'',window.location.pathname+'#'+page);
     goPage(page,null);
@@ -3405,6 +3430,7 @@ function goPage(id,el){
   if(id==='payout')loadPayout();
   if(id==='artists')loadArtists();
   if(id==='profile')loadProfileStats();
+  if(id==='support')loadMySupportMessages();
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
   const mobMap={overview:'mob-overview',releases:'mob-music',submit:'mob-submit',royalties:'mob-royalties',profile:'mob-profile'};
   if(mobMap[id])setMobNav(mobMap[id]);
@@ -3412,7 +3438,7 @@ function goPage(id,el){
 window.addEventListener('popstate',function(e){
   if(!user)return;
   const page=e.state?.page||window.location.hash.replace('#','')||'overview';
-  const valid=['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','admin'];
+  const valid=['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','support','admin'];
   if(!valid.includes(page))return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page)?.classList.add('active');
@@ -3420,6 +3446,7 @@ window.addEventListener('popstate',function(e){
   document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+page+"'"))n.classList.add('active');});
   if(page==='analytics')loadAnalytics();if(page==='royalties')loadRoyalties();
   if(page==='payout')loadPayout();if(page==='artists')loadArtists();
+  if(page==='support')loadMySupportMessages();
   if(page==='submit')initWizard();
   if(page==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();}
 });
@@ -5312,6 +5339,36 @@ async function loadBroadcastHistory(){
     if(!data||!data.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">No broadcasts yet.</div>';return;}
     el.innerHTML=data.map(m=>'<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(m.subject||'No subject')+'</div><div style="font-size:11px;color:rgba(255,255,255,.3)">'+esc(m.to_email||'')+' · '+(m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'')+'</div></div>').join('');
   }catch(e){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Run messages SQL first.</div>';}
+}
+// ── SUPPORT (ARTIST-FACING) ──────────────────────────────
+async function loadMySupportMessages(){
+  const container=document.getElementById('my-messages-list');if(!container||!user)return;
+  try{
+    const {data}=await sb.from('messages').select('*').or('to_email.eq.'+user.email+',from_id.eq.'+user.id).order('created_at',{ascending:false}).limit(50).catch(()=>({data:[]}));
+    renderMySupportMessages(data||[]);
+    (data||[]).filter(m=>m.direction==='out'&&!m.read_at).forEach(m=>{sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',m.id).catch(()=>{});});
+  }catch(e){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>Unable to load messages.</p></div>';}
+}
+function renderMySupportMessages(data){
+  const container=document.getElementById('my-messages-list');if(!container)return;
+  if(!data.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet. Send one and we\'ll get back to you.</p></div>';return;}
+  container.innerHTML=data.map(m=>{
+    const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';const fromMe=m.direction==='in';
+    return '<div style="background:#0e0e14;border:1px solid var(--line);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px'+(fromMe?'':';border-left:3px solid var(--gold)')+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;gap:8px"><div><div style="font-size:13px;font-weight:600;color:#fff">'+(fromMe?'<i class="ti ti-arrow-up-right" style="color:rgba(255,255,255,.3)"></i> You':'<i class="ti ti-headset" style="color:var(--gold)"></i> Blakkstone Support')+'</div><div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">'+esc(m.subject||'')+'</div></div><span style="font-size:11px;color:rgba(255,255,255,.25);flex-shrink:0">'+d+'</span></div><div style="font-size:13px;color:rgba(255,255,255,.6);white-space:pre-wrap">'+esc(m.body||'')+'</div></div>';
+  }).join('');
+}
+async function sendSupportMessage(){
+  const btn=document.getElementById('sup-send-btn');
+  const subject=document.getElementById('sup-subject').value.trim();const body=document.getElementById('sup-body').value.trim();
+  if(!body){toast('Write a message first','err');return;}
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Sending...';
+  try{
+    await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:ADMIN_EMAIL,subject:subject||'Message from '+(profile?.artist_name||profile?.full_name||user.email),body,direction:'in',read_at:null});
+    document.getElementById('sup-subject').value='';document.getElementById('sup-body').value='';
+    toast("Message sent! We'll get back to you soon.",'ok');
+    loadMySupportMessages();
+  }catch(e){toast('Could not send message. Please try again.','err');}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Send Message';
 }
 async function exportCSV(type){
   let data=[],filename='',headers=[];
