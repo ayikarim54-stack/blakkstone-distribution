@@ -1396,6 +1396,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="tnav-item active" onclick="goPage('overview',this)"><i class="ti ti-layout-dashboard"></i> Overview</div>
       <div class="tnav-item" onclick="goPage('releases',this)"><i class="ti ti-music"></i> Music</div>
       <div class="tnav-item" onclick="goPage('submit',this)"><i class="ti ti-upload"></i> Submit</div>
+      <div class="tnav-item" id="myartists-nav" style="display:none" onclick="goPage('myartists',this)"><i class="ti ti-users-group"></i> My Artists</div>
       <div class="tnav-item" onclick="goPage('artists',this)"><i class="ti ti-users"></i> Artists</div>
       <div class="tnav-sep"></div>
       <div class="tnav-item" onclick="goPage('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
@@ -2012,6 +2013,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
 
     <!-- ARTISTS -->
+    <!-- MY ARTISTS (roster, Artist+/Label/admin only) -->
+    <div class="page" id="page-myartists">
+      <div class="ph"><div><h1>My Artists</h1><p>The artist names you can release under.</p></div></div>
+      <div id="my-artists-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem"></div>
+    </div>
+
+    <!-- ARTISTS (admin: every paying customer) -->
     <div class="page" id="page-artists">
       <div class="ph"><div><h1>Artists</h1><p>Artist accounts on Blakkstone Distribution.</p></div></div>
       <div id="artists-list"></div>
@@ -2435,17 +2443,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="fg"><label>Artist / Label Name</label><input id="p-an" type="text"></div>
         <div class="fg"><label>Email</label><input id="p-em" type="email" disabled style="opacity:.4;cursor:not-allowed"></div>
         <button class="btn btn-purple" id="save-profile-btn" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Changes</button>
-        <div class="divhr" id="roster-divider" style="display:none"></div>
-        <div id="roster-section" style="display:none">
-          <div class="slabel"><i class="ti ti-users-group"></i> Your Artist Roster</div>
-          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">The artist names you can release under. Pick one as the primary artist each time you submit.</p>
-          <div id="roster-list" style="margin-bottom:.75rem"></div>
-          <div style="display:flex;gap:8px">
-            <input id="roster-new-name" type="text" placeholder="New artist name" style="flex:1;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px" onkeydown="if(event.key==='Enter')addRosterArtist()">
-            <button class="btn btn-gold btn-sm" id="roster-add-btn" onclick="addRosterArtist()"><i class="ti ti-plus"></i> Add</button>
-          </div>
-          <p style="font-size:11px;color:rgba(255,255,255,.3);margin-top:6px" id="roster-limit-note"></p>
-        </div>
+        <div class="divhr" id="myartists-pointer-divider" style="display:none"></div>
+        <p id="myartists-pointer" style="display:none;font-size:12px;color:rgba(255,255,255,.4)">Managing multiple artists? Add and remove names on the <a onclick="goPage('myartists',null)" style="color:var(--gold);cursor:pointer">My Artists</a> page.</p>
         <div class="divhr"></div>
         <!-- ACCOUNT STATS -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem">
@@ -3447,9 +3446,10 @@ function enterDashboard(){
       const paid=document.getElementById('profile-account-id');if(paid) paid.textContent=profile.account_id||'Assigning...';
     }
     updateCommBar(isPaid,isAdmin);updateUpgradePage(profile?.plan);
+    const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
     showView('dashboard');
     const hashPage=window.location.hash.replace('#','');
-    const validPages=['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','support','admin'];
+    const validPages=['overview','releases','submit','myartists','artists','analytics','royalties','payout','upgrade','profile','support','admin'];
     const page=validPages.includes(hashPage)?hashPage:'overview';
     history.replaceState({page},'',window.location.pathname+'#'+page);
     goPage(page,null);
@@ -3472,6 +3472,7 @@ function goPage(id,el){
   if(id==='royalties'){loadRoyalties();}
   if(id==='payout')loadPayout();
   if(id==='artists')loadArtists();
+  if(id==='myartists')loadMyArtistsGrid();
   if(id==='profile')loadProfileStats();
   if(id==='support')loadMySupportMessages();
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
@@ -3481,7 +3482,7 @@ function goPage(id,el){
 window.addEventListener('popstate',function(e){
   if(!user)return;
   const page=e.state?.page||window.location.hash.replace('#','')||'overview';
-  const valid=['overview','releases','submit','artists','analytics','royalties','payout','upgrade','profile','support','admin'];
+  const valid=['overview','releases','submit','myartists','artists','analytics','royalties','payout','upgrade','profile','support','admin'];
   if(!valid.includes(page))return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page)?.classList.add('active');
@@ -3489,6 +3490,7 @@ window.addEventListener('popstate',function(e){
   document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+page+"'"))n.classList.add('active');});
   if(page==='analytics')loadAnalytics();if(page==='royalties')loadRoyalties();
   if(page==='payout')loadPayout();if(page==='artists')loadArtists();
+  if(page==='myartists')loadMyArtistsGrid();
   if(page==='support')loadMySupportMessages();
   if(page==='submit')initWizard();
   if(page==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();}
@@ -4279,7 +4281,9 @@ async function loadProfileStats(){
     const pb=document.getElementById('prof-plan-badge');
     if(pb) pb.textContent={admin:'Admin',label:'Label',artist_plus:'Artist+',solo_paid:'Solo',free:'Free'}[profile?.plan]||'Free';
   }catch(e){}
-  loadRoster();
+  const showPointer=getRosterMax()>0;
+  const ptr=document.getElementById('myartists-pointer');if(ptr)ptr.style.display=showPointer?'block':'none';
+  const ptrDiv=document.getElementById('myartists-pointer-divider');if(ptrDiv)ptrDiv.style.display=showPointer?'block':'none';
 }
 // ── ARTIST ROSTER ──────────────────────────────────────────
 function getRosterMax(){
@@ -4290,61 +4294,61 @@ function getRosterMax(){
   return 0;
 }
 let _rosterCache=[];
-async function loadRoster(){
+async function loadMyArtistsGrid(){
+  const grid=document.getElementById('my-artists-grid');if(!grid)return;
   const max=getRosterMax();
-  const section=document.getElementById('roster-section');
-  const divider=document.getElementById('roster-divider');
-  if(max===0){if(section)section.style.display='none';if(divider)divider.style.display='none';return;}
-  if(section)section.style.display='block';if(divider)divider.style.display='block';
+  if(max===0){grid.innerHTML='<p style="color:rgba(255,255,255,.4);font-size:13px;grid-column:1/-1">This page is available on Artist+ and Label plans. <a onclick="goPage(\'upgrade\',null)" style="color:var(--gold);cursor:pointer">Upgrade your plan</a> to manage multiple artists.</p>';return;}
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem"><span class="loader"></span></div>';
   try{
     const {data,error}=await sb.from('roster_artists').select('*').eq('user_id',user.id).order('created_at',{ascending:true});
     if(error)throw error;
+    const {data:rels}=await sb.from('releases').select('artist').eq('user_id',user.id);
+    const counts={};
+    (rels||[]).forEach(r=>{const a=(r.artist||'').split(' & ')[0].trim();if(a)counts[a]=(counts[a]||0)+1;});
     _rosterCache=data||[];
-    renderRoster();
+    renderMyArtistsGrid(counts);
   }catch(e){
     console.error('Roster load error:',e);
-    const list=document.getElementById('roster-list');
-    if(list)list.innerHTML='<p style="font-size:12px;color:#ef4444">Could not load roster: '+esc(e.message||'unknown error')+'</p>';
+    grid.innerHTML='<p style="color:#ef4444;font-size:13px;grid-column:1/-1">Could not load: '+esc(e.message||'unknown error')+'</p>';
   }
 }
-function renderRoster(){
-  const list=document.getElementById('roster-list');if(!list)return;
+function renderMyArtistsGrid(counts){
+  const grid=document.getElementById('my-artists-grid');if(!grid)return;
   const max=getRosterMax();
-  const note=document.getElementById('roster-limit-note');
-  if(note)note.textContent=_rosterCache.length+' of '+max+' artist names used';
-  const addBtn=document.getElementById('roster-add-btn');
-  if(addBtn)addBtn.disabled=_rosterCache.length>=max;
-  const input=document.getElementById('roster-new-name');
-  if(input)input.disabled=_rosterCache.length>=max;
-  if(!_rosterCache.length){list.innerHTML='<p style="font-size:12px;color:rgba(255,255,255,.3)">No artist names yet — add one below.</p>';return;}
-  list.innerHTML=_rosterCache.map(a=>'<div style="display:flex;align-items:center;justify-content:space-between;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:6px"><span style="font-size:13px;color:#fff">'+esc(a.name)+'</span><button onclick="deleteRosterArtist(\''+a.id+'\')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:16px" title="Remove"><i class="ti ti-trash"></i></button></div>').join('');
+  counts=counts||{};
+  const cards=_rosterCache.map(a=>{
+    const n=counts[a.name]||0;
+    return '<div style="background:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;position:relative"><button onclick="deleteRosterArtist(\''+a.id+'\')" title="Remove" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:13px"></i></button><div style="width:80px;height:80px;border-radius:50%;background:#eceaf8;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="ti ti-user" style="font-size:34px;color:#a8a3d8"></i></div><div style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div><div style="font-size:12px;color:#7a6ff0;font-weight:600;margin-top:4px">'+n+' Release'+(n===1?'':'s')+'</div></div>';
+  }).join('');
+  const addTile=_rosterCache.length<max?'<div onclick="document.getElementById(\'myartist-add-name\').focus()" style="border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:1.5rem 1rem;text-align:center;cursor:text;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:178px"><div style="width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem"><i class="ti ti-plus" style="font-size:24px;color:rgba(255,255,255,.6)"></i></div><input id="myartist-add-name" type="text" placeholder="Artist name" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')addRosterArtist()" style="background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:13px;width:100%;text-align:center;margin-bottom:8px"><button id="roster-add-btn" onclick="event.stopPropagation();addRosterArtist()" class="btn btn-gold btn-sm" style="width:100%;justify-content:center">Add Artist</button></div>':'';
+  grid.innerHTML=(cards||'')+addTile;
+  if(!_rosterCache.length&&!addTile) grid.innerHTML='<p style="color:rgba(255,255,255,.3);font-size:13px;grid-column:1/-1">No artists yet.</p>';
 }
 async function addRosterArtist(){
-  const input=document.getElementById('roster-new-name');
+  const input=document.getElementById('myartist-add-name');if(!input)return;
   const name=input.value.trim();
   if(!name){toast('Enter an artist name','err');return;}
   const max=getRosterMax();
   if(_rosterCache.length>=max){toast('Your plan supports up to '+max+' artist names','err');return;}
   const btn=document.getElementById('roster-add-btn');
-  btn.disabled=true;btn.innerHTML='<span class="loader"></span>';
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="loader"></span>';}
   try{
     const {error}=await sb.from('roster_artists').insert({user_id:user.id,name});
     if(error)throw error;
-    input.value='';
     toast('Artist added','ok');
-    await loadRoster();
+    await loadMyArtistsGrid();
   }catch(e){
     console.error('Add roster artist error:',e);
     toast('Could not add: '+(e.message||'please try again.'),'err');
+    if(btn){btn.disabled=false;btn.textContent='Add Artist';}
   }
-  btn.disabled=false;btn.innerHTML='<i class="ti ti-plus"></i> Add';
 }
 async function deleteRosterArtist(id){
   try{
     const {error}=await sb.from('roster_artists').delete().eq('id',id);
     if(error)throw error;
     toast('Artist removed','ok');
-    await loadRoster();
+    await loadMyArtistsGrid();
   }catch(e){
     console.error('Delete roster artist error:',e);
     toast('Could not remove: '+(e.message||'please try again.'),'err');
@@ -6123,7 +6127,8 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas){
       const dbPlan=planKey==='solo'?'solo_paid':planKey;
       await sb.from('profiles').update({plan:dbPlan}).eq('id',user.id);
       if(profile) profile.plan=dbPlan;
-      if(document.getElementById('roster-section'))loadRoster();
+      const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
+      if(document.getElementById('page-myartists')?.classList.contains('active'))loadMyArtistsGrid();
     }
     await sb.from('subscriptions').insert({user_id:user?.id,plan:planKey,billing_cycle:billingCycle,amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),paystack_ref:ref,status:'active'}).catch(()=>{});
     const planLabel=PLANS[planKey]?.label||planKey;
