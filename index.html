@@ -4307,7 +4307,18 @@ function renderMyArtistsGrid(counts){
   counts=counts||{};
   const cards=_rosterCache.map(a=>{
     const n=counts[a.name]||0;
-    return '<div style="background:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;position:relative"><button onclick="deleteRosterArtist(\''+a.id+'\')" title="Remove" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:13px"></i></button><div style="width:80px;height:80px;border-radius:50%;background:#eceaf8;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="ti ti-user" style="font-size:34px;color:#a8a3d8"></i></div><div style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div><div style="font-size:12px;color:#7a6ff0;font-weight:600;margin-top:4px">'+n+' Release'+(n===1?'':'s')+'</div></div>';
+    const locked=n>0;
+    const actions=locked
+      ?'<div title="Locked — this artist has releases already submitted" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.06);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,.35)"><i class="ti ti-lock" style="font-size:12px"></i></div>'
+      :'<div style="position:absolute;top:10px;right:10px;display:flex;gap:4px">'
+        +'<button onclick="startEditRosterArtist(\''+a.id+'\')" title="Edit name" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-pencil" style="font-size:12px"></i></button>'
+        +'<button onclick="deleteRosterArtist(\''+a.id+'\')" title="Remove" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:12px"></i></button>'
+      +'</div>';
+    const nameDisplay=locked
+      ?'<div id="rname-'+a.id+'" style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div>'
+      :'<div id="rname-'+a.id+'"><div id="rname-view-'+a.id+'" style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div><div id="rname-edit-'+a.id+'" style="display:none"><input id="rname-input-'+a.id+'" type="text" value="'+esc(a.name)+'" onkeydown="if(event.key===\'Enter\')saveEditRosterArtist(\''+a.id+'\');if(event.key===\'Escape\')cancelEditRosterArtist(\''+a.id+'\')" style="width:100%;text-align:center;font-size:14px;font-weight:700;border:1px solid #7a6ff0;border-radius:6px;padding:4px 8px;margin-bottom:6px"><div style="display:flex;gap:4px;justify-content:center"><button onclick="saveEditRosterArtist(\''+a.id+'\')" class="btn btn-gold btn-sm" style="padding:3px 10px;font-size:11px">Save</button><button onclick="cancelEditRosterArtist(\''+a.id+'\')" class="btn btn-sm" style="padding:3px 10px;font-size:11px;background:rgba(0,0,0,.06);color:rgba(0,0,0,.5)">Cancel</button></div></div></div>';
+    const lockedNote=locked?'<div style="font-size:10px;color:rgba(0,0,0,.35);margin-top:2px">Locked</div>':'';
+    return '<div style="background:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;position:relative">'+actions+'<div style="width:80px;height:80px;border-radius:50%;background:#eceaf8;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="ti ti-user" style="font-size:34px;color:#a8a3d8"></i></div>'+nameDisplay+'<div style="font-size:12px;color:#7a6ff0;font-weight:600;margin-top:4px">'+n+' Release'+(n===1?'':'s')+'</div>'+lockedNote+'</div>';
   }).join('');
   const addTile=_rosterCache.length<max?'<div onclick="document.getElementById(\'myartist-add-name\').focus()" style="border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:1.5rem 1rem;text-align:center;cursor:text;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:178px"><div style="width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem"><i class="ti ti-plus" style="font-size:24px;color:rgba(255,255,255,.6)"></i></div><input id="myartist-add-name" type="text" placeholder="Artist name" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')addRosterArtist()" style="background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:13px;width:100%;text-align:center;margin-bottom:8px"><button id="roster-add-btn" onclick="event.stopPropagation();addRosterArtist()" class="btn btn-gold btn-sm" style="width:100%;justify-content:center">Add Artist</button></div>':'';
   grid.innerHTML=(cards||'')+addTile;
@@ -4337,12 +4348,10 @@ async function deleteRosterArtist(id){
   const name=artist?.name||'';
   const count=_rosterReleaseCounts[name]||0;
   if(count>0){
-    const typed=prompt('"'+name+'" has '+count+' release'+(count===1?'':'s')+' already submitted under this name. Deleting it from your roster won\'t remove those releases, but this name will disappear from future submissions.\n\nType the artist name to confirm removal:');
-    if(typed===null)return;
-    if(typed.trim()!==name){toast('Name did not match — nothing was removed','err');return;}
-  } else {
-    if(!confirm('Remove "'+name+'" from your roster?'))return;
+    toast('"'+name+'" has releases already submitted and can\'t be removed or renamed.','err');
+    return;
   }
+  if(!confirm('Remove "'+name+'" from your roster?'))return;
   try{
     const {error}=await sb.from('roster_artists').delete().eq('id',id);
     if(error)throw error;
@@ -4351,6 +4360,40 @@ async function deleteRosterArtist(id){
   }catch(e){
     console.error('Delete roster artist error:',e);
     toast('Could not remove: '+(e.message||'please try again.'),'err');
+  }
+}
+function startEditRosterArtist(id){
+  const count=_rosterReleaseCounts[_rosterCache.find(a=>a.id===id)?.name||'']||0;
+  if(count>0){toast('This artist has releases already submitted and can\'t be renamed.','err');return;}
+  const view=document.getElementById('rname-view-'+id);const edit=document.getElementById('rname-edit-'+id);
+  if(view)view.style.display='none';if(edit)edit.style.display='block';
+  const input=document.getElementById('rname-input-'+id);
+  if(input){input.focus();input.select();}
+}
+function cancelEditRosterArtist(id){
+  const view=document.getElementById('rname-view-'+id);const edit=document.getElementById('rname-edit-'+id);
+  const input=document.getElementById('rname-input-'+id);
+  const artist=_rosterCache.find(a=>a.id===id);
+  if(input&&artist)input.value=artist.name;
+  if(view)view.style.display='block';if(edit)edit.style.display='none';
+}
+async function saveEditRosterArtist(id){
+  const artist=_rosterCache.find(a=>a.id===id);if(!artist)return;
+  // Re-check at save time, not just at edit-open time, in case a release landed in between
+  const count=_rosterReleaseCounts[artist.name]||0;
+  if(count>0){toast('This artist now has releases and can\'t be renamed.','err');cancelEditRosterArtist(id);return;}
+  const input=document.getElementById('rname-input-'+id);
+  const newName=input?.value.trim();
+  if(!newName){toast('Name cannot be empty','err');return;}
+  if(newName===artist.name){cancelEditRosterArtist(id);return;}
+  try{
+    const {error}=await sb.from('roster_artists').update({name:newName}).eq('id',id);
+    if(error)throw error;
+    toast('Artist name updated','ok');
+    await loadMyArtistsGrid();
+  }catch(e){
+    console.error('Edit roster artist error:',e);
+    toast('Could not update: '+(e.message||'please try again.'),'err');
   }
 }
 async function saveProfile(){
