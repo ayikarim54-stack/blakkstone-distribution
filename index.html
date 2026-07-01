@@ -3031,7 +3031,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <div class="overlay" id="artist-overlay">
   <div class="modal">
     <h3 id="artist-modal-title">Artist Releases <button onclick="closeArtistModal()">×</button></h3>
-    <div id="artist-notes-section" style="margin-bottom:1.25rem"></div>
+    <div id="artist-notes-section" style="margin-bottom:.75rem"></div>
+    <div id="artist-audit-section" style="margin-bottom:1.25rem"></div>
     <div id="artist-modal-body"></div>
   </div>
 </div>
@@ -4639,6 +4640,7 @@ async function openArtistModal(userId,name){
   document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button>';
   _currentArtistModalUserId=userId;
   await loadArtistNotes(userId);
+  await loadArtistAuditLog(userId,releases.map(r=>r.id));
   if(!releases.length){document.getElementById('artist-modal-body').innerHTML='<p style="color:var(--muted);font-size:13px">No releases yet.</p>';document.getElementById('artist-overlay').classList.add('open');return;}
   document.getElementById('artist-modal-body').innerHTML=releases.map(r=>{
     const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
@@ -4698,6 +4700,40 @@ async function deleteArtistNote(id){
     console.error('Delete artist note error:',e);
     toast('Could not delete: '+(e.message||'please try again.'),'err');
   }
+}
+// ── ADMIN AUDIT LOG (private, admin-only, read-only) ────────
+async function loadArtistAuditLog(userId,releaseIds){
+  const container=document.getElementById('artist-audit-section');if(!container)return;
+  try{
+    const orParts=['target_user_id.eq.'+userId];
+    if(releaseIds?.length) orParts.push('target_release_id.in.('+releaseIds.join(',')+')');
+    const {data,error}=await sb.from('admin_audit_log').select('*').or(orParts.join(',')).order('changed_at',{ascending:false}).limit(50);
+    if(error)throw error;
+    renderArtistAuditLog(data||[]);
+  }catch(e){
+    console.error('Load audit log error:',e);
+    container.innerHTML='<div style="font-size:11px;color:#f87171">Could not load edit history: '+esc(e.message||'unknown error')+'</div>';
+  }
+}
+function renderArtistAuditLog(entries){
+  const container=document.getElementById('artist-audit-section');if(!container)return;
+  if(!entries.length){container.innerHTML='';return;}
+  const fieldLabels={plan:'Plan',earnings:'Earnings',streams:'Streams'};
+  const rows=entries.map(e=>{
+    const d=e.changed_at?new Date(e.changed_at).toLocaleString('en-GB'):'—';
+    const label=fieldLabels[e.field]||e.field;
+    const fmt=v=>e.field==='earnings'?'$'+parseFloat(v||0).toFixed(2):esc(v||'—');
+    return '<div style="font-size:11px;color:rgba(255,255,255,.5);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)"><strong style="color:rgba(255,255,255,.75)">'+label+'</strong>: '+fmt(e.old_value)+' <i class="ti ti-arrow-right" style="font-size:9px;opacity:.5"></i> '+fmt(e.new_value)+' <span style="color:rgba(255,255,255,.3)">· '+d+(e.changed_by?' · '+esc(e.changed_by):'')+'</span></div>';
+  }).join('');
+  container.innerHTML='<div onclick="toggleArtistAuditLog()" style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px"><i class="ti ti-chevron-right" id="audit-chevron" style="font-size:12px;transition:transform .15s"></i> <i class="ti ti-history"></i> Edit History ('+entries.length+')</div>'
+    +'<div id="audit-log-body" style="display:none;max-height:200px;overflow-y:auto">'+rows+'</div>';
+}
+function toggleArtistAuditLog(){
+  const body=document.getElementById('audit-log-body');const chevron=document.getElementById('audit-chevron');
+  if(!body)return;
+  const opening=body.style.display==='none';
+  body.style.display=opening?'block':'none';
+  if(chevron) chevron.style.transform=opening?'rotate(90deg)':'rotate(0deg)';
 }
 
 
@@ -5651,8 +5687,22 @@ async function updateStatus(id,status,sel){
 }
 async function updateField(id,field,value){
   const val=field==='earnings'?parseFloat(value)||0:parseInt(value)||0;
-  await sb.from('releases').update({[field]:val}).eq('id',id);
-  toast(field+' saved','ok');
+  try{
+    const {data:before,error:fetchErr}=await sb.from('releases').select(field).eq('id',id).single();
+    if(fetchErr)throw fetchErr;
+    const oldVal=before?.[field]??0;
+    const {error:updErr}=await sb.from('releases').update({[field]:val}).eq('id',id);
+    if(updErr)throw updErr;
+    sb.from('admin_audit_log').insert({
+      target_release_id:id,field,
+      old_value:String(oldVal),new_value:String(val),
+      changed_by:user?.email||'Admin'
+    }).then(({error})=>{if(error)console.error('Audit log insert error (edit itself succeeded):',error);});
+    toast(field+' saved','ok');
+  }catch(e){
+    console.error('Update field error:',e);
+    toast('Could not save: '+(e.message||'please try again.'),'err');
+  }
 }
 async function deleteRelease(id){
   if(!confirm('Remove this release?'))return;
@@ -5680,7 +5730,24 @@ async function deletePayout(id){
   loadAdminStats();
   loadNotifications();
 }
-async function updateUserPlan(id,plan){await sb.from('profiles').update({plan}).eq('id',id);toast('Plan updated','ok');loadAdminStats();}
+async function updateUserPlan(id,plan){
+  try{
+    const {data:before,error:fetchErr}=await sb.from('profiles').select('plan').eq('id',id).single();
+    if(fetchErr)throw fetchErr;
+    const oldPlan=before?.plan||'free';
+    const {error:updErr}=await sb.from('profiles').update({plan}).eq('id',id);
+    if(updErr)throw updErr;
+    sb.from('admin_audit_log').insert({
+      target_user_id:id,field:'plan',
+      old_value:oldPlan,new_value:plan,
+      changed_by:user?.email||'Admin'
+    }).then(({error})=>{if(error)console.error('Audit log insert error (plan change itself succeeded):',error);});
+    toast('Plan updated','ok');loadAdminStats();
+  }catch(e){
+    console.error('Update user plan error:',e);
+    toast('Could not update plan: '+(e.message||'please try again.'),'err');
+  }
+}
 async function updatePayoutStatus(id,status){
   const {error}=await sb.from('payouts').update({status}).eq('id',id);
   if(error){toast('Update failed: '+error.message,'err');return;}
