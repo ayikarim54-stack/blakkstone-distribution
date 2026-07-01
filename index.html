@@ -3001,6 +3001,14 @@ const LOCALE_TO_CURRENCY={
   'en-GB':'GBP','en-US':'USD','en-CA':'CAD',
   'de':'EUR','fr':'EUR','es':'EUR','it':'EUR','nl':'EUR','pt':'EUR'
 };
+// Real ISO country codes, as returned by the IP geolocation lookup — a genuinely
+// different key format from LOCALE_TO_CURRENCY above, so kept as its own table.
+const COUNTRY_TO_CURRENCY={
+  GH:'GHS',NG:'NGN',KE:'KES',ZA:'ZAR',
+  GB:'GBP',US:'USD',CA:'CAD',
+  DE:'EUR',FR:'EUR',ES:'EUR',IT:'EUR',NL:'EUR',PT:'EUR',IE:'EUR',
+  AT:'EUR',BE:'EUR',FI:'EUR',GR:'EUR',LU:'EUR',
+};
 let currentDisplayCurrency='USD';
 let currentDisplayRates={...CURRENCY_FALLBACK_RATES};
 function detectDisplayCurrency(){
@@ -3013,6 +3021,30 @@ function detectDisplayCurrency(){
     if(LOCALE_TO_CURRENCY[lang])return LOCALE_TO_CURRENCY[lang];
   }catch(e){}
   return 'USD';
+}
+// Real IP-based country detection — a genuine upgrade over the instant locale guess above,
+// not a replacement for it. Runs after the page has already shown a reasonable price,
+// and only overrides that guess if a manual choice hasn't already been made and the
+// lookup itself genuinely succeeds. Fails silently to the locale guess on any error.
+async function detectCurrencyByIP(){
+  try{
+    const stored=localStorage.getItem('blakkstone_currency');
+    if(stored&&CURRENCY_SYMBOLS[stored])return; // user already made an explicit choice — never override it
+    const res=await fetch('https://ipwho.is/');
+    if(!res.ok)throw new Error('IP lookup failed: HTTP '+res.status);
+    const data=await res.json();
+    if(!data?.success)throw new Error('IP lookup returned unsuccessful: '+(data?.message||'unknown'));
+    const cc=data.country_code;
+    if(cc&&COUNTRY_TO_CURRENCY[cc]){
+      currentDisplayCurrency=COUNTRY_TO_CURRENCY[cc];
+      refreshAllDisplayedPrices();
+      const csLabel=document.getElementById('currency-switcher-label');
+      if(csLabel)csLabel.textContent=currentDisplayCurrency;
+    }
+  }catch(e){
+    console.error('IP-based currency detection failed, keeping locale-based guess:',e);
+    // No fallback assignment needed — currentDisplayCurrency already holds the locale guess
+  }
 }
 function convertPrice(usd,currency){
   currency=currency||currentDisplayCurrency;
@@ -7038,6 +7070,7 @@ function renderSplitRows(){
   refreshAllDisplayedPrices();
   const csLabel=document.getElementById('currency-switcher-label');if(csLabel)csLabel.textContent=currentDisplayCurrency;
   fetchLiveCurrencyRates(); // fire-and-forget, fails safely to fallback rates already in place
+  detectCurrencyByIP(); // fire-and-forget, upgrades the locale guess to a real IP-based country match if it succeeds
   const linkId=new URLSearchParams(window.location.search).get('link');
   if(linkId){
     showView('smartlink');
