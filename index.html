@@ -4750,19 +4750,27 @@ function wizClearErrors(step){
   document.querySelectorAll('#wpanel-'+step+' .wiz-error-msg').forEach(el=>el.remove());
 }
 
+function ensureFieldVisible(fieldId){
+  const trackCard=document.querySelector(`.track-meta-body:has(#${CSS.escape(fieldId)})`);
+  if(trackCard&&!trackCard.classList.contains('open')){
+    const id=trackCard.dataset.id;
+    if(id) toggleTrackMeta(id);
+  }
+}
 function wizShowErrors(step, errors){
   const banner=document.getElementById('val-banner-'+step);
   const list=document.getElementById('val-list-'+step);
   if(!banner||!list) return;
 
   list.innerHTML = errors.map(e=>
-    `<li onclick="document.getElementById('${e.fieldId}')?.focus();document.getElementById('${e.fieldId}')?.scrollIntoView({behavior:'smooth',block:'center'})">${e.label}</li>`
+    `<li onclick="ensureFieldVisible('${e.fieldId}');setTimeout(()=>{document.getElementById('${e.fieldId}')?.focus();document.getElementById('${e.fieldId}')?.scrollIntoView({behavior:'smooth',block:'center'})},50)">${e.label}</li>`
   ).join('');
   banner.classList.add('show');
   banner.scrollIntoView({behavior:'smooth', block:'start'});
 
   // Highlight individual fields
   errors.forEach(e=>{
+    ensureFieldVisible(e.fieldId);
     const el=document.getElementById(e.fieldId);
     if(!el) return;
     el.classList.add('wiz-error');
@@ -4813,6 +4821,15 @@ function validateStep(step){
     if(!copyright) errors.push({fieldId:'r-copyright', label:'© Copyright holder is required'});
     if(!pcopyright) errors.push({fieldId:'r-pcopyright', label:'℗ Copyright holder is required'});
     if(!artwork) errors.push({fieldId:'art-input',   label:'Cover artwork is required (3000×3000px)'});
+
+    wizTracks.forEach((t,i)=>{
+      const m=t.meta||{};
+      const trackLabel=t.name||('Track '+(i+1));
+      if(!m.producer?.trim())
+        errors.push({fieldId:'tmc-producer-'+t.id, label:'Producer is required for "'+trackLabel+'"'});
+      if(!m.instrumental&&!m.songwriter?.trim())
+        errors.push({fieldId:'tmc-songwriter-'+t.id, label:'Songwriter is required for "'+trackLabel+'" (or mark it Instrumental)'});
+    });
   }
 
   if(step===3){
@@ -4974,6 +4991,11 @@ function renderTracklistDetails(){
         </div>
 
         <div class="track-meta-section">Credits</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(255,255,255,.6);cursor:pointer;margin-bottom:.75rem">
+          <input type="checkbox" ${m.instrumental?'checked':''} style="accent-color:var(--gold)"
+            onchange="updateTrackMeta('${t.id}','instrumental',this.checked)">
+          This track is instrumental (no lyrics — Songwriter not required)
+        </label>
         <div style="margin-bottom:6px">
           <button class="track-inherit-btn" onclick="inheritReleaseCredits('${t.id}')">
             <i class="ti ti-copy"></i> Copy from release credits
@@ -4981,13 +5003,13 @@ function renderTracklistDetails(){
         </div>
         <div class="track-meta-grid">
           <div class="track-fg">
-            <label>Producer(s)</label>
-            <input type="text" value="${esc(m.producer||'')}" placeholder="Beat maker"
+            <label>Producer(s) *</label>
+            <input type="text" value="${esc(m.producer||'')}" placeholder="Beat maker" id="tmc-producer-${t.id}"
               onchange="updateTrackMeta('${t.id}','producer',this.value)">
           </div>
           <div class="track-fg">
-            <label>Songwriter(s)</label>
-            <input type="text" value="${esc(m.songwriter||'')}" placeholder="Lyric writer(s)"
+            <label>Songwriter(s) ${m.instrumental?'':'*'}</label>
+            <input type="text" value="${esc(m.songwriter||'')}" placeholder="${m.instrumental?'Not required — instrumental':'Lyric writer(s)'}" id="tmc-songwriter-${t.id}" ${m.instrumental?'disabled':''}
               onchange="updateTrackMeta('${t.id}','songwriter',this.value)">
           </div>
           <div class="track-fg">
@@ -5084,6 +5106,7 @@ function updateTrackMeta(id,field,val){
     statusEl.innerHTML=cloudPart+(hasExtra?'<i class="ti ti-check" style="color:var(--gold)"></i>':'');
   }
   saveDraftSilent();
+  if(field==='instrumental') renderTracklistDetails();
 }
 
 function inheritReleaseCredits(id){
