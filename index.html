@@ -1579,6 +1579,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- SUBMIT - 5 STEP WIZARD -->
     <div class="page" id="page-submit">
+      <!-- BLOCKED: PENDING DELETION -->
+      <div id="submit-blocked-deletion" style="display:none;max-width:520px;margin:4rem auto;text-align:center;padding:0 1.5rem">
+        <i class="ti ti-lock" style="font-size:40px;color:#fbbf24;display:block;margin-bottom:1rem"></i>
+        <h2 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:.75rem">Submissions are paused</h2>
+        <p style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.5rem">Your account has a pending deletion request. New releases can't be submitted while this is being processed. If you've changed your mind, reach out to <a onclick="goPage('support',null)" style="color:var(--gold);cursor:pointer">Support</a> and we can help.</p>
+        <button class="btn btn-outline" onclick="goPage('profile',null)">Go to Profile</button>
+      </div>
+      <div id="submit-wizard-body">
       <!-- STEP PROGRESS BAR -->
       <div style="background:#08080C;border-bottom:1px solid rgba(255,255,255,.07);padding:0 2.5rem;position:sticky;top:62px;z-index:100">
         <div style="display:flex;align-items:stretch;max-width:960px;margin:0 auto">
@@ -1879,6 +1887,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
       </div><!-- /centering wrapper -->
+      </div><!-- /submit-wizard-body -->
     </div>
 
     <!-- ARTISTS -->
@@ -4831,7 +4840,21 @@ const ALL_STORES=[
   {name:'Amazon MP3',logo:'https://cdn.simpleicons.org/amazonmusic/FF9900',type:'download'},
   {name:'Beatport',logo:'https://cdn.simpleicons.org/beatport/00FF00',type:'download'},
 ];
-function initWizard(){
+async function initWizard(){
+  const blockedEl=document.getElementById('submit-blocked-deletion');
+  const bodyEl=document.getElementById('submit-wizard-body');
+  if(user){
+    try{
+      const {data}=await sb.from('account_deletion_requests').select('id').eq('user_id',user.id).eq('status','pending').limit(1);
+      if(data?.length){
+        if(blockedEl)blockedEl.style.display='block';
+        if(bodyEl)bodyEl.style.display='none';
+        return;
+      }
+    }catch(e){console.error('Deletion status check error (allowing submission):',e);}
+  }
+  if(blockedEl)blockedEl.style.display='none';
+  if(bodyEl)bodyEl.style.display='block';
   wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};
   renderStoresGrid();goWizard(1);
   // Check for saved draft
