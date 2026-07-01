@@ -1881,22 +1881,25 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
             <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:1.1rem">Choose a <strong style="color:var(--gold)">release date</strong></div>
-            <div class="fg"><input id="r-date" type="date" style="font-size:15px"></div>
+            <div class="fg"><input id="r-date" type="date" style="font-size:15px" onchange="checkDistroTierMismatch()"></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
-              <div style="background:linear-gradient(135deg,var(--gold),#4f46e5);border-radius:10px;padding:1.1rem;position:relative">
+              <div id="tier-priority" onclick="selectDistroTier('priority')" style="background:linear-gradient(135deg,var(--gold),#4f46e5);border-radius:10px;padding:1.1rem;position:relative;cursor:pointer;border:2px solid transparent;transition:border-color .15s">
                 <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">Priority Distro</div>
                 <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:.5rem">LESS THAN 3 DAYS</div>
                 <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.5">Skip the queue to get your music out extra fast.</div>
-                <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-top:.5rem">+$25 <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:400">(add-on)</span></div>
+                <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-top:.5rem">+$10 <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:400">(add-on)</span></div>
                 <i class="ti ti-bolt" style="position:absolute;top:10px;right:10px;font-size:20px;color:rgba(255,255,255,.3)"></i>
+                <i class="ti ti-circle-check-filled" id="tier-priority-check" style="display:none;position:absolute;bottom:10px;right:10px;font-size:18px;color:#fff"></i>
               </div>
-              <div style="background:#2a2a45;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1.1rem">
+              <div id="tier-standard" onclick="selectDistroTier('standard')" style="background:#2a2a45;border:2px solid rgba(255,255,255,.08);border-radius:10px;padding:1.1rem;cursor:pointer;transition:border-color .15s;position:relative">
                 <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">Standard Distro</div>
                 <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:.5rem">10 DAYS+</div>
                 <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.5">We'll notify you when processed and sent to stores.</div>
                 <div style="font-size:12px;font-weight:600;color:#34d399;margin-top:.5rem">Included ✓</div>
+                <i class="ti ti-circle-check-filled" id="tier-standard-check" style="display:none;position:absolute;bottom:10px;right:10px;font-size:18px;color:#34d399"></i>
               </div>
             </div>
+            <div id="tier-mismatch-warning" style="display:none;margin-top:.875rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.75rem .9rem;font-size:12px;color:#fbbf24;line-height:1.6"></div>
           </div>
           <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
             <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:1rem">Would you like to add <strong style="color:#fff">country restrictions</strong> and limit the availability of your release?</div>
@@ -4810,6 +4813,54 @@ function initWizard(){
     const minDate=new Date();minDate.setDate(minDate.getDate()+3);
     dateInput.min=minDate.toISOString().split('T')[0];
   }
+  selectedDistroTier='standard';priorityPaymentRef=null;
+  updateDistroTierUI();
+}
+let selectedDistroTier='standard';
+let priorityPaymentRef=null;
+function selectDistroTier(tier){
+  selectedDistroTier=tier;
+  if(tier==='standard')priorityPaymentRef=null; // switching away from Priority clears any prior payment for this session
+  updateDistroTierUI();
+}
+function updateDistroTierUI(){
+  const pCard=document.getElementById('tier-priority');const sCard=document.getElementById('tier-standard');
+  const pCheck=document.getElementById('tier-priority-check');const sCheck=document.getElementById('tier-standard-check');
+  if(pCard)pCard.style.borderColor=selectedDistroTier==='priority'?'#fff':'transparent';
+  if(sCard)sCard.style.borderColor=selectedDistroTier==='standard'?'var(--gold)':'rgba(255,255,255,.08)';
+  if(pCheck)pCheck.style.display=selectedDistroTier==='priority'?'block':'none';
+  if(sCheck)sCheck.style.display=selectedDistroTier==='standard'?'block':'none';
+  checkDistroTierMismatch();
+}
+function checkDistroTierMismatch(){
+  const warn=document.getElementById('tier-mismatch-warning');if(!warn)return;
+  const dateVal=document.getElementById('r-date')?.value;
+  if(!dateVal){warn.style.display='none';return;}
+  const picked=new Date(dateVal+'T00:00:00');
+  const tenDaysOut=new Date();tenDaysOut.setHours(0,0,0,0);tenDaysOut.setDate(tenDaysOut.getDate()+10);
+  if(selectedDistroTier==='standard'&&picked<tenDaysOut){
+    warn.style.display='block';
+    warn.innerHTML='<i class="ti ti-alert-triangle"></i> Your release date is less than 10 days away. Standard Distro isn\'t guaranteed to process in time — choose <strong>Priority Distro</strong> or pick a later date.';
+  } else {
+    warn.style.display='none';warn.innerHTML='';
+  }
+}
+async function payForPriorityDistro(){
+  return new Promise((resolve,reject)=>{
+    if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your connection.','err');reject(new Error('Paystack not loaded'));return;}
+    const email=user?.email;
+    if(!email){reject(new Error('Not logged in'));return;}
+    const usd=10;const pesewas=Math.round(usd*GHS_RATE*100);
+    const ref='BLK_PRIORITY_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    try{
+      const handler=PaystackPop.setup({
+        key:PK,email,amount:pesewas,currency:'GHS',ref,
+        callback:function(response){resolve(response.reference||ref);},
+        onClose:function(){reject(new Error('Payment cancelled'));}
+      });
+      handler.openIframe();
+    }catch(e){reject(e);}
+  });
 }
 // ── PRIMARY ARTIST FIELD (roster-aware) ────────────────────
 async function setupPrimaryArtistField(){
@@ -5501,6 +5552,16 @@ async function submitRelease(){
     if(step3Errors.length){toast('Step 3: '+step3Errors.map(e=>e.label).join(', '),'err');goWizard(3);wizShowErrors(3,step3Errors);return;}
   }
   if(!document.getElementById('r-terms')?.checked){toast('Please agree to the terms and conditions','err');return;}
+  if(selectedDistroTier==='priority'&&!priorityPaymentRef){
+    const btn2=document.getElementById('submit-btn');
+    try{
+      priorityPaymentRef=await payForPriorityDistro();
+      toast('Priority Distro payment confirmed','ok');
+    }catch(e){
+      toast(e.message==='Payment cancelled'?'Payment cancelled — release not submitted':'Payment failed: '+(e.message||'please try again.'),'err');
+      return;
+    }
+  }
   const btn=document.getElementById('submit-btn');btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
   try{
     let artPublicUrl='';
@@ -5560,7 +5621,8 @@ async function submitRelease(){
     const {error:dbe}=await sb.from('releases').insert({
       user_id:user.id,title,artist,genre,release_date:date,
       isrc:wizTracks[0]?.isrc||null,notes:extraInfo||null,
-      audio_url:audioPaths[0],artwork_url:artPublicUrl,status:'pending',streams:0,earnings:0
+      audio_url:audioPaths[0],artwork_url:artPublicUrl,status:'pending',streams:0,earnings:0,
+      is_priority:selectedDistroTier==='priority',priority_ref:priorityPaymentRef
     });
     if(dbe)throw new Error('Submission failed: '+dbe.message);
     toast('Release submitted! We will review it shortly.','ok');
@@ -5684,7 +5746,7 @@ function renderAdminReleases(data){
     const sub=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
     const rd=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB'):'—';
     const art=r.artwork_url?'<img src="'+r.artwork_url+'" style="width:32px;height:32px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:6px">':'';
-    return '<tr><td><input type="checkbox" class="rel-cb" data-id="'+r.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(accId)+'</td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(pName)+'</td><td style="white-space:nowrap">'+art+esc(r.title)+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'')+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+sub+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+rd+'</td><td><select class="stsel" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></td><td><input type="number" class="num-in" value="'+(r.streams||0)+'" min="0" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></td><td><input type="number" class="num-in" value="'+(r.earnings||0)+'" min="0" step="0.01" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></td><td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((r.notes||'').slice(0,30))+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+r.user_id+'\',\''+esc(pName)+'\')"><i class="ti ti-eye"></i></button><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease(\''+r.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    return '<tr><td><input type="checkbox" class="rel-cb" data-id="'+r.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(accId)+'</td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(pName)+'</td><td style="white-space:nowrap">'+art+esc(r.title)+(r.is_priority?' <span style="font-size:9px;font-weight:700;color:#08080C;background:var(--gold);padding:2px 6px;border-radius:20px;vertical-align:middle"><i class="ti ti-bolt"></i> PRIORITY</span>':'')+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'')+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+sub+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+rd+'</td><td><select class="stsel" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></td><td><input type="number" class="num-in" value="'+(r.streams||0)+'" min="0" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></td><td><input type="number" class="num-in" value="'+(r.earnings||0)+'" min="0" step="0.01" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></td><td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((r.notes||'').slice(0,30))+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+r.user_id+'\',\''+esc(pName)+'\')"><i class="ti ti-eye"></i></button><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease(\''+r.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
   }).join('');
 }
 function filterReleases(){
