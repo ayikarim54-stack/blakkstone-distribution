@@ -4045,7 +4045,24 @@ async function loadRoyalties(){
   const available=Math.max(0,totalPayout-paidOut3-pendingP);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   set('r-gross','$'+gross.toFixed(2));set('r-commission',isPaid?'$0.00':'-$'+comm.toFixed(2));
-  set('r-payout','$'+available.toFixed(2));set('r-updated',rl.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—');
+  set('r-payout','$'+available.toFixed(2));
+  try{
+    const {data:lastEntry,error:leErr}=await sb.from('royalty_entries')
+      .select('date_start,date_end').eq('user_id',user.id)
+      .order('date_start',{ascending:false}).limit(1).maybeSingle();
+    if(leErr)throw leErr;
+    if(lastEntry){
+      const period=lastEntry.date_end&&lastEntry.date_end!==lastEntry.date_start
+        ?lastEntry.date_start+' → '+lastEntry.date_end
+        :lastEntry.date_start;
+      set('r-updated',period);
+    } else {
+      set('r-updated','No reports yet');
+    }
+  }catch(e){
+    console.error('Last reporting period fetch error:',e);
+    set('r-updated','—');
+  }
   const cSub=document.getElementById('r-comm-sub');if(cSub) cSub.textContent=isPaid?'No commission (paid plan)':'Blakkstone 9% commission';
   const cidCount=allRel.filter(r=>r.content_id_opt_in).length;
   const cidEl=document.getElementById('cid-optin-count');
