@@ -710,7 +710,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .paywall-feats li i{font-size:14px;color:var(--gold);flex-shrink:0}
 .paywall-feats li strong{color:#fff}
 @media(max-width:700px){
-  #paywall>div>div>div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr!important}
+  #paywall div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr!important}
   #paywall h1{font-size:28px}
 }
 
@@ -3439,7 +3439,10 @@ function enterDashboard(){
       const paid=document.getElementById('profile-account-id');if(paid) paid.textContent=profile.account_id||'Assigning...';
     }
     updateCommBar(isPaid,isAdmin);updateUpgradePage(profile?.plan);
-    const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
+    const maNav=document.getElementById('myartists-nav');
+    const _rm=getRosterMax();
+    if(maNav)maNav.style.display=_rm>0?'':'none';
+    console.log('[My Artists nav]',{email:user?.email,plan:profile?.plan,rosterMax:_rm,navShown:_rm>0});
     showView('dashboard');
     const hashPage=window.location.hash.replace('#','');
     const validPages=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
