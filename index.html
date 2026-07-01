@@ -5797,7 +5797,7 @@ async function loadAdminStats(){
   try{
     const [{data:profiles},{data:releases},{data:payouts},{data:subs}]=await Promise.all([
       sb.from('profiles').select('id,plan,created_at'),
-      sb.from('releases').select('id,status,streams,earnings'),
+      sb.from('releases').select('id,status,streams,earnings,is_priority,priority_ref'),
       sb.from('payouts').select('id,status,amount').catch(()=>({data:[]})),
       sb.from('subscriptions').select('id,amount_usd').catch(()=>({data:[]}))
     ]);
@@ -5808,7 +5808,9 @@ async function loadAdminStats(){
     const paidPlans=(profiles||[]).filter(p=>['artist_plus','label','solo_paid'].includes(p.plan)).length;
     const pendingPay=(payouts||[]).filter(p=>p.status==='pending');
     const pendingAmt=pendingPay.reduce((a,p)=>a+parseFloat(p.amount||0),0);
-    const totalRev=(subs||[]).reduce((a,s)=>a+parseFloat(s.amount_usd||0),0);
+    const subsRev=(subs||[]).reduce((a,s)=>a+parseFloat(s.amount_usd||0),0);
+    const priorityRev=(releases||[]).filter(r=>r.is_priority&&r.priority_ref).length*10;
+    const totalRev=subsRev+priorityRev;
     const totalStreams=(releases||[]).reduce((a,r)=>a+(r.streams||0),0);
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     set('adm-artists',(profiles||[]).length);set('adm-artists-sub',newM+' new this month');
@@ -5824,7 +5826,7 @@ async function loadAdminDashboard(){
   try{
     const [{data:profiles},{data:releases},{data:subs}]=await Promise.all([
       sb.from('profiles').select('id,plan,created_at'),
-      sb.from('releases').select('id,status,streams,earnings,title,user_id,submitted_at'),
+      sb.from('releases').select('id,status,streams,earnings,title,user_id,submitted_at,is_priority,priority_ref'),
       sb.from('subscriptions').select('amount_usd,created_at,plan').catch(()=>({data:[]}))
     ]);
     const plans={solo_paid:0,artist_plus:0,label:0,admin:0,free:0};
@@ -5845,6 +5847,7 @@ async function loadAdminDashboard(){
     const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const now=new Date();const revByMonth=Array(6).fill(0);
     (subs||[]).forEach(s=>{const d=new Date(s.created_at);const diff=(now.getMonth()-d.getMonth()+12)%12;if(diff<6)revByMonth[5-diff]+=parseFloat(s.amount_usd||0);});
+    (releases||[]).filter(r=>r.is_priority&&r.priority_ref&&r.submitted_at).forEach(r=>{const d=new Date(r.submitted_at);const diff=(now.getMonth()-d.getMonth()+12)%12;if(diff<6)revByMonth[5-diff]+=10;});
     const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
     requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#D4AF37')));
   }catch(e){console.warn('loadAdminDashboard:',e);}
