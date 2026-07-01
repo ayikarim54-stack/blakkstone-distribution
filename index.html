@@ -2222,7 +2222,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="chart-card" style="margin-bottom:0">
           <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
             <i class="ti ti-chart-bar" style="color:var(--gold)"></i> Streams by Store
-            <span style="font-size:11px;font-weight:400;color:rgba(255,255,255,.35);margin-left:4px">Real data</span>
+            <span id="an-store-breakdown-label" style="font-size:11px;font-weight:400;color:rgba(255,255,255,.35);margin-left:4px">Real data</span>
           </div>
           <div id="an-stores-breakdown"></div>
         </div>
@@ -3944,6 +3944,12 @@ function renderStoreBreakdown(){
   if(!stEl)return;
 
   const filtered=getFilteredStreamData();
+  const labelEl=document.getElementById('an-store-breakdown-label');
+  if(labelEl){
+    const isSynthetic=filtered.some(e=>e._synthetic);
+    labelEl.textContent=isSynthetic?'Estimated split':'Real data';
+    labelEl.style.color=isSynthetic?'#fbbf24':'rgba(255,255,255,.35)';
+  }
   const stores=[
     {key:'spotify',name:'Spotify',logo:'https://cdn.simpleicons.org/spotify/1DB954'},
     {key:'apple_music',name:'Apple Music',logo:'https://cdn.simpleicons.org/applemusic/FC3C44'},
