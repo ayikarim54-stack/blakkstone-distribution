@@ -4808,11 +4808,6 @@ function initWizard(){
     if(state&&(state.title||state.tracks?.length)) updateDraftBanner(state);
   });
   setupPrimaryArtistField();
-  const dateInput=document.getElementById('r-date');
-  if(dateInput){
-    const minDate=new Date();minDate.setDate(minDate.getDate()+3);
-    dateInput.min=minDate.toISOString().split('T')[0];
-  }
   selectedDistroTier='standard';priorityPaymentRef=null;
   updateDistroTierUI();
 }
@@ -4830,17 +4825,32 @@ function updateDistroTierUI(){
   if(sCard)sCard.style.borderColor=selectedDistroTier==='standard'?'var(--gold)':'rgba(255,255,255,.08)';
   if(pCheck)pCheck.style.display=selectedDistroTier==='priority'?'block':'none';
   if(sCheck)sCheck.style.display=selectedDistroTier==='standard'?'block':'none';
+  const dateInput=document.getElementById('r-date');
+  if(dateInput){
+    const minDaysOut=selectedDistroTier==='priority'?3:10;
+    const minDate=new Date();minDate.setHours(0,0,0,0);minDate.setDate(minDate.getDate()+minDaysOut);
+    const minStr=minDate.toISOString().split('T')[0];
+    dateInput.min=minStr;
+    // If the currently-picked date no longer meets the new floor (e.g. switched Priority -> Standard), clear it rather than leave an invalid date sitting silently
+    if(dateInput.value&&dateInput.value<minStr){
+      dateInput.value='';
+      toast('Release date cleared — Standard Distro requires at least 10 days','err');
+    }
+  }
   checkDistroTierMismatch();
 }
 function checkDistroTierMismatch(){
   const warn=document.getElementById('tier-mismatch-warning');if(!warn)return;
   const dateVal=document.getElementById('r-date')?.value;
-  if(!dateVal){warn.style.display='none';return;}
+  if(!dateVal){warn.style.display='none';warn.innerHTML='';return;}
   const picked=new Date(dateVal+'T00:00:00');
-  const tenDaysOut=new Date();tenDaysOut.setHours(0,0,0,0);tenDaysOut.setDate(tenDaysOut.getDate()+10);
-  if(selectedDistroTier==='standard'&&picked<tenDaysOut){
+  const minDaysOut=selectedDistroTier==='priority'?3:10;
+  const floor=new Date();floor.setHours(0,0,0,0);floor.setDate(floor.getDate()+minDaysOut);
+  if(picked<floor){
     warn.style.display='block';
-    warn.innerHTML='<i class="ti ti-alert-triangle"></i> Your release date is less than 10 days away. Standard Distro isn\'t guaranteed to process in time — choose <strong>Priority Distro</strong> or pick a later date.';
+    warn.innerHTML=selectedDistroTier==='priority'
+      ?'<i class="ti ti-alert-triangle"></i> Priority Distro requires at least 3 days from today. Please choose a later date.'
+      :'<i class="ti ti-alert-triangle"></i> Standard Distro requires at least 10 days from today. Choose <strong>Priority Distro</strong> ($10) to release sooner, or pick a later date.';
   } else {
     warn.style.display='none';warn.innerHTML='';
   }
@@ -4994,9 +5004,12 @@ function validateStep(step){
       errors.push({fieldId:'r-date', label:'Release date is required'});
     } else {
       const picked=new Date(date+'T00:00:00');
-      const minAllowed=new Date();minAllowed.setHours(0,0,0,0);minAllowed.setDate(minAllowed.getDate()+3);
+      const minDaysOut=selectedDistroTier==='priority'?3:10;
+      const minAllowed=new Date();minAllowed.setHours(0,0,0,0);minAllowed.setDate(minAllowed.getDate()+minDaysOut);
       if(picked<minAllowed){
-        errors.push({fieldId:'r-date', label:'Release date must be at least 3 days from today (fastest distribution window)'});
+        errors.push({fieldId:'r-date', label:selectedDistroTier==='priority'
+          ?'Release date must be at least 3 days from today for Priority Distro'
+          :'Release date must be at least 10 days from today for Standard Distro — or choose Priority Distro'});
       }
     }
   }
