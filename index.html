@@ -4805,6 +4805,11 @@ function initWizard(){
     if(state&&(state.title||state.tracks?.length)) updateDraftBanner(state);
   });
   setupPrimaryArtistField();
+  const dateInput=document.getElementById('r-date');
+  if(dateInput){
+    const minDate=new Date();minDate.setDate(minDate.getDate()+3);
+    dateInput.min=minDate.toISOString().split('T')[0];
+  }
 }
 // ── PRIMARY ARTIST FIELD (roster-aware) ────────────────────
 async function setupPrimaryArtistField(){
@@ -4934,7 +4939,15 @@ function validateStep(step){
 
   if(step===3){
     const date=document.getElementById('r-date')?.value;
-    if(!date) errors.push({fieldId:'r-date', label:'Release date is required'});
+    if(!date){
+      errors.push({fieldId:'r-date', label:'Release date is required'});
+    } else {
+      const picked=new Date(date+'T00:00:00');
+      const minAllowed=new Date();minAllowed.setHours(0,0,0,0);minAllowed.setDate(minAllowed.getDate()+3);
+      if(picked<minAllowed){
+        errors.push({fieldId:'r-date', label:'Release date must be at least 3 days from today (fastest distribution window)'});
+      }
+    }
   }
 
   return errors;
