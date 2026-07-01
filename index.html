@@ -6179,17 +6179,26 @@ async function loadRoyaltyEntries(){
 
 async function deleteRoyaltyEntry(id){
   if(!confirm('Delete this royalty entry?'))return;
-  const {data:entry}=await sb.from('royalty_entries').select('release_id,total,streams').eq('id',id).single().catch(()=>({data:null}));
-  await sb.from('royalty_entries').delete().eq('id',id);
-  // Recalculate release earnings
-  if(entry?.release_id){
-    const {data:remaining}=await sb.from('royalty_entries').select('total,streams').eq('release_id',entry.release_id);
-    const newTotal=parseFloat(((remaining||[]).reduce((a,e)=>a+(e.total||0),0)).toFixed(2));
-    const newStreams=(remaining||[]).reduce((a,e)=>a+(e.streams||0),0);
-    await sb.from('releases').update({earnings:newTotal,streams:newStreams}).eq('id',entry.release_id);
+  try{
+    const {data:entry,error:fetchErr}=await sb.from('royalty_entries').select('release_id,total,streams').eq('id',id).single();
+    if(fetchErr)throw fetchErr;
+    const {error:delErr}=await sb.from('royalty_entries').delete().eq('id',id);
+    if(delErr)throw delErr;
+    // Recalculate release earnings — only reached if the delete above actually succeeded
+    if(entry?.release_id){
+      const {data:remaining,error:remErr}=await sb.from('royalty_entries').select('total,streams').eq('release_id',entry.release_id);
+      if(remErr)throw remErr;
+      const newTotal=parseFloat(((remaining||[]).reduce((a,e)=>a+(e.total||0),0)).toFixed(2));
+      const newStreams=(remaining||[]).reduce((a,e)=>a+(e.streams||0),0);
+      const {error:updErr}=await sb.from('releases').update({earnings:newTotal,streams:newStreams}).eq('id',entry.release_id);
+      if(updErr)throw updErr;
+    }
+    toast('Entry deleted','ok');
+    loadRoyaltyEntries();loadRoyStoreTotals();loadRoyRecentEntries();
+  }catch(e){
+    console.error('Delete royalty entry error:',e);
+    toast('Could not delete: '+(e.message||e.details||'please try again.'),'err');
   }
-  toast('Entry deleted','ok');
-  loadRoyaltyEntries();loadRoyStoreTotals();loadRoyRecentEntries();
 }
 
 async function loadRoyStoreTotals(){
