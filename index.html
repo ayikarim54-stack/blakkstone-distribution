@@ -6118,13 +6118,49 @@ async function loadNotifications(){
     ]);
     const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,account_id');
     const profileMap={};(profList||[]).forEach(p=>{profileMap[p.id]=p;});
+    // Deletion requests are rare — fetch per-account context individually rather than adding a heavy join to every page load
+    const deletionContext={};
+    if(deletions?.length){
+      await Promise.all(deletions.map(async d=>{
+        try{
+          const [{data:liveRel},{data:rosterRel},{data:pendingPay}]=await Promise.all([
+            sb.from('releases').select('id').eq('user_id',d.user_id).eq('status','live'),
+            sb.from('roster_artists').select('id').eq('user_id',d.user_id).catch(()=>({data:[]})),
+            sb.from('payouts').select('amount').eq('user_id',d.user_id).eq('status','pending').catch(()=>({data:[]}))
+          ]);
+          deletionContext[d.id]={
+            live:liveRel?.length||0,
+            roster:rosterRel?.length||0,
+            balance:(pendingPay||[]).reduce((a,p)=>a+parseFloat(p.amount||0),0)
+          };
+        }catch(e){console.error('Deletion context fetch error for',d.id,e);deletionContext[d.id]=null;}
+      }));
+    }
     const total=(payouts?.length||0)+(releases?.length||0)+(messages?.length||0)+(deletions?.length||0);
     const badge=document.getElementById('notif-badge');if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
     const badgeAdmin=document.getElementById('notif-badge-admin');if(badgeAdmin){badgeAdmin.style.display=total>0?'inline':'none';badgeAdmin.textContent=total;}
     let html='';
     if(deletions?.length){
       html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#f87171;margin-bottom:.5rem">Account Deletion Requests ('+deletions.length+')</div>';
-      html+=deletions.map(d=>{const prof=profileMap[d.user_id]||{};const name=prof.artist_name||prof.full_name||d.email||'—';const dt=d.requested_at?new Date(d.requested_at).toLocaleDateString('en-GB'):'—';const reason=d.reason?'<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;font-style:italic">"'+esc(d.reason)+'"</div>':'';return '<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(d.email||'')+' · Requested '+dt+'</div>'+reason+'</div><button class="btn btn-sm" style="background:#ef4444;color:#fff;flex-shrink:0" onclick="markDeletionCompleted(\''+d.id+'\')">Mark Done</button></div></div>';}).join('');
+      html+=deletions.map(d=>{
+        const prof=profileMap[d.user_id]||{};const name=prof.artist_name||prof.full_name||d.email||'—';const dt=d.requested_at?new Date(d.requested_at).toLocaleDateString('en-GB'):'—';
+        const reason=d.reason?'<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;font-style:italic">"'+esc(d.reason)+'"</div>':'';
+        const ctx=deletionContext[d.id];
+        let ctxRow='';
+        if(ctx){
+          const hasStakes=ctx.live>0||ctx.roster>0||ctx.balance>0;
+          const chip=(icon,label,warn)=>'<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:'+(warn?'#fbbf24':'rgba(255,255,255,.4)')+'"><i class="ti '+icon+'" style="font-size:12px"></i> '+label+'</span>';
+          ctxRow='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06)">'
+            +chip('ti-broadcast',ctx.live+' live release'+(ctx.live===1?'':'s'),ctx.live>0)
+            +chip('ti-users-group',ctx.roster+' roster artist'+(ctx.roster===1?'':'s'),ctx.roster>0)
+            +chip('ti-wallet',(ctx.balance>0?'$'+ctx.balance.toFixed(2)+' pending payout':'No pending balance'),ctx.balance>0)
+            +'</div>'
+            +(hasStakes?'<div style="font-size:11px;color:#fbbf24;margin-top:4px"><i class="ti ti-alert-triangle"></i> This account has active data — confirm before marking done.</div>':'');
+        } else {
+          ctxRow='<div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:6px">Could not load account context.</div>';
+        }
+        return '<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(d.email||'')+' · Requested '+dt+'</div>'+reason+'</div><button class="btn btn-sm" style="background:#ef4444;color:#fff;flex-shrink:0" onclick="markDeletionCompleted(\''+d.id+'\')">Mark Done</button></div>'+ctxRow+'</div>';
+      }).join('');
     }
     if(messages?.length){
       html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem">New Messages ('+messages.length+')</div>';
