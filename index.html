@@ -2832,6 +2832,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <div id="rel-modal-status-badge"></div>
           <span id="rel-modal-genre-pill" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);background:rgba(255,255,255,.07);padding:3px 9px;border-radius:20px"></span>
+          <span id="rel-modal-priority-badge"></span>
         </div>
       </div>
       <button onclick="closeReleaseModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:24px;line-height:1;padding:0;flex-shrink:0">×</button>
@@ -3620,6 +3621,8 @@ function openReleaseModal(r){
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   set('rel-modal-title',r.title||'—');set('rel-modal-artist',r.artist||'—');
   const gp=document.getElementById('rel-modal-genre-pill');if(gp) gp.textContent=r.genre||'';
+  const pb=document.getElementById('rel-modal-priority-badge');
+  if(pb) pb.innerHTML=r.is_priority?'<span style="font-size:10px;font-weight:700;color:#08080C;background:var(--gold);padding:3px 9px;border-radius:20px"><i class="ti ti-bolt"></i> PRIORITY</span>':'';
   const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
   const sb2=document.getElementById('rel-modal-status-badge');if(sb2) sb2.innerHTML='<span class="badge '+bc+'" style="font-size:12px;padding:4px 12px">'+bl+'</span>';
