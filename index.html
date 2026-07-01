@@ -1627,9 +1627,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div class="wiz-drop-zone" id="audio-drop-zone" onclick="document.getElementById('audio-input-multi').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleAudioDrop(event)">
             <i class="ti ti-file-music" style="font-size:56px;color:rgba(255,255,255,.2);display:block;margin-bottom:1rem"></i>
             <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:.4rem">Drag & Drop Files</div>
-            <div style="font-size:14px;color:rgba(255,255,255,.35)">Drop any audio files, or <span style="color:var(--gold);text-decoration:underline;cursor:pointer">browse your files</span></div>
+            <div style="font-size:14px;color:rgba(255,255,255,.35)">WAV, FLAC, or AIFF — lossless masters only, or <span style="color:var(--gold);text-decoration:underline;cursor:pointer">browse your files</span></div>
           </div>
-          <input type="file" id="audio-input-multi" accept=".wav,.mp3,.flac,audio/*" multiple style="display:none" onchange="handleAudioSelect(this)">
+          <input type="file" id="audio-input-multi" accept=".wav,.flac,.aiff,audio/wav,audio/x-wav,audio/flac,audio/aiff" multiple style="display:none" onchange="handleAudioSelect(this)">
           <div id="track-list" style="margin-top:1.5rem;text-align:left"></div>
           <div id="fast-pass-nudge" style="display:none;align-items:center;gap:8px;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.2);border-radius:9px;padding:.625rem 1rem;font-size:12px;color:rgba(255,255,255,.7);margin-top:1rem;max-width:600px;margin-left:auto;margin-right:auto"></div>
           <div style="display:flex;justify-content:flex-end;margin-top:2rem">
@@ -5126,6 +5126,16 @@ function handleAudioDrop(e){
   Array.from(e.dataTransfer.files).forEach(f=>{if(f.type.startsWith('audio/')||f.name.match(/\.(mp3|wav|flac|aiff|m4a)$/i))addTrack(f);});
 }
 async function addTrack(file){
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  const lossyExts=['mp3','m4a','aac','ogg','wma'];
+  if(lossyExts.includes(ext)){
+    toast('"'+file.name+'" is a compressed format ('+ext.toUpperCase()+'). Please upload a lossless WAV, FLAC, or AIFF master — MP3 and similar formats lose quality and may be rejected by stores.','err');
+    return;
+  }
+  if(file.size<10000){
+    toast('"'+file.name+'" looks too small to be a real audio file ('+(file.size/1024).toFixed(1)+'KB) — it may be empty or corrupted. Please check the file and try again.','err');
+    return;
+  }
   const id=Date.now()+'_'+Math.random().toString(36).slice(2,6);
   const cleanName=file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ').replace(/\b\w/g,l=>l.toUpperCase());
   // Push immediately so UI updates
