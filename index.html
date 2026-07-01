@@ -6038,14 +6038,27 @@ async function loadAdminPayouts(){
 async function loadAdminSubs(){
   const tbody=document.getElementById('admin-subs-tbody');if(!tbody)return;
   try{
-    const {data}=await sb.from('subscriptions').select('*, profiles(artist_name,full_name,email,account_id)').order('created_at',{ascending:false});
-    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No subscriptions yet.</td></tr>';return;}
-    tbody.innerHTML=data.map(s=>{
+    const [{data:subs},{data:priority}]=await Promise.all([
+      sb.from('subscriptions').select('*, profiles(artist_name,full_name,email,account_id)').order('created_at',{ascending:false}),
+      sb.from('releases').select('id,title,is_priority,priority_ref,submitted_at,user_id,profiles(artist_name,full_name,email,account_id)').eq('is_priority',true).not('priority_ref','is',null).order('submitted_at',{ascending:false})
+    ]);
+    const subRows=(subs||[]).map(s=>{
       const name=s.profiles?.artist_name||s.profiles?.full_name||s.profiles?.email||'—';
       const d=s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'—';
-      return '<tr><td style="font-weight:600;color:#fff">'+esc(name)+'</td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(s.profiles?.account_id||'—')+'</td><td style="color:var(--gold)">'+s.plan+'</td><td>'+esc(s.billing_cycle||'annual')+'</td><td style="color:#34d399;font-weight:700">$'+parseFloat(s.amount_usd||0).toFixed(2)+'</td><td>GHS '+parseFloat(s.amount_ghs||0).toFixed(2)+'</td><td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">'+esc(s.paystack_ref||'—')+'</td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td></tr>';
-    }).join('');
-  }catch(e){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Run subscriptions SQL first.</td></tr>';}
+      return {sortDate:s.created_at||'',html:'<tr><td style="font-weight:600;color:#fff">'+esc(name)+'</td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(s.profiles?.account_id||'—')+'</td><td style="color:var(--gold)">'+s.plan+'</td><td>'+esc(s.billing_cycle||'annual')+'</td><td style="color:#34d399;font-weight:700">$'+parseFloat(s.amount_usd||0).toFixed(2)+'</td><td>GHS '+parseFloat(s.amount_ghs||0).toFixed(2)+'</td><td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">'+esc(s.paystack_ref||'—')+'</td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td></tr>'};
+    });
+    const priorityRows=(priority||[]).map(r=>{
+      const name=r.profiles?.artist_name||r.profiles?.full_name||r.profiles?.email||'—';
+      const d=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
+      return {sortDate:r.submitted_at||'',html:'<tr><td style="font-weight:600;color:#fff">'+esc(name)+'</td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(r.profiles?.account_id||'—')+'</td><td style="color:#fbbf24">Priority Distro</td><td>one-time — "'+esc(r.title||'Untitled')+'"</td><td style="color:#34d399;font-weight:700">$10.00</td><td>—</td><td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">'+esc(r.priority_ref||'—')+'</td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td></tr>'};
+    });
+    const allRows=[...subRows,...priorityRows].sort((a,b)=>(b.sortDate).localeCompare(a.sortDate));
+    if(!allRows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payments yet.</td></tr>';return;}
+    tbody.innerHTML=allRows.map(r=>r.html).join('');
+  }catch(e){
+    console.error('Load admin subs error:',e);
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Run subscriptions SQL first.</td></tr>';
+  }
 }
 async function loadAdminReports(){
   try{
@@ -6054,8 +6067,10 @@ async function loadAdminReports(){
     const totalEarnings=allRel.reduce((a,r)=>a+(r.earnings||0),0);
     const totalStreams=allRel.reduce((a,r)=>a+(r.streams||0),0);
     const totalComm=totalEarnings*COMM;
+    const priorityPaid=allRel.filter(r=>r.is_priority&&r.priority_ref);
+    const priorityRevenue=priorityPaid.length*10;
     const revEl=document.getElementById('adm-revenue-summary');
-    if(revEl) revEl.innerHTML='<div class="adm-bar-row"><div class="adm-bar-label">Gross Earnings</div><div class="adm-bar-val" style="color:#34d399">$'+totalEarnings.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Commission (9%)</div><div class="adm-bar-val" style="color:var(--gold)">$'+totalComm.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Total Streams</div><div class="adm-bar-val" style="color:#60a5fa">'+totalStreams.toLocaleString()+'</div></div>';
+    if(revEl) revEl.innerHTML='<div class="adm-bar-row"><div class="adm-bar-label">Gross Earnings</div><div class="adm-bar-val" style="color:#34d399">$'+totalEarnings.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Commission (9%)</div><div class="adm-bar-val" style="color:var(--gold)">$'+totalComm.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Priority Distro ('+priorityPaid.length+')</div><div class="adm-bar-val" style="color:#fbbf24">$'+priorityRevenue.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Total Streams</div><div class="adm-bar-val" style="color:#60a5fa">'+totalStreams.toLocaleString()+'</div></div>';
     const maxRS=allRel[0]?.streams||1;
     const trEl=document.getElementById('adm-top-releases');
     if(trEl) trEl.innerHTML=allRel.slice(0,5).map(r=>'<div class="adm-bar-row"><div class="adm-bar-label" style="width:120px">'+esc(r.title)+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round(((r.streams||0)/maxRS)*100)+'%"></div></div><div class="adm-bar-val">'+(r.streams||0).toLocaleString()+'</div></div>').join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No releases yet</div>';
