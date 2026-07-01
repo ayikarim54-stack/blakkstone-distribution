@@ -1550,12 +1550,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="rel-search-bar">
         <div style="position:relative;flex:1">
           <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.3);font-size:15px;pointer-events:none"></i>
-          <input type="text" placeholder="Search for a release..." id="rel-search-input" oninput="filterReleasesBySearch()" style="padding-left:38px;width:100%">
+          <input type="text" placeholder="Search for a release..." id="rel-search-input" oninput="filterReleasesCombined()" style="padding-left:38px;width:100%">
         </div>
-        <button class="btn" style="background:#2a2a2a;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;padding:9px 16px;flex-shrink:0">
-          <i class="ti ti-adjustments-horizontal"></i> Filters
-        </button>
+        <div style="position:relative">
+          <button class="btn" id="rel-filter-btn" onclick="toggleRelGenreMenu()" style="background:#2a2a2a;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;padding:9px 16px;flex-shrink:0">
+            <i class="ti ti-adjustments-horizontal"></i> Filters
+          </button>
+          <div id="rel-genre-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#161619;border:1px solid var(--line);border-radius:10px;padding:.5rem;min-width:180px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.4)"></div>
+        </div>
       </div>
+      <div id="rel-active-filters" style="display:none;margin-bottom:.75rem"></div>
       <div id="all-releases"></div>
     </div>
 
@@ -3514,6 +3518,7 @@ function releaseRow(r){
   _releaseMap[r.id]=r;
   return '<div class="rr" onclick="openReleaseById(\''+r.id+'\')"><div class="r-art">'+art+'</div><div class="r-info"><div class="r-title">'+esc(r.title)+'</div><div class="r-meta">'+esc(r.artist)+' · '+esc(r.genre||'')+' · '+d+'</div></div><span class="badge '+bc+'">'+bl+'</span><i class="ti ti-chevron-right" style="color:rgba(255,255,255,.2);font-size:16px;flex-shrink:0"></i></div>';
 }
+let relFilterState={status:'all',search:'',genre:''};
 function renderReleasesList(releases,filter){
   const list=document.getElementById('all-releases');if(!list)return;
   let filtered=releases;
@@ -3525,11 +3530,61 @@ function renderReleasesList(releases,filter){
 }
 function filterRelTab(filter,el){
   document.querySelectorAll('.rel-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
-  renderReleasesList(allRelData,filter);
+  relFilterState.status=filter;
+  filterReleasesCombined();
 }
-function filterReleasesBySearch(){
-  const q=(document.getElementById('rel-search-input')?.value||'').toLowerCase();
-  const filtered=allRelData.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
+function getRelGenreList(){
+  const genres=new Set();
+  allRelData.forEach(r=>{if(r.genre)genres.add(r.genre);});
+  return Array.from(genres).sort();
+}
+function toggleRelGenreMenu(){
+  const menu=document.getElementById('rel-genre-menu');if(!menu)return;
+  const opening=menu.style.display==='none';
+  if(!opening){menu.style.display='none';return;}
+  const genres=getRelGenreList();
+  if(!genres.length){menu.innerHTML='<div style="padding:.75rem;font-size:12px;color:rgba(255,255,255,.35)">No genres yet</div>';}
+  else{
+    menu.innerHTML='<div onclick="setRelGenreFilter(\'\')" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:'+(relFilterState.genre===''?'var(--gold)':'#fff')+';font-weight:'+(relFilterState.genre===''?'700':'400')+'">All genres</div>'
+      +genres.map(g=>'<div onclick="setRelGenreFilter(\''+esc(g).replace(/'/g,"\\'")+'\')" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:'+(relFilterState.genre===g?'var(--gold)':'#fff')+';font-weight:'+(relFilterState.genre===g?'700':'400')+'">'+esc(g)+'</div>').join('');
+  }
+  menu.style.display='block';
+  document.addEventListener('click',closeRelGenreMenuOnOutsideClick,{capture:true});
+}
+function closeRelGenreMenuOnOutsideClick(e){
+  const menu=document.getElementById('rel-genre-menu');const btn=document.getElementById('rel-filter-btn');
+  if(menu&&!menu.contains(e.target)&&e.target!==btn&&!btn?.contains(e.target)){
+    menu.style.display='none';
+    document.removeEventListener('click',closeRelGenreMenuOnOutsideClick,{capture:true});
+  }
+}
+function setRelGenreFilter(genre){
+  relFilterState.genre=genre;
+  document.getElementById('rel-genre-menu').style.display='none';
+  document.removeEventListener('click',closeRelGenreMenuOnOutsideClick,{capture:true});
+  const btn=document.getElementById('rel-filter-btn');
+  if(btn) btn.innerHTML='<i class="ti ti-adjustments-horizontal"></i> '+(genre?esc(genre):'Filters');
+  filterReleasesCombined();
+}
+function filterReleasesCombined(){
+  relFilterState.search=(document.getElementById('rel-search-input')?.value||'').toLowerCase();
+  let filtered=allRelData;
+  const s=relFilterState.status;
+  if(s==='live')filtered=filtered.filter(r=>r.status==='live');
+  else if(s==='pending')filtered=filtered.filter(r=>r.status==='pending'||r.status==='review');
+  else if(s==='rejected')filtered=filtered.filter(r=>r.status==='rejected');
+  else if(s==='takendown')filtered=filtered.filter(r=>r.status==='takendown');
+  if(relFilterState.genre)filtered=filtered.filter(r=>r.genre===relFilterState.genre);
+  if(relFilterState.search)filtered=filtered.filter(r=>(r.title||'').toLowerCase().includes(relFilterState.search)||(r.artist||'').toLowerCase().includes(relFilterState.search));
+  const activeWrap=document.getElementById('rel-active-filters');
+  if(activeWrap){
+    if(relFilterState.genre){
+      activeWrap.style.display='block';
+      activeWrap.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.25);color:var(--gold);font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px">'+esc(relFilterState.genre)+' <i class="ti ti-x" style="cursor:pointer" onclick="setRelGenreFilter(\'\')"></i></span>';
+    } else {
+      activeWrap.style.display='none';activeWrap.innerHTML='';
+    }
+  }
   document.getElementById('all-releases').innerHTML=filtered.length?'<div class="rl">'+filtered.map(r=>releaseRow(r)).join('')+'</div>':'<div class="empty"><i class="ti ti-music-off"></i><p>No results.</p></div>';
 }
 function filterOvSearch(){
