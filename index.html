@@ -1780,6 +1780,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <button class="wiz-toggle" id="exp-yes" onclick="setToggle('explicit','yes')">Yes — Explicit</button>
             </div>
           </div>
+          <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-top:1.5rem">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:.5rem">
+              <div style="font-size:14px;color:rgba(255,255,255,.8)">Enable <strong style="color:#fff">YouTube Content Protection</strong>?</div>
+              <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px">Coming soon</span>
+            </div>
+            <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:.75rem">We're building automatic detection of unlicensed use of your music on YouTube, with monetization on any matches found. Opt in now and we'll enable it on this release the moment it launches — no action needed from you later.</p>
+            <div style="display:flex;gap:8px">
+              <button class="wiz-toggle active" id="cid-no" onclick="setToggle('contentid','no')">Not now</button>
+              <button class="wiz-toggle" id="cid-yes" onclick="setToggle('contentid','yes')">Yes, opt in</button>
+            </div>
+          </div>
         </div>
         <div style="display:flex;gap:10px;margin-top:2rem">
           <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(2)"><i class="ti ti-arrow-left"></i> Back</button>
@@ -1903,6 +1914,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
           <!-- COMMISSION NOTICE -->
           <div id="commission-bar"></div>
+
+          <!-- CONTENT PROTECTION STATUS -->
+          <div style="background:var(--card,#1a1a1a);border:1px solid rgba(212,175,55,.15);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:.5rem">
+              <i class="ti ti-shield-check" style="color:var(--gold);font-size:18px"></i>
+              <div style="font-size:15px;font-weight:700;color:#fff">YouTube Content Protection</div>
+              <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px">Coming soon</span>
+            </div>
+            <p style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:.75rem">We're building automatic detection of unlicensed use of your music on YouTube, with monetization on any matches found. This isn't live yet — nothing is being scanned or claimed today. Once it launches, we'll enable it for any release you've opted in to, with no action needed from you.</p>
+            <div id="cid-optin-count" style="font-size:12px;color:rgba(255,255,255,.35)"></div>
+          </div>
 
           <!-- EARNINGS HERO CARDS -->
           <div class="roy-hero-grid">
@@ -3975,6 +3997,13 @@ async function loadRoyalties(){
   set('r-gross','$'+gross.toFixed(2));set('r-commission',isPaid?'$0.00':'-$'+comm.toFixed(2));
   set('r-payout','$'+available.toFixed(2));set('r-updated',rl.length?new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'}):'—');
   const cSub=document.getElementById('r-comm-sub');if(cSub) cSub.textContent=isPaid?'No commission (paid plan)':'Blakkstone 9% commission';
+  const cidCount=allRel.filter(r=>r.content_id_opt_in).length;
+  const cidEl=document.getElementById('cid-optin-count');
+  if(cidEl){
+    cidEl.textContent=cidCount>0
+      ?cidCount+' release'+(cidCount===1?'':'s')+' opted in — ready to activate once this launches.'
+      :'No releases opted in yet. You can opt in during submission for any new release.';
+  }
   const commBar=document.getElementById('commission-bar');
   if(commBar){
     if(!isPaid&&gross>0) commBar.innerHTML='<div style="background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.25);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:var(--gold);margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><span><i class="ti ti-crown"></i> Upgrade to keep 100% of your royalties.</span><button class="btn btn-purple btn-sm" onclick="goPage(\'upgrade\',null)">Upgrade</button></div>';
@@ -5320,7 +5349,7 @@ async function previewArtwork(input){
 }
 function setToggle(key,val){
   wizToggleState[key]=val;
-  const prefix={'country-restrict':'cr','prev-released':'pr','explicit':'exp'}[key];
+  const prefix={'country-restrict':'cr','prev-released':'pr','explicit':'exp','contentid':'cid'}[key];
   if(prefix){
     document.getElementById(prefix+'-no')?.classList.toggle('active',val==='no');
     document.getElementById(prefix+'-yes')?.classList.toggle('active',val==='yes');
@@ -5365,6 +5394,7 @@ function collectWizardState(){
     hasRemix: document.getElementById('r-has-remix')?.checked||false,
     releaseDate: document.getElementById('r-date')?.value||'',
     explicit: wizToggleState['explicit']||'no',
+    contentIdOptIn: wizToggleState['contentid']||'no',
     prevReleased: wizToggleState['prev-released']||'no',
     countryRestrict: wizToggleState['country-restrict']||'no',
     stores: wizStores,
@@ -5490,6 +5520,7 @@ function restoreWizardState(state){
     }
   });
   if(state.explicit) setToggle('explicit',state.explicit);
+  if(state.contentIdOptIn) setToggle('contentid',state.contentIdOptIn);
   if(state.prevReleased) setToggle('prev-released',state.prevReleased);
   if(state.countryRestrict) setToggle('country-restrict',state.countryRestrict);
   // Restore tracks with their cloud URLs
@@ -5639,7 +5670,8 @@ async function submitRelease(){
       user_id:user.id,title,artist,genre,release_date:date,
       isrc:wizTracks[0]?.isrc||null,notes:extraInfo||null,
       audio_url:audioPaths[0],artwork_url:artPublicUrl,status:'pending',streams:0,earnings:0,
-      is_priority:selectedDistroTier==='priority',priority_ref:priorityPaymentRef
+      is_priority:selectedDistroTier==='priority',priority_ref:priorityPaymentRef,
+      content_id_opt_in:wizToggleState['contentid']==='yes'
     });
     if(dbe)throw new Error('Submission failed: '+dbe.message);
     toast('Release submitted! We will review it shortly.','ok');
