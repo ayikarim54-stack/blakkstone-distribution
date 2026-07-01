@@ -2966,9 +2966,10 @@ function convertPrice(usd,currency){
 }
 async function fetchLiveCurrencyRates(){
   try{
-    const res=await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-    if(!res.ok)throw new Error('rate fetch failed');
+    const res=await fetch('https://open.er-api.com/v6/latest/USD');
+    if(!res.ok)throw new Error('rate fetch failed: HTTP '+res.status);
     const data=await res.json();
+    if(data?.result!=='success')throw new Error('rate fetch returned non-success result: '+(data?.result||'unknown'));
     if(data?.rates){
       currentDisplayRates={...CURRENCY_FALLBACK_RATES,...data.rates};
       refreshAllDisplayedPrices();
