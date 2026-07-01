@@ -3031,6 +3031,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <div class="overlay" id="artist-overlay">
   <div class="modal">
     <h3 id="artist-modal-title">Artist Releases <button onclick="closeArtistModal()">×</button></h3>
+    <div id="artist-notes-section" style="margin-bottom:1.25rem"></div>
     <div id="artist-modal-body"></div>
   </div>
 </div>
@@ -4636,6 +4637,8 @@ async function openArtistModal(userId,name){
   const {data:rl}=await sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false});
   const releases=rl||[];
   document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button>';
+  _currentArtistModalUserId=userId;
+  await loadArtistNotes(userId);
   if(!releases.length){document.getElementById('artist-modal-body').innerHTML='<p style="color:var(--muted);font-size:13px">No releases yet.</p>';document.getElementById('artist-overlay').classList.add('open');return;}
   document.getElementById('artist-modal-body').innerHTML=releases.map(r=>{
     const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
@@ -4645,6 +4648,57 @@ async function openArtistModal(userId,name){
   document.getElementById('artist-overlay').classList.add('open');
 }
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
+// ── ADMIN ARTIST NOTES (private, admin-only) ────────────────
+let _currentArtistModalUserId=null;
+async function loadArtistNotes(userId){
+  const container=document.getElementById('artist-notes-section');if(!container)return;
+  container.innerHTML='<div style="text-align:center;padding:.75rem"><span class="loader" style="width:16px;height:16px"></span></div>';
+  try{
+    const {data,error}=await sb.from('admin_artist_notes').select('*').eq('target_user_id',userId).order('created_at',{ascending:false});
+    if(error)throw error;
+    renderArtistNotes(data||[]);
+  }catch(e){
+    console.error('Load artist notes error:',e);
+    container.innerHTML='<div style="font-size:12px;color:#f87171">Could not load notes: '+esc(e.message||'unknown error')+'</div>';
+  }
+}
+function renderArtistNotes(notes){
+  const container=document.getElementById('artist-notes-section');if(!container)return;
+  const list=notes.length
+    ?notes.map(n=>{
+      const d=n.created_at?new Date(n.created_at).toLocaleString('en-GB'):'—';
+      return '<div style="background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.15);border-radius:9px;padding:.75rem .9rem;margin-bottom:6px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.6;flex:1">'+esc(n.note)+'</div><button onclick="deleteArtistNote(\''+n.id+'\')" title="Delete note" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.25);font-size:14px;flex-shrink:0"><i class="ti ti-trash"></i></button></div><div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">'+d+(n.created_by?' · '+esc(n.created_by):'')+'</div></div>';
+    }).join('')
+    :'';
+  container.innerHTML='<div class="slabel" style="font-size:11px;margin-bottom:.5rem"><i class="ti ti-note"></i> Internal Notes ('+notes.length+') <span style="font-weight:400;color:rgba(255,255,255,.3);text-transform:none;letter-spacing:0">— private, never shown to artist</span></div>'
+    +list
+    +'<div style="display:flex;gap:6px;margin-top:'+(notes.length?'8px':'0')+'"><input id="new-artist-note" type="text" placeholder="Add a private note..." style="flex:1;background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:#fff;font-size:12px" onkeydown="if(event.key===\'Enter\')addArtistNote()"><button class="btn btn-gold btn-sm" onclick="addArtistNote()"><i class="ti ti-plus"></i></button></div>';
+}
+async function addArtistNote(){
+  const input=document.getElementById('new-artist-note');if(!input)return;
+  const note=input.value.trim();
+  if(!note){toast('Write a note first','err');return;}
+  if(!_currentArtistModalUserId)return;
+  try{
+    const {error}=await sb.from('admin_artist_notes').insert({target_user_id:_currentArtistModalUserId,note,created_by:user?.email||'Admin'});
+    if(error)throw error;
+    await loadArtistNotes(_currentArtistModalUserId);
+  }catch(e){
+    console.error('Add artist note error:',e);
+    toast('Could not save note: '+(e.message||'please try again.'),'err');
+  }
+}
+async function deleteArtistNote(id){
+  if(!confirm('Delete this note?'))return;
+  try{
+    const {error}=await sb.from('admin_artist_notes').delete().eq('id',id);
+    if(error)throw error;
+    if(_currentArtistModalUserId)await loadArtistNotes(_currentArtistModalUserId);
+  }catch(e){
+    console.error('Delete artist note error:',e);
+    toast('Could not delete: '+(e.message||'please try again.'),'err');
+  }
+}
 
 
 // ── WIZARD ──────────────────────────────────────────────
