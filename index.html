@@ -2949,6 +2949,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <button onclick="closeReleaseModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:24px;line-height:1;padding:0;flex-shrink:0">×</button>
     </div>
     <div id="rel-modal-reason-banner" style="display:none;padding:1rem 1.5rem;background:rgba(239,68,68,.08);border-bottom:1px solid rgba(239,68,68,.2)"></div>
+    <div id="rel-modal-history-section" style="padding:0 1.5rem"></div>
 
     <!-- ANALYTICS STATS -->
     <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
@@ -3675,6 +3676,7 @@ function openReleaseModal(r){
       reasonBanner.style.display='none';reasonBanner.innerHTML='';
     }
   }
+  loadReleaseStatusHistory(r.id);
   set('rel-modal-streams',(r.streams||0).toLocaleString());set('rel-modal-earnings','$'+(r.earnings||0).toFixed(2));
   set('rel-modal-payout','$'+payout.toFixed(2));set('rel-modal-payout-sub',isPaid?'100% yours':'After 9% commission');
   set('rel-modal-date',r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—');
@@ -4735,6 +4737,35 @@ function toggleArtistAuditLog(){
   body.style.display=opening?'block':'none';
   if(chevron) chevron.style.transform=opening?'rotate(90deg)':'rotate(0deg)';
 }
+// ── RELEASE STATUS TIMELINE (visible to the release's own artist + admin) ──
+async function loadReleaseStatusHistory(releaseId){
+  const container=document.getElementById('rel-modal-history-section');if(!container)return;
+  container.innerHTML='';
+  try{
+    const {data,error}=await sb.from('release_status_history').select('*').eq('release_id',releaseId).order('changed_at',{ascending:true});
+    if(error)throw error;
+    renderReleaseStatusHistory(data||[]);
+  }catch(e){
+    console.error('Load status history error:',e);
+    // Fail quietly — this is supplementary context, not core release info
+  }
+}
+function renderReleaseStatusHistory(entries){
+  const container=document.getElementById('rel-modal-history-section');if(!container)return;
+  if(!entries.length){container.innerHTML='';return;}
+  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'};
+  const dotColor={pending:'#fbbf24',review:'#60a5fa',live:'#34d399',rejected:'#f87171',takendown:'#9ca3af'};
+  const rows=entries.map((e,i)=>{
+    const d=e.changed_at?new Date(e.changed_at).toLocaleString('en-GB'):'—';
+    const label=bl[e.new_status]||e.new_status;
+    const isLast=i===entries.length-1;
+    return '<div style="display:flex;gap:10px;padding-bottom:'+(isLast?'0':'.75rem')+'">'
+      +'<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0"><div style="width:9px;height:9px;border-radius:50%;background:'+(dotColor[e.new_status]||'#666')+';margin-top:3px"></div>'+(isLast?'':'<div style="width:1.5px;flex:1;background:rgba(255,255,255,.1);margin-top:3px"></div>')+'</div>'
+      +'<div style="padding-bottom:.25rem"><div style="font-size:12.5px;font-weight:600;color:#fff">'+esc(label)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+d+'</div></div>'
+      +'</div>';
+  }).join('');
+  container.innerHTML='<div style="padding:1rem 0;border-bottom:1px solid rgba(255,255,255,.07)"><div class="slabel" style="font-size:11px;margin-bottom:.75rem"><i class="ti ti-timeline"></i> Status Timeline</div>'+rows+'</div>';
+}
 
 
 // ── WIZARD ──────────────────────────────────────────────
@@ -5674,11 +5705,20 @@ async function updateStatus(id,status,sel){
   }
   const update={status};
   update.status_reason=needsReason?reason:null;
+  const priorRelease=_releaseMap[id];
+  const oldStatus=priorRelease?.status||null;
   const {error}=await sb.from('releases').update(update).eq('id',id);
   if(error){
     console.error('Update status error:',error);
     toast('Could not update status: '+error.message,'err');
     return;
+  }
+  if(priorRelease?.user_id&&oldStatus!==status){
+    sb.from('release_status_history').insert({
+      release_id:id,user_id:priorRelease.user_id,
+      old_status:oldStatus,new_status:status,
+      reason:needsReason?reason:null
+    }).then(({error})=>{if(error)console.error('Status history insert error (status update itself succeeded):',error);});
   }
   if(_releaseMap[id]){_releaseMap[id].status=status;_releaseMap[id].status_reason=update.status_reason;}
   const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',takendown:'color:#9ca3af'};
