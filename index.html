@@ -1315,13 +1315,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <!-- ══════════════ LEGAL (TERMS / PRIVACY) ══════════════ -->
 <div class="view" id="legal" style="background:var(--off);align-items:flex-start;justify-content:center;padding:3rem 1rem;overflow-y:auto">
   <div style="max-width:720px;width:100%">
-    <a href="/" style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;text-decoration:none;margin-bottom:1.5rem"><i class="ti ti-arrow-left"></i> Back to Blakkstone</a>
-    <div style="display:flex;gap:8px;margin-bottom:2rem;border-bottom:1px solid var(--line)">
-      <button id="legal-tab-terms" onclick="showLegalPage('terms')" style="background:none;border:none;padding:.75rem 1rem;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent">Terms of Service</button>
-      <button id="legal-tab-privacy" onclick="showLegalPage('privacy')" style="background:none;border:none;padding:.75rem 1rem;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent">Privacy Policy</button>
+    <a href="/" style="display:inline-flex;align-items:center;gap:6px;color:#666;font-size:13px;text-decoration:none;margin-bottom:1.5rem"><i class="ti ti-arrow-left"></i> Back to Blakkstone</a>
+    <div style="display:flex;gap:8px;margin-bottom:2rem;border-bottom:1px solid #e8e8e8">
+      <button id="legal-tab-terms" onclick="showLegalPage('terms')" style="background:none;border:none;padding:.75rem 1rem;font-size:14px;font-weight:700;color:#666;cursor:pointer;border-bottom:2px solid transparent">Terms of Service</button>
+      <button id="legal-tab-privacy" onclick="showLegalPage('privacy')" style="background:none;border:none;padding:.75rem 1rem;font-size:14px;font-weight:700;color:#666;cursor:pointer;border-bottom:2px solid transparent">Privacy Policy</button>
     </div>
-    <div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:1.75rem;font-size:13px;color:#fbbf24;line-height:1.6"><i class="ti ti-alert-triangle"></i> This page is a placeholder. Final terms are pending legal review and are not yet in effect.</div>
-    <div id="legal-content" style="color:rgba(255,255,255,.7);font-size:14px;line-height:1.8"></div>
+    <div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:1.75rem;font-size:13px;color:#a07d10;line-height:1.6"><i class="ti ti-alert-triangle"></i> This page is a placeholder. Final terms are pending legal review and are not yet in effect.</div>
+    <div id="legal-content" style="font-size:14px;line-height:1.8"></div>
   </div>
 </div>
 
@@ -4779,47 +4779,47 @@ function showLegalPage(page){
   ['terms','privacy'].forEach(p=>{
     const tab=document.getElementById('legal-tab-'+p);
     if(tab){
-      tab.style.color=p===page?'var(--gold)':'var(--muted)';
-      tab.style.borderBottomColor=p===page?'var(--gold)':'transparent';
+      tab.style.color=p===page?'#a07d10':'#666';
+      tab.style.borderBottomColor=p===page?'#a07d10':'transparent';
     }
   });
   const content=document.getElementById('legal-content');
   if(!content)return;
   if(page==='privacy'){
     content.innerHTML=[
-      '<h2 style="font-size:18px;color:#fff;margin-bottom:.5rem">Privacy Policy</h2>',
-      '<p style="margin-bottom:1.25rem"><em>Placeholder — pending legal review. Not yet in effect.</em></p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">1. Information We Collect</h3>',
-      '<p style="margin-bottom:1rem">Account details you provide (name, email, artist name), release and catalog metadata, payment and payout information processed via Paystack, and usage data related to your account activity.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">2. How We Use It</h3>',
-      '<p style="margin-bottom:1rem">To operate your account, distribute your music to stores, process payments and payouts, and communicate with you about your releases and account.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">3. Third Parties</h3>',
-      '<p style="margin-bottom:1rem">We share data with digital service providers (Spotify, Apple Music, and similar stores) as required to distribute your music, and with Paystack to process payments. We do not sell your personal data.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">4. Data Storage</h3>',
-      '<p style="margin-bottom:1rem">Account and catalog data is stored via our infrastructure provider (Supabase). Audio and artwork files are stored securely and used solely for distribution to the stores you select.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">5. Your Rights</h3>',
-      '<p style="margin-bottom:1rem">You may request access to, correction of, or deletion of your personal data at any time via your account settings or by contacting Support.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">6. Contact</h3>',
-      '<p style="margin-bottom:1rem">Questions about this policy can be directed to Support from within your dashboard.</p>'
+      '<h2 style="font-size:18px;color:#111;margin-bottom:.5rem">Privacy Policy</h2>',
+      '<p style="margin-bottom:1.25rem;color:#666"><em>Placeholder — pending legal review. Not yet in effect.</em></p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">1. Information We Collect</h3>',
+      '<p style="margin-bottom:1rem;color:#444">Account details you provide (name, email, artist name), release and catalog metadata, payment and payout information processed via Paystack, and usage data related to your account activity.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">2. How We Use It</h3>',
+      '<p style="margin-bottom:1rem;color:#444">To operate your account, distribute your music to stores, process payments and payouts, and communicate with you about your releases and account.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">3. Third Parties</h3>',
+      '<p style="margin-bottom:1rem;color:#444">We share data with digital service providers (Spotify, Apple Music, and similar stores) as required to distribute your music, and with Paystack to process payments. We do not sell your personal data.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">4. Data Storage</h3>',
+      '<p style="margin-bottom:1rem;color:#444">Account and catalog data is stored via our infrastructure provider (Supabase). Audio and artwork files are stored securely and used solely for distribution to the stores you select.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">5. Your Rights</h3>',
+      '<p style="margin-bottom:1rem;color:#444">You may request access to, correction of, or deletion of your personal data at any time via your account settings or by contacting Support.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">6. Contact</h3>',
+      '<p style="margin-bottom:1rem;color:#444">Questions about this policy can be directed to Support from within your dashboard.</p>'
     ].join('');
   } else {
     content.innerHTML=[
-      '<h2 style="font-size:18px;color:#fff;margin-bottom:.5rem">Terms of Service</h2>',
-      '<p style="margin-bottom:1.25rem"><em>Placeholder — pending legal review. Not yet in effect.</em></p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">1. Your Content</h3>',
-      '<p style="margin-bottom:1rem">You confirm you own or hold the necessary rights to distribute any music, artwork, and metadata you submit, and that doing so does not infringe on the rights of any third party.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">2. Distribution</h3>',
-      '<p style="margin-bottom:1rem">We distribute your submitted releases to the digital service providers you select, subject to each store\'s own content and technical requirements.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">3. Royalties &amp; Payouts</h3>',
-      '<p style="margin-bottom:1rem">Royalty splits and commission terms are as displayed in your dashboard at the time of submission or payout request. Payments are processed via Paystack.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">4. Account &amp; Plan Terms</h3>',
-      '<p style="margin-bottom:1rem">Subscription plans, pricing, and included features are as displayed at checkout. Plans renew annually unless cancelled.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">5. Prohibited Content</h3>',
-      '<p style="margin-bottom:1rem">You may not submit content that infringes copyright, contains unauthorized samples, or otherwise violates the content policies of our distribution partners.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">6. Termination</h3>',
-      '<p style="margin-bottom:1rem">You may request account deletion at any time via your account settings. We may suspend accounts for violations of these terms or applicable store policies.</p>',
-      '<h3 style="font-size:15px;color:#fff;margin:1.25rem 0 .5rem">7. Contact</h3>',
-      '<p style="margin-bottom:1rem">Questions about these terms can be directed to Support from within your dashboard.</p>'
+      '<h2 style="font-size:18px;color:#111;margin-bottom:.5rem">Terms of Service</h2>',
+      '<p style="margin-bottom:1.25rem;color:#666"><em>Placeholder — pending legal review. Not yet in effect.</em></p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">1. Your Content</h3>',
+      '<p style="margin-bottom:1rem;color:#444">You confirm you own or hold the necessary rights to distribute any music, artwork, and metadata you submit, and that doing so does not infringe on the rights of any third party.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">2. Distribution</h3>',
+      '<p style="margin-bottom:1rem;color:#444">We distribute your submitted releases to the digital service providers you select, subject to each store\'s own content and technical requirements.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">3. Royalties &amp; Payouts</h3>',
+      '<p style="margin-bottom:1rem;color:#444">Royalty splits and commission terms are as displayed in your dashboard at the time of submission or payout request. Payments are processed via Paystack.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">4. Account &amp; Plan Terms</h3>',
+      '<p style="margin-bottom:1rem;color:#444">Subscription plans, pricing, and included features are as displayed at checkout. Plans renew annually unless cancelled.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">5. Prohibited Content</h3>',
+      '<p style="margin-bottom:1rem;color:#444">You may not submit content that infringes copyright, contains unauthorized samples, or otherwise violates the content policies of our distribution partners.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">6. Termination</h3>',
+      '<p style="margin-bottom:1rem;color:#444">You may request account deletion at any time via your account settings. We may suspend accounts for violations of these terms or applicable store policies.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">7. Contact</h3>',
+      '<p style="margin-bottom:1rem;color:#444">Questions about these terms can be directed to Support from within your dashboard.</p>'
     ].join('');
   }
 }
