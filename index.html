@@ -1976,12 +1976,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div class="chart-card" style="margin-bottom:0">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
                 <div>
-                  <div style="font-size:15px;font-weight:700;color:#fff">Earnings Overview</div>
-                  <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px">Monthly earnings estimate</div>
+                  <div style="font-size:15px;font-weight:700;color:#fff">Earnings by Status</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px">Real totals from your releases</div>
                 </div>
-                <div style="font-size:12px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.05);padding:4px 10px;border-radius:6px">Last 6 months</div>
               </div>
-              <canvas id="earnings-chart" height="180" style="width:100%;display:block"></canvas>
+              <div id="earnings-breakdown"></div>
             </div>
             <div class="chart-card" style="margin-bottom:0">
               <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
@@ -4061,11 +4060,20 @@ async function loadRoyalties(){
     else if(pendingP>0) commBar.innerHTML='<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1.25rem"><i class="ti ti-clock"></i> $'+pendingP.toFixed(2)+' pending payout.</div>';
     else commBar.innerHTML='';
   }
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now=new Date();
-  const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
-  const cd=[0,0,0,0,0,gross].map((v,i)=>i===5?v:parseFloat((gross*Math.random()*.3).toFixed(2)));
-  requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('earnings-chart',labels,cd,'#D4AF37')));
+  const byStatus={};
+  allRel.forEach(r=>{const s=r.status||'pending';byStatus[s]=(byStatus[s]||0)+(r.earnings||0);});
+  const statusLabels={live:'Live',pending:'Pending',review:'In Review',rejected:'Rejected',takendown:'Taken Down'};
+  const statusColors={live:'#34d399',pending:'#fbbf24',review:'#60a5fa',rejected:'#f87171',takendown:'#9ca3af'};
+  const breakdownEl=document.getElementById('earnings-breakdown');
+  if(breakdownEl){
+    const rows=Object.entries(byStatus).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    breakdownEl.innerHTML=rows.length
+      ?rows.map(([status,val])=>{
+        const pct=gross>0?Math.round((val/gross)*100):0;
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:'+(statusColors[status]||'#6b7280')+'"></span><span style="font-size:13px;color:rgba(255,255,255,.8)">'+(statusLabels[status]||status)+'</span></div><div style="text-align:right"><span style="font-size:13px;font-weight:700;color:#fff">$'+val.toFixed(2)+'</span><span style="font-size:11px;color:rgba(255,255,255,.3);margin-left:6px">'+pct+'%</span></div></div>';
+      }).join('')
+      :'<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No earnings yet</div>';
+  }
   const bestEl=document.getElementById('best-stores');
   if(bestEl) bestEl.innerHTML=DSP_STORES.slice(0,5).map(s=>{
     const rev=(gross*s.share);const logo=s.logo?'<img src="'+s.logo+'" width="18" height="18" style="object-fit:contain;display:block">':'';
