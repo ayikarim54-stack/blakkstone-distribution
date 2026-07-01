@@ -6084,6 +6084,22 @@ async function submitRoyaltyEntry(){
   const dateStart=document.getElementById('roy-date-start').value;
   const dateEnd=document.getElementById('roy-date-end').value;
   if(!userId||!dateStart||!dateEnd){toast('Select an artist and period','err');return;}
+  if(dateEnd<dateStart){toast('Period end must be after period start','err');return;}
+
+  if(releaseId){
+    try{
+      const {data:existingForRelease,error:overlapErr}=await sb.from('royalty_entries')
+        .select('date_start,date_end,total')
+        .eq('release_id',releaseId);
+      if(overlapErr)throw overlapErr;
+      const overlap=(existingForRelease||[]).find(e=>e.date_start<=dateEnd&&e.date_end>=dateStart);
+      if(overlap){
+        const relName=document.getElementById('roy-release-select')?.selectedOptions[0]?.textContent||'this release';
+        const proceed=confirm('This release already has an entry covering '+overlap.date_start+' → '+overlap.date_end+' ($'+parseFloat(overlap.total||0).toFixed(2)+').\n\nSaving anyway will add to '+relName+'\'s total on top of that existing entry. Continue?');
+        if(!proceed)return;
+      }
+    }catch(e){console.error('Overlap check error:',e);}
+  }
 
   const entry={user_id:userId,release_id:releaseId||null,date_start:dateStart,date_end:dateEnd};
   let total=0;
