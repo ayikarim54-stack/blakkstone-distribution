@@ -2476,6 +2476,26 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-headset"></i> Need Help?</div>
         <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="goPage('support',null)"><i class="ti ti-message-circle"></i> Contact Support</button>
+        <div class="divhr"></div>
+        <div id="danger-zone-normal">
+          <div class="slabel" style="color:#ef4444"><i class="ti ti-alert-triangle"></i> Danger Zone</div>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Permanently delete your account and all associated data. This cannot be undone.</p>
+          <button class="btn" style="width:100%;justify-content:center;background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.3)" onclick="openDeleteAccountFlow()"><i class="ti ti-trash"></i> Delete My Account</button>
+        </div>
+        <div id="danger-zone-confirm" style="display:none;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:1.25rem">
+          <div style="font-size:14px;font-weight:700;color:#f87171;margin-bottom:.5rem"><i class="ti ti-alert-triangle"></i> This is permanent</div>
+          <p style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:1rem">Deleting your account removes your releases, roster, royalty history, and personal data from Blakkstone once processed. This can take up to a few business days to complete manually and cannot be reversed. If you have an active release under review, contact <a onclick="goPage('support',null)" style="color:var(--gold);cursor:pointer">Support</a> first.</p>
+          <div class="fg"><label>Reason (optional)</label><textarea id="delete-reason" placeholder="Tell us why you're leaving — helps us improve" style="min-height:70px"></textarea></div>
+          <div class="fg"><label>Type your email (<span id="delete-confirm-email-hint" style="color:rgba(255,255,255,.4)"></span>) to confirm</label><input id="delete-confirm-email" type="email" placeholder="your@email.com" oninput="validateDeleteConfirm()"></div>
+          <div style="display:flex;gap:8px;margin-top:1rem">
+            <button class="btn" style="flex:1;justify-content:center;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.1)" onclick="closeDeleteAccountFlow()">Cancel</button>
+            <button class="btn" id="delete-confirm-btn" disabled style="flex:1;justify-content:center;background:#ef4444;color:#fff;opacity:.4;cursor:not-allowed" onclick="submitDeleteAccountRequest()"><i class="ti ti-trash"></i> Confirm Deletion</button>
+          </div>
+        </div>
+        <div id="danger-zone-pending" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:1.25rem">
+          <div style="font-size:14px;font-weight:700;color:#fbbf24;margin-bottom:.5rem"><i class="ti ti-clock"></i> Deletion request received</div>
+          <p style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7">Your account is scheduled for deletion. Our team will process this within a few business days. If you change your mind, <a onclick="goPage('support',null)" style="color:var(--gold);cursor:pointer">contact Support</a> before it's completed.</p>
+        </div>
       </div>
     </div>
 
@@ -4337,6 +4357,60 @@ async function loadProfileStats(){
   const showPointer=getRosterMax()>0;
   const ptr=document.getElementById('myartists-pointer');if(ptr)ptr.style.display=showPointer?'block':'none';
   const ptrDiv=document.getElementById('myartists-pointer-divider');if(ptrDiv)ptrDiv.style.display=showPointer?'block':'none';
+  checkPendingDeletion();
+}
+// ── ACCOUNT DELETION ────────────────────────────────────────
+async function checkPendingDeletion(){
+  if(!user)return;
+  try{
+    const {data}=await sb.from('account_deletion_requests').select('id').eq('user_id',user.id).eq('status','pending').limit(1);
+    const pending=!!(data&&data.length);
+    const normal=document.getElementById('danger-zone-normal');
+    const confirmBox=document.getElementById('danger-zone-confirm');
+    const pendingBox=document.getElementById('danger-zone-pending');
+    if(normal)normal.style.display=pending?'none':'block';
+    if(confirmBox)confirmBox.style.display='none';
+    if(pendingBox)pendingBox.style.display=pending?'block':'none';
+  }catch(e){console.error('Check pending deletion error:',e);}
+}
+function openDeleteAccountFlow(){
+  document.getElementById('danger-zone-normal').style.display='none';
+  document.getElementById('danger-zone-confirm').style.display='block';
+  const hint=document.getElementById('delete-confirm-email-hint');if(hint)hint.textContent=user?.email||'';
+  document.getElementById('delete-confirm-email').value='';
+  document.getElementById('delete-reason').value='';
+  validateDeleteConfirm();
+}
+function closeDeleteAccountFlow(){
+  document.getElementById('danger-zone-confirm').style.display='none';
+  document.getElementById('danger-zone-normal').style.display='block';
+}
+function validateDeleteConfirm(){
+  const typed=(document.getElementById('delete-confirm-email').value||'').trim().toLowerCase();
+  const real=(user?.email||'').trim().toLowerCase();
+  const btn=document.getElementById('delete-confirm-btn');
+  const match=typed.length>0&&typed===real;
+  btn.disabled=!match;
+  btn.style.opacity=match?'1':'.4';
+  btn.style.cursor=match?'pointer':'not-allowed';
+}
+async function submitDeleteAccountRequest(){
+  const btn=document.getElementById('delete-confirm-btn');
+  const typed=(document.getElementById('delete-confirm-email').value||'').trim().toLowerCase();
+  const real=(user?.email||'').trim().toLowerCase();
+  if(typed!==real){toast('Email does not match your account','err');return;}
+  const reason=document.getElementById('delete-reason').value.trim();
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
+  try{
+    const {error}=await sb.from('account_deletion_requests').insert({user_id:user.id,email:user.email,reason:reason||null,status:'pending'});
+    if(error)throw error;
+    toast('Deletion request submitted','ok');
+    checkPendingDeletion();
+  }catch(e){
+    console.error('Submit deletion request error:',e);
+    toast('Could not submit: '+(e.message||'please try again.'),'err');
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-trash"></i> Confirm Deletion';
+  }
 }
 // ── ARTIST ROSTER ──────────────────────────────────────────
 function getRosterMax(){
@@ -5620,17 +5694,22 @@ function replyToMessage(id){
 async function loadNotifications(){
   const container=document.getElementById('notifications-list');if(!container)return;
   try{
-    const [{data:payouts},{data:releases},{data:messages}]=await Promise.all([
+    const [{data:payouts},{data:releases},{data:messages},{data:deletions}]=await Promise.all([
       sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
       sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false}),
-      sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications messages query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]}))
+      sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications messages query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]})),
+      sb.from('account_deletion_requests').select('*').eq('status','pending').order('requested_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications deletion query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]}))
     ]);
     const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,account_id');
     const profileMap={};(profList||[]).forEach(p=>{profileMap[p.id]=p;});
-    const total=(payouts?.length||0)+(releases?.length||0)+(messages?.length||0);
+    const total=(payouts?.length||0)+(releases?.length||0)+(messages?.length||0)+(deletions?.length||0);
     const badge=document.getElementById('notif-badge');if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
     const badgeAdmin=document.getElementById('notif-badge-admin');if(badgeAdmin){badgeAdmin.style.display=total>0?'inline':'none';badgeAdmin.textContent=total;}
     let html='';
+    if(deletions?.length){
+      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#f87171;margin-bottom:.5rem">Account Deletion Requests ('+deletions.length+')</div>';
+      html+=deletions.map(d=>{const prof=profileMap[d.user_id]||{};const name=prof.artist_name||prof.full_name||d.email||'—';const dt=d.requested_at?new Date(d.requested_at).toLocaleDateString('en-GB'):'—';const reason=d.reason?'<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;font-style:italic">"'+esc(d.reason)+'"</div>':'';return '<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(d.email||'')+' · Requested '+dt+'</div>'+reason+'</div><button class="btn btn-sm" style="background:#ef4444;color:#fff;flex-shrink:0" onclick="markDeletionCompleted(\''+d.id+'\')">Mark Done</button></div></div>';}).join('');
+    }
     if(messages?.length){
       html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem">New Messages ('+messages.length+')</div>';
       html+=messages.map(m=>{const prof=profileMap[m.from_id]||{};const name=prof.artist_name||prof.full_name||m.from_email||'—';const d=m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'—';return '<div style="background:rgba(13,110,253,.08);border:1px solid rgba(13,110,253,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(m.subject||'No subject')+' · '+d+'</div></div><button class="btn adm-btn-sec btn-sm" onclick="switchAdminTab(\'messages\',document.getElementById(\'atab-messages\'))">View</button></div>';}).join('');
@@ -5651,6 +5730,12 @@ async function markRead(id){
   const {error}=await sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',id);
   if(error){console.error('Mark read error:',error);toast('Could not mark read: '+error.message,'err');return;}
   toast('Marked read','ok');loadAdminMessages();
+}
+async function markDeletionCompleted(id){
+  if(!confirm('Confirm you have manually deleted this user from Supabase Authentication → Users. This only updates the request status here.'))return;
+  const {error}=await sb.from('account_deletion_requests').update({status:'completed',completed_at:new Date().toISOString()}).eq('id',id);
+  if(error){console.error('Mark deletion completed error:',error);toast('Could not update: '+error.message,'err');return;}
+  toast('Marked as completed','ok');loadNotifications();
 }
 async function sendAdminMessage(){
   const to=document.getElementById('msg-to').value.trim();const body=document.getElementById('msg-body').value.trim();const subject=document.getElementById('msg-subject')?.value.trim()||'Message from Blakkstone';
