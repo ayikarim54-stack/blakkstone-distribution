@@ -1710,7 +1710,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <div id="artwork-preview-inner" style="text-align:center;padding:1.5rem">
                 <i class="ti ti-photo-plus" style="font-size:44px;color:rgba(255,255,255,.15);display:block;margin-bottom:.75rem"></i>
                 <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.3)">Click to add artwork</div>
-                <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:4px">3000×3000px · JPG or PNG</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:4px">3000×3000px recommended · 1400px min · Square · JPG or PNG</div>
               </div>
             </div>
             <input type="file" id="art-input" accept=".jpg,.jpeg,.png,image/*" style="display:none" onchange="previewArtwork(this)">
@@ -5059,7 +5059,7 @@ function validateStep(step){
     if(!genre)   errors.push({fieldId:'r-genre',     label:'Primary genre is required'});
     if(!copyright) errors.push({fieldId:'r-copyright', label:'© Copyright holder is required'});
     if(!pcopyright) errors.push({fieldId:'r-pcopyright', label:'℗ Copyright holder is required'});
-    if(!artwork) errors.push({fieldId:'art-input',   label:'Cover artwork is required (3000×3000px)'});
+    if(!artwork) errors.push({fieldId:'art-input',   label:'Cover artwork is required (square, 1400px minimum)'});
 
     wizTracks.forEach((t,i)=>{
       const m=t.meta||{};
@@ -5366,10 +5366,39 @@ function inheritReleaseCredits(id){
 async function previewArtwork(input){
   if(!input.files[0])return;
   const file=input.files[0];
+  // Load the image first to read its real dimensions before accepting the file
+  const img=new Image();
+  const objUrl=URL.createObjectURL(file);
+  const dims=await new Promise(resolve=>{
+    img.onload=()=>resolve({w:img.naturalWidth,h:img.naturalHeight});
+    img.onerror=()=>resolve(null);
+    img.src=objUrl;
+  });
+  if(!dims){
+    toast('Could not read this image — please try a different file','err');
+    URL.revokeObjectURL(objUrl);
+    input.value='';
+    return;
+  }
+  const MIN_DIM=1400;
+  if(dims.w!==dims.h){
+    toast('Artwork must be perfectly square ('+dims.w+'×'+dims.h+'px uploaded). Crop it to a 1:1 ratio and try again.','err');
+    URL.revokeObjectURL(objUrl);
+    input.value='';
+    return;
+  }
+  if(dims.w<MIN_DIM){
+    toast('Artwork is too small ('+dims.w+'×'+dims.h+'px). Minimum is '+MIN_DIM+'×'+MIN_DIM+'px — 3000×3000px recommended for best quality.','err');
+    URL.revokeObjectURL(objUrl);
+    input.value='';
+    return;
+  }
   wizData.artFile=file;
-  const url=URL.createObjectURL(file);
-  const wrap=document.getElementById('artwork-preview-wrap');if(wrap) wrap.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+  const wrap=document.getElementById('artwork-preview-wrap');if(wrap) wrap.innerHTML='<img src="'+objUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
   const tp=document.getElementById('artwork-title-preview');const t=document.getElementById('r-title');if(tp&&t) tp.textContent=t.value||'Your Release';
+  if(dims.w<3000){
+    toast('Artwork accepted ('+dims.w+'×'+dims.w+'px) — 3000×3000px or larger is recommended for the sharpest quality on TVs and car displays.','ok');
+  }
   // Upload artwork immediately so draft can reference it
   try{
     const ext=file.name.split('.').pop();
