@@ -3309,7 +3309,9 @@ function enterDashboard(){
 }
 
 let selectedPlan='artist_plus',billing='yearly',payoutMethod=null,momoNetwork=null;
+let _wizardAutosaveTimer=null;
 function goPage(id,el){
+  if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pageEl=document.getElementById('page-'+id);if(!pageEl)return;
   pageEl.classList.add('active');
@@ -3333,6 +3335,7 @@ window.addEventListener('popstate',function(e){
   const page=e.state?.page||window.location.hash.replace('#','')||'overview';
   const valid=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
   if(!valid.includes(page))return;
+  if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page)?.classList.add('active');
   document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
@@ -3361,6 +3364,11 @@ function releaseGridCard(r){
   return '<div class="rg-card" onclick="openReleaseById(\''+r.id+'\')"><div class="rg-art">'+art+'<span class="rg-badge '+bc+'">'+bl+'</span></div><div class="rg-info"><div class="rg-title">'+esc(r.title)+'</div><div class="rg-meta">'+esc(r.artist)+'</div></div></div>';
 }
 function releaseRow(r){
+  if(r.isDraft){
+    const ago=r.savedAt?timeSince(new Date(r.savedAt)):'recently';
+    const art=r.artUrl?'<img src="'+r.artUrl+'" alt="art">':'<i class="ti ti-file-music"></i>';
+    return '<div class="rr" onclick="resumeDraftFromMusic()" style="cursor:pointer"><div class="r-art">'+art+'</div><div class="r-info"><div class="r-title">'+esc(r.title||'Untitled release')+'</div><div class="r-meta">Draft · saved '+ago+'</div></div><span class="badge" style="background:rgba(212,175,55,.12);color:var(--gold);border:1px solid rgba(212,175,55,.3)">Draft</span><i class="ti ti-player-play" style="color:var(--gold);font-size:15px;flex-shrink:0" title="Resume"></i></div>';
+  }
   const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
   const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
@@ -3369,6 +3377,9 @@ function releaseRow(r){
   const needsAttention=(r.status==='rejected'||r.status==='takendown')&&r.status_reason;
   const reasonHint=needsAttention?'<div style="font-size:11px;color:#f87171;margin-top:2px;display:flex;align-items:center;gap:4px"><i class="ti ti-alert-circle" style="font-size:12px"></i> Tap for details</div>':'';
   return '<div class="rr" onclick="openReleaseById(\''+r.id+'\')"><div class="r-art">'+art+'</div><div class="r-info"><div class="r-title">'+esc(r.title)+'</div><div class="r-meta">'+esc(r.artist)+' · '+esc(r.genre||'')+' · '+d+'</div>'+reasonHint+'</div><span class="badge '+bc+'">'+bl+'</span><i class="ti ti-chevron-right" style="color:rgba(255,255,255,.2);font-size:16px;flex-shrink:0"></i></div>';
+}
+function resumeDraftFromMusic(){
+  goPage('submit',null);
 }
 let relFilterState={status:'all',search:'',genre:''};
 function renderReleasesList(releases,filter){
@@ -3418,6 +3429,7 @@ function setRelGenreFilter(genre){
   if(btn) btn.innerHTML='<i class="ti ti-adjustments-horizontal"></i> '+(genre?esc(genre):'Filters');
   filterReleasesCombined();
 }
+let _cachedDraftForMusicTab=null;
 function filterReleasesCombined(){
   relFilterState.search=(document.getElementById('rel-search-input')?.value||'').toLowerCase();
   let filtered=allRelData;
@@ -3428,6 +3440,13 @@ function filterReleasesCombined(){
   else if(s==='takendown')filtered=filtered.filter(r=>r.status==='takendown');
   if(relFilterState.genre)filtered=filtered.filter(r=>r.genre===relFilterState.genre);
   if(relFilterState.search)filtered=filtered.filter(r=>(r.title||'').toLowerCase().includes(relFilterState.search)||(r.artist||'').toLowerCase().includes(relFilterState.search));
+  // Splice in the saved draft (if any) on All/In Progress views — display-only, never added to allRelData
+  if((s==='all'||s==='pending')&&_cachedDraftForMusicTab){
+    const d=_cachedDraftForMusicTab;
+    const matchesSearch=!relFilterState.search||(d.title||'').toLowerCase().includes(relFilterState.search);
+    const matchesGenre=!relFilterState.genre||d.genre===relFilterState.genre;
+    if(matchesSearch&&matchesGenre) filtered=[{...d,isDraft:true},...filtered];
+  }
   const activeWrap=document.getElementById('rel-active-filters');
   if(activeWrap){
     if(relFilterState.genre){
@@ -3472,7 +3491,8 @@ async function loadReleases(){
   const rcb=document.getElementById('releases-count-badge');if(rcb) rcb.textContent=releases.length>0?releases.length+' total':'';
   const grid=document.getElementById('ov-releases-grid');
   if(grid){const cards=releases.slice(0,8).map(r=>releaseGridCard(r)).join('');grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';}
-  renderReleasesList(releases,'all');
+  _cachedDraftForMusicTab=await loadDraft();
+  filterReleasesCombined();
 }
 
 // ── RELEASE MODAL ──────────────────────────────────────
@@ -4627,6 +4647,8 @@ function initWizard(){
   setupPrimaryArtistField();
   selectedDistroTier='standard';priorityPaymentRef=null;
   updateDistroTierUI();
+  if(_wizardAutosaveTimer)clearInterval(_wizardAutosaveTimer);
+  _wizardAutosaveTimer=setInterval(()=>{if(user)saveDraftSilent();},20000);
 }
 let selectedDistroTier='standard';
 let priorityPaymentRef=null;
