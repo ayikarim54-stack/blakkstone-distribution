@@ -3210,10 +3210,12 @@ function updateOnboarding(){
   if(obRelease) obRelease.innerHTML=(hasRelease?'<i class="ti ti-check"></i>':'<i class="ti ti-music"></i>')+' Submit first release';
   if(obProfile) obProfile.className='ob-step'+(hasProfile?' done':'');
   if(obProfile) obProfile.innerHTML=(hasProfile?'<i class="ti ti-check"></i>':'<i class="ti ti-user"></i>')+' Complete profile';
-  // Show card if not everything done
+  // Show card if not everything done, hide it once genuinely complete
   const allDone=hasRelease&&hasProfile;
-  // Only show first 5 days after signup
-  if(!allDone){
+  if(allDone){
+    card.style.display='none';
+  } else {
+    // Only show first 5 days after signup
     const signupDate=profile?.created_at?new Date(profile.created_at):new Date();
     const daysSince=(Date.now()-signupDate)/86400000;
     if(daysSince<5) card.style.display='block';
@@ -4635,6 +4637,7 @@ async function saveProfile(){
     document.getElementById('tnav-name').textContent=(fullName||artistName).split(' ')[0];
     document.getElementById('profile-display-name').textContent=artistName||fullName;
     toast('Profile saved!','ok');
+    updateOnboarding();
   }
   btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save Changes';
 }
@@ -5833,7 +5836,7 @@ async function submitRelease(){
     // Clear draft on success
     try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
     sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).catch(()=>{});
-    initWizard();loadReleases();goPage('releases',null);
+    initWizard();await loadReleases();updateOnboarding();goPage('releases',null);
   }catch(e){toast(e.message,'err');}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Release';
 }
