@@ -4281,6 +4281,7 @@ function getRosterMax(){
   return 0;
 }
 let _rosterCache=[];
+let _rosterReleaseCounts={};
 async function loadMyArtistsGrid(){
   const grid=document.getElementById('my-artists-grid');if(!grid)return;
   const max=getRosterMax();
@@ -4293,6 +4294,7 @@ async function loadMyArtistsGrid(){
     const counts={};
     (rels||[]).forEach(r=>{const a=(r.artist||'').split(' & ')[0].trim();if(a)counts[a]=(counts[a]||0)+1;});
     _rosterCache=data||[];
+    _rosterReleaseCounts=counts;
     renderMyArtistsGrid(counts);
   }catch(e){
     console.error('Roster load error:',e);
@@ -4331,6 +4333,16 @@ async function addRosterArtist(){
   }
 }
 async function deleteRosterArtist(id){
+  const artist=_rosterCache.find(a=>a.id===id);
+  const name=artist?.name||'';
+  const count=_rosterReleaseCounts[name]||0;
+  if(count>0){
+    const typed=prompt('"'+name+'" has '+count+' release'+(count===1?'':'s')+' already submitted under this name. Deleting it from your roster won\'t remove those releases, but this name will disappear from future submissions.\n\nType the artist name to confirm removal:');
+    if(typed===null)return;
+    if(typed.trim()!==name){toast('Name did not match — nothing was removed','err');return;}
+  } else {
+    if(!confirm('Remove "'+name+'" from your roster?'))return;
+  }
   try{
     const {error}=await sb.from('roster_artists').delete().eq('id',id);
     if(error)throw error;
