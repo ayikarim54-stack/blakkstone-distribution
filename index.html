@@ -2160,6 +2160,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
 
+      <!-- LAST UPDATED -->
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:1rem;font-size:12px;color:rgba(255,255,255,.35)">
+        <span id="an-last-updated">—</span>
+        <button onclick="refreshAnalytics()" id="an-refresh-btn" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 12px;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px"><i class="ti ti-refresh" id="an-refresh-icon"></i> Refresh</button>
+      </div>
+
       <!-- HERO STAT CARDS -->
       <div class="overview-cards" style="margin-bottom:1.5rem">
         <div class="ov-card ov-card-1">
@@ -3425,8 +3431,10 @@ function enterDashboard(){
 
 let selectedPlan='artist_plus',billing='yearly',payoutMethod=null,momoNetwork=null;
 let _wizardAutosaveTimer=null;
+let _analyticsTickTimer=null;
 function goPage(id,el){
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
+  if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pageEl=document.getElementById('page-'+id);if(!pageEl)return;
   pageEl.classList.add('active');
@@ -3451,6 +3459,7 @@ window.addEventListener('popstate',function(e){
   const valid=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
   if(!valid.includes(page))return;
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
+  if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page)?.classList.add('active');
   document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
@@ -3769,6 +3778,29 @@ async function loadAnalytics(){
   renderStoreBreakdown();
   renderTopReleases();
   renderReleasesTable();
+  _analyticsLastLoaded=new Date();
+  updateAnalyticsTimestamp();
+  if(_analyticsTickTimer)clearInterval(_analyticsTickTimer);
+  _analyticsTickTimer=setInterval(updateAnalyticsTimestamp,30000);
+}
+let _analyticsLastLoaded=null;
+function updateAnalyticsTimestamp(){
+  const el=document.getElementById('an-last-updated');
+  if(el&&_analyticsLastLoaded) el.textContent='Updated '+timeSince(_analyticsLastLoaded);
+}
+async function refreshAnalytics(){
+  const btn=document.getElementById('an-refresh-btn');const icon=document.getElementById('an-refresh-icon');
+  if(btn)btn.disabled=true;
+  if(icon)icon.style.animation='spin .6s linear infinite';
+  try{
+    await loadAnalytics();
+    toast('Analytics refreshed','ok');
+  }catch(e){
+    console.error('Analytics refresh error:',e);
+    toast('Could not refresh — please try again','err');
+  }
+  if(btn)btn.disabled=false;
+  if(icon)icon.style.animation='';
 }
 
 function getFilteredDates(){
