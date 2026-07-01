@@ -2127,9 +2127,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
             </div>
           </div>
           <div style="background:#111118;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden">
-            <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
+            <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;gap:.75rem">
               <div style="font-size:14px;font-weight:700;color:#fff">Monthly Statements</div>
-              <span style="font-size:11px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:3px 10px;border-radius:20px">Auto-generated</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:11px;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:3px 10px;border-radius:20px">Auto-generated</span>
+                <button class="btn adm-btn-sec btn-sm" onclick="exportMyEarningsCSV()"><i class="ti ti-download"></i> Export CSV</button>
+              </div>
             </div>
             <div id="roy-reports-list" style="padding:1.5rem">
               <div style="text-align:center;color:rgba(255,255,255,.25);font-size:13px;padding:2rem 0">
@@ -5736,6 +5739,30 @@ async function exportCSV(type){
   const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);toast('Exported '+filename,'ok');
 }
 function exportArtistsCSV(){exportCSV('artists');}function exportReleasesCSV(){exportCSV('releases');}function exportPayoutsCSV(){exportCSV('payouts');}function exportSubsCSV(){exportCSV('subscriptions');}
+async function exportMyEarningsCSV(){
+  if(!user)return;
+  try{
+    const {data,error}=await sb.from('releases').select('title,artist,genre,release_date,status,streams,earnings').eq('user_id',user.id).order('release_date',{ascending:false});
+    if(error)throw error;
+    if(!data||!data.length){toast('No releases to export yet','err');return;}
+    const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
+    const headers=['Title','Artist','Genre','Release Date','Status','Streams','Gross Earnings (USD)','Your Earnings (USD)'];
+    const rows=data.map(r=>{
+      const gross=r.earnings||0;
+      const net=isPaid?gross:gross*(1-COMM);
+      return [r.title||'',r.artist||'',r.genre||'',r.release_date||'',r.status||'',r.streams||0,gross.toFixed(2),net.toFixed(2)];
+    });
+    const totalNet=rows.reduce((a,r)=>a+parseFloat(r[7]),0);
+    rows.push(['','','','','','','Total',totalNet.toFixed(2)]);
+    const csv=[headers,...rows].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='blakkstone-my-earnings.csv';a.click();URL.revokeObjectURL(url);
+    toast('Earnings exported','ok');
+  }catch(e){
+    console.error('Export earnings error:',e);
+    toast('Could not export: '+(e.message||'please try again.'),'err');
+  }
+}
 
 
 // ── ADMIN STREAM ENTRIES ──────────────────────────────────
