@@ -3057,7 +3057,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="https://js.paystack.co/v2/inline.js"></script>
 <script>
 const SB_URL='https://rzfnocgqcompyddlzdjy.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6Zm5vY2dxY29tcHlkZGx6ZGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODg3OTcsImV4cCI6MjA5NzY2NDc5N30.mtYUXicTAfRo_GqN5R-zbJj8x12aItFAk0hE6Sb3crU';
@@ -5418,12 +5418,14 @@ async function payForPriorityDistro(){
     const usd=10;const pesewas=Math.round(usd*GHS_RATE*100);
     const ref='BLK_PRIORITY_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
     try{
-      const handler=PaystackPop.setup({
+      const popup=new PaystackPop();
+      popup.newTransaction({
         key:PK,email,amount:pesewas,currency:'GHS',ref,
-        callback:function(response){resolve(response.reference||ref);},
-        onClose:function(){reject(new Error('Payment cancelled'));}
+        channels:['card','mobile_money','apple_pay'],
+        onSuccess:function(response){resolve(response.reference||ref);},
+        onCancel:function(){reject(new Error('Payment cancelled'));},
+        onError:function(err){reject(new Error(err?.message||'Payment failed'));}
       });
-      handler.openIframe();
     }catch(e){reject(e);}
   });
 }
@@ -7633,12 +7635,14 @@ function doPaystack(){
   const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
   const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas;
   try{
-    const handler=PaystackPop.setup({
+    const popup=new PaystackPop();
+    popup.newTransaction({
       key:PK,email,amount:pesewas,currency:'GHS',ref,
-      callback:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas);},
-      onClose:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
+      channels:['card','mobile_money','apple_pay'],
+      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas);},
+      onCancel:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';},
+      onError:function(err){toast('Payment error: '+(err?.message||'please try again.'),'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
     });
-    handler.openIframe();
   }catch(e){toast('Payment error: '+e.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
 }
 
