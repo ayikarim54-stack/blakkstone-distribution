@@ -2360,6 +2360,24 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
         <div class="divhr"></div>
+        <div class="slabel"><i class="ti ti-credit-card"></i> Billing & Plan</div>
+        <div style="background:#08080C;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:1.5rem">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:.9rem">
+            <div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:2px">Your Plan</div>
+              <div style="font-size:15px;font-weight:700;color:#fff" id="bp-plan-name">—</div>
+            </div>
+            <button class="btn adm-btn-sec btn-sm" onclick="goPage('upgrade',null)">Change Plan</button>
+          </div>
+          <div style="border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding-top:.9rem">
+            <div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:2px" id="bp-date-label">Renews</div>
+              <div style="font-size:15px;font-weight:700" id="bp-date-value">—</div>
+            </div>
+            <button class="btn adm-btn-sec btn-sm" onclick="goPage('upgrade',null)">Manage Subscription</button>
+          </div>
+        </div>
+        <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-world"></i> Public Artist Page</div>
         <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">One link, all your music — fans see your live releases and can sign up for notifications on what's coming.</p>
         <div style="display:flex;gap:8px;margin-bottom:1.25rem">
@@ -4503,14 +4521,27 @@ async function loadProfileStats(){
     const pb=document.getElementById('prof-plan-badge');
     if(pb) pb.textContent={admin:'Admin',label:'Label',artist_plus:'Artist+',solo_paid:'Solo',free:'Free'}[profile?.plan]||'Free';
     const renewalNote=document.getElementById('prof-renewal-note');
+    const bpPlanName=document.getElementById('bp-plan-name');
+    const bpDateLabel=document.getElementById('bp-date-label');
+    const bpDateValue=document.getElementById('bp-date-value');
+    if(bpPlanName)bpPlanName.textContent={admin:'Admin',label:'Label 5+',artist_plus:'Artist+',solo_paid:'Solo',free:'Free'}[profile?.plan]||'Free';
     if(renewalNote){
       const expiresAt=profile?.plan_expires_at;
       if(!expiresAt||profile?.plan==='free'||profile?.plan==='admin'){
         renewalNote.style.display='none';
+        if(bpDateValue){
+          if(profile?.plan==='admin'){bpDateLabel.textContent='Status';bpDateValue.textContent='Admin account';bpDateValue.style.color='rgba(255,255,255,.4)';}
+          else{bpDateLabel.textContent='Renews';bpDateValue.textContent='No active subscription';bpDateValue.style.color='rgba(255,255,255,.4)';}
+        }
       } else {
         const now=new Date();const expiry=new Date(expiresAt);
         const daysLeft=Math.ceil((expiry-now)/(1000*60*60*24));
         const dateStr=expiry.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+        if(bpDateValue){
+          bpDateLabel.textContent=daysLeft<0?'Expired':'Renews';
+          bpDateValue.textContent=dateStr;
+          bpDateValue.style.color=daysLeft<0?'#f87171':daysLeft<=30?'#fbbf24':'#fff';
+        }
         if(daysLeft<0){
           renewalNote.style.display='block';
           renewalNote.innerHTML='<span style="color:#f87171"><i class="ti ti-alert-triangle"></i> Your plan expired on '+dateStr+'.</span> <a onclick="goPage(\'upgrade\',null)" style="color:var(--gold);font-weight:600;cursor:pointer">Renew now</a> to keep your current benefits.';
