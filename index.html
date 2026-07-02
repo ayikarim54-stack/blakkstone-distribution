@@ -4654,19 +4654,14 @@ async function deleteMethod(id){
 }
 
 async function sendPayoutNotificationEmail(amount,method,network,account){
-  const RESEND_KEY='re_UGAtaTRj_6yG6uCwzcUQbLr9gQdhARnkN';
-  const artistName=profile?.artist_name||profile?.full_name||user.email;
-  try{
-    await fetch('https://api.resend.com/emails',{
-      method:'POST',headers:{'Authorization':'Bearer '+RESEND_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify({
-        from:'Blakkstone Distribution <noreply@blakkstonemusic.com>',
-        to:['payment@blakkstonemusic.com'],
-        subject:'New Payout Request — '+(profile?.account_id||'')+' '+artistName,
-        html:'<h2>New Payout Request</h2><p><strong>Account:</strong> '+(profile?.account_id||'—')+'</p><p><strong>Artist:</strong> '+artistName+'</p><p><strong>Amount:</strong> $'+parseFloat(amount).toFixed(2)+'</p><p><strong>Method:</strong> '+(method==='momo'?'Mobile Money '+network:'Bank Transfer')+'</p><p><strong>Account:</strong> '+account+'</p>'
-      })
-    });
-  }catch(e){console.warn('Notification failed:',e);}
+  // DISABLED — this previously called the Resend API directly from client-side JS with a
+  // hardcoded secret key, which is a real, exploitable security exposure (the key ships to
+  // every visitor's browser and is readable via View Source). Sending real email requires a
+  // genuine server-side piece (e.g. a Supabase Edge Function) that holds the real key privately
+  // and the browser only ever calls, never sees. Admin is NOT blind without this: every new
+  // payout request already surfaces in the real-time admin Notifications panel, queried directly
+  // from the payouts table, completely independent of this function.
+  console.warn('[Payout email notification disabled] Needs a server-side Edge Function — see comment above this function. Admin still sees new requests via the in-app Notifications panel.');
 }
 
 
