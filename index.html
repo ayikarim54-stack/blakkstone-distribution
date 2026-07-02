@@ -3642,9 +3642,11 @@ function enterDashboard(){
 let selectedPlan='artist_plus',billing='yearly',payoutMethod=null,momoNetwork=null;
 let _wizardAutosaveTimer=null;
 let _analyticsTickTimer=null;
+let _supportRealtimeChannel=null;
 function goPage(id,el){
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
+  if(_supportRealtimeChannel){try{sb.removeChannel(_supportRealtimeChannel);}catch(e){}_supportRealtimeChannel=null;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pageEl=document.getElementById('page-'+id);if(!pageEl)return;
   pageEl.classList.add('active');
@@ -3670,6 +3672,7 @@ window.addEventListener('popstate',function(e){
   if(!valid.includes(page))return;
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
+  if(_supportRealtimeChannel){try{sb.removeChannel(_supportRealtimeChannel);}catch(e){}_supportRealtimeChannel=null;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page)?.classList.add('active');
   document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
@@ -6807,10 +6810,23 @@ async function loadMySupportMessages(){
     if(error)throw error;
     renderMySupportMessages(data||[]);
     (data||[]).filter(m=>m.direction==='out'&&!m.read_at).forEach(m=>{sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',m.id).then(({error})=>{if(error)console.error('Mark read error:',error);});});
+    startSupportRealtime();
   }catch(e){
     console.error('My support messages load error:',e);
     container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>'+esc('Unable to load messages: '+(e.message||e.details||JSON.stringify(e)))+'</p></div>';
   }
+}
+function startSupportRealtime(){
+  if(!user)return;
+  if(_supportRealtimeChannel){try{sb.removeChannel(_supportRealtimeChannel);}catch(e){}}
+  _supportRealtimeChannel=sb.channel('support-rt-'+user.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'to_email=eq.'+user.email},payload=>{
+      if(payload.new?.direction==='out'){
+        toast('New reply from Blakkstone Support','ok');
+        loadMySupportMessages();
+      }
+    })
+    .subscribe();
 }
 function renderMySupportMessages(data){
   const container=document.getElementById('my-messages-list');if(!container)return;
