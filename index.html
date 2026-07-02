@@ -2370,6 +2370,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             </div>
             <button class="btn adm-btn-sec btn-sm" onclick="goPage('upgrade',null)">Change Plan</button>
           </div>
+          <ul id="bp-plan-features" style="list-style:none;padding:0;margin:0 0 .9rem;display:none;flex-direction:column;gap:5px;border-top:1px solid var(--line);padding-top:.9rem"></ul>
           <div style="border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding-top:.9rem">
             <div>
               <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:2px" id="bp-date-label">Renews</div>
@@ -3105,6 +3106,12 @@ function toggleCurrencySwitcher(){
   menu.style.display=menu.style.display==='none'?'block':'none';
 }
 const PLANS={solo:{monthly:15,yearly:15,label:'Solo'},artist_plus:{monthly:25,yearly:25,label:'Artist+'},label:{monthly:45,yearly:45,label:'Label'}};
+// Real, shared plan feature content — single source of truth for both the checkout modal and the artist's own Profile page.
+const PLAN_FEATURES={
+  solo:['1 artist profile','Unlimited releases','150+ DSPs worldwide','Royalty dashboard','Mobile Money + Bank payouts'],
+  artist_plus:['2 artist profiles','Unlimited releases','150+ DSPs worldwide','0% commission','ISRC code generation','Release scheduling','Earnings dashboard','Mobile Money + Bank payouts','Store analytics'],
+  label:['5+ artist profiles','Unlimited releases','150+ DSPs worldwide','0% commission','ISRC code generation','Full royalty dashboard','Mobile Money + Bank payouts','Label analytics overview','Priority support','Dedicated account manager']
+};
 // Tier rank, low to high — used to tell a genuine upgrade apart from a same-tier renewal or a downgrade.
 const PLAN_TIER_RANK={solo:1,solo_paid:1,artist_plus:2,label:3};
 function calculateUpgradeDiscount(targetPlan){
@@ -4526,6 +4533,17 @@ async function loadProfileStats(){
     const bpDateLabel=document.getElementById('bp-date-label');
     const bpDateValue=document.getElementById('bp-date-value');
     if(bpPlanName)bpPlanName.textContent={admin:'Admin',label:'Label 5+',artist_plus:'Artist+',solo_paid:'Solo',free:'Free'}[profile?.plan]||'Free';
+    const bpFeatsEl=document.getElementById('bp-plan-features');
+    if(bpFeatsEl){
+      const featureKey=profile?.plan==='solo_paid'?'solo':profile?.plan;
+      const realFeatures=PLAN_FEATURES[featureKey];
+      if(realFeatures?.length){
+        bpFeatsEl.innerHTML=realFeatures.map(f=>'<li style="display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,.6)"><i class="ti ti-check" style="color:var(--gold);font-size:13px;flex-shrink:0"></i> '+f+'</li>').join('');
+        bpFeatsEl.style.display='flex';
+      } else {
+        bpFeatsEl.style.display='none';bpFeatsEl.innerHTML='';
+      }
+    }
     if(renewalNote){
       const expiresAt=profile?.plan_expires_at;
       if(!expiresAt||profile?.plan==='free'||profile?.plan==='admin'){
@@ -7017,14 +7035,9 @@ function openPaystack(plan){
   document.getElementById('pay-modal-title').textContent='Get '+p.label+' Plan';
   const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5+ artists, 0% commission, priority support.'};
   document.getElementById('pay-modal-desc').textContent=descs[selectedPlan]||'';
-  const feats={
-    solo:['1 artist profile','Unlimited releases','150+ DSPs worldwide','Royalty dashboard','Mobile Money + Bank payouts'],
-    artist_plus:['2 artist profiles','Unlimited releases','150+ DSPs worldwide','0% commission','ISRC code generation','Release scheduling','Earnings dashboard','Mobile Money + Bank payouts','Store analytics'],
-    label:['5+ artist profiles','Unlimited releases','150+ DSPs worldwide','0% commission','ISRC code generation','Full royalty dashboard','Mobile Money + Bank payouts','Label analytics overview','Priority support','Dedicated account manager']
-  };
   const featsEl=document.getElementById('pay-modal-feats');
   if(featsEl){
-    featsEl.innerHTML=(feats[selectedPlan]||[]).map(f=>'<li style="display:flex;align-items:center;gap:7px;font-size:13px;color:rgba(255,255,255,.75)"><i class="ti ti-check" style="color:var(--gold);font-size:15px;flex-shrink:0"></i> '+f+'</li>').join('');
+    featsEl.innerHTML=(PLAN_FEATURES[selectedPlan]||[]).map(f=>'<li style="display:flex;align-items:center;gap:7px;font-size:13px;color:rgba(255,255,255,.75)"><i class="ti ti-check" style="color:var(--gold);font-size:15px;flex-shrink:0"></i> '+f+'</li>').join('');
   }
   document.getElementById('b-monthly-price').textContent='$'+p.monthly;
   document.getElementById('b-yearly-price').textContent='$'+p.yearly;
