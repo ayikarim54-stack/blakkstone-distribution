@@ -4917,7 +4917,8 @@ async function uploadAvatar(input){
   const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
   if(error){toast('Upload failed: '+error.message,'err');return;}
   const {data}=sb.storage.from('artwork').getPublicUrl(path);
-  await sb.from('profiles').update({avatar_url:data.publicUrl}).eq('id',user.id);
+  const {error:dbError}=await sb.from('profiles').update({avatar_url:data.publicUrl}).eq('id',user.id);
+  if(dbError){toast('Photo uploaded but could not be saved: '+dbError.message,'err');return;}
   profile.avatar_url=data.publicUrl;setAvatarDisplay('',data.publicUrl);toast('Photo updated!','ok');
 }
 
