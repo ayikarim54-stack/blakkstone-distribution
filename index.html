@@ -2729,6 +2729,54 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
 
+        <!-- CSV IMPORT -->
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <div>
+              <div class="adm-card-title" style="margin-bottom:0"><i class="ti ti-file-import"></i> Import Royalty Report (CSV)</div>
+              <p style="font-size:12px;color:rgba(255,255,255,.4);margin:.25rem 0 0">Upload a distributor report — one row per release &amp; store. Map the columns, review the matches, then import in bulk.</p>
+            </div>
+            <label class="btn btn-gold btn-sm" style="cursor:pointer"><i class="ti ti-upload"></i> Choose CSV
+              <input type="file" id="royimp-file" accept=".csv,text/csv" style="display:none" onchange="royImportFile(this)">
+            </label>
+          </div>
+
+          <!-- STEP 1: COLUMN MAPPING -->
+          <div id="royimp-mapping" style="display:none;margin-top:1.25rem;border-top:1px solid rgba(255,255,255,.07);padding-top:1.25rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:.75rem">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35)">1 · Map Columns <span id="royimp-file-meta" style="text-transform:none;font-weight:400;color:rgba(255,255,255,.3)"></span></div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <select id="royimp-preset" class="stsel" style="padding:5px 9px;font-size:11px" onchange="royImportApplyPreset(this.value)"><option value="">Presets…</option></select>
+                <button class="btn adm-btn-sec btn-sm" style="font-size:10px;padding:4px 8px" onclick="royImportSavePreset()"><i class="ti ti-device-floppy"></i> Save preset</button>
+              </div>
+            </div>
+            <div id="royimp-map-fields" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px;margin-top:1rem">
+              <div class="fg" style="margin:0"><label>Fallback Period Start</label><input type="date" id="royimp-date-start" style="width:100%;background:#131320;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px 11px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none"></div>
+              <div class="fg" style="margin:0"><label>Fallback Period End</label><input type="date" id="royimp-date-end" style="width:100%;background:#131320;border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px 11px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none"></div>
+            </div>
+            <p style="font-size:11px;color:rgba(255,255,255,.3);margin-top:.5rem">The fallback period is used for rows whose period column is missing or can't be read. Formats understood: <code>2026-05-31</code>, <code>2026-05</code>, <code>05/2026</code>, <code>May 2026</code>.</p>
+            <button class="btn btn-purple btn-sm" style="margin-top:.875rem" onclick="royImportBuildPreview()"><i class="ti ti-eye"></i> Preview Import</button>
+          </div>
+
+          <!-- STEP 2: PREVIEW + COMMIT -->
+          <div id="royimp-preview" style="display:none;margin-top:1.25rem;border-top:1px solid rgba(255,255,255,.07);padding-top:1.25rem">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.75rem">2 · Review &amp; Import</div>
+            <div id="royimp-summary" style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:.875rem;line-height:1.7"></div>
+            <div class="tw">
+              <table>
+                <thead><tr><th>Match</th><th>Release</th><th>Period</th><th>Stores</th><th>Streams</th><th>Total ($)</th></tr></thead>
+                <tbody id="royimp-preview-tbody"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:1rem;align-items:center;flex-wrap:wrap">
+              <button class="btn btn-gold" id="royimp-commit-btn" onclick="royImportCommit()"><i class="ti ti-database-import"></i> <span id="royimp-commit-label">Import</span></button>
+              <button class="btn" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="royImportReset()"><i class="ti ti-x"></i> Cancel</button>
+              <div id="royimp-progress" style="font-size:12px;color:var(--gold)"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- ALL ROYALTY ENTRIES TABLE -->
         <div class="adm-card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
@@ -7071,6 +7119,312 @@ function clearRoyForm(){
   document.getElementById('roy-streams').value='';
   document.getElementById('roy-total-preview').textContent='$0.00';
   ROY_STORES.forEach(s=>{const el=document.getElementById('roy-'+s.key);if(el)el.value='';});
+}
+
+// ── ROYALTY CSV IMPORT ────────────────────────────────────
+const ROYIMP_FIELDS=[
+  {key:'title', label:'Release Title', required:true,  guess:/title|release|track|song|album|product/i},
+  {key:'isrc',  label:'ISRC',          required:false, guess:/isrc/i},
+  {key:'store', label:'Store / Platform', required:true, guess:/store|platform|dsp|retailer|service|channel|partner/i},
+  {key:'amount',label:'Amount (USD)',  required:true,  guess:/amount|revenue|earning|royalt|payable|income|net/i},
+  {key:'streams',label:'Streams / Units', required:false, guess:/stream|quantity|units|plays|count/i},
+  {key:'pstart',label:'Period / Month',required:false, guess:/period|month|statement|start|date/i},
+  {key:'pend',  label:'Period End',    required:false, guess:/end/i},
+];
+const ROYIMP_PRESET_KEY='blk_roy_import_presets';
+let royImp={fileName:'',headers:[],rows:[],groups:[],releases:[]};
+let royImpCommitting=false;
+
+function royImpParseCSV(text){
+  text=text.replace(/^\uFEFF/,'');
+  const rows=[];let row=[];let field='';let i=0;let inQ=false;
+  while(i<text.length){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){if(text[i+1]==='"'){field+='"';i+=2;continue;}inQ=false;i++;continue;}
+      field+=c;i++;continue;
+    }
+    if(c==='"'){inQ=true;i++;continue;}
+    if(c===','){row.push(field);field='';i++;continue;}
+    if(c==='\r'){i++;continue;}
+    if(c==='\n'){row.push(field);field='';if(row.some(f=>f.trim()!==''))rows.push(row);row=[];i++;continue;}
+    field+=c;i++;
+  }
+  row.push(field);if(row.some(f=>f.trim()!==''))rows.push(row);
+  if(!rows.length)return{headers:[],rows:[]};
+  return{headers:rows[0].map(h=>h.trim()),rows:rows.slice(1)};
+}
+
+function royImpStoreKey(raw){
+  const s=String(raw||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+  if(s.includes('spotify'))return'spotify';
+  if(s.includes('apple')||s.includes('itunes'))return'apple_music';
+  if(s.includes('youtube')||s==='yt'||s.includes('ytmusic'))return'youtube_music';
+  if(s.includes('audiomack'))return'audiomack';
+  if(s.includes('boomplay'))return'boomplay';
+  if(s.includes('amazon'))return'amazon_music';
+  if(s.includes('tidal'))return'tidal';
+  if(s.includes('deezer'))return'deezer';
+  return'others';
+}
+
+function royImpMonthRange(y,mo){
+  if(mo<1||mo>12||y<2000||y>2100)return null;
+  const mm=String(mo).padStart(2,'0');
+  const last=new Date(y,mo,0).getDate();
+  return{start:y+'-'+mm+'-01',end:y+'-'+mm+'-'+String(last).padStart(2,'0')};
+}
+function royImpParseDate(raw){
+  const m=String(raw||'').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m?m[0]:null;
+}
+function royImpParsePeriod(raw){
+  if(raw===undefined||raw===null||String(raw).trim()==='')return null;
+  const s=String(raw).trim();
+  const exact=royImpParseDate(s);
+  if(exact)return{start:exact,end:null};
+  let m=s.match(/^(\d{4})[-\/](\d{1,2})$/);
+  if(m)return royImpMonthRange(+m[1],+m[2]);
+  m=s.match(/^(\d{1,2})[-\/](\d{4})$/);
+  if(m)return royImpMonthRange(+m[2],+m[1]);
+  m=s.match(/^([a-zA-Z]{3,9})[\s\-]+(\d{4})$/);
+  if(m){
+    const mi=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[1].slice(0,3).toLowerCase());
+    if(mi>=0)return royImpMonthRange(+m[2],mi+1);
+  }
+  return null;
+}
+function royImpNorm(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'');}
+function royImpAmount(v){return parseFloat(String(v||'').replace(/[$,\s]/g,''))||0;}
+
+function royImportFile(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  if(file.size>8*1024*1024){toast('CSV is too large (max 8MB)','err');input.value='';return;}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const {headers,rows}=royImpParseCSV(String(reader.result||''));
+    if(!headers.length||!rows.length){toast('Could not read any rows from this CSV','err');return;}
+    royImp={fileName:file.name,headers,rows,groups:[],releases:[]};
+    document.getElementById('royimp-file-meta').textContent='— '+file.name+' · '+rows.length.toLocaleString()+' rows';
+    royImpRenderMapping();
+    royImpLoadPresets();
+    document.getElementById('royimp-mapping').style.display='block';
+    document.getElementById('royimp-preview').style.display='none';
+  };
+  reader.onerror=()=>toast('Could not read the file','err');
+  reader.readAsText(file);
+  input.value='';
+}
+
+function royImpRenderMapping(){
+  const el=document.getElementById('royimp-map-fields');if(!el)return;
+  const used=new Set();
+  el.innerHTML=ROYIMP_FIELDS.map(f=>{
+    let guessIdx=-1;
+    royImp.headers.forEach((h,i)=>{if(guessIdx<0&&!used.has(i)&&f.guess.test(h))guessIdx=i;});
+    if(guessIdx>=0)used.add(guessIdx);
+    const opts='<option value="">'+(f.required?'— required —':'— none —')+'</option>'
+      +royImp.headers.map((h,i)=>'<option value="'+i+'"'+(i===guessIdx?' selected':'')+'>'+esc(h||('Column '+(i+1)))+'</option>').join('');
+    return '<div class="fg" style="margin:0"><label>'+f.label+(f.required?' <span style="color:var(--gold)">*</span>':'')+'</label>'
+      +'<select id="royimp-map-'+f.key+'" class="stsel" style="width:100%;padding:7px 10px;font-size:12px">'+opts+'</select></div>';
+  }).join('');
+}
+
+function royImpLoadPresets(){
+  const sel=document.getElementById('royimp-preset');if(!sel)return;
+  let presets={};
+  try{presets=JSON.parse(localStorage.getItem(ROYIMP_PRESET_KEY)||'{}');}catch(e){}
+  sel.innerHTML='<option value="">Presets…</option>'+Object.keys(presets).map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join('');
+}
+function royImportSavePreset(){
+  const name=prompt('Preset name (e.g. "Symphonic monthly"):');
+  if(!name||!name.trim())return;
+  const mapping={};
+  ROYIMP_FIELDS.forEach(f=>{
+    const idx=document.getElementById('royimp-map-'+f.key)?.value;
+    if(idx!=='')mapping[f.key]=royImp.headers[+idx];
+  });
+  let presets={};
+  try{presets=JSON.parse(localStorage.getItem(ROYIMP_PRESET_KEY)||'{}');}catch(e){}
+  presets[name.trim()]=mapping;
+  try{localStorage.setItem(ROYIMP_PRESET_KEY,JSON.stringify(presets));}catch(e){toast('Could not save preset','err');return;}
+  royImpLoadPresets();
+  toast('Preset saved','ok');
+}
+function royImportApplyPreset(name){
+  if(!name)return;
+  let presets={};
+  try{presets=JSON.parse(localStorage.getItem(ROYIMP_PRESET_KEY)||'{}');}catch(e){}
+  const mapping=presets[name];if(!mapping)return;
+  ROYIMP_FIELDS.forEach(f=>{
+    const sel=document.getElementById('royimp-map-'+f.key);if(!sel)return;
+    const idx=royImp.headers.findIndex(h=>h===mapping[f.key]);
+    sel.value=idx>=0?String(idx):'';
+  });
+  toast('Preset applied — headers matched by name','ok');
+}
+
+async function royImportBuildPreview(){
+  const map={};
+  let missing=null;
+  ROYIMP_FIELDS.forEach(f=>{
+    const v=document.getElementById('royimp-map-'+f.key)?.value;
+    map[f.key]=v===''?null:+v;
+    if(f.required&&map[f.key]===null&&!missing)missing=f.label;
+  });
+  if(missing){toast('Map the "'+missing+'" column first','err');return;}
+  const fbStart=document.getElementById('royimp-date-start')?.value||null;
+  const fbEnd=document.getElementById('royimp-date-end')?.value||null;
+  if(fbStart&&fbEnd&&fbEnd<fbStart){toast('Fallback period end must be after start','err');return;}
+
+  // Load releases for matching
+  const {data:rels,error:relErr}=await sb.from('releases').select('id,title,artist,user_id,isrc');
+  if(relErr){toast('Could not load releases: '+relErr.message,'err');return;}
+  royImp.releases=rels||[];
+  const byIsrc={},byTitle={};
+  royImp.releases.forEach(r=>{
+    if(r.isrc)byIsrc[royImpNorm(r.isrc)]=r;
+    const t=royImpNorm(r.title);
+    if(t){(byTitle[t]=byTitle[t]||[]).push(r);}
+  });
+
+  const groups={};
+  let skippedNoPeriod=0,rowsUsed=0;
+  royImp.rows.forEach(cells=>{
+    const title=(cells[map.title]||'').trim();
+    if(!title)return;
+    const amount=royImpAmount(cells[map.amount]);
+    const streams=map.streams!==null?(parseInt(String(cells[map.streams]||'').replace(/[,\s]/g,''))||0):0;
+    if(!amount&&!streams)return;
+    // Period
+    let start=null,end=null;
+    const p=map.pstart!==null?royImpParsePeriod(cells[map.pstart]):null;
+    if(p){
+      start=p.start;
+      end=p.end||(map.pend!==null?royImpParseDate(cells[map.pend]):null)||p.start;
+    } else if(fbStart&&fbEnd){
+      start=fbStart;end=fbEnd;
+    } else {skippedNoPeriod++;return;}
+    if(end<start){const t2=start;start=end;end=t2;}
+    // Match
+    let rel=null,matchType=null;
+    const isrcVal=map.isrc!==null?royImpNorm(cells[map.isrc]):'';
+    if(isrcVal&&byIsrc[isrcVal]){rel=byIsrc[isrcVal];matchType='isrc';}
+    else{
+      const cand=byTitle[royImpNorm(title)];
+      if(cand&&cand.length===1){rel=cand[0];matchType='title';}
+      else if(cand&&cand.length>1){matchType='ambiguous';}
+    }
+    const gkey=(rel?rel.id:'UM:'+royImpNorm(title))+'|'+start+'|'+end;
+    if(!groups[gkey])groups[gkey]={releaseId:rel?rel.id:null,userId:rel?rel.user_id:null,csvTitle:title,relLabel:rel?(rel.title+' — '+rel.artist):null,matchType,start,end,stores:{},streams:0,total:0,rows:0};
+    const g=groups[gkey];
+    const sk=royImpStoreKey(cells[map.store]);
+    g.stores[sk]=parseFloat(((g.stores[sk]||0)+amount).toFixed(2));
+    g.total=parseFloat((g.total+amount).toFixed(2));
+    g.streams+=streams;g.rows++;rowsUsed++;
+  });
+  royImp.groups=Object.values(groups).sort((a,b)=>(a.releaseId?0:1)-(b.releaseId?0:1)||b.total-a.total);
+  if(!royImp.groups.length){toast('No usable rows found'+(skippedNoPeriod?' — '+skippedNoPeriod+' rows had no readable period (set a fallback period)':''),'err');return;}
+  royImp._skippedNoPeriod=skippedNoPeriod;royImp._rowsUsed=rowsUsed;
+  royImpRenderPreview();
+  document.getElementById('royimp-preview').style.display='block';
+}
+
+function royImpRenderPreview(){
+  const tbody=document.getElementById('royimp-preview-tbody');if(!tbody)return;
+  const matched=royImp.groups.filter(g=>g.releaseId);
+  const unmatched=royImp.groups.length-matched.length;
+  const grand=matched.reduce((a,g)=>a+g.total,0);
+  const relOpts='<option value="">Assign release…</option>'+royImp.releases.map(r=>'<option value="'+r.id+'">'+esc(r.title+' — '+r.artist)+'</option>').join('');
+  tbody.innerHTML=royImp.groups.map((g,i)=>{
+    const storeBits=Object.entries(g.stores).filter(([,v])=>v!==0).sort((a,b)=>b[1]-a[1])
+      .map(([k,v])=>{const st=ROY_STORES.find(s=>s.key===k);return esc((st?st.name:k))+' $'+v.toFixed(2);}).join(' · ');
+    const badge=g.releaseId
+      ?'<span class="badge b-live" style="font-size:10px">'+(g.matchType==='isrc'?'ISRC':g.matchType==='manual'?'Manual':'Title')+'</span>'
+      :'<span class="badge b-pending" style="font-size:10px">'+(g.matchType==='ambiguous'?'Ambiguous':'Unmatched')+'</span>';
+    const relCell=g.releaseId
+      ?'<div style="color:#fff;font-weight:600;font-size:12px">'+esc(g.relLabel)+'</div><div style="font-size:10px;color:rgba(255,255,255,.3)">CSV: '+esc(g.csvTitle)+'</div>'
+      :'<div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px">CSV: '+esc(g.csvTitle)+'</div><select class="stsel" style="padding:4px 8px;font-size:11px;max-width:240px" onchange="royImportAssign('+i+',this.value)">'+relOpts+'</select>';
+    return '<tr'+(g.releaseId?'':' style="background:rgba(251,191,36,.03)"')+'><td>'+badge+'</td><td>'+relCell+'</td><td style="font-size:11px;color:rgba(255,255,255,.5);white-space:nowrap">'+esc(g.start)+' → '+esc(g.end)+'</td><td style="font-size:11px;color:rgba(255,255,255,.5)">'+storeBits+'</td><td style="color:rgba(255,255,255,.6)">'+g.streams.toLocaleString()+'</td><td style="font-weight:700;color:var(--gold)">$'+g.total.toFixed(2)+'</td></tr>';
+  }).join('');
+  document.getElementById('royimp-summary').innerHTML=
+    '<strong style="color:#fff">'+royImp._rowsUsed.toLocaleString()+'</strong> CSV rows grouped into <strong style="color:#fff">'+royImp.groups.length+'</strong> entries — '
+    +'<span style="color:#34d399">'+matched.length+' matched</span>'
+    +(unmatched?' · <span style="color:#fbbf24">'+unmatched+' need a release assigned (or they\'ll be skipped)</span>':'')
+    +(royImp._skippedNoPeriod?' · <span style="color:#f87171">'+royImp._skippedNoPeriod+' rows skipped (no readable period)</span>':'')
+    +' · matched total <strong style="color:var(--gold)">$'+grand.toFixed(2)+'</strong>';
+  document.getElementById('royimp-commit-label').textContent='Import '+matched.length+' '+(matched.length===1?'Entry':'Entries');
+}
+
+function royImportAssign(idx,relId){
+  const g=royImp.groups[idx];if(!g)return;
+  const rel=royImp.releases.find(r=>r.id===relId);
+  if(!rel){g.releaseId=null;g.userId=null;g.relLabel=null;}
+  else{g.releaseId=rel.id;g.userId=rel.user_id;g.relLabel=rel.title+' — '+rel.artist;g.matchType='manual';}
+  royImpRenderPreview();
+}
+
+function royImportReset(){
+  royImp={fileName:'',headers:[],rows:[],groups:[],releases:[]};
+  document.getElementById('royimp-mapping').style.display='none';
+  document.getElementById('royimp-preview').style.display='none';
+}
+
+async function royImportCommit(){
+  if(royImpCommitting)return;
+  const groups=royImp.groups.filter(g=>g.releaseId&&g.userId);
+  if(!groups.length){toast('No matched entries to import — assign releases first','err');return;}
+  const progEl=document.getElementById('royimp-progress');
+  const btn=document.getElementById('royimp-commit-btn');
+  royImpCommitting=true;
+  if(btn){btn.disabled=true;btn.style.opacity='.5';}
+  try{
+    // Overlap check across all affected releases in one query
+    const relIds=[...new Set(groups.map(g=>g.releaseId))];
+    const {data:existing,error:exErr}=await sb.from('royalty_entries')
+      .select('release_id,date_start,date_end,total').in('release_id',relIds);
+    if(exErr)throw exErr;
+    const overlaps=groups.filter(g=>(existing||[]).some(e=>e.release_id===g.releaseId&&e.date_start<=g.end&&e.date_end>=g.start));
+    if(overlaps.length){
+      const ok=confirm(overlaps.length+' of '+groups.length+' entries overlap periods that already have royalty entries.\n\nImporting will ADD these amounts on top of the existing totals (it will not replace them). Continue with the full import?');
+      if(!ok)return;
+    }
+    if(progEl)progEl.textContent='Importing '+groups.length+' entries…';
+    // Batch insert
+    const payload=groups.map(g=>{
+      const entry={user_id:g.userId,release_id:g.releaseId,date_start:g.start,date_end:g.end,notes:'CSV import: '+royImp.fileName};
+      let total=0;
+      ROY_STORES.forEach(s=>{const v=parseFloat((g.stores[s.key]||0).toFixed(2));entry[s.key]=v;total+=v;});
+      entry.total=parseFloat(total.toFixed(2));
+      entry.streams=g.streams||0;
+      return entry;
+    });
+    const {error:insErr}=await sb.from('royalty_entries').insert(payload);
+    if(insErr)throw insErr;
+    // Recalculate earnings + streams for every affected release from ALL its entries
+    if(progEl)progEl.textContent='Recalculating release totals…';
+    for(const rid of relIds){
+      const {data:ent,error:entErr}=await sb.from('royalty_entries').select('total,streams').eq('release_id',rid);
+      if(entErr){console.error('Recalc fetch error for release',rid,entErr);continue;}
+      const newTotal=parseFloat((ent||[]).reduce((a,e)=>a+(e.total||0),0).toFixed(2));
+      const newStreams=(ent||[]).reduce((a,e)=>a+(e.streams||0),0);
+      const {error:updErr}=await sb.from('releases').update({earnings:newTotal,streams:newStreams}).eq('id',rid);
+      if(updErr)console.error('Recalc update error for release',rid,updErr);
+    }
+    const grand=groups.reduce((a,g)=>a+g.total,0);
+    toast('Imported '+groups.length+' entries ($'+grand.toFixed(2)+') across '+relIds.length+' release'+(relIds.length===1?'':'s'),'ok');
+    royImportReset();
+    loadRoyaltyEntries();loadRoyStoreTotals();loadRoyRecentEntries();
+  }catch(e){
+    console.error('Royalty import error:',e);
+    if(e.message?.includes('does not exist'))toast('Run the royalty_entries SQL in Supabase first','err');
+    else toast('Import failed: '+(e.message||'unknown error')+' — nothing was partially recalculated beyond inserted entries.','err');
+  }finally{
+    royImpCommitting=false;
+    if(btn){btn.disabled=false;btn.style.opacity='';}
+    if(progEl)progEl.textContent='';
+  }
 }
 
 async function loadRoyaltyEntries(){
