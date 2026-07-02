@@ -2402,6 +2402,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div style="font-size:14px;font-weight:700;color:#f87171;margin-bottom:.5rem"><i class="ti ti-alert-triangle"></i> This is permanent</div>
           <p style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:1rem">Deleting your account removes your releases, roster, royalty history, and personal data from Blakkstone once processed. This can take up to a few business days to complete manually and cannot be reversed.</p>
           <div id="delete-inflight-warning" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.75rem .9rem;margin-bottom:1rem;font-size:12px;color:#fbbf24;line-height:1.6"></div>
+          <div id="delete-subscription-warning" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.75rem .9rem;margin-bottom:1rem;font-size:12px;color:#fbbf24;line-height:1.6"></div>
           <div class="fg"><label>Reason (optional)</label><textarea id="delete-reason" placeholder="Tell us why you're leaving — helps us improve" style="min-height:70px"></textarea></div>
           <div class="fg"><label>Type your email (<span id="delete-confirm-email-hint" style="color:rgba(255,255,255,.4)"></span>) to confirm</label><input id="delete-confirm-email" type="email" placeholder="your@email.com" oninput="validateDeleteConfirm()"></div>
           <div style="display:flex;gap:8px;margin-top:1rem">
@@ -4588,6 +4589,20 @@ async function openDeleteAccountFlow(){
   validateDeleteConfirm();
   const warnBox=document.getElementById('delete-inflight-warning');
   if(warnBox){warnBox.style.display='none';warnBox.innerHTML='';}
+  const subWarnBox=document.getElementById('delete-subscription-warning');
+  if(subWarnBox){
+    subWarnBox.style.display='none';subWarnBox.innerHTML='';
+    const expiresAt=profile?.plan_expires_at;
+    const planLabel={label:'Label',artist_plus:'Artist+',solo_paid:'Solo'}[profile?.plan];
+    if(expiresAt&&planLabel){
+      const daysLeft=Math.ceil((new Date(expiresAt)-new Date())/(1000*60*60*24));
+      if(daysLeft>0){
+        const dateStr=new Date(expiresAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+        subWarnBox.innerHTML='<i class="ti ti-credit-card"></i> You have an active <strong>'+planLabel+'</strong> plan with '+daysLeft+' day'+(daysLeft===1?'':'s')+' remaining, paid through '+dateStr+'. Deleting your account forfeits this remaining time — it is not refunded.';
+        subWarnBox.style.display='block';
+      }
+    }
+  }
   try{
     const {data,error}=await sb.from('releases').select('title,status').eq('user_id',user.id).in('status',['pending','review']);
     if(error)throw error;
