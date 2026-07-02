@@ -2272,7 +2272,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <li><i class="ti ti-check ck"></i> Unlimited releases</li>
             <li><i class="ti ti-check ck"></i> 150+ DSPs worldwide</li>
             <li><i class="ti ti-check ck"></i> Royalty dashboard</li>
-            <li><i class="ti ti-check ck"></i> Mobile Money payouts</li>
+            <li><i class="ti ti-check ck"></i> Mobile Money + Bank payouts</li>
             <li><i class="ti ti-x cx"></i> 9% commission</li>
             <li><i class="ti ti-x cx"></i> Multiple artists</li>
           </ul>
@@ -2290,7 +2290,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <li><i class="ti ti-check ck"></i> ISRC code generation</li>
             <li><i class="ti ti-check ck"></i> Release scheduling</li>
             <li><i class="ti ti-check ck"></i> Earnings dashboard</li>
-            <li><i class="ti ti-check ck"></i> Mobile Money payouts</li>
+            <li><i class="ti ti-check ck"></i> Mobile Money + Bank payouts</li>
             <li><i class="ti ti-check ck"></i> Store analytics</li>
           </ul>
           <button class="btn btn-purple" id="ug-artist-btn" style="width:100%;justify-content:center" onclick="openPaystack('artist_plus')"><i class="ti ti-crown"></i> Upgrade to Artist+</button>
@@ -2963,6 +2963,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="pay-modal">
     <h3 id="pay-modal-title">Upgrade Plan</h3>
     <p id="pay-modal-desc">Keep 100% of your royalties with Blakkstone.</p>
+    <ul id="pay-modal-feats" style="list-style:none;padding:0;margin:0 0 1rem;display:flex;flex-direction:column;gap:6px"></ul>
     <div class="btog" id="billing-toggle">
       <div class="bopt sel" id="b-monthly" style="pointer-events:none;opacity:.5">Monthly<strong id="b-monthly-price">$15</strong><small style="font-size:10px;color:var(--muted)">Not available</small></div>
       <div class="bopt sel" id="b-yearly" onclick="setBilling('yearly')">Annual<strong id="b-yearly-price">$15</strong><small style="font-size:10px;color:var(--success)">Best value</small></div>
@@ -7016,6 +7017,15 @@ function openPaystack(plan){
   document.getElementById('pay-modal-title').textContent='Get '+p.label+' Plan';
   const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5+ artists, 0% commission, priority support.'};
   document.getElementById('pay-modal-desc').textContent=descs[selectedPlan]||'';
+  const feats={
+    solo:['1 artist profile','Unlimited releases','150+ DSPs worldwide','Royalty dashboard','Mobile Money + Bank payouts'],
+    artist_plus:['2 artist profiles','Unlimited releases','150+ DSPs worldwide','0% commission','ISRC code generation','Release scheduling','Earnings dashboard','Mobile Money + Bank payouts','Store analytics'],
+    label:['5+ artist profiles','Unlimited releases','150+ DSPs worldwide','0% commission','ISRC code generation','Full royalty dashboard','Mobile Money + Bank payouts','Label analytics overview','Priority support','Dedicated account manager']
+  };
+  const featsEl=document.getElementById('pay-modal-feats');
+  if(featsEl){
+    featsEl.innerHTML=(feats[selectedPlan]||[]).map(f=>'<li style="display:flex;align-items:center;gap:7px;font-size:13px;color:rgba(255,255,255,.75)"><i class="ti ti-check" style="color:var(--gold);font-size:15px;flex-shrink:0"></i> '+f+'</li>').join('');
+  }
   document.getElementById('b-monthly-price').textContent='$'+p.monthly;
   document.getElementById('b-yearly-price').textContent='$'+p.yearly;
   billing='yearly';
