@@ -6604,15 +6604,73 @@ async function loadAdminMessages(){
     const unread=(data||[]).filter(m=>!m.read_at&&m.direction==='in').length;
     const msgAlert=document.getElementById('msg-alert');if(msgAlert){msgAlert.style.display=unread>0?'inline':'none';msgAlert.textContent=unread;}
     if(!data||!data.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
-    container.innerHTML=data.map(m=>{
-      const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';const isIn=m.direction==='in';
-      _messageMap[m.id]=m;
-      return '<div style="background:#0e0e14;border:1px solid var(--line);border-radius:11px;padding:1rem 1.1rem;margin-bottom:8px'+((!m.read_at&&isIn)?';border-left:3px solid var(--gold)':'')+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem"><div><div style="font-size:13px;font-weight:600;color:#fff">'+(isIn?'📨 Incoming from '+esc(m.from_email||''):'📤 Sent to: '+esc(m.to_email||''))+'</div></div><div style="display:flex;gap:6px;align-items:center"><span style="font-size:11px;color:rgba(255,255,255,.25)">'+d+'</span>'+(isIn?'<button class="btn btn-purple btn-sm" style="padding:3px 8px;font-size:11px" onclick="replyToMessage(\''+m.id+'\')"><i class="ti ti-arrow-back-up"></i> Reply</button>':'')+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:3px 8px;font-size:11px" onclick="markRead(\''+m.id+'\')">Mark read</button>':'')+'</div></div><div style="font-size:13px;color:rgba(255,255,255,.6)">'+esc(m.body||'')+'</div></div>';
-    }).join('');
+    // Resolve real artist names for both directions — profiles keyed by id (covers 'in' messages via from_id)
+    // AND by lowercased email (covers 'out' messages, which only ever store to_email, no to_id column exists)
+    const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,email,account_id');
+    const profileMap={};
+    (profList||[]).forEach(p=>{
+      profileMap[p.id]=p;
+      if(p.email)profileMap[p.email.toLowerCase()]=p;
+    });
+    data.forEach(m=>{_messageMap[m.id]=m;});
+    const threads=groupMessagesByThread(data,profileMap);
+    renderMessageThreads(threads);
   }catch(e){
     console.error('Messages load error:',e);
     container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>'+esc("Couldn't load messages: "+(e.message||e.details||JSON.stringify(e)))+'</p></div>';
   }
+}
+function groupMessagesByThread(messages,profileMap){
+  const threadsByKey={};
+  messages.forEach(m=>{
+    const rawKey=m.direction==='in'?m.from_email:(m.to_email||m.from_email||'');
+    const key=(rawKey||'').toLowerCase().trim();
+    if(!key)return;
+    if(!threadsByKey[key]){
+      const prof=profileMap[m.from_id]||profileMap[key];
+      threadsByKey[key]={key,email:key,name:prof?.artist_name||prof?.full_name||key,messages:[],unreadCount:0,lastTime:m.created_at};
+    }
+    const t=threadsByKey[key];
+    t.messages.push(m);
+    if(m.direction==='in'&&!m.read_at)t.unreadCount++;
+    if(new Date(m.created_at)>new Date(t.lastTime))t.lastTime=m.created_at;
+  });
+  const threads=Object.values(threadsByKey);
+  threads.forEach(t=>t.messages.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)));
+  threads.sort((a,b)=>new Date(b.lastTime)-new Date(a.lastTime));
+  return threads;
+}
+function renderMessageThreads(threads){
+  const container=document.getElementById('messages-list');if(!container)return;
+  if(!threads.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
+  container.innerHTML=threads.map((t,i)=>{
+    const last=t.messages[t.messages.length-1];
+    const lastPreview=(last.body||'').slice(0,80)+((last.body||'').length>80?'…':'');
+    const lastTime=t.lastTime?new Date(t.lastTime).toLocaleString('en-GB'):'—';
+    const threadId='thread-'+i;
+    return '<div style="background:#0e0e14;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;overflow:hidden">'
+      +'<div onclick="toggleMessageThread(\''+threadId+'\')" style="padding:1rem 1.1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px'+(t.unreadCount>0?';border-left:3px solid var(--gold)':'')+'">'
+        +'<div style="min-width:0"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:600;color:#fff">'+esc(t.name)+'</span>'+(t.unreadCount>0?'<span style="font-size:10px;font-weight:700;color:#08080C;background:var(--gold);padding:1px 7px;border-radius:20px">'+t.unreadCount+'</span>':'')+'</div>'
+        +'<div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">'+esc(t.email)+'</div>'
+        +'<div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(lastPreview)+'</div></div>'
+        +'<div style="text-align:right;flex-shrink:0"><div style="font-size:11px;color:rgba(255,255,255,.25)">'+lastTime+'</div><div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px">'+t.messages.length+' message'+(t.messages.length===1?'':'s')+' <i class="ti ti-chevron-down" id="'+threadId+'-chevron" style="font-size:11px;transition:transform .15s"></i></div></div>'
+      +'</div>'
+      +'<div id="'+threadId+'-body" style="display:none;padding:0 1.1rem 1rem;border-top:1px solid rgba(255,255,255,.06)">'
+        +t.messages.map(m=>{
+          const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';const isIn=m.direction==='in';
+          return '<div style="padding-top:.75rem"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.35rem;gap:8px"><div style="font-size:12px;font-weight:600;color:#fff;min-width:0">'+(isIn?'📨 '+esc(t.name):'📤 You')+' <span style="font-weight:400;color:rgba(255,255,255,.3)">· '+esc(m.subject||'')+'</span></div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><span style="font-size:10px;color:rgba(255,255,255,.25)">'+d+'</span>'+(isIn?'<button class="btn btn-purple btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();replyToMessage(\''+m.id+'\')"><i class="ti ti-arrow-back-up"></i> Reply</button>':'')+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();markRead(\''+m.id+'\')">Mark read</button>':'')+'</div></div><div style="font-size:12.5px;color:rgba(255,255,255,.6);white-space:pre-wrap">'+esc(m.body||'')+'</div></div>';
+        }).join('')
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+function toggleMessageThread(threadId){
+  const body=document.getElementById(threadId+'-body');
+  const chevron=document.getElementById(threadId+'-chevron');
+  if(!body)return;
+  const opening=body.style.display==='none';
+  body.style.display=opening?'block':'none';
+  if(chevron)chevron.style.transform=opening?'rotate(180deg)':'rotate(0deg)';
 }
 function replyToMessage(id){
   const m=_messageMap[id];if(!m)return;
