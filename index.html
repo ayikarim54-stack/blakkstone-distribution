@@ -2088,7 +2088,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                   </div>
                   <div id="payout-submit-wrap" style="display:none;margin-top:.5rem">
                     <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Processed within 5–7 business days.</div>
-                    <button class="btn btn-purple" onclick="submitPayout()"><i class="ti ti-send"></i> Submit Payout Request</button>
+                    <button class="btn btn-purple" id="payout-submit-final" onclick="submitPayout()"><i class="ti ti-send"></i> Submit Payout Request</button>
                     <button class="btn" style="background:transparent;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.1);margin-left:8px" onclick="document.getElementById('payout-method-section').style.display='none'">Cancel</button>
                   </div>
                 </div>
@@ -2897,13 +2897,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- STREAM CHART -->
     <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Stream Trend</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Streams by Reporting Period</div>
       <canvas id="rel-modal-chart" height="100"></canvas>
     </div>
 
     <!-- STORE BREAKDOWN -->
     <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Est. Streams by Store</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Earnings by Store</div>
       <div id="rel-modal-stores" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
 
@@ -3799,22 +3799,41 @@ function openReleaseModal(r){
   const nw=document.getElementById('rel-modal-notes-wrap');if(nw) nw.style.display=r.notes?'block':'none';set('rel-modal-notes',r.notes||'');
   const stEl=document.getElementById('rel-modal-stores');
   if(stEl){
-    const ts=r.streams||0;
-    if(!ts){stEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3)">No streams yet.</div>';}
-    else{
-      stEl.innerHTML=DSP_STORES.slice(0,5).map(s=>{
-        const est=Math.round(ts*s.share);const barW=Math.round((s.share/DSP_STORES[0].share)*100);
-        const logo=s.logo?'<img src="'+s.logo+'" width="16" height="16" style="object-fit:contain;display:block">':'';
-        return '<div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:3px">'+logo+'</div><div style="font-size:12px;color:rgba(255,255,255,.6);width:100px">'+s.name+'</div><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:linear-gradient(90deg,#D4AF37,#e8c97a)"></div></div><div style="font-size:12px;color:rgba(255,255,255,.5);width:50px;text-align:right">'+est.toLocaleString()+'</div></div>';
-      }).join('');
-    }
+    stEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3)">Loading…</div>';
+    (async()=>{
+      const stEmpty='<div style="font-size:13px;color:rgba(255,255,255,.3);line-height:1.6">No store data yet.<br><span style="font-size:11px;opacity:.7">Appears once royalty reports are added for this release.</span></div>';
+      try{
+        const {data:relEntries,error:reErr}=await sb.from('royalty_entries')
+          .select('spotify,apple_music,youtube_music,audiomack,boomplay,amazon_music,tidal,deezer,others')
+          .eq('release_id',r.id);
+        if(reErr)throw reErr;
+        const relTotals={};
+        ROY_STORES.forEach(s=>{relTotals[s.key]=(relEntries||[]).reduce((a,e)=>a+(parseFloat(e[s.key])||0),0);});
+        const ranked=ROY_STORES.filter(s=>relTotals[s.key]>0).sort((a,b)=>relTotals[b.key]-relTotals[a.key]).slice(0,5);
+        const maxVal=ranked.length?relTotals[ranked[0].key]:0.01;
+        stEl.innerHTML=ranked.length
+          ?ranked.map(s=>{
+            const barW=Math.round((relTotals[s.key]/maxVal)*100);
+            const logo=s.logo?'<img src="'+s.logo+'" width="16" height="16" style="object-fit:contain;display:block">':'';
+            return '<div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:3px">'+logo+'</div><div style="font-size:12px;color:rgba(255,255,255,.6);width:100px">'+s.name+'</div><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:'+barW+'%;height:100%;background:linear-gradient(90deg,#D4AF37,#e8c97a)"></div></div><div style="font-size:12px;color:rgba(255,255,255,.5);width:60px;text-align:right">$'+relTotals[s.key].toFixed(2)+'</div></div>';
+          }).join('')
+          :stEmpty;
+      }catch(e){console.error('Release store breakdown error:',e);stEl.innerHTML=stEmpty;}
+    })();
   }
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now=new Date();
-  const labels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
-  const ts2=r.streams||0;
-  const seed=ts2>0?[Math.round(ts2*.05),Math.round(ts2*.1),Math.round(ts2*.18),Math.round(ts2*.28),Math.round(ts2*.42),ts2]:[0,0,0,0,0,0];
-  requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('rel-modal-chart',labels,seed,'#D4AF37','')));
+  (async()=>{
+    let trLabels=[],trVals=[];
+    try{
+      const {data:trend,error:trErr}=await sb.from('royalty_entries')
+        .select('streams,date_start').eq('release_id',r.id)
+        .order('date_start',{ascending:true});
+      if(trErr)throw trErr;
+      const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      trLabels=(trend||[]).map(t=>{const d=new Date(t.date_start);return months[d.getMonth()]+' '+String(d.getFullYear()).slice(2);});
+      trVals=(trend||[]).map(t=>t.streams||0);
+    }catch(e){console.error('Release trend fetch error:',e);}
+    requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('rel-modal-chart',trLabels,trVals,'#D4AF37','')));
+  })();
   renderPlatformLinksEditor(r);
   document.getElementById('release-overlay').classList.add('open');
 }
@@ -4238,10 +4257,24 @@ async function loadRoyalties(){
       :'<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No earnings yet</div>';
   }
   const bestEl=document.getElementById('best-stores');
-  if(bestEl) bestEl.innerHTML=DSP_STORES.slice(0,5).map(s=>{
-    const rev=(gross*s.share);const logo=s.logo?'<img src="'+s.logo+'" width="18" height="18" style="object-fit:contain;display:block">':'';
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:4px">'+logo+'</div><span style="font-size:13px;color:rgba(255,255,255,.8)">'+s.name+'</span></div><span style="font-size:13px;font-weight:700;color:#34d399">$'+rev.toFixed(2)+'</span></div>';
-  }).join('')||'<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1rem">No earnings yet</div>';
+  if(bestEl){
+    const bestEmpty='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1rem;line-height:1.6">No store data yet.<br><span style="font-size:11px;opacity:.7">Appears after your first royalty report.</span></div>';
+    try{
+      const {data:storeData,error:stErr}=await sb.from('royalty_entries')
+        .select('spotify,apple_music,youtube_music,audiomack,boomplay,amazon_music,tidal,deezer,others')
+        .eq('user_id',user.id);
+      if(stErr)throw stErr;
+      const stTotals={};
+      ROY_STORES.forEach(s=>{stTotals[s.key]=(storeData||[]).reduce((a,e)=>a+(parseFloat(e[s.key])||0),0);});
+      const ranked=ROY_STORES.filter(s=>stTotals[s.key]>0).sort((a,b)=>stTotals[b.key]-stTotals[a.key]).slice(0,5);
+      bestEl.innerHTML=ranked.length
+        ?ranked.map(s=>{
+          const logo=s.logo?'<img src="'+s.logo+'" width="18" height="18" style="object-fit:contain;display:block">':'';
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;padding:4px">'+logo+'</div><span style="font-size:13px;color:rgba(255,255,255,.8)">'+s.name+'</span></div><span style="font-size:13px;font-weight:700;color:#34d399">$'+stTotals[s.key].toFixed(2)+'</span></div>';
+        }).join('')
+        :bestEmpty;
+    }catch(e){console.error('Best stores fetch error:',e);bestEl.innerHTML=bestEmpty;}
+  }
   const tbody=document.getElementById('royalty-tbody');
   if(tbody){
     if(!allRel.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
@@ -4264,7 +4297,7 @@ async function loadPayout(){
   await loadSavedMethods();
   const [{data:relData},{data:payoutData}]=await Promise.all([
     sb.from('releases').select('earnings').eq('user_id',user.id),
-    sb.from('payouts').select('amount,status,id,method,network,account,created_at').eq('user_id',user.id)
+    sb.from('payouts').select('amount,status,id,method,network,account,created_at,failure_reason').eq('user_id',user.id).order('created_at',{ascending:false})
   ]);
   const isPaid=isCommissionExempt();
   const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
@@ -4320,35 +4353,42 @@ function selNet(net){
   const map={'MTN':'mtn-btn','Vodafone':'voda-btn','AirtelTigo':'airtel-btn'};
   document.getElementById(map[net])?.classList.add('sel');
 }
+let payoutSubmitting=false;
 async function submitPayout(){
+  if(payoutSubmitting)return;
   if(!payoutMethod){toast('Select a payout method','err');return;}
-  const amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
-  if(!amt||amt<1){toast('Enter a valid amount','err');return;}
-  const [{data:relData},{data:existing}]=await Promise.all([
-    sb.from('releases').select('earnings').eq('user_id',user.id),
-    sb.from('payouts').select('amount,status').eq('user_id',user.id)
-  ]);
-  const isPaid=isCommissionExempt();
-  const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
-  const afterComm=isPaid?gross:gross*(1-COMM);
-  const pendingTotal=(existing||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
-  const available=Math.max(0,afterComm-pendingTotal);
-  if(amt>available){toast('Amount exceeds available balance of $'+available.toFixed(2),'err');return;}
-  let account='',network='';
-  if(payoutMethod==='momo'){
-    if(!momoNetwork){toast('Select a Mobile Money network','err');return;}
-    const num=document.getElementById('momo-number').value.trim();
-    const name=document.getElementById('momo-name').value.trim();
-    if(!num||!name){toast('Fill in all Mobile Money fields','err');return;}
-    account=name+' — '+num;network=momoNetwork;
-  } else {
-    const bank=document.getElementById('bank-name').value.trim();
-    const acc=document.getElementById('bank-acc').value.trim();
-    const accName=document.getElementById('bank-acc-name').value.trim();
-    if(!bank||!acc||!accName){toast('Fill in all bank fields','err');return;}
-    account=accName+' — '+bank+' ('+acc+')';
-  }
+  let amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
+  if(!amt||isNaN(amt)||amt<1){toast('Enter a valid amount (min $1.00)','err');return;}
+  amt=Math.round(amt*100)/100;
+  payoutSubmitting=true;
+  const sbtn=document.getElementById('payout-submit-final');
+  if(sbtn){sbtn.disabled=true;sbtn.style.opacity='.5';}
   try{
+    const [{data:relData},{data:existing}]=await Promise.all([
+      sb.from('releases').select('earnings').eq('user_id',user.id),
+      sb.from('payouts').select('amount,status').eq('user_id',user.id)
+    ]);
+    const isPaid=isCommissionExempt();
+    const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
+    const afterComm=isPaid?gross:gross*(1-COMM);
+    const paidTotal=(existing||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+    const pendingTotal=(existing||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+    const available=Math.max(0,afterComm-paidTotal-pendingTotal);
+    if(amt>available+0.005){toast('Amount exceeds available balance of $'+available.toFixed(2),'err');return;}
+    let account='',network='';
+    if(payoutMethod==='momo'){
+      if(!momoNetwork){toast('Select a Mobile Money network','err');return;}
+      const num=document.getElementById('momo-number').value.trim();
+      const name=document.getElementById('momo-name').value.trim();
+      if(!num||!name){toast('Fill in all Mobile Money fields','err');return;}
+      account=name+' — '+num;network=momoNetwork;
+    } else {
+      const bank=document.getElementById('bank-name').value.trim();
+      const acc=document.getElementById('bank-acc').value.trim();
+      const accName=document.getElementById('bank-acc-name').value.trim();
+      if(!bank||!acc||!accName){toast('Fill in all bank fields','err');return;}
+      account=accName+' — '+bank+' ('+acc+')';
+    }
     const {error}=await sb.from('payouts').insert({user_id:user.id,method:payoutMethod,network:network||null,account,amount:amt,status:'pending'});
     if(error)throw error;
     document.getElementById('withdraw-amount').value='';
@@ -4356,11 +4396,25 @@ async function submitPayout(){
     sendPayoutNotificationEmail(amt,payoutMethod,network,account);
     loadPayout();
   }catch(e){toast('Payout failed: '+e.message,'err');}
+  finally{
+    payoutSubmitting=false;
+    if(sbtn){sbtn.disabled=false;sbtn.style.opacity='';}
+  }
 }
 async function cancelPayout(id){
   if(!confirm('Cancel this payout?'))return;
-  await sb.from('payouts').update({status:'cancelled'}).eq('id',id).eq('user_id',user.id);
-  toast('Payout cancelled','ok');loadPayout();
+  // Status guard: only a still-pending payout can be cancelled, and we verify a row was actually changed.
+  const {data:updated,error}=await sb.from('payouts')
+    .update({status:'cancelled'})
+    .eq('id',id).eq('user_id',user.id).eq('status','pending')
+    .select('id');
+  if(error){toast('Could not cancel: '+error.message,'err');return;}
+  if(!updated||!updated.length){
+    toast('This payout can no longer be cancelled — it has already been processed. Refreshing…','err');
+  } else {
+    toast('Payout cancelled','ok');
+  }
+  loadPayout();
 }
 // ── SAVED PAYOUT METHODS ───────────────────────────────
 async function loadSavedMethods(){
