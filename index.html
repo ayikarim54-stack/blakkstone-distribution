@@ -3485,7 +3485,7 @@ function enterDashboard(){
     set('tnav-account-id',profile?.account_id||'');
     setAvatarDisplay(initials,profile?.avatar_url);
     const adminNav=document.getElementById('admin-nav');if(adminNav) adminNav.style.display=isAdmin?'flex':'none';
-    const isMaxedOut=['label','artist_plus'].includes(profile?.plan||'');
+    const isMaxedOut=profile?.plan==='label';
     const upgradeNav=document.getElementById('upgrade-nav');
     if(upgradeNav) upgradeNav.style.display=(isAdmin||isMaxedOut)?'none':'flex';
     set('welcome-h','Hi, '+name.split(' ')[0]+' 👋');
@@ -7022,7 +7022,10 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas){
       const expiresAt=new Date();
       if(billingCycle==='monthly')expiresAt.setMonth(expiresAt.getMonth()+1);
       else expiresAt.setFullYear(expiresAt.getFullYear()+1);
-      await sb.from('profiles').update({plan:dbPlan,plan_expires_at:expiresAt.toISOString()}).eq('id',user.id);
+      const {error:planUpdateError}=await sb.from('profiles').update({plan:dbPlan,plan_expires_at:expiresAt.toISOString()}).eq('id',user.id);
+      if(planUpdateError){
+        console.error('[Plan Update Error] Failed to save plan_expires_at — likely the column does not exist yet on the live database. Run: alter table profiles add column if not exists plan_expires_at timestamptz;',planUpdateError);
+      }
       if(profile){profile.plan=dbPlan;profile.plan_expires_at=expiresAt.toISOString();}
       const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
       if(document.getElementById('page-myartists')?.classList.contains('active'))loadMyArtistsGrid();
