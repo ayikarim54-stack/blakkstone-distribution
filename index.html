@@ -2975,6 +2975,12 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const PK='pk_live_cc83d66ba957fe1358d7246e796ab0e81715fdf9';
 const ADMIN_EMAIL='blakkstonemusic@hotmail.com';
 const COMM=0.09;
+// Single source of truth for "does this account pay Blakkstone's 9% commission or not."
+// Previously duplicated identically across 7 separate functions — consolidated here so a
+// future plan-tier change only ever needs to happen in one place, not seven.
+function isCommissionExempt(){
+  return ['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user?.email===ADMIN_EMAIL;
+}
 const GHS_RATE=15.5;
 // ── MULTI-CURRENCY DISPLAY ──────────────────────────────
 // Approximate static rates (USD -> currency) as an instant fallback before the live rate loads.
@@ -3640,7 +3646,7 @@ async function loadReleases(){
   const pending=releases.filter(r=>r.status==='pending'||r.status==='review').length;
   const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
   const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
-  const isPaidPlan=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
+  const isPaidPlan=isCommissionExempt();
   const grossEarnings=isPaidPlan?earnings:earnings*(1-COMM);
   // Subtract paid payouts so balance stays accurate
   const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',user.id);
@@ -3661,7 +3667,7 @@ async function loadReleases(){
 function openReleaseById(id){const r=_releaseMap[id];if(r)openReleaseModal(r);}
 function openReleaseModal(r){
   _currentModalReleaseId=r.id;
-  const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
+  const isPaid=isCommissionExempt();
   const comm=isPaid?0:(r.earnings||0)*COMM;const payout=(r.earnings||0)-comm;
   const artEl=document.getElementById('rel-modal-art');
   if(artEl) artEl.innerHTML=r.artwork_url?'<img src="'+r.artwork_url+'" style="width:100%;height:100%;object-fit:cover">':'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="font-size:32px;color:rgba(255,255,255,.2)"></i></div>';
@@ -4076,7 +4082,7 @@ async function loadRoyalties(){
     sb.from('payouts').select('amount,status').eq('user_id',user.id)
   ]);
   const rl=(relData||[]).filter(r=>(r.earnings||0)>0);const allRel=relData||[];
-  const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
+  const isPaid=isCommissionExempt();
   const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
   const comm=isPaid?0:gross*COMM;const totalPayout=gross-comm;
   const paidOut3=(payoutData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
@@ -4159,7 +4165,7 @@ async function loadPayout(){
     sb.from('releases').select('earnings').eq('user_id',user.id),
     sb.from('payouts').select('amount,status,id,method,network,account,created_at').eq('user_id',user.id)
   ]);
-  const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
+  const isPaid=isCommissionExempt();
   const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
   const afterComm=isPaid?gross:gross*(1-COMM);
   // Subtract ALL non-failed/cancelled payouts from balance
@@ -4221,7 +4227,7 @@ async function submitPayout(){
     sb.from('releases').select('earnings').eq('user_id',user.id),
     sb.from('payouts').select('amount,status').eq('user_id',user.id)
   ]);
-  const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
+  const isPaid=isCommissionExempt();
   const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
   const afterComm=isPaid?gross:gross*(1-COMM);
   const pendingTotal=(existing||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
@@ -4447,7 +4453,7 @@ async function loadProfileStats(){
   try{
     const {data:rels}=await sb.from('releases').select('streams,earnings').eq('user_id',user.id);
     const cnt=rels?.length||0;const earn=(rels||[]).reduce((a,r)=>a+(r.earnings||0),0);
-    const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
+    const isPaid=isCommissionExempt();
     const net=isPaid?earn:earn*(1-COMM);
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     set('prof-release-count',cnt);set('prof-earnings','$'+net.toFixed(2));
@@ -6457,7 +6463,7 @@ async function exportMyEarningsCSV(){
     const {data,error}=await sb.from('releases').select('title,artist,genre,release_date,status,streams,earnings').eq('user_id',user.id).order('release_date',{ascending:false});
     if(error)throw error;
     if(!data||!data.length){toast('No releases to export yet','err');return;}
-    const isPaid=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
+    const isPaid=isCommissionExempt();
     const headers=['Title','Artist','Genre','Release Date','Status','Streams','Gross Earnings (USD)','Your Earnings (USD)'];
     const rows=data.map(r=>{
       const gross=r.earnings||0;
