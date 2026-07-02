@@ -2907,6 +2907,22 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div id="rel-modal-stores" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
 
+    <!-- SPLIT SHEET -->
+    <div id="rel-modal-splits-wrap" style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07);display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3)">Split Sheet</div>
+        <button class="btn adm-btn-sec btn-sm" style="font-size:10px;padding:3px 9px" onclick="exportSplitStatement()"><i class="ti ti-download"></i> Statement CSV</button>
+      </div>
+      <div id="rel-modal-splits" style="display:flex;flex-direction:column"></div>
+      <div style="font-size:11px;color:rgba(255,255,255,.25);line-height:1.6;margin-top:.75rem">Shares are calculated from this release's net payout. Blakkstone pays the account holder; distributing contributor shares is the account holder's responsibility.</div>
+    </div>
+
+    <!-- SMART LINK PERFORMANCE -->
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Smart Link Performance</div>
+      <div id="rel-modal-slstats"></div>
+    </div>
+
     <!-- RELEASE INFO -->
     <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Release Info</div>
@@ -3835,6 +3851,8 @@ function openReleaseModal(r){
     requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('rel-modal-chart',trLabels,trVals,'#D4AF37','')));
   })();
   renderPlatformLinksEditor(r);
+  loadSmartLinkStats(r.id);
+  renderSplitSheet(r);
   document.getElementById('release-overlay').classList.add('open');
 }
 let _currentModalReleaseId=null;
@@ -4925,6 +4943,45 @@ async function doPasswordUpdate(){
   btn.disabled=false;btn.textContent='Update password';
 }
 // ── SMART LINK (PUBLIC) ──────────────────────────────────
+function trackSL(releaseId,type,store){
+  // Fire-and-forget analytics — must never break the fan-facing page
+  try{
+    sb.from('smartlink_events').insert({release_id:releaseId,event_type:type,store:store||null})
+      .then(({error})=>{if(error)console.warn('SL tracking skipped:',error.message);});
+  }catch(e){}
+}
+async function loadSmartLinkStats(releaseId){
+  const el=document.getElementById('rel-modal-slstats');
+  if(!el)return;
+  el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">Loading…</div>';
+  try{
+    const [evRes,psRes]=await Promise.all([
+      sb.from('smartlink_events').select('event_type,store').eq('release_id',releaseId),
+      sb.from('presave_signups').select('id',{count:'exact',head:true}).eq('release_id',releaseId)
+    ]);
+    if(evRes.error)throw evRes.error;
+    const events=evRes.data||[];
+    const views=events.filter(e=>e.event_type==='view').length;
+    const clicks=events.filter(e=>e.event_type==='click');
+    const ctr=views>0?Math.round((clicks.length/views)*100):0;
+    const psCount=psRes.error?null:(psRes.count||0);
+    const byStore={};clicks.forEach(c=>{if(c.store)byStore[c.store]=(byStore[c.store]||0)+1;});
+    const maxClicks=Math.max(...Object.values(byStore),1);
+    const storeRows=Object.entries(byStore).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([st,n])=>
+      '<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><div style="font-size:12px;color:rgba(255,255,255,.6);width:100px">'+esc(st)+'</div><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:'+Math.round((n/maxClicks)*100)+'%;height:100%;background:var(--gold);border-radius:2px"></div></div><div style="font-size:12px;color:#fff;font-weight:600;width:36px;text-align:right">'+n+'</div></div>'
+    ).join('');
+    const stat=(val,label,color)=>'<div style="background:#08080C;border-radius:8px;padding:.75rem;text-align:center"><div style="font-size:18px;font-weight:800;color:'+color+'">'+val+'</div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">'+label+'</div></div>';
+    el.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px'+(storeRows?';margin-bottom:.875rem':'')+'">'
+      +stat(views.toLocaleString(),'Page Views','#fff')
+      +stat(clicks.length.toLocaleString(),'Store Clicks · '+ctr+'% CTR','var(--gold)')
+      +stat(psCount===null?'—':psCount.toLocaleString(),'Pre-save Signups','#34d399')
+      +'</div>'+storeRows
+      +(!views&&!clicks.length?'<div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:.5rem">No activity yet — share this release\'s smart link to start collecting stats.</div>':'');
+  }catch(e){
+    console.error('Smart link stats error:',e);
+    el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">Run the smart link analytics SQL in Supabase to enable this.</div>';
+  }
+}
 function smartLinkNotFound(){
   const content=document.getElementById('smartlink-content');
   content.innerHTML='<div style="padding:4rem 0"><i class="ti ti-mood-sad" style="font-size:40px;color:rgba(255,255,255,.2)"></i><p style="color:rgba(255,255,255,.4);margin-top:1rem;font-size:14px">This link isn\'t available.</p></div>';
@@ -4935,6 +4992,7 @@ async function loadSmartLink(releaseId){
     if(error)throw error;
     if(!data){smartLinkNotFound();return;}
     renderSmartLink(data);
+    trackSL(releaseId,'view');
   }catch(e){
     console.error('Smart link load error:',e);
     smartLinkNotFound();
@@ -4950,7 +5008,7 @@ function renderSmartLink(r){
   let body='';
   if(isLive){
     const buttons=DSP_STORES.filter(s=>links[s.name]).map(s=>
-      '<a href="'+esc(links[s.name])+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin-bottom:8px;text-decoration:none"><img src="'+s.logo+'" width="24" height="24" style="border-radius:5px"><span style="color:#fff;font-size:14px;font-weight:600;flex:1;text-align:left">Listen on '+s.name+'</span><i class="ti ti-external-link" style="color:rgba(255,255,255,.3)"></i></a>'
+      '<a href="'+esc(links[s.name])+'" target="_blank" rel="noopener" onclick="trackSL(\''+r.id+'\',\'click\',\''+s.name+'\')" style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin-bottom:8px;text-decoration:none"><img src="'+s.logo+'" width="24" height="24" style="border-radius:5px"><span style="color:#fff;font-size:14px;font-weight:600;flex:1;text-align:left">Listen on '+s.name+'</span><i class="ti ti-external-link" style="color:rgba(255,255,255,.3)"></i></a>'
     ).join('');
     body=buttons||'<p style="color:rgba(255,255,255,.35);font-size:13px">Platform links coming soon.</p>';
   } else {
@@ -4968,7 +5026,7 @@ async function submitNotifyMe(releaseId){
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
   try{
     const {error}=await sb.from('presave_signups').insert({release_id:releaseId,email});
-    if(error)throw error;
+    if(error&&error.code!=='23505')throw error; // 23505 = already signed up — treat as success
     document.getElementById('smartlink-body').innerHTML='<div style="text-align:center;padding:1rem 0"><i class="ti ti-circle-check" style="font-size:32px;color:#34d399"></i><p style="color:#fff;font-size:14px;font-weight:600;margin-top:.75rem">You\'re on the list!</p><p style="color:rgba(255,255,255,.4);font-size:12px;margin-top:.25rem">We\'ll let you know the moment it drops.</p></div>';
   }catch(e){
     console.error('Notify me error:',e);
@@ -6134,13 +6192,24 @@ async function submitRelease(){
       wizToggleState['explicit']==='yes'?'EXPLICIT CONTENT':'',
       'Stores: '+wizStores.join(', ')
     ].filter(Boolean).join(' | ');
-    const {error:dbe}=await sb.from('releases').insert({
+    const splitsData=splitRows.length>1
+      ?splitRows.filter(x=>x.name&&x.name.trim()&&x.bp>0).map(x=>({name:x.name.trim(),bp:x.bp}))
+      :null;
+    const relPayload={
       user_id:user.id,title,artist,genre,release_date:date,
       isrc:wizTracks[0]?.isrc||null,notes:extraInfo||null,
       audio_url:audioPaths[0],artwork_url:artPublicUrl,status:'pending',streams:0,earnings:0,
       is_priority:selectedDistroTier==='priority',priority_ref:priorityPaymentRef,
       content_id_opt_in:wizToggleState['contentid']==='yes'
-    });
+    };
+    if(splitsData&&splitsData.length>1)relPayload.splits=splitsData;
+    let {error:dbe}=await sb.from('releases').insert(relPayload);
+    if(dbe&&relPayload.splits&&/splits/i.test(dbe.message||'')){
+      // splits column not yet added in Supabase — save the release anyway, warn about the split sheet
+      delete relPayload.splits;
+      ({error:dbe}=await sb.from('releases').insert(relPayload));
+      if(!dbe)toast('Release submitted, but the split sheet was NOT saved — run the splits SQL in Supabase','err');
+    }
     if(dbe)throw new Error('Submission failed: '+dbe.message);
     toast('Release submitted! We will review it shortly.','ok');
     // Clear draft on success
@@ -7245,6 +7314,64 @@ async function requestNotifPermission(){if(Notification.permission==='default') 
 
 // ── SPLIT-SHEET ──────────────────────────────────────────────
 let splitRows=[];
+let _splitStatementRelease=null;
+
+function renderSplitSheet(r){
+  const wrap=document.getElementById('rel-modal-splits-wrap');
+  const el=document.getElementById('rel-modal-splits');
+  if(!wrap||!el)return;
+  const splits=Array.isArray(r.splits)?r.splits.filter(s=>s&&s.name&&(s.bp||0)>0):[];
+  if(splits.length<2){wrap.style.display='none';_splitStatementRelease=null;return;}
+  wrap.style.display='block';
+  _splitStatementRelease=r;
+  const isPaid=isCommissionExempt();
+  const net=(r.earnings||0)*(isPaid?1:(1-COMM));
+  const totalBp=splits.reduce((a,s)=>a+(s.bp||0),0)||10000;
+  el.innerHTML=splits.slice().sort((a,b)=>(b.bp||0)-(a.bp||0)).map((s,i)=>{
+    const share=net*((s.bp||0)/totalBp);
+    const pct=((s.bp||0)/100).toFixed(2);
+    const icon=i===0?'crown':'user';
+    const iconColor=i===0?'var(--gold)':'rgba(255,255,255,.4)';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+      +'<div style="width:24px;height:24px;border-radius:50%;background:'+(i===0?'rgba(212,175,55,.15)':'rgba(255,255,255,.07)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-'+icon+'" style="font-size:11px;color:'+iconColor+'"></i></div>'
+      +'<div style="flex:1;min-width:0;font-size:13px;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(s.name)+'</div>'
+      +'<div style="font-size:11px;color:rgba(255,255,255,.35);width:56px;text-align:right">'+pct+'%</div>'
+      +'<div style="font-size:13px;font-weight:700;color:#34d399;width:80px;text-align:right">$'+share.toFixed(2)+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function exportSplitStatement(){
+  const r=_splitStatementRelease;
+  if(!r){toast('No split data for this release','err');return;}
+  const splits=Array.isArray(r.splits)?r.splits.filter(s=>s&&s.name&&(s.bp||0)>0):[];
+  if(splits.length<2){toast('No split data for this release','err');return;}
+  const isPaid=isCommissionExempt();
+  const gross=r.earnings||0;
+  const net=gross*(isPaid?1:(1-COMM));
+  const totalBp=splits.reduce((a,s)=>a+(s.bp||0),0)||10000;
+  const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const headers=['Contributor','Share (%)','Share (bp)','Amount (USD)'];
+  const rows=splits.slice().sort((a,b)=>(b.bp||0)-(a.bp||0)).map(s=>[
+    s.name,((s.bp||0)/100).toFixed(2),s.bp||0,(net*((s.bp||0)/totalBp)).toFixed(2)
+  ]);
+  const meta=[
+    ['Split Statement — '+(r.title||''),'','',''],
+    ['Artist',r.artist||'','',''],
+    ['Generated',today,'',''],
+    ['Gross earnings (USD)',gross.toFixed(2),'',''],
+    ['Commission',isPaid?'None (paid plan)':(COMM*100)+'%','',''],
+    ['Net payout (USD)',net.toFixed(2),'',''],
+    ['','','',''],
+  ];
+  const csv=[...meta,headers,...rows].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download='blakkstone-split-statement-'+(r.title||'release').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.csv';
+  a.click();URL.revokeObjectURL(url);
+  toast('Split statement exported','ok');
+}
+
 function splitInit(){
   const artistName=getSelectedPrimaryArtist()||profile?.artist_name||'Primary Artist';
   splitRows=[{id:'primary',name:artistName,bp:10000,locked:true}];
