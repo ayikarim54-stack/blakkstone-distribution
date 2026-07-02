@@ -3107,7 +3107,6 @@ const PLAN_TIER_RANK={solo:1,solo_paid:1,artist_plus:2,label:3};
 function calculateUpgradeDiscount(targetPlan){
   const currentPlan=profile?.plan;
   const expiresAt=profile?.plan_expires_at;
-  console.log('[Discount Debug]',{currentPlan,expiresAt,targetPlan,profileExists:!!profile});
   // No tracked expiration (pre-existing subscriber from before this feature existed, or a free account) — no discount to calculate, honestly.
   if(!currentPlan||!expiresAt)return null;
   const currentRank=PLAN_TIER_RANK[currentPlan]||0;
@@ -3522,7 +3521,6 @@ function enterDashboard(){
     const maNav=document.getElementById('myartists-nav');
     const _rm=getRosterMax();
     if(maNav)maNav.style.display=_rm>0?'':'none';
-    console.log('[My Artists nav]',{email:user?.email,plan:profile?.plan,rosterMax:_rm,navShown:_rm>0});
     showView('dashboard');
     const hashPage=window.location.hash.replace('#','');
     const validPages=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
