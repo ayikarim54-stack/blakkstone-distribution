@@ -1338,6 +1338,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <h1 style="font-size:42px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.75rem">Choose your plan to get started</h1>
           <p style="font-size:16px;color:rgba(255,255,255,.45);max-width:500px;margin:0 auto">Welcome, <strong style="color:#fff" id="paywall-name"></strong>! Select a plan to start distributing your music to 150+ platforms worldwide.</p>
+          <div id="paywall-lapsed-note" style="display:none;margin-top:1rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#fbbf24;max-width:500px;margin-left:auto;margin-right:auto"></div>
         </div>
 
         <!-- Plans grid -->
@@ -3428,13 +3429,39 @@ async function loadProfile(u){
   const {data}=await sb.from('profiles').select('*').eq('id',u.id).single();
   profile=data;
   const isAdmin=profile?.plan==='admin'||u.email===ADMIN_EMAIL;
+  // Real enforcement: a genuinely lapsed paid plan reverts to Free before any access decision is made.
+  // This never touches existing releases or roster artists — those stay exactly as they are, protected
+  // by the roster-lock system already in place. Only future privileges (commission exemption, roster room) stop.
+  let justLapsedPlan=null;
+  if(!isAdmin&&profile?.plan_expires_at&&['solo_paid','artist_plus','label'].includes(profile.plan)){
+    const hasExpired=new Date(profile.plan_expires_at)<new Date();
+    if(hasExpired){
+      const {error:revertError}=await sb.from('profiles').update({plan:'free'}).eq('id',u.id);
+      if(revertError){
+        console.error('[Plan Revert Error] Failed to revert an expired plan to Free:',revertError);
+      } else {
+        justLapsedPlan=profile.plan;
+        profile.plan='free';
+      }
+    }
+  }
   const hasPlan=isAdmin||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
-  if(!hasPlan){showPaywall();}else{enterDashboard();}
+  if(!hasPlan){showPaywall(justLapsedPlan);}else{enterDashboard();}
 }
-function showPaywall(){
+function showPaywall(lapsedPlan){
   const name=profile?.artist_name||profile?.full_name||user?.email?.split('@')[0]||'';
   const el=document.getElementById('paywall-name');
   if(el) el.textContent=name;
+  const lapsedNote=document.getElementById('paywall-lapsed-note');
+  if(lapsedNote){
+    if(lapsedPlan){
+      const planLabel={solo_paid:'Solo',artist_plus:'Artist+',label:'Label'}[lapsedPlan]||lapsedPlan;
+      lapsedNote.innerHTML='<i class="ti ti-clock"></i> Your <strong>'+planLabel+'</strong> plan has expired. Your releases and roster are safe — pick a plan below to pick up right where you left off.';
+      lapsedNote.style.display='block';
+    } else {
+      lapsedNote.style.display='none';lapsedNote.innerHTML='';
+    }
+  }
   showView('paywall');
 }
 function paywallPay(plan){
