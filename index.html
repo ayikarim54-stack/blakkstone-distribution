@@ -3637,7 +3637,7 @@ async function loadReleases(){
   const banner=document.getElementById('announcement-banner');
   if(banner&&releases.length===0&&profile) banner.style.display='flex';
   const live=releases.filter(r=>r.status==='live').length;
-  const pending=releases.filter(r=>r.status==='pending').length;
+  const pending=releases.filter(r=>r.status==='pending'||r.status==='review').length;
   const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
   const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
   const isPaidPlan=['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user.email===ADMIN_EMAIL;
@@ -5973,7 +5973,7 @@ async function loadAdminStats(){
     const now=new Date(),m=now.getMonth(),y=now.getFullYear();
     const newM=(profiles||[]).filter(p=>{const d=new Date(p.created_at);return d.getMonth()===m&&d.getFullYear()===y;}).length;
     const liveRel=(releases||[]).filter(r=>r.status==='live').length;
-    const pendingRel=(releases||[]).filter(r=>r.status==='pending').length;
+    const pendingRel=(releases||[]).filter(r=>r.status==='pending'||r.status==='review').length;
     const paidPlans=(profiles||[]).filter(p=>['artist_plus','label','solo_paid'].includes(p.plan)).length;
     const pendingPay=(payouts||[]).filter(p=>p.status==='pending');
     const pendingAmt=pendingPay.reduce((a,p)=>a+parseFloat(p.amount||0),0);
