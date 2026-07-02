@@ -3441,6 +3441,11 @@ async function loadProfile(u){
         console.error('[Plan Revert Error] Failed to revert an expired plan to Free:',revertError);
       } else {
         justLapsedPlan=profile.plan;
+        sb.from('admin_audit_log').insert({
+          target_user_id:u.id,field:'plan',
+          old_value:profile.plan,new_value:'free',
+          changed_by:'System (plan expired)'
+        }).then(({error})=>{if(error)console.error('Audit log insert error (plan revert itself succeeded):',error);});
         profile.plan='free';
       }
     }
