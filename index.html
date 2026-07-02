@@ -2355,6 +2355,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <div style="background:#08080C;border:1px solid var(--line);border-radius:9px;padding:.875rem;text-align:center">
             <div style="font-size:11px;font-weight:700;color:var(--gold);padding:3px 8px;background:rgba(201,168,76,.15);border-radius:20px;display:inline-block" id="prof-plan-badge">Solo</div>
+            <div id="prof-renewal-note" style="display:none;font-size:12px;margin-top:8px;line-height:1.6"></div>
             <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:4px">Your Plan</div>
           </div>
         </div>
@@ -2947,6 +2948,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="bopt sel" id="b-yearly" onclick="setBilling('yearly')">Annual<strong id="b-yearly-price">$15</strong><small style="font-size:10px;color:var(--success)">Best value</small></div>
     </div>
     <div class="fg"><label>Email</label><input id="pay-em" type="email" placeholder="you@email.com"></div>
+    <div id="upgrade-discount-note" style="display:none;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);border-radius:9px;padding:.75rem 1rem;margin-bottom:.75rem;font-size:12.5px;color:#fff;line-height:1.6"></div>
     <div class="rate-note" id="rate-note"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closePaystack()">Cancel</button>
@@ -3082,6 +3084,30 @@ function toggleCurrencySwitcher(){
   menu.style.display=menu.style.display==='none'?'block':'none';
 }
 const PLANS={solo:{monthly:15,yearly:15,label:'Solo'},artist_plus:{monthly:25,yearly:25,label:'Artist+'},label:{monthly:45,yearly:45,label:'Label'}};
+// Tier rank, low to high — used to tell a genuine upgrade apart from a same-tier renewal or a downgrade.
+const PLAN_TIER_RANK={solo:1,solo_paid:1,artist_plus:2,label:3};
+function calculateUpgradeDiscount(targetPlan){
+  const currentPlan=profile?.plan;
+  const expiresAt=profile?.plan_expires_at;
+  // No tracked expiration (pre-existing subscriber from before this feature existed, or a free account) — no discount to calculate, honestly.
+  if(!currentPlan||!expiresAt)return null;
+  const currentRank=PLAN_TIER_RANK[currentPlan]||0;
+  const targetRank=PLAN_TIER_RANK[targetPlan]||0;
+  // Only a genuine upgrade to a strictly higher tier qualifies — a same-tier renewal or a downgrade isn't "paying twice for overlapping time."
+  if(targetRank<=currentRank)return null;
+  const now=new Date();
+  const expiry=new Date(expiresAt);
+  const msRemaining=expiry-now;
+  if(msRemaining<=0)return null; // already expired — nothing left to credit
+  const monthsRemaining=Math.max(0,Math.floor(msRemaining/(1000*60*60*24*30)));
+  if(monthsRemaining<1)return null; // less than a month left isn't worth prorating
+  const currentPlanKey=currentPlan==='solo_paid'?'solo':currentPlan;
+  const currentAnnualPrice=PLANS[currentPlanKey]?.yearly||0;
+  // Credit = the unused portion of the current plan's annual value, capped at 11 of 12 months so a nearly-full-year credit can never fully cancel out the new plan's price.
+  const monthsCredit=Math.min(monthsRemaining,11);
+  const creditAmount=Math.round((currentAnnualPrice/12)*monthsCredit*100)/100;
+  return {monthsRemaining,creditAmount,currentPlanLabel:PLANS[currentPlanKey]?.label||currentPlan};
+}
 
 const sb=supabase.createClient(SB_URL,SB_KEY);
 
@@ -4475,6 +4501,28 @@ async function loadProfileStats(){
     set('prof-release-count',cnt);set('prof-earnings','$'+net.toFixed(2));
     const pb=document.getElementById('prof-plan-badge');
     if(pb) pb.textContent={admin:'Admin',label:'Label',artist_plus:'Artist+',solo_paid:'Solo',free:'Free'}[profile?.plan]||'Free';
+    const renewalNote=document.getElementById('prof-renewal-note');
+    if(renewalNote){
+      const expiresAt=profile?.plan_expires_at;
+      if(!expiresAt||profile?.plan==='free'||profile?.plan==='admin'){
+        renewalNote.style.display='none';
+      } else {
+        const now=new Date();const expiry=new Date(expiresAt);
+        const daysLeft=Math.ceil((expiry-now)/(1000*60*60*24));
+        const dateStr=expiry.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+        if(daysLeft<0){
+          renewalNote.style.display='block';
+          renewalNote.innerHTML='<span style="color:#f87171"><i class="ti ti-alert-triangle"></i> Your plan expired on '+dateStr+'.</span> <a onclick="goPage(\'upgrade\',null)" style="color:var(--gold);font-weight:600;cursor:pointer">Renew now</a> to keep your current benefits.';
+        } else if(daysLeft<=30){
+          renewalNote.style.display='block';
+          renewalNote.innerHTML='<span style="color:#fbbf24"><i class="ti ti-clock"></i> Renews in '+daysLeft+' day'+(daysLeft===1?'':'s')+' ('+dateStr+').</span> <a onclick="goPage(\'upgrade\',null)" style="color:var(--gold);font-weight:600;cursor:pointer">Renew now</a> to avoid any interruption.';
+        } else {
+          renewalNote.style.display='block';
+          renewalNote.style.color='rgba(255,255,255,.35)';
+          renewalNote.innerHTML='Renews '+dateStr+'.';
+        }
+      }
+    }
     const anInput=document.getElementById('p-an');const anNote=document.getElementById('p-an-lock-note');
     if(anInput){
       anInput.readOnly=cnt>0;
@@ -6912,6 +6960,7 @@ async function loadRoyRecentEntries(){
 }
 
 // ── PAYSTACK ──────────────────────────────────────────────
+let currentUpgradeDiscount=null;
 function openPaystack(plan){
   selectedPlan=plan||'artist_plus';
   const p=PLANS[selectedPlan];
@@ -6923,10 +6972,11 @@ function openPaystack(plan){
   billing='yearly';
   document.getElementById('b-yearly')?.classList.add('sel');
   if(user) document.getElementById('pay-em').value=user.email||'';
+  currentUpgradeDiscount=calculateUpgradeDiscount(selectedPlan);
   updateRateNote();
   document.getElementById('pay-overlay').classList.add('open');
 }
-function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');}
+function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');currentUpgradeDiscount=null;}
 function setBilling(cycle){
   billing=cycle;
   document.getElementById('b-monthly')?.classList.toggle('sel',cycle==='monthly');
@@ -6935,14 +6985,32 @@ function setBilling(cycle){
 }
 function updateRateNote(){
   const p=PLANS[selectedPlan];if(!p)return;
-  const usd=billing==='monthly'?p.monthly:p.yearly;
+  let usd=billing==='monthly'?p.monthly:p.yearly;
   const ghs=(usd*GHS_RATE).toFixed(2);
   const rn=document.getElementById('rate-note');
-  if(rn){
-    if(currentDisplayCurrency==='GHS'){
-      rn.textContent='GHS '+ghs+' at current rate. Charged in GHS via Paystack.';
-    } else {
-      rn.textContent='Shown as '+convertPrice(usd)+' ('+currentDisplayCurrency+') for reference — actual charge is GHS '+ghs+' via Paystack.';
+  const discountEl=document.getElementById('upgrade-discount-note');
+  if(currentUpgradeDiscount&&billing==='yearly'){
+    const discountedUsd=Math.max(0,usd-currentUpgradeDiscount.creditAmount).toFixed(2);
+    const discountedGhs=(discountedUsd*GHS_RATE).toFixed(2);
+    if(discountEl){
+      discountEl.style.display='block';
+      discountEl.innerHTML='<i class="ti ti-discount-2"></i> '+currentUpgradeDiscount.monthsRemaining+' month'+(currentUpgradeDiscount.monthsRemaining===1?'':'s')+' left on your '+currentUpgradeDiscount.currentPlanLabel+' plan — $'+currentUpgradeDiscount.creditAmount.toFixed(2)+' credited. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
+    }
+    if(rn){
+      if(currentDisplayCurrency==='GHS'){
+        rn.textContent='GHS '+discountedGhs+' at current rate (discount applied). Charged in GHS via Paystack.';
+      } else {
+        rn.textContent='Shown as '+convertPrice(parseFloat(discountedUsd))+' ('+currentDisplayCurrency+') for reference — actual charge is GHS '+discountedGhs+' via Paystack, discount applied.';
+      }
+    }
+  } else {
+    if(discountEl)discountEl.style.display='none';
+    if(rn){
+      if(currentDisplayCurrency==='GHS'){
+        rn.textContent='GHS '+ghs+' at current rate. Charged in GHS via Paystack.';
+      } else {
+        rn.textContent='Shown as '+convertPrice(usd)+' ('+currentDisplayCurrency+') for reference — actual charge is GHS '+ghs+' via Paystack.';
+      }
     }
   }
 }
@@ -6950,8 +7018,11 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas){
   try{
     if(user){
       const dbPlan=planKey==='solo'?'solo_paid':planKey;
-      await sb.from('profiles').update({plan:dbPlan}).eq('id',user.id);
-      if(profile) profile.plan=dbPlan;
+      const expiresAt=new Date();
+      if(billingCycle==='monthly')expiresAt.setMonth(expiresAt.getMonth()+1);
+      else expiresAt.setFullYear(expiresAt.getFullYear()+1);
+      await sb.from('profiles').update({plan:dbPlan,plan_expires_at:expiresAt.toISOString()}).eq('id',user.id);
+      if(profile){profile.plan=dbPlan;profile.plan_expires_at=expiresAt.toISOString();}
       const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
       if(document.getElementById('page-myartists')?.classList.contains('active'))loadMyArtistsGrid();
     }
@@ -6967,7 +7038,10 @@ function doPaystack(){
   const email=document.getElementById('pay-em').value.trim();
   if(!email){toast('Enter your email','err');return;}
   const p=PLANS[selectedPlan];
-  const usd=billing==='monthly'?p.monthly:p.yearly;
+  let usd=billing==='monthly'?p.monthly:p.yearly;
+  if(currentUpgradeDiscount&&billing==='yearly'){
+    usd=Math.max(0,usd-currentUpgradeDiscount.creditAmount);
+  }
   const pesewas=Math.round(usd*GHS_RATE*100);
   const btn=document.getElementById('pay-btn');
   if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your connection.','err');return;}
