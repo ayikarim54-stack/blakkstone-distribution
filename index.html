@@ -2260,7 +2260,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- UPGRADE -->
     <div class="page" id="page-upgrade">
-      <div class="ug-hero"><h1>Upgrade your plan</h1><p>Remove commission, unlock more artists, get priority support.</p></div>
+      <div class="ug-hero"><h1 id="ug-hero-title">Upgrade your plan</h1><p id="ug-hero-sub">Remove commission, unlock more artists, get priority support.</p></div>
       <div class="ug-grid">
         <div class="ug-card">
           <div class="ug-name">Solo</div>
@@ -3431,6 +3431,21 @@ function updateUpgradePage(plan){
   if(plan==='solo_paid'&&soloBtn){soloBtn.textContent='Current Plan';soloBtn.disabled=true;soloBtn.className='btn btn-ghost';}
   if(plan==='artist_plus'&&apBtn){apBtn.textContent='Current Plan';apBtn.disabled=true;apBtn.className='btn btn-ghost';}
   if(plan==='label'&&lBtn){lBtn.textContent='Current Plan';lBtn.disabled=true;lBtn.className='btn btn-ghost';}
+  const title=document.getElementById('ug-hero-title');
+  const sub=document.getElementById('ug-hero-sub');
+  if(plan==='solo_paid'){
+    if(title)title.textContent='Ready for more?';
+    if(sub)sub.textContent='You\'re already distributing worldwide on Solo. Move up to keep 100% of your royalties and add more artist profiles.';
+  } else if(plan==='artist_plus'){
+    if(title)title.textContent='You\'re on Artist+';
+    if(sub)sub.textContent='Keeping 100% of your royalties with room for 2 artists. Need 5 or more? Label is the next step up.';
+  } else if(plan==='label'){
+    if(title)title.textContent='You\'re on the Label plan';
+    if(sub)sub.textContent='You already have our highest tier — every feature, 0% commission, unlimited room to grow your roster.';
+  } else {
+    if(title)title.textContent='Upgrade your plan';
+    if(sub)sub.textContent='Remove commission, unlock more artists, get priority support.';
+  }
 }
 function enterDashboard(){
   try{
@@ -3443,8 +3458,9 @@ function enterDashboard(){
     set('tnav-account-id',profile?.account_id||'');
     setAvatarDisplay(initials,profile?.avatar_url);
     const adminNav=document.getElementById('admin-nav');if(adminNav) adminNav.style.display=isAdmin?'flex':'none';
+    const isMaxedOut=['label','artist_plus'].includes(profile?.plan||'');
     const upgradeNav=document.getElementById('upgrade-nav');
-    if(upgradeNav) upgradeNav.style.display=(isAdmin||isPaid)?'none':'flex';
+    if(upgradeNav) upgradeNav.style.display=(isAdmin||isMaxedOut)?'none':'flex';
     set('welcome-h','Hi, '+name.split(' ')[0]+' 👋');
     const lr=document.getElementById('lnav-right');
     if(lr) lr.innerHTML='<button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>';
