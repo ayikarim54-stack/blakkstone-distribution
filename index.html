@@ -2733,6 +2733,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <select id="user-plan-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterUsers()">
             <option value="">All plans</option><option value="solo_paid">Solo</option><option value="artist_plus">Artist+</option><option value="label">Label</option><option value="admin">Admin</option>
           </select>
+          <button class="btn adm-btn-sec btn-sm" onclick="viewAdminsOnly()" title="Show who currently has admin access"><i class="ti ti-crown"></i> View Admins</button>
           <button class="btn adm-btn-sec btn-sm" onclick="exportArtistsCSV()"><i class="ti ti-download"></i> Export</button>
         </div>
         <div class="tw"><table>
@@ -3003,6 +3004,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <select id="subs-plan-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterSubs()">
             <option value="">All plans</option><option value="solo_paid">Solo</option><option value="artist_plus">Artist+</option><option value="label">Label</option><option value="priority">Priority Distro</option>
           </select>
+          <button class="btn adm-btn-sec btn-sm" onclick="exportSubsTabCSV()"><i class="ti ti-download"></i> Export</button>
         </div>
         <div class="tw"><table>
           <thead><tr><th>Artist</th><th>Account ID</th><th>Plan</th><th>Billing</th><th>USD</th><th>GHS</th><th>Paystack Ref</th><th>Status</th><th>Date</th></tr></thead>
@@ -3111,6 +3113,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- VIEW AS ARTIST — read-only snapshot of an artist's dashboard for admin support use.
+     Fetches that artist's own data independently; never touches or swaps the admin's
+     own session/user context, and has no edit/save controls anywhere. -->
+<div class="view" id="viewasartist" style="background:#08080C">
+  <div style="position:sticky;top:0;z-index:100;background:linear-gradient(90deg,#7a6ff0,#5b4fd6);padding:.875rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:600"><i class="ti ti-eye"></i> Viewing as <span id="vaa-name" style="font-weight:800"></span> — read-only, no changes will be saved</div>
+    <button onclick="exitViewAsArtist()" class="btn btn-sm" style="background:rgba(255,255,255,.18);color:#fff;border:none"><i class="ti ti-x"></i> Exit</button>
+  </div>
+  <div id="vaa-body" style="max-width:1100px;margin:0 auto;padding:1.5rem"></div>
+</div>
 
 <!-- ARTIST DETAIL MODAL -->
 <div class="overlay" id="artist-overlay">
@@ -5720,7 +5732,7 @@ async function uploadAvatar(input){
 async function openArtistModal(userId,name){
   const {data:rl}=await sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false});
   const releases=rl||[];
-  document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button>';
+  document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button><button onclick="viewAsArtist(\''+userId+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" title="View as this artist (read-only)" style="float:right;background:none;border:none;cursor:pointer;color:#7a6ff0;font-size:16px;margin-right:8px"><i class="ti ti-eye"></i></button>';
   _currentArtistModalUserId=userId;
   await loadArtistNotes(userId);
   await loadArtistAuditLog(userId,releases.map(r=>r.id));
@@ -5733,6 +5745,62 @@ async function openArtistModal(userId,name){
   document.getElementById('artist-overlay').classList.add('open');
 }
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
+async function viewAsArtist(userId,name){
+  closeArtistModal();
+  showView('viewasartist');
+  const nameEl=document.getElementById('vaa-name');if(nameEl)nameEl.textContent=name;
+  const body=document.getElementById('vaa-body');if(!body)return;
+  body.innerHTML='<div style="text-align:center;padding:3rem"><span class="loader"></span></div>';
+  try{
+    const [{data:profileData},{data:releases},{data:payoutsData}]=await Promise.all([
+      sb.from('profiles').select('*').eq('id',userId).single(),
+      sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false}),
+      sb.from('payouts').select('amount,status').eq('user_id',userId).catch(()=>({data:[]}))
+    ]);
+    renderViewAsArtist(profileData,releases||[],payoutsData||[]);
+  }catch(e){
+    console.error('View as artist error:',e);
+    body.innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i><p>Could not load this artist\'s data.</p></div>';
+  }
+}
+function renderViewAsArtist(profileData,releases,payoutsData){
+  const body=document.getElementById('vaa-body');if(!body)return;
+  const live=releases.filter(r=>r.status==='live').length;
+  const pending=releases.filter(r=>r.status==='pending'||r.status==='review').length;
+  const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
+  const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
+  const isPaidPlan=['label','artist_plus','admin','solo_paid'].includes(profileData?.plan);
+  const grossEarnings=isPaidPlan?earnings:earnings*(1-COMM);
+  const paidOut=(payoutsData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const pendingOut=(payoutsData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const availableBalance=Math.max(0,grossEarnings-paidOut-pendingOut);
+  const planLabel={free:'Free',solo_paid:'Solo',artist_plus:'Artist+',label:'Label',admin:'Admin'}[profileData?.plan]||profileData?.plan||'—';
+  const joined=profileData?.created_at?new Date(profileData.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—';
+  const profileCard='<div class="adm-card" style="margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">'
+    +(profileData?.avatar_url?'<img src="'+esc(profileData.avatar_url)+'" style="width:56px;height:56px;border-radius:50%;object-fit:cover">':'<div style="width:56px;height:56px;border-radius:50%;background:#242424;display:flex;align-items:center;justify-content:center"><i class="ti ti-user" style="font-size:22px;color:rgba(255,255,255,.3)"></i></div>')
+    +'<div><div style="font-size:16px;font-weight:800;color:#fff">'+esc(profileData?.artist_name||profileData?.full_name||'—')+'</div><div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">'+esc(profileData?.email||'')+' · '+planLabel+' plan · Joined '+joined+'</div></div>'
+  +'</div>';
+  const cards='<div class="overview-cards" style="margin-bottom:1.25rem">'
+    +'<div class="ov-card ov-card-1"><div class="ov-card-icon"><i class="ti ti-wavesaw-mono"></i></div><div style="flex:1"><div class="ov-card-label">Total Streams</div><div class="ov-card-value">'+streams.toLocaleString()+'</div><div class="ov-card-sub">All stores · all time</div></div></div>'
+    +'<div class="ov-card ov-card-2"><div class="ov-card-icon"><i class="ti ti-music"></i></div><div style="flex:1"><div class="ov-card-label">Total Releases</div><div class="ov-card-value">'+releases.length+'</div><div class="ov-card-sub">'+live+' live on DSPs</div></div></div>'
+    +'<div class="ov-card ov-card-3"><div class="ov-card-icon"><i class="ti ti-coin"></i></div><div style="flex:1"><div class="ov-card-label">Available Balance</div><div class="ov-card-value">$'+availableBalance.toFixed(2)+'</div><div class="ov-card-sub">Ready to withdraw</div></div></div>'
+    +'<div class="ov-card ov-card-4"><div class="ov-card-icon"><i class="ti ti-clock"></i></div><div style="flex:1"><div class="ov-card-label">Pending Review</div><div class="ov-card-value">'+pending+'</div><div class="ov-card-sub">Awaiting distribution</div></div></div>'
+  +'</div>';
+  const releaseRows=releases.length?releases.map(r=>{
+    const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+    const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+    const art=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" style="width:40px;height:40px;border-radius:7px;object-fit:cover">':'<div style="width:40px;height:40px;border-radius:7px;background:#242424;display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="font-size:16px;color:rgba(255,255,255,.2)"></i></div>';
+    const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
+    return '<div style="display:flex;align-items:center;gap:.875rem;padding:.75rem 1rem;background:#0e0e14;border:1px solid var(--line);border-radius:10px;margin-bottom:6px">'+art+'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.title)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(r.artist||'')+' · '+esc(r.genre||'')+' · '+d+'</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:700;color:#fff">'+(r.streams||0).toLocaleString()+'</div><div style="font-size:10px;color:rgba(255,255,255,.3)">streams</div></div><span class="badge '+bc+'" style="flex-shrink:0">'+bl+'</span></div>';
+  }).join(''):'<div class="empty"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';
+  const releasesSection='<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem">Releases ('+releases.length+')</div>'+releaseRows;
+  body.innerHTML=profileCard+cards+releasesSection;
+}
+function exitViewAsArtist(){
+  showView('dashboard');
+  goPage('admin',null);
+  switchAdminTab('users',findAdminTabEl('users'));
+}
 // ── ADMIN ARTIST NOTES (private, admin-only) ────────────────
 let _currentArtistModalUserId=null;
 async function loadArtistNotes(userId){
@@ -7212,6 +7280,11 @@ function filterUsers(){
   if(plan) data=data.filter(p=>p.plan===plan);
   renderAdminUsersTable(data);
 }
+function viewAdminsOnly(){
+  const searchEl=document.getElementById('user-search');if(searchEl)searchEl.value='';
+  const planEl=document.getElementById('user-plan-filter');if(planEl)planEl.value='admin';
+  filterUsers();
+}
 async function loadAdminPayouts(){
   const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
   tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
@@ -7303,6 +7376,20 @@ function filterSubs(){
   if(q) data=data.filter(r=>r.name.toLowerCase().includes(q)||r.email.toLowerCase().includes(q)||r.accountId.toLowerCase().includes(q));
   if(plan) data=data.filter(r=>r.plan===plan);
   renderAdminSubsTable(data);
+}
+function exportSubsTabCSV(){
+  const q=(document.getElementById('subs-search')?.value||'').toLowerCase();
+  const plan=document.getElementById('subs-plan-filter')?.value||'';
+  let data=allSubsCache;
+  if(q) data=data.filter(r=>r.name.toLowerCase().includes(q)||r.email.toLowerCase().includes(q)||r.accountId.toLowerCase().includes(q));
+  if(plan) data=data.filter(r=>r.plan===plan);
+  if(!data.length){toast('No subscriptions to export','err');return;}
+  const headers=['Artist','Email','Account ID','Plan','Billing','USD','GHS','Paystack Ref','Date'];
+  const rows=data.map(r=>[r.name,r.email,r.accountId,r.planLabel||r.plan,r.billing,(r.usd||0).toFixed(2),(r.ghs||0).toFixed(2),r.ref,r.date?new Date(r.date).toLocaleDateString('en-GB'):'']);
+  const csv=[headers,...rows].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='blakkstone-subscriptions.csv';a.click();URL.revokeObjectURL(url);
+  toast('Exported '+data.length+' row(s)','ok');
 }
 async function loadExpiringRenewals(){
   const container=document.getElementById('adm-renewals-list');if(!container)return;
