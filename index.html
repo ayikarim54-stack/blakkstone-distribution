@@ -2743,14 +2743,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- ── PAYOUTS TAB ── -->
       <div class="admin-section" id="admin-payouts">
         <div id="payout-pending-notice"></div>
-        <div style="display:flex;gap:8px;margin-bottom:.875rem">
+        <div style="display:flex;gap:8px;margin-bottom:.875rem;flex-wrap:wrap">
           <select id="payout-status-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterPayouts()">
             <option value="">All statuses</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="cancelled">Cancelled</option>
           </select>
+          <button class="btn adm-btn-sec btn-sm" onclick="bulkPayoutStatusUpdate('paid')"><i class="ti ti-check"></i> Mark Selected as Paid</button>
+          <button class="btn adm-btn-sec btn-sm" onclick="bulkPayoutStatusUpdate('failed')" style="color:#f87171;border-color:#f87171"><i class="ti ti-x"></i> Mark Selected as Failed</button>
           <button class="btn adm-btn-sec btn-sm" onclick="exportPayoutsCSV()"><i class="ti ti-download"></i> Export</button>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>Account ID</th><th>Artist</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
+          <thead><tr><th><input type="checkbox" id="select-all-payout" onchange="toggleSelectAll('payout',this)" style="accent-color:var(--gold)"></th><th>Account ID</th><th>Artist</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
           <tbody id="admin-payouts-tbody"></tbody>
         </table></div>
       </div>
@@ -6999,6 +7001,28 @@ async function bulkStatusUpdate(status){
   }
   toast(checked.length+' updated','ok');loadAdminReleases();loadAdminStats();
 }
+async function bulkPayoutStatusUpdate(status){
+  const checked=Array.from(document.querySelectorAll('.payout-cb:checked')).map(c=>c.dataset.id);
+  if(!checked.length){toast('Select payouts first','err');return;}
+  let reason=null;
+  if(status==='failed'){
+    reason=prompt('Why did these '+checked.length+' payout(s) fail? This will be shown to each artist so they can fix it and retry.');
+    if(reason===null)return;
+    reason=reason.trim();
+    if(!reason){toast('A reason is required when marking payouts as failed','err');return;}
+  }
+  if(!confirm('Mark '+checked.length+' payout(s) as "'+status+'"?'))return;
+  for(const id of checked){
+    const p=allPayoutsCache.find(x=>x.id===id);
+    const update={status};
+    update.failure_reason=status==='failed'?reason:null;
+    const {error}=await sb.from('payouts').update(update).eq('id',id);
+    if(error){console.error('Bulk payout update error for',id,error);continue;}
+    logAudit(null,p?.user_id||null,'payout_status',p?.status||null,status+(reason?' — '+reason:'')+' (bulk)');
+  }
+  toast(checked.length+' payout(s) updated','ok');
+  loadAdminPayouts();loadAdminStats();loadNotifications();
+}
 async function updateStatus(id,status,sel){
   const needsReason=status==='rejected'||status==='takendown';
   let reason=null;
@@ -7157,13 +7181,13 @@ function filterUsers(){
 }
 async function loadAdminPayouts(){
   const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
+  tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
   try{
     const [{data:payouts,error},{data:profiles}]=await Promise.all([
       sb.from('payouts').select('*').order('created_at',{ascending:false}),
       sb.from('profiles').select('id,artist_name,full_name,email,account_id')
     ]);
-    if(error){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#f87171;padding:1.5rem">'+error.message+'</td></tr>';return;}
+    if(error){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#f87171;padding:1.5rem">'+error.message+'</td></tr>';return;}
     allPayoutsCache=payouts||[];
     payoutProfileMap={};(profiles||[]).forEach(p=>{payoutProfileMap[p.id]=p;});
     const pending=(payouts||[]).filter(p=>p.status==='pending').length;
@@ -7171,16 +7195,16 @@ async function loadAdminPayouts(){
     if(notice&&pending>0) notice.innerHTML='<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1rem"><i class="ti ti-alert-circle"></i> <strong>'+pending+' pending payout(s)</strong></div>';
     else if(notice) notice.innerHTML='';
     renderAdminPayoutsTable(payouts||[]);
-  }catch(e){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Error loading payouts.</td></tr>';}
+  }catch(e){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Error loading payouts.</td></tr>';}
 }
 function renderAdminPayoutsTable(payouts){
   const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
-  if(!payouts||!payouts.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payout requests found.</td></tr>';return;}
+  if(!payouts||!payouts.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payout requests found.</td></tr>';return;}
   tbody.innerHTML=payouts.map(p=>{
     const prof=payoutProfileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||prof.email||'—';const accId=prof.account_id||'—';
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
-    return '<tr><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+(p.method==='momo'?'📱 Mobile Money':'🏦 Bank')+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    return '<tr><td><input type="checkbox" class="payout-cb" data-id="'+p.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+(p.method==='momo'?'📱 Mobile Money':'🏦 Bank')+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
   }).join('');
 }
 function filterPayouts(){
