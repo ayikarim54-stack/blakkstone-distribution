@@ -1999,6 +1999,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="wizard-panel" id="wpanel-4">
         <div style="max-width:860px">
           <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:.5rem">Select Your Stores</h2>
+          <div class="wiz-validation-banner" id="val-banner-4">
+            <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fix before continuing</div>
+            <ul class="wiz-validation-list" id="val-list-4"></ul>
+          </div>
           <p style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1.5rem">Choose which platforms to distribute to. All are selected by default.</p>
           <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
             <button class="btn btn-purple btn-sm" onclick="selectAllStores(true)"><i class="ti ti-check-all"></i> Select All</button>
@@ -2011,7 +2015,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <div style="background:#242424;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem">
             <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:1rem">Standard Stores</div>
-            <div id="stores-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px"></div>
+            <div id="stores-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;border:1.5px solid transparent;border-radius:10px;padding:2px"></div>
           </div>
         </div>
         <div style="display:flex;gap:10px;margin-top:2rem">
@@ -6497,6 +6501,11 @@ function validateStep(step){
     }
   }
 
+  if(step===4){
+    if(!wizStores.length)
+      errors.push({fieldId:'stores-grid', label:'Select at least one store to distribute to'});
+  }
+
   return errors;
 }
 
@@ -7146,12 +7155,14 @@ async function submitRelease(){
   const step1Errors=validateStep(1);
   const step2Errors=validateStep(2);
   const step3Errors=validateStep(3);
-  const allErrors=[...step1Errors,...step2Errors,...step3Errors];
+  const step4Errors=validateStep(4);
+  const allErrors=[...step1Errors,...step2Errors,...step3Errors,...step4Errors];
   if(allErrors.length){
     // Show which step has errors and jump back to it
     if(step1Errors.length){toast('Step 1: '+step1Errors.map(e=>e.label).join(', '),'err');goWizard(1);wizShowErrors(1,step1Errors);return;}
     if(step2Errors.length){toast('Step 2: '+step2Errors.map(e=>e.label).join(', '),'err');goWizard(2);wizShowErrors(2,step2Errors);return;}
     if(step3Errors.length){toast('Step 3: '+step3Errors.map(e=>e.label).join(', '),'err');goWizard(3);wizShowErrors(3,step3Errors);return;}
+    if(step4Errors.length){toast('Step 4: '+step4Errors.map(e=>e.label).join(', '),'err');goWizard(4);wizShowErrors(4,step4Errors);return;}
   }
   if(!document.getElementById('r-terms')?.checked){toast('Please agree to the terms and conditions','err');return;}
   if(selectedDistroTier==='priority'&&!priorityPaymentRef){
