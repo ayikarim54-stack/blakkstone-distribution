@@ -2988,6 +2988,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
       <!-- ── SUBSCRIPTIONS TAB ── -->
       <div class="admin-section" id="admin-subs">
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div class="adm-card-title"><i class="ti ti-calendar-due"></i> Renewals Due (next 14 days)</div>
+          <div id="adm-renewals-list"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:.875rem;flex-wrap:wrap">
+          <input id="subs-search" type="text" placeholder="Search artist, email, account ID..." class="adm-search" oninput="filterSubs()"/>
+          <select id="subs-plan-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterSubs()">
+            <option value="">All plans</option><option value="solo_paid">Solo</option><option value="artist_plus">Artist+</option><option value="label">Label</option><option value="priority">Priority Distro</option>
+          </select>
+        </div>
         <div class="tw"><table>
           <thead><tr><th>Artist</th><th>Account ID</th><th>Plan</th><th>Billing</th><th>USD</th><th>GHS</th><th>Paystack Ref</th><th>Status</th><th>Date</th></tr></thead>
           <tbody id="admin-subs-tbody"></tbody>
@@ -3002,15 +3012,21 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div id="adm-revenue-summary"></div>
           </div>
           <div class="adm-card">
+            <div class="adm-card-title"><i class="ti ti-trending-up"></i> Revenue Trend</div>
+            <div id="adm-revenue-trend"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
+          <div class="adm-card">
             <div class="adm-card-title"><i class="ti ti-chart-bar"></i> Top Artists by Streams</div>
             <div id="adm-top-artists"></div>
           </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
           <div class="adm-card">
             <div class="adm-card-title"><i class="ti ti-music"></i> Top Releases</div>
             <div id="adm-top-releases"></div>
           </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
           <div class="adm-card">
             <div class="adm-card-title"><i class="ti ti-file-download"></i> Export Reports</div>
             <div style="display:flex;flex-direction:column;gap:10px;margin-top:.5rem">
@@ -6906,19 +6922,22 @@ async function loadAdminStats(){
 async function loadAdminActionQueue(){
   const container=document.getElementById('adm-needs-attention');if(!container)return;
   try{
-    const [{data:releases},{data:payouts},{data:messages},{data:deletions},{data:takedowns}]=await Promise.all([
+    const renewalCutoff=new Date(Date.now()+14*24*60*60*1000).toISOString();
+    const [{data:releases},{data:payouts},{data:messages},{data:deletions},{data:takedowns},{data:renewals}]=await Promise.all([
       sb.from('releases').select('id').in('status',['pending','review']),
       sb.from('payouts').select('id').eq('status','pending').catch(()=>({data:[]})),
       sb.from('messages').select('id,deleted_by_admin').eq('direction','in').is('read_at',null),
       sb.from('account_deletion_requests').select('id').eq('status','pending').catch(()=>({data:[]})),
-      sb.from('release_takedown_requests').select('id').eq('status','pending').catch(()=>({data:[]}))
+      sb.from('release_takedown_requests').select('id').eq('status','pending').catch(()=>({data:[]})),
+      sb.from('profiles').select('id').in('plan',['solo_paid','artist_plus','label']).not('plan_expires_at','is',null).lte('plan_expires_at',renewalCutoff).gte('plan_expires_at',new Date().toISOString()).catch(()=>({data:[]}))
     ]);
     const items=[
       {label:'Pending Releases',count:(releases||[]).length,tab:'releases',icon:'ti-music',color:'#fbbf24'},
       {label:'Pending Payouts',count:(payouts||[]).length,tab:'payouts',icon:'ti-wallet',color:'#ef4444'},
       {label:'Unread Messages',count:(messages||[]).filter(m=>!m.deleted_by_admin).length,tab:'messages',icon:'ti-message',color:'#3b82f6'},
       {label:'Deletion Requests',count:(deletions||[]).length,tab:'notifications',icon:'ti-user-x',color:'#f97316'},
-      {label:'Takedown Requests',count:(takedowns||[]).length,tab:'notifications',icon:'ti-broadcast-off',color:'#fbbf24'}
+      {label:'Takedown Requests',count:(takedowns||[]).length,tab:'notifications',icon:'ti-broadcast-off',color:'#fbbf24'},
+      {label:'Renewals Due (14d)',count:(renewals||[]).length,tab:'subs',icon:'ti-calendar-due',color:'#fbbf24'}
     ];
     const total=items.reduce((a,i)=>a+i.count,0);
     container.innerHTML=total===0
@@ -7213,6 +7232,7 @@ function filterPayouts(){
   if(st) data=data.filter(p=>p.status===st);
   renderAdminPayoutsTable(data);
 }
+let allSubsCache=[];
 async function loadAdminSubs(){
   const tbody=document.getElementById('admin-subs-tbody');if(!tbody)return;
   try{
@@ -7220,23 +7240,94 @@ async function loadAdminSubs(){
       sb.from('subscriptions').select('*, profiles(artist_name,full_name,email,account_id)').order('created_at',{ascending:false}),
       sb.from('releases').select('id,title,is_priority,priority_ref,submitted_at,user_id,profiles(artist_name,full_name,email,account_id)').eq('is_priority',true).not('priority_ref','is',null).order('submitted_at',{ascending:false})
     ]);
-    const subRows=(subs||[]).map(s=>{
-      const name=s.profiles?.artist_name||s.profiles?.full_name||s.profiles?.email||'—';
-      const d=s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'—';
-      return {sortDate:s.created_at||'',html:'<tr><td style="font-weight:600;color:#fff">'+esc(name)+'</td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(s.profiles?.account_id||'—')+'</td><td style="color:var(--gold)">'+s.plan+'</td><td>'+esc(s.billing_cycle||'annual')+'</td><td style="color:#34d399;font-weight:700">$'+parseFloat(s.amount_usd||0).toFixed(2)+'</td><td>GHS '+parseFloat(s.amount_ghs||0).toFixed(2)+'</td><td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">'+esc(s.paystack_ref||'—')+'</td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td></tr>'};
-    });
-    const priorityRows=(priority||[]).map(r=>{
-      const name=r.profiles?.artist_name||r.profiles?.full_name||r.profiles?.email||'—';
-      const d=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
-      return {sortDate:r.submitted_at||'',html:'<tr><td style="font-weight:600;color:#fff">'+esc(name)+'</td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(r.profiles?.account_id||'—')+'</td><td style="color:#fbbf24">Priority Distro</td><td>one-time — "'+esc(r.title||'Untitled')+'"</td><td style="color:#34d399;font-weight:700">$10.00</td><td>—</td><td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">'+esc(r.priority_ref||'—')+'</td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td></tr>'};
-    });
-    const allRows=[...subRows,...priorityRows].sort((a,b)=>(b.sortDate).localeCompare(a.sortDate));
-    if(!allRows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payments yet.</td></tr>';return;}
-    tbody.innerHTML=allRows.map(r=>r.html).join('');
+    const subRows=(subs||[]).map(s=>({
+      name:s.profiles?.artist_name||s.profiles?.full_name||s.profiles?.email||'—',
+      email:s.profiles?.email||'',
+      accountId:s.profiles?.account_id||'—',
+      plan:s.plan||'',
+      planLabel:s.plan||'',
+      billing:s.billing_cycle||'annual',
+      usd:parseFloat(s.amount_usd||0),
+      ghs:parseFloat(s.amount_ghs||0),
+      ref:s.paystack_ref||'—',
+      date:s.created_at||'',
+      isPriority:false
+    }));
+    const priorityRows=(priority||[]).map(r=>({
+      name:r.profiles?.artist_name||r.profiles?.full_name||r.profiles?.email||'—',
+      email:r.profiles?.email||'',
+      accountId:r.profiles?.account_id||'—',
+      plan:'priority',
+      planLabel:'Priority Distro',
+      billing:'one-time — "'+(r.title||'Untitled')+'"',
+      usd:10,
+      ghs:0,
+      ref:r.priority_ref||'—',
+      date:r.submitted_at||'',
+      isPriority:true
+    }));
+    allSubsCache=[...subRows,...priorityRows].sort((a,b)=>(b.date).localeCompare(a.date));
+    renderAdminSubsTable(allSubsCache);
   }catch(e){
     console.error('Load admin subs error:',e);
     tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Run subscriptions SQL first.</td></tr>';
   }
+  loadExpiringRenewals();
+}
+function renderAdminSubsTable(rows){
+  const tbody=document.getElementById('admin-subs-tbody');if(!tbody)return;
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payments match.</td></tr>';return;}
+  tbody.innerHTML=rows.map(r=>{
+    const d=r.date?new Date(r.date).toLocaleDateString('en-GB'):'—';
+    return '<tr><td style="font-weight:600;color:#fff">'+esc(r.name)+'</td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(r.accountId)+'</td><td style="color:'+(r.isPriority?'#fbbf24':'var(--gold)')+'">'+esc(r.planLabel)+'</td><td>'+esc(r.billing)+'</td><td style="color:#34d399;font-weight:700">$'+r.usd.toFixed(2)+'</td><td>'+(r.isPriority?'—':'GHS '+r.ghs.toFixed(2))+'</td><td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">'+esc(r.ref)+'</td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td></tr>';
+  }).join('');
+}
+function filterSubs(){
+  const q=(document.getElementById('subs-search')?.value||'').toLowerCase();
+  const plan=document.getElementById('subs-plan-filter')?.value||'';
+  let data=allSubsCache;
+  if(q) data=data.filter(r=>r.name.toLowerCase().includes(q)||r.email.toLowerCase().includes(q)||r.accountId.toLowerCase().includes(q));
+  if(plan) data=data.filter(r=>r.plan===plan);
+  renderAdminSubsTable(data);
+}
+async function loadExpiringRenewals(){
+  const container=document.getElementById('adm-renewals-list');if(!container)return;
+  container.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div>';
+  try{
+    const now=new Date();
+    const cutoff=new Date(now.getTime()+14*24*60*60*1000);
+    const {data,error}=await sb.from('profiles').select('id,artist_name,full_name,email,account_id,plan,plan_expires_at')
+      .in('plan',['solo_paid','artist_plus','label'])
+      .not('plan_expires_at','is',null)
+      .lte('plan_expires_at',cutoff.toISOString())
+      .gte('plan_expires_at',now.toISOString())
+      .order('plan_expires_at',{ascending:true});
+    if(error)throw error;
+    if(!data||!data.length){container.innerHTML='<div style="color:rgba(255,255,255,.35);font-size:12px"><i class="ti ti-check"></i> No renewals due in the next 14 days.</div>';return;}
+    const planLabel={solo_paid:'Solo',artist_plus:'Artist+',label:'Label'};
+    container.innerHTML=data.map(p=>{
+      const name=p.artist_name||p.full_name||p.email||'—';
+      const daysLeft=Math.max(0,Math.ceil((new Date(p.plan_expires_at)-now)/(24*60*60*1000)));
+      const urgent=daysLeft<=3;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.75rem 1rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-left:3px solid '+(urgent?'#ef4444':'#fbbf24')+';border-radius:9px;margin-bottom:6px">'
+        +'<div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.4)">'+(planLabel[p.plan]||p.plan)+' · expires '+new Date(p.plan_expires_at).toLocaleDateString('en-GB')+'</div></div>'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
+          +'<span style="font-size:11px;font-weight:700;color:'+(urgent?'#ef4444':'#fbbf24')+'">'+daysLeft+' day'+(daysLeft===1?'':'s')+'</span>'
+          +'<button class="btn adm-btn-sec btn-sm" style="padding:4px 10px;font-size:11px" onclick="messageArtistFromRenewal(\''+esc(p.email||'').replace(/'/g,"\\'")+'\',\''+esc(name).replace(/'/g,"\\'")+'\')"><i class="ti ti-message"></i> Message</button>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+  }catch(e){
+    console.error('Renewals load error:',e);
+    container.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Could not load renewals — run the plan_expires_at SQL in Supabase if this is new.</div>';
+  }
+}
+function messageArtistFromRenewal(email,name){
+  switchAdminTab('messages',findAdminTabEl('messages'));
+  const toEl=document.getElementById('msg-to');if(toEl)toEl.value=email;
+  const subEl=document.getElementById('msg-subject');if(subEl)subEl.value='Your Blakkstone plan is expiring soon';
+  const bodyEl=document.getElementById('msg-body');
+  if(bodyEl){bodyEl.value='Hi '+name+',\n\nJust a heads up that your Blakkstone plan is expiring soon. Renew now to keep your current benefits active without interruption.\n\n— Blakkstone Team';bodyEl.focus();}
 }
 async function loadAdminReports(){
   try{
@@ -7252,7 +7343,40 @@ async function loadAdminReports(){
     const maxRS=allRel[0]?.streams||1;
     const trEl=document.getElementById('adm-top-releases');
     if(trEl) trEl.innerHTML=allRel.slice(0,5).map(r=>'<div class="adm-bar-row"><div class="adm-bar-label" style="width:120px">'+esc(r.title)+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round(((r.streams||0)/maxRS)*100)+'%"></div></div><div class="adm-bar-val">'+(r.streams||0).toLocaleString()+'</div></div>').join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No releases yet</div>';
-  }catch(e){}
+
+    // Top Artists by Streams (grouped by account — card existed in HTML but was never populated)
+    const artistTotals={};
+    allRel.forEach(r=>{
+      if(!r.user_id)return;
+      if(!artistTotals[r.user_id])artistTotals[r.user_id]={name:r.profiles?.artist_name||r.profiles?.full_name||'—',streams:0};
+      artistTotals[r.user_id].streams+=(r.streams||0);
+    });
+    const topArtists=Object.values(artistTotals).sort((a,b)=>b.streams-a.streams).slice(0,5);
+    const maxAS=topArtists[0]?.streams||1;
+    const taEl=document.getElementById('adm-top-artists');
+    if(taEl) taEl.innerHTML=topArtists.map(a=>'<div class="adm-bar-row"><div class="adm-bar-label" style="width:120px">'+esc(a.name)+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round((a.streams/maxAS)*100)+'%"></div></div><div class="adm-bar-val">'+a.streams.toLocaleString()+'</div></div>').join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No artists yet</div>';
+
+    // Month-over-month revenue trend (subscriptions + priority distro, since those are real
+    // dated transactions — release `earnings` is a running lifetime total with no per-period date)
+    const {data:subsData}=await sb.from('subscriptions').select('amount_usd,created_at').catch(()=>({data:[]}));
+    const now=new Date();
+    const thisMonthStart=new Date(now.getFullYear(),now.getMonth(),1);
+    const nextMonthStart=new Date(now.getFullYear(),now.getMonth()+1,1);
+    const lastMonthStart=new Date(now.getFullYear(),now.getMonth()-1,1);
+    const sumInRange=(arr,start,end)=>arr.reduce((a,x)=>{
+      const d=new Date(x.created_at);
+      return (d>=start&&d<end)?a+parseFloat(x.amount_usd||0):a;
+    },0);
+    const thisMonthSubs=sumInRange(subsData||[],thisMonthStart,nextMonthStart);
+    const lastMonthSubs=sumInRange(subsData||[],lastMonthStart,thisMonthStart);
+    const priorityInRange=(start,end)=>allRel.filter(r=>r.is_priority&&r.priority_ref&&r.submitted_at&&new Date(r.submitted_at)>=start&&new Date(r.submitted_at)<end).length*10;
+    const thisMonthTotal=thisMonthSubs+priorityInRange(thisMonthStart,nextMonthStart);
+    const lastMonthTotal=lastMonthSubs+priorityInRange(lastMonthStart,thisMonthStart);
+    const up=thisMonthTotal>=lastMonthTotal;
+    const delta=lastMonthTotal>0?Math.round(((thisMonthTotal-lastMonthTotal)/lastMonthTotal)*100):(thisMonthTotal>0?100:0);
+    const trendEl=document.getElementById('adm-revenue-trend');
+    if(trendEl) trendEl.innerHTML='<div class="adm-bar-row"><div class="adm-bar-label">This Month</div><div class="adm-bar-val" style="color:#34d399">$'+thisMonthTotal.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Last Month</div><div class="adm-bar-val" style="color:rgba(255,255,255,.5)">$'+lastMonthTotal.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Change</div><div class="adm-bar-val" style="color:'+(up?'#34d399':'#f87171')+'"><i class="ti ti-trending-'+(up?'up':'down')+'"></i> '+(up?'+':'')+delta+'%</div></div>';
+  }catch(e){console.warn('loadAdminReports:',e);}
 }
 async function loadAdminMessages(){
   const container=document.getElementById('messages-list');if(!container)return;
