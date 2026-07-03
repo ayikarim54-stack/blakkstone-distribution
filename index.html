@@ -2315,6 +2315,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- LAST UPDATED -->
       <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:1rem;font-size:12px;color:rgba(255,255,255,.35)">
         <span id="an-last-updated">—</span>
+        <button onclick="exportAnalyticsCSV()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 12px;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px"><i class="ti ti-download"></i> Export CSV</button>
         <button onclick="refreshAnalytics()" id="an-refresh-btn" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 12px;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px"><i class="ti ti-refresh" id="an-refresh-icon"></i> Refresh</button>
       </div>
 
@@ -4426,6 +4427,46 @@ async function refreshAnalytics(){
   }
   if(btn)btn.disabled=false;
   if(icon)icon.style.animation='';
+}
+function exportAnalyticsCSV(){
+  if(!user)return;
+  try{
+    if(!anReleaseData||!anReleaseData.length){toast('No analytics data to export yet','err');return;}
+    const rangeLabel={7:'Last 7 days',28:'Last 28 days',90:'Last 3 months',365:'Last 1 year',0:'All time'}[anRangeDays]||'All time';
+    const storeLabel=anFilterStore==='all'?'All stores':anFilterStore;
+    const filteredStreams=getFilteredStreamData();
+    const stores=[
+      {key:'spotify',name:'Spotify'},{key:'apple_music',name:'Apple Music'},{key:'youtube_music',name:'YouTube Music'},
+      {key:'audiomack',name:'Audiomack'},{key:'boomplay',name:'Boomplay'},{key:'others',name:'Others'}
+    ];
+    const storeTotals=stores.map(s=>[s.name,filteredStreams.reduce((a,e)=>a+(e[s.key]||0),0)]);
+    const totalPeriodStreams=storeTotals.reduce((a,row)=>a+row[1],0);
+    const lines=[];
+    lines.push(['Blakkstone Analytics Export']);
+    lines.push(['Range',rangeLabel]);
+    lines.push(['Store Filter',storeLabel]);
+    lines.push(['Exported',new Date().toLocaleString('en-GB')]);
+    lines.push([]);
+    lines.push(['Streams by Store — selected range']);
+    lines.push(['Store','Streams']);
+    storeTotals.forEach(row=>lines.push(row));
+    lines.push(['Total',totalPeriodStreams]);
+    lines.push([]);
+    lines.push(['All Releases — lifetime totals']);
+    const totalLifetime=anReleaseData.reduce((a,r)=>a+(r.streams||0),0);
+    lines.push(['Title','Artist','Genre','Status','Streams','Share of Catalog','Earnings (USD)']);
+    anReleaseData.forEach(r=>{
+      const pct=totalLifetime>0?Math.round(((r.streams||0)/totalLifetime)*100):0;
+      lines.push([r.title||'',r.artist||'',r.genre||'',r.status||'',r.streams||0,pct+'%',(r.earnings||0).toFixed(2)]);
+    });
+    const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='blakkstone-analytics-'+(anRangeDays===0?'all-time':anRangeDays+'days')+'.csv';a.click();URL.revokeObjectURL(url);
+    toast('Analytics exported','ok');
+  }catch(e){
+    console.error('Export analytics error:',e);
+    toast('Could not export: '+(e.message||'please try again.'),'err');
+  }
 }
 
 function getFilteredDates(){
