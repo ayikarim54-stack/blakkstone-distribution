@@ -2041,7 +2041,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <!-- ARTISTS -->
     <!-- MY ARTISTS (roster, Artist+/Label/admin only) -->
     <div class="page" id="page-myartists">
-      <div class="ph"><div><h1>My Artists</h1><p>The artist names you can release under.</p></div></div>
+      <div class="ph"><div><h1>My Artists</h1><p>The artist names you can release under.</p></div><div id="roster-limit-note" style="font-size:12px;color:rgba(255,255,255,.4);font-weight:600"></div></div>
       <div id="my-artists-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem"></div>
     </div>
 
@@ -5182,19 +5182,36 @@ function getRosterMax(){
 }
 let _rosterCache=[];
 let _rosterReleaseCounts={};
+let _rosterStreams={};
+let _rosterEarnings={};
 async function loadMyArtistsGrid(){
   const grid=document.getElementById('my-artists-grid');if(!grid)return;
   const max=getRosterMax();
-  if(max===0){grid.innerHTML='<p style="color:rgba(255,255,255,.4);font-size:13px;grid-column:1/-1">This page is available on Artist+ and Label plans. <a onclick="goPage(\'upgrade\',null)" style="color:var(--gold);cursor:pointer">Upgrade your plan</a> to manage multiple artists.</p>';return;}
+  const limitEl=document.getElementById('roster-limit-note');
+  if(max===0){
+    grid.innerHTML='<p style="color:rgba(255,255,255,.4);font-size:13px;grid-column:1/-1">This page is available on Artist+ and Label plans. <a onclick="goPage(\'upgrade\',null)" style="color:var(--gold);cursor:pointer">Upgrade your plan</a> to manage multiple artists.</p>';
+    if(limitEl)limitEl.textContent='';
+    return;
+  }
   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem"><span class="loader"></span></div>';
   try{
     const {data,error}=await sb.from('roster_artists').select('*').eq('user_id',user.id).order('created_at',{ascending:true});
     if(error)throw error;
-    const {data:rels}=await sb.from('releases').select('artist').eq('user_id',user.id);
-    const counts={};
-    (rels||[]).forEach(r=>{const a=(r.artist||'').split(' & ')[0].trim();if(a)counts[a]=(counts[a]||0)+1;});
+    const {data:rels}=await sb.from('releases').select('artist,streams,earnings').eq('user_id',user.id);
+    const counts={},streamsMap={},earningsMap={};
+    (rels||[]).forEach(r=>{
+      const a=(r.artist||'').split(' & ')[0].trim();
+      if(a){
+        counts[a]=(counts[a]||0)+1;
+        streamsMap[a]=(streamsMap[a]||0)+(r.streams||0);
+        earningsMap[a]=(earningsMap[a]||0)+(r.earnings||0);
+      }
+    });
     _rosterCache=data||[];
     _rosterReleaseCounts=counts;
+    _rosterStreams=streamsMap;
+    _rosterEarnings=earningsMap;
+    if(limitEl)limitEl.textContent=_rosterCache.length+' of '+max+' artist slot'+(max===1?'':'s')+' used';
     renderMyArtistsGrid(counts);
   }catch(e){
     console.error('Roster load error:',e);
@@ -5208,17 +5225,22 @@ function renderMyArtistsGrid(counts){
   const cards=_rosterCache.map(a=>{
     const n=counts[a.name]||0;
     const locked=n>0;
-    const actions=locked
-      ?'<div title="Locked — this artist has releases already submitted" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.06);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,.35)"><i class="ti ti-lock" style="font-size:12px"></i></div>'
-      :'<div style="position:absolute;top:10px;right:10px;display:flex;gap:4px">'
-        +'<button onclick="startEditRosterArtist(\''+a.id+'\')" title="Edit name" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-pencil" style="font-size:12px"></i></button>'
-        +'<button onclick="deleteRosterArtist(\''+a.id+'\')" title="Remove" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:12px"></i></button>'
-      +'</div>';
+    const stats=(_rosterStreams[a.name]||0).toLocaleString()+' streams · $'+(_rosterEarnings[a.name]||0).toFixed(2);
+    const lockIcon=locked?'<div title="Locked — this artist has releases already submitted" style="background:rgba(0,0,0,.06);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,.35)"><i class="ti ti-lock" style="font-size:12px"></i></div>':'';
+    const editDeleteIcons=locked?'':'<button onclick="event.stopPropagation();startEditRosterArtist(\''+a.id+'\')" title="Edit name" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-pencil" style="font-size:12px"></i></button>'
+      +'<button onclick="event.stopPropagation();deleteRosterArtist(\''+a.id+'\')" title="Remove" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:12px"></i></button>';
+    const shareIcon='<button onclick="event.stopPropagation();copyRosterArtistLink(\''+a.id+'\')" title="Copy public page link" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-link" style="font-size:12px"></i></button>';
+    const actions='<div style="position:absolute;top:10px;right:10px;display:flex;gap:4px">'+lockIcon+shareIcon+editDeleteIcons+'</div>';
     const nameDisplay=locked
       ?'<div id="rname-'+a.id+'" style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div>'
-      :'<div id="rname-'+a.id+'"><div id="rname-view-'+a.id+'" style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div><div id="rname-edit-'+a.id+'" style="display:none"><input id="rname-input-'+a.id+'" type="text" value="'+esc(a.name)+'" onkeydown="if(event.key===\'Enter\')saveEditRosterArtist(\''+a.id+'\');if(event.key===\'Escape\')cancelEditRosterArtist(\''+a.id+'\')" style="width:100%;text-align:center;font-size:14px;font-weight:700;border:1px solid #7a6ff0;border-radius:6px;padding:4px 8px;margin-bottom:6px"><div style="display:flex;gap:4px;justify-content:center"><button onclick="saveEditRosterArtist(\''+a.id+'\')" class="btn btn-gold btn-sm" style="padding:3px 10px;font-size:11px">Save</button><button onclick="cancelEditRosterArtist(\''+a.id+'\')" class="btn btn-sm" style="padding:3px 10px;font-size:11px;background:rgba(0,0,0,.06);color:rgba(0,0,0,.5)">Cancel</button></div></div></div>';
+      :'<div id="rname-'+a.id+'"><div id="rname-view-'+a.id+'" style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div><div id="rname-edit-'+a.id+'" style="display:none"><input id="rname-input-'+a.id+'" type="text" value="'+esc(a.name)+'" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')saveEditRosterArtist(\''+a.id+'\');if(event.key===\'Escape\')cancelEditRosterArtist(\''+a.id+'\')" style="width:100%;text-align:center;font-size:14px;font-weight:700;border:1px solid #7a6ff0;border-radius:6px;padding:4px 8px;margin-bottom:6px"><div style="display:flex;gap:4px;justify-content:center" onclick="event.stopPropagation()"><button onclick="saveEditRosterArtist(\''+a.id+'\')" class="btn btn-gold btn-sm" style="padding:3px 10px;font-size:11px">Save</button><button onclick="cancelEditRosterArtist(\''+a.id+'\')" class="btn btn-sm" style="padding:3px 10px;font-size:11px;background:rgba(0,0,0,.06);color:rgba(0,0,0,.5)">Cancel</button></div></div></div>';
     const lockedNote=locked?'<div style="font-size:10px;color:rgba(0,0,0,.35);margin-top:2px">Locked</div>':'';
-    return '<div style="background:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;position:relative">'+actions+'<div style="width:80px;height:80px;border-radius:50%;background:#eceaf8;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="ti ti-user" style="font-size:34px;color:#a8a3d8"></i></div>'+nameDisplay+'<div style="font-size:12px;color:#7a6ff0;font-weight:600;margin-top:4px">'+n+' Release'+(n===1?'':'s')+'</div>'+lockedNote+'</div>';
+    const avatarInner=a.avatar_url?'<img src="'+esc(a.avatar_url)+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':'<i class="ti ti-user" style="font-size:34px;color:#a8a3d8"></i>';
+    const avatar='<div style="position:relative;width:80px;height:80px;margin:0 auto 1rem">'
+      +'<div style="width:80px;height:80px;border-radius:50%;background:#eceaf8;display:flex;align-items:center;justify-content:center;overflow:hidden">'+avatarInner+'</div>'
+      +'<label onclick="event.stopPropagation()" title="Upload photo" style="position:absolute;bottom:-2px;right:-2px;width:26px;height:26px;border-radius:50%;background:#7a6ff0;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff"><i class="ti ti-camera" style="font-size:12px;color:#fff"></i><input type="file" accept="image/*" style="display:none" onchange="uploadRosterAvatar(\''+a.id+'\',this)"></label>'
+      +'</div>';
+    return '<div onclick="goToArtistReleases(\''+esc(a.name).replace(/'/g,"\\'")+'\')" style="background:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;position:relative;cursor:pointer">'+actions+avatar+nameDisplay+'<div style="font-size:12px;color:#7a6ff0;font-weight:600;margin-top:4px">'+n+' Release'+(n===1?'':'s')+'</div><div style="font-size:11px;color:rgba(0,0,0,.4);margin-top:2px">'+stats+'</div>'+lockedNote+'</div>';
   }).join('');
   const addTile=_rosterCache.length<max?'<div onclick="document.getElementById(\'myartist-add-name\').focus()" style="border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:1.5rem 1rem;text-align:center;cursor:text;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:178px"><div style="width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem"><i class="ti ti-plus" style="font-size:24px;color:rgba(255,255,255,.6)"></i></div><input id="myartist-add-name" type="text" placeholder="Artist name" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')addRosterArtist()" style="background:#0e0e14;border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:13px;width:100%;text-align:center;margin-bottom:8px"><button id="roster-add-btn" onclick="event.stopPropagation();addRosterArtist()" class="btn btn-gold btn-sm" style="width:100%;justify-content:center">Add Artist</button></div>':'';
   grid.innerHTML=(cards||'')+addTile;
@@ -5295,6 +5317,35 @@ async function saveEditRosterArtist(id){
     console.error('Edit roster artist error:',e);
     toast('Could not update: '+(e.message||'please try again.'),'err');
   }
+}
+function goToArtistReleases(name){
+  goPage('releases',null);
+  setRelArtistFilter(name);
+}
+async function uploadRosterAvatar(id,input){
+  if(!input.files[0])return;
+  const file=input.files[0];const ext=file.name.split('.').pop();
+  const path=user.id+'/roster/'+id+'.'+ext;
+  toast('Uploading photo...');
+  try{
+    const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
+    if(error)throw error;
+    const {data}=sb.storage.from('artwork').getPublicUrl(path);
+    const {error:dbError}=await sb.from('roster_artists').update({avatar_url:data.publicUrl}).eq('id',id);
+    if(dbError)throw dbError;
+    const artist=_rosterCache.find(a=>a.id===id);
+    if(artist)artist.avatar_url=data.publicUrl;
+    toast('Photo updated!','ok');
+    renderMyArtistsGrid(_rosterReleaseCounts);
+  }catch(e){
+    console.error('Upload roster avatar error:',e);
+    toast('Upload failed: '+(e.message||'please try again.'),'err');
+  }
+}
+function copyRosterArtistLink(id){
+  const artist=_rosterCache.find(a=>a.id===id);if(!artist)return;
+  const url=window.location.origin+'/?artist='+user.id+'&name='+encodeURIComponent(artist.name);
+  navigator.clipboard.writeText(url).then(()=>toast('Artist page link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
 }
 async function saveProfile(){
   const fn=document.getElementById('p-fn').value.trim();const ln=document.getElementById('p-ln').value.trim();
@@ -5447,21 +5498,26 @@ function artistPageNotFound(){
   const content=document.getElementById('artistpage-content');
   content.innerHTML='<div style="text-align:center;padding:4rem 0"><i class="ti ti-mood-sad" style="font-size:40px;color:rgba(255,255,255,.2)"></i><p style="color:rgba(255,255,255,.4);margin-top:1rem;font-size:14px">This page isn\'t available.</p></div>';
 }
-async function loadArtistPage(artistId){
+async function loadArtistPage(artistId,nameFilter){
   try{
     const {data,error}=await sb.from('public_artist_releases').select('*').eq('artist_id',artistId).order('release_date',{ascending:false});
     if(error)throw error;
-    if(!data||!data.length){artistPageNotFound();return;}
-    renderArtistPage(data);
+    let rows=data||[];
+    if(nameFilter){
+      const target=nameFilter.trim().toLowerCase();
+      rows=rows.filter(r=>(r.artist||'').trim().toLowerCase()===target);
+    }
+    if(!rows.length){artistPageNotFound();return;}
+    renderArtistPage(rows,nameFilter);
   }catch(e){
     console.error('Artist page load error:',e);
     artistPageNotFound();
   }
 }
-function renderArtistPage(rows){
+function renderArtistPage(rows,overrideName){
   const content=document.getElementById('artistpage-content');
   const first=rows[0];
-  const name=first.artist_name||first.full_name||'Artist';
+  const name=overrideName||first.artist_name||first.full_name||'Artist';
   const av=first.avatar_url?'<img src="'+esc(first.avatar_url)+'" style="width:96px;height:96px;border-radius:50%;object-fit:cover">':'<div style="width:96px;height:96px;border-radius:50%;background:#242424;display:flex;align-items:center;justify-content:center"><i class="ti ti-user" style="font-size:32px;color:rgba(255,255,255,.2)"></i></div>';
   const header='<div style="text-align:center;margin-bottom:2rem"><div style="margin:0 auto 1rem;width:96px">'+av+'</div><h1 style="font-size:22px;font-weight:800;color:#fff">'+esc(name)+'</h1></div>';
   const bl={pending:'Coming Soon',review:'Coming Soon',live:'Live'};
@@ -8416,8 +8472,9 @@ function renderSplitRows(){
   }
   const artistId=new URLSearchParams(window.location.search).get('artist');
   if(artistId){
+    const artistNameFilter=new URLSearchParams(window.location.search).get('name');
     showView('artistpage');
-    loadArtistPage(artistId);
+    loadArtistPage(artistId,artistNameFilter);
     return;
   }
   const legalPage=new URLSearchParams(window.location.search).get('legal');
