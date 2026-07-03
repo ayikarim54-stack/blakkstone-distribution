@@ -4987,8 +4987,10 @@ function updateAnalyticsStats(){
   const live = anReleaseData.filter(r=>r.status==='live');
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
 
-  // Total streams from real entries in range
-  const totalStreams = filtered.reduce((a,e)=>a+(e.total||0),0);
+  // Total streams from real entries in range — respects the active store filter,
+  // same as the chart directly below it (previously this always summed every
+  // store regardless of the selected pill, so the two disagreed).
+  const totalStreams = filtered.reduce((a,e)=>a+(anFilterStore==='all'?(e.total||0):(e[storeKey(anFilterStore)]||0)),0);
   const days = anRangeDays||Math.max(1,filtered.length);
   const daily = filtered.length ? Math.round(totalStreams/Math.max(1,days)) : 0;
 
@@ -5007,7 +5009,7 @@ function updateAnalyticsStats(){
   set('a-live',live.length);
   set('a-best-store',bestName);
   set('a-best-store-streams',bestCount.toLocaleString()+' streams');
-  set('a-streams-sub',(anRangeDays?'Last '+anRangeDays+' days':'All time')+' · all stores');
+  set('a-streams-sub',(anRangeDays?'Last '+anRangeDays+' days':'All time')+' · '+(anFilterStore==='all'?'all stores':anFilterStore));
 }
 
 function renderStoreBreakdown(){
