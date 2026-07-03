@@ -3739,13 +3739,18 @@ function normalizeSubjectKey(s){
   while(/^re:\s*/i.test(x))x=x.replace(/^re:\s*/i,'').trim();
   return x.toLowerCase()||'general';
 }
+function stripReprefix(s){
+  let x=(s||'').trim();
+  while(/^re:\s*/i.test(x))x=x.replace(/^re:\s*/i,'').trim();
+  return x;
+}
 function groupSupportMessagesBySubject(messages){
   const sorted=[...messages].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
   const threadsByKey={};
   sorted.forEach(m=>{
     const key=normalizeSubjectKey(m.subject);
     if(!threadsByKey[key]){
-      threadsByKey[key]={key,subject:(m.subject||'General').replace(/^re:\s*/i,'').trim()||'General',messages:[],unreadCount:0,lastTime:m.created_at};
+      threadsByKey[key]={key,subject:stripReprefix(m.subject)||'General',messages:[],unreadCount:0,lastTime:m.created_at};
     }
     const t=threadsByKey[key];
     t.messages.push(m);
@@ -6749,7 +6754,7 @@ function toggleMessageThread(threadId){
 function replyToMessage(id){
   const m=_messageMap[id];if(!m)return;
   const toEl=document.getElementById('msg-to');if(toEl)toEl.value=m.from_email||'';
-  const subEl=document.getElementById('msg-subject');if(subEl)subEl.value=m.subject?('Re: '+m.subject):'';
+  const subEl=document.getElementById('msg-subject');if(subEl)subEl.value=m.subject?(/^re:\s*/i.test(m.subject)?m.subject:'Re: '+m.subject):'';
   const bodyEl=document.getElementById('msg-body');if(bodyEl){bodyEl.value='';bodyEl.focus();}
   toEl?.closest('.adm-card')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
