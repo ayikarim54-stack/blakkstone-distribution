@@ -1584,6 +1584,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <option value="earnings">Highest Earning</option>
           <option value="az">A–Z</option>
         </select>
+        <div style="position:relative;display:none" id="rel-artist-filter-wrap">
+          <button class="btn" id="rel-artist-filter-btn" onclick="toggleRelArtistMenu()" style="background:#2a2a2a;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;padding:9px 16px;flex-shrink:0">
+            <i class="ti ti-user"></i> Artist
+          </button>
+          <div id="rel-artist-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#161619;border:1px solid var(--line);border-radius:10px;padding:.5rem;min-width:180px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.4)"></div>
+        </div>
         <div style="position:relative">
           <button class="btn" id="rel-filter-btn" onclick="toggleRelGenreMenu()" style="background:#2a2a2a;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;padding:9px 16px;flex-shrink:0">
             <i class="ti ti-adjustments-horizontal"></i> Filters
@@ -3889,7 +3895,7 @@ function releaseRow(r){
 function resumeDraftFromMusic(){
   goPage('submit',null);
 }
-let relFilterState={status:'all',search:'',genre:'',sort:'newest',page:1};
+let relFilterState={status:'all',search:'',genre:'',artist:'',sort:'newest',page:1};
 const REL_PAGE_SIZE=20;
 function setRelSort(sort){
   relFilterState.sort=sort;
@@ -3924,6 +3930,40 @@ function getRelGenreList(){
   allRelData.forEach(r=>{if(r.genre)genres.add(r.genre);});
   return Array.from(genres).sort();
 }
+function getRelArtistList(){
+  const artists=new Set();
+  allRelData.forEach(r=>{if(r.artist)artists.add(r.artist);});
+  return Array.from(artists).sort();
+}
+function toggleRelArtistMenu(){
+  const menu=document.getElementById('rel-artist-menu');if(!menu)return;
+  const opening=menu.style.display==='none';
+  if(!opening){menu.style.display='none';return;}
+  const artists=getRelArtistList();
+  if(!artists.length){menu.innerHTML='<div style="padding:.75rem;font-size:12px;color:rgba(255,255,255,.35)">No artists yet</div>';}
+  else{
+    menu.innerHTML='<div onclick="setRelArtistFilter(\'\')" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:'+(relFilterState.artist===''?'var(--gold)':'#fff')+';font-weight:'+(relFilterState.artist===''?'700':'400')+'">All artists</div>'
+      +artists.map(a=>'<div onclick="setRelArtistFilter(\''+esc(a).replace(/'/g,"\\'")+'\')" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:'+(relFilterState.artist===a?'var(--gold)':'#fff')+';font-weight:'+(relFilterState.artist===a?'700':'400')+'">'+esc(a)+'</div>').join('');
+  }
+  menu.style.display='block';
+  document.addEventListener('click',closeRelArtistMenuOnOutsideClick,{capture:true});
+}
+function closeRelArtistMenuOnOutsideClick(e){
+  const menu=document.getElementById('rel-artist-menu');const btn=document.getElementById('rel-artist-filter-btn');
+  if(menu&&!menu.contains(e.target)&&e.target!==btn&&!btn?.contains(e.target)){
+    menu.style.display='none';
+    document.removeEventListener('click',closeRelArtistMenuOnOutsideClick,{capture:true});
+  }
+}
+function setRelArtistFilter(artist){
+  relFilterState.artist=artist;
+  relFilterState.page=1;
+  document.getElementById('rel-artist-menu').style.display='none';
+  document.removeEventListener('click',closeRelArtistMenuOnOutsideClick,{capture:true});
+  const btn=document.getElementById('rel-artist-filter-btn');
+  if(btn) btn.innerHTML='<i class="ti ti-user"></i> '+(artist?esc(artist):'Artist');
+  filterReleasesCombined();
+}
 function toggleRelGenreMenu(){
   const menu=document.getElementById('rel-genre-menu');if(!menu)return;
   const opening=menu.style.display==='none';
@@ -3956,6 +3996,9 @@ function setRelGenreFilter(genre){
 let _cachedDraftForMusicTab=null;
 function filterReleasesCombined(){
   relFilterState.search=(document.getElementById('rel-search-input')?.value||'').toLowerCase();
+  const artistList=getRelArtistList();
+  const artistWrap=document.getElementById('rel-artist-filter-wrap');
+  if(artistWrap)artistWrap.style.display=artistList.length>1?'':'none';
   let filtered=allRelData;
   const s=relFilterState.status;
   if(s==='live')filtered=filtered.filter(r=>r.status==='live');
@@ -3963,6 +4006,7 @@ function filterReleasesCombined(){
   else if(s==='rejected')filtered=filtered.filter(r=>r.status==='rejected');
   else if(s==='takendown')filtered=filtered.filter(r=>r.status==='takendown');
   if(relFilterState.genre)filtered=filtered.filter(r=>r.genre===relFilterState.genre);
+  if(relFilterState.artist)filtered=filtered.filter(r=>r.artist===relFilterState.artist);
   if(relFilterState.search)filtered=filtered.filter(r=>(r.title||'').toLowerCase().includes(relFilterState.search)||(r.artist||'').toLowerCase().includes(relFilterState.search));
   filtered=sortReleases(filtered,relFilterState.sort);
   // Draft is display-only, never added to allRelData, and always pinned to the very top of page 1
@@ -3971,13 +4015,17 @@ function filterReleasesCombined(){
     const d=_cachedDraftForMusicTab;
     const matchesSearch=!relFilterState.search||(d.title||'').toLowerCase().includes(relFilterState.search);
     const matchesGenre=!relFilterState.genre||d.genre===relFilterState.genre;
-    if(matchesSearch&&matchesGenre) draftItem={...d,isDraft:true};
+    const matchesArtist=!relFilterState.artist||d.artist===relFilterState.artist;
+    if(matchesSearch&&matchesGenre&&matchesArtist) draftItem={...d,isDraft:true};
   }
   const activeWrap=document.getElementById('rel-active-filters');
   if(activeWrap){
-    if(relFilterState.genre){
-      activeWrap.style.display='block';
-      activeWrap.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.25);color:var(--gold);font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px">'+esc(relFilterState.genre)+' <i class="ti ti-x" style="cursor:pointer" onclick="setRelGenreFilter(\'\')"></i></span>';
+    const pills=[];
+    if(relFilterState.genre)pills.push('<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.25);color:var(--gold);font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px">'+esc(relFilterState.genre)+' <i class="ti ti-x" style="cursor:pointer" onclick="setRelGenreFilter(\'\')"></i></span>');
+    if(relFilterState.artist)pills.push('<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);color:#60a5fa;font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px"><i class="ti ti-user" style="font-size:11px"></i> '+esc(relFilterState.artist)+' <i class="ti ti-x" style="cursor:pointer" onclick="setRelArtistFilter(\'\')"></i></span>');
+    if(pills.length){
+      activeWrap.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.75rem';
+      activeWrap.innerHTML=pills.join('');
     } else {
       activeWrap.style.display='none';activeWrap.innerHTML='';
     }
