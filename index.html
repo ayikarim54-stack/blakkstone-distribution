@@ -4806,6 +4806,7 @@ function exportAnalyticsCSV(){
     const rangeLabel={7:'Last 7 days',28:'Last 28 days',90:'Last 3 months',365:'Last 1 year',0:'All time'}[anRangeDays]||'All time';
     const storeLabel=anFilterStore==='all'?'All stores':anFilterStore;
     const filteredStreams=getFilteredStreamData();
+    const isSynthetic=filteredStreams.some(e=>e._synthetic);
     const stores=[
       {key:'spotify',name:'Spotify'},{key:'apple_music',name:'Apple Music'},{key:'youtube_music',name:'YouTube Music'},
       {key:'audiomack',name:'Audiomack'},{key:'boomplay',name:'Boomplay'},{key:'others',name:'Others'}
@@ -4816,9 +4817,10 @@ function exportAnalyticsCSV(){
     lines.push(['Blakkstone Analytics Export']);
     lines.push(['Range',rangeLabel]);
     lines.push(['Store Filter',storeLabel]);
+    lines.push(['Data Source',isSynthetic?'ESTIMATED — synthesized from lifetime totals, not sourced from actual per-store reports':'Real per-store daily data']);
     lines.push(['Exported',new Date().toLocaleString('en-GB')]);
     lines.push([]);
-    lines.push(['Streams by Store — selected range']);
+    lines.push(['Streams by Store — selected range'+(isSynthetic?' (estimated)':'')]);
     lines.push(['Store','Streams']);
     storeTotals.forEach(row=>lines.push(row));
     lines.push(['Total',totalPeriodStreams]);
@@ -4832,8 +4834,8 @@ function exportAnalyticsCSV(){
     });
     const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
     const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='blakkstone-analytics-'+(anRangeDays===0?'all-time':anRangeDays+'days')+'.csv';a.click();URL.revokeObjectURL(url);
-    toast('Analytics exported','ok');
+    const a=document.createElement('a');a.href=url;a.download='blakkstone-analytics-'+(anRangeDays===0?'all-time':anRangeDays+'days')+(isSynthetic?'-estimated':'')+'.csv';a.click();URL.revokeObjectURL(url);
+    toast(isSynthetic?'Analytics exported (marked as estimated data)':'Analytics exported','ok');
   }catch(e){
     console.error('Export analytics error:',e);
     toast('Could not export: '+(e.message||'please try again.'),'err');
@@ -5050,7 +5052,14 @@ function renderTopReleases(){
   if(!topEl)return;
   const live=anReleaseData.filter(r=>r.status==='live').sort((a,b)=>(b.streams||0)-(a.streams||0));
   if(!live.length){topEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No live releases yet</div>';return;}
-  topEl.innerHTML=live.slice(0,5).map((r,i)=>'<div class="an-release-row"><div class="an-release-rank">'+(i+1)+'</div><div class="an-release-art">'+(r.artwork_url?'<img src="'+r.artwork_url+'" alt="">':'')+'</div><div class="an-release-info"><div class="an-release-title">'+esc(r.title)+'</div><div class="an-release-artist">'+esc(r.artist)+'</div></div><div class="an-release-streams">'+(r.streams||0).toLocaleString()+'</div></div>').join('');
+  topEl.innerHTML=live.slice(0,5).map((r,i)=>{
+    _releaseMap[r.id]=r;
+    return '<div class="an-release-row" onclick="openReleaseFromAnalytics(\''+r.id+'\')" style="cursor:pointer"><div class="an-release-rank">'+(i+1)+'</div><div class="an-release-art">'+(r.artwork_url?'<img src="'+r.artwork_url+'" alt="">':'')+'</div><div class="an-release-info"><div class="an-release-title">'+esc(r.title)+'</div><div class="an-release-artist">'+esc(r.artist)+'</div></div><div class="an-release-streams">'+(r.streams||0).toLocaleString()+'</div></div>';
+  }).join('');
+}
+function openReleaseFromAnalytics(id){
+  goPage('releases',null);
+  openReleaseById(id);
 }
 
 function renderReleasesTable(){
@@ -5060,11 +5069,12 @@ function renderReleasesTable(){
   const total=all.reduce((a,r)=>a+(r.streams||0),0);
   if(!all.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
   tbody.innerHTML=all.map(r=>{
+    _releaseMap[r.id]=r;
     const pct=total>0?Math.round(((r.streams||0)/total)*100):0;
     const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
     const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
     const art=r.artwork_url?'<img src="'+r.artwork_url+'" style="width:32px;height:32px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:8px">':'';
-    return '<tr><td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong></td><td style="color:rgba(255,255,255,.5)">'+esc(r.artist)+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'—')+'</td><td style="font-weight:700;color:#fff">'+(r.streams||0).toLocaleString()+'</td><td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#D4AF37"></div></div><span style="font-size:11px;color:rgba(255,255,255,.35);width:28px">'+pct+'%</span></div></td><td><span class="badge '+bc+'">'+bl+'</span></td></tr>';
+    return '<tr onclick="openReleaseFromAnalytics(\''+r.id+'\')" style="cursor:pointer"><td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong></td><td style="color:rgba(255,255,255,.5)">'+esc(r.artist)+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'—')+'</td><td style="font-weight:700;color:#fff">'+(r.streams||0).toLocaleString()+'</td><td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#D4AF37"></div></div><span style="font-size:11px;color:rgba(255,255,255,.35);width:28px">'+pct+'%</span></div></td><td><span class="badge '+bc+'">'+bl+'</span></td></tr>';
   }).join('');
 }
 
