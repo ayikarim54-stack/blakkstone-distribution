@@ -4710,6 +4710,7 @@ function setAnalyticsRange(days,btn){
   if(btn) btn.classList.add('active');
   renderAnalyticsChart();
   updateAnalyticsStats();
+  renderStoreBreakdown();
 }
 
 function setAnalyticsStore(store,btn){
@@ -4717,6 +4718,8 @@ function setAnalyticsStore(store,btn){
   document.querySelectorAll('.an-store-pill').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   renderAnalyticsChart();
+  updateAnalyticsStats();
+  renderStoreBreakdown();
 }
 
 async function loadAnalytics(){
