@@ -3654,6 +3654,13 @@ function enterDashboard(){
       const target=document.getElementById('rtab-'+pathSub);
       if(target)switchRoyTab(pathSub,target);
     }
+    if(page==='admin'){
+      const adminTabs=['dashboard','releases','users','payouts','streams','royalties','subs','reports','messages','broadcast','notifications','activitylog'];
+      if(adminTabs.includes(pathSub)){
+        const target=findAdminTabEl(pathSub);
+        if(target)switchAdminTab(pathSub,target);
+      }
+    }
     loadReleases().then(()=>updateOnboarding());updateWelcomeTime();
     if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){console.error('enterDashboard:',e);showView('dashboard');goPage('overview',null);loadReleases();}
@@ -3663,6 +3670,9 @@ let selectedPlan='artist_plus',billing='yearly',payoutMethod=null,momoNetwork=nu
 let _wizardAutosaveTimer=null;
 let _analyticsTickTimer=null;
 let _supportRealtimeChannel=null;
+function findAdminTabEl(tab){
+  return Array.from(document.querySelectorAll('.atab')).find(t=>(t.getAttribute('onclick')||'').includes("'"+tab+"'"));
+}
 function parsePath(){
   const raw=window.location.pathname.replace(/^\/|\/$/g,'');
   const parts=raw.split('/').filter(Boolean);
@@ -3708,7 +3718,7 @@ window.addEventListener('popstate',function(e){
   if(!user)return;
   const {page:pathPage,sub:pathSub}=parsePath();
   const page=e.state?.page||pathPage;
-  const roytab=e.state?.roytab||pathSub;
+  const sub=e.state?.sub||pathSub;
   const valid=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
   if(!valid.includes(page))return;
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
@@ -3719,15 +3729,22 @@ window.addEventListener('popstate',function(e){
   document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+page+"'"))n.classList.add('active');});
   if(page==='analytics')loadAnalytics();if(page==='royalties')loadRoyalties();
-  if(page==='royalties'&&['sales','reports','payouts'].includes(roytab)){
-    const target=document.getElementById('rtab-'+roytab);
-    if(target)switchRoyTab(roytab,target);
+  if(page==='royalties'&&['sales','reports','payouts'].includes(sub)){
+    const target=document.getElementById('rtab-'+sub);
+    if(target)switchRoyTab(sub,target);
   }
   if(page==='payout')loadPayout();
   if(page==='myartists')loadMyArtistsGrid();
   if(page==='support')loadMySupportMessages();
   if(page==='submit')initWizard();
-  if(page==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();}
+  if(page==='admin'){
+    loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();
+    const adminTabs=['dashboard','releases','users','payouts','streams','royalties','subs','reports','messages','broadcast','notifications','activitylog'];
+    if(adminTabs.includes(sub)){
+      const target=findAdminTabEl(sub);
+      if(target)switchAdminTab(sub,target);
+    }
+  }
 });
 
 
@@ -6423,7 +6440,7 @@ function switchRoyTab(tab,el){
   if(panel) panel.classList.add('active');
   if(el) el.classList.add('active');
   if(document.getElementById('page-royalties')?.classList.contains('active')){
-    history.replaceState({page:'royalties',roytab:tab},'',pagePath('royalties',tab==='sales'?null:tab));
+    history.replaceState({page:'royalties',sub:tab},'',pagePath('royalties',tab==='sales'?null:tab));
   }
   if(tab==='payouts') loadPayout();
 }
@@ -6433,6 +6450,9 @@ function switchAdminTab(tab,el){
   document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
   const sec=document.getElementById('admin-'+tab);if(sec) sec.classList.add('active');
   if(el) el.classList.add('active');
+  if(document.getElementById('page-admin')?.classList.contains('active')){
+    history.replaceState({page:'admin',sub:tab},'',pagePath('admin',tab==='dashboard'?null:tab));
+  }
   if(tab==='reports')loadAdminReports();
   if(tab==='broadcast')loadBroadcastHistory();
   if(tab==='streams'){initAdminStreams();loadAdminStreamsRecent();}
