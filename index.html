@@ -1566,6 +1566,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
         <canvas id="ov-trend-chart" height="70"></canvas>
       </div>
+      <!-- RECENT ACTIVITY (hidden if there's nothing to show yet) -->
+      <div class="adm-card" id="ov-activity-card" style="margin-bottom:1.5rem;display:none">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.5rem">Recent Activity</div>
+        <div id="ov-activity-list"></div>
+      </div>
       <!-- YOUR RELEASES -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px">
         <h2 style="font-size:28px;font-weight:800;color:#fff;letter-spacing:-.3px">Your Releases</h2>
@@ -3847,7 +3852,7 @@ function goPage(id,el){
   if(el)el.classList.add('active');
   else document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+id+"'"))n.classList.add('active');});
   history.pushState({page:id},'',pagePath(id));
-  if(id==='overview')loadReleases();
+  if(id==='overview'){loadReleases();loadOverviewActivity();}
   if(id==='releases')loadReleases();
   if(id==='analytics')loadAnalytics();
   if(id==='submit')initWizard();
@@ -3892,7 +3897,7 @@ window.addEventListener('popstate',function(e){
     if(target)switchRoyTab(sub,target);
   }
   if(page==='payout')loadPayout();
-  if(page==='overview')loadReleases();
+  if(page==='overview'){loadReleases();loadOverviewActivity();}
   if(page==='releases'){
     loadReleases();
     if(sub&&_releaseMap[sub]){
@@ -4221,6 +4226,52 @@ function filterOvSearch(){
   if(!q){grid.innerHTML=allRelData.slice(0,8).map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';return;}
   const filtered=allRelData.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
   grid.innerHTML=filtered.map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-search"></i><p>No matches.</p></div>';
+}
+function describeActivityForArtist(l,releaseMap){
+  const rel=l.target_release_id?releaseMap[l.target_release_id]:null;
+  const relName=rel?.title?(' "'+rel.title+'"'):'';
+  if(l.field==='release_status'){
+    const nv=(l.new_value||'').split(' —')[0].trim();
+    const statusLabel={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'};
+    const icon={live:'🎉',rejected:'⚠️',takendown:'🚫',review:'👀',pending:'⏳'}[nv]||'📀';
+    return icon+' Your release'+relName+' is now '+(statusLabel[nv]||l.new_value);
+  }
+  if(l.field==='release_deleted')return '🗑️ Your release'+relName+' was removed';
+  if(l.field==='payout_status'){
+    const nv=(l.new_value||'').split(' —')[0].trim();
+    const statusLabel={pending:'Pending',processing:'Processing',paid:'Paid',failed:'Failed',cancelled:'Cancelled'};
+    const icon={paid:'💰',failed:'⚠️',processing:'🔄',cancelled:'❌'}[nv]||'💳';
+    return icon+' Your payout is now '+(statusLabel[nv]||l.new_value);
+  }
+  if(l.field==='payout_deleted')return '🗑️ A payout request was removed';
+  if(l.field==='plan'){
+    const planLabel={free:'Free',solo_paid:'Solo',artist_plus:'Artist+',label:'Label',admin:'Admin'};
+    return '⭐ Your plan changed to '+(planLabel[l.new_value]||l.new_value);
+  }
+  return null;
+}
+async function loadOverviewActivity(){
+  const card=document.getElementById('ov-activity-card');
+  const list=document.getElementById('ov-activity-list');
+  if(!card||!list||!user)return;
+  try{
+    const {data:logs,error}=await sb.from('admin_audit_log').select('*').eq('target_user_id',user.id).in('field',['release_status','release_deleted','payout_status','payout_deleted','plan']).order('changed_at',{ascending:false}).limit(8);
+    if(error)throw error;
+    if(!logs||!logs.length){card.style.display='none';return;}
+    const relIds=[...new Set(logs.filter(l=>l.target_release_id).map(l=>l.target_release_id))];
+    let releaseMap={};
+    if(relIds.length){
+      const {data:rels}=await sb.from('releases').select('id,title').in('id',relIds).catch(()=>({data:[]}));
+      (rels||[]).forEach(r=>{releaseMap[r.id]=r;});
+    }
+    const items=logs.map(l=>({text:describeActivityForArtist(l,releaseMap),when:l.changed_at})).filter(i=>i.text);
+    if(!items.length){card.style.display='none';return;}
+    list.innerHTML=items.map(i=>'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="font-size:13px;color:rgba(255,255,255,.75)">'+esc(i.text)+'</div><div style="font-size:11px;color:rgba(255,255,255,.3);flex-shrink:0;white-space:nowrap">'+timeSince(new Date(i.when))+'</div></div>').join('');
+    card.style.display='block';
+  }catch(e){
+    console.error('Overview activity load error:',e);
+    card.style.display='none';
+  }
 }
 async function loadReleases(){
   if(!user)return;
