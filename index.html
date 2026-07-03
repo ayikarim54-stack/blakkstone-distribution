@@ -2595,10 +2595,27 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <p style="font-size:13px;color:rgba(255,255,255,.4);margin-top:2px">Blakkstone Distribution — Full Control Center</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn adm-btn-sec" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
+          <div style="position:relative">
+            <button class="btn adm-btn-sec" onclick="toggleAdminExportMenu()"><i class="ti ti-download"></i> Export CSV</button>
+            <div id="adm-export-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#161619;border:1px solid var(--line);border-radius:10px;padding:.5rem;min-width:170px;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.4)">
+              <div onclick="closeAdminExportMenu();exportArtistsCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:#fff">Artists</div>
+              <div onclick="closeAdminExportMenu();exportReleasesCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:#fff">Releases</div>
+              <div onclick="closeAdminExportMenu();exportPayoutsCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:#fff">Payouts</div>
+              <div onclick="closeAdminExportMenu();exportSubsCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:#fff">Subscriptions</div>
+            </div>
+          </div>
           <button class="btn adm-btn-sec" onclick="refreshAdmin()"><i class="ti ti-refresh"></i> Refresh</button>
           <button class="btn btn-purple" onclick="switchAdminTab('notifications',document.getElementById('atab-notif'))"><i class="ti ti-bell"></i> Alerts <span id="notif-badge-admin" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></button>
         </div>
+      </div>
+
+      <!-- ADMIN GLOBAL SEARCH -->
+      <div style="position:relative;margin-bottom:1.5rem">
+        <div style="position:relative">
+          <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.3);font-size:15px;pointer-events:none"></i>
+          <input id="adm-global-search" type="text" placeholder="Search artists, releases, ISRCs..." class="adm-search" style="width:100%;padding-left:38px" oninput="onAdminSearchInput(this.value)" onfocus="if(this.value.trim())onAdminSearchInput(this.value)">
+        </div>
+        <div id="adm-search-results" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);background:#161619;border:1px solid var(--line);border-radius:10px;max-height:360px;overflow-y:auto;z-index:60;box-shadow:0 12px 30px rgba(0,0,0,.4)"></div>
       </div>
 
       <!-- ADMIN DASHBOARD STATS -->
@@ -7528,6 +7545,81 @@ async function sendSupportMessage(){
     toast('Could not send: '+(e.message||'please try again.'),'err');
   }
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Send Message';
+}
+function toggleAdminExportMenu(){
+  const menu=document.getElementById('adm-export-menu');if(!menu)return;
+  menu.style.display=menu.style.display==='none'?'block':'none';
+}
+function closeAdminExportMenu(){
+  const menu=document.getElementById('adm-export-menu');if(menu)menu.style.display='none';
+}
+document.addEventListener('click',function(e){
+  const menu=document.getElementById('adm-export-menu');
+  const btn=e.target.closest?e.target.closest('.adm-topbar button'):null;
+  if(menu&&menu.style.display!=='none'&&!menu.contains(e.target)&&!(btn&&btn.getAttribute('onclick')==='toggleAdminExportMenu()')){
+    menu.style.display='none';
+  }
+  const results=document.getElementById('adm-search-results');
+  const searchInput=document.getElementById('adm-global-search');
+  if(results&&results.style.display!=='none'&&!results.contains(e.target)&&e.target!==searchInput){
+    results.style.display='none';
+  }
+},{capture:true});
+let _adminSearchDebounce=null;
+function onAdminSearchInput(value){
+  if(_adminSearchDebounce)clearTimeout(_adminSearchDebounce);
+  _adminSearchDebounce=setTimeout(()=>adminGlobalSearch(value),150);
+}
+function adminGlobalSearch(query){
+  const wrap=document.getElementById('adm-search-results');if(!wrap)return;
+  const q=query.trim().toLowerCase();
+  if(!q){wrap.style.display='none';wrap.innerHTML='';return;}
+  const artistMatches=(allUsersCache||[]).filter(p=>
+    (p.artist_name||'').toLowerCase().includes(q)||
+    (p.full_name||'').toLowerCase().includes(q)||
+    (p.email||'').toLowerCase().includes(q)||
+    (p.account_id||'').toLowerCase().includes(q)
+  ).slice(0,5);
+  const releaseMatches=(allReleasesCache||[]).filter(r=>
+    (r.title||'').toLowerCase().includes(q)||
+    (r.isrc||'').toLowerCase().includes(q)||
+    (r.artist||'').toLowerCase().includes(q)
+  ).slice(0,5);
+  if(!artistMatches.length&&!releaseMatches.length){
+    wrap.style.display='block';
+    wrap.innerHTML='<div style="padding:.875rem 1rem;font-size:12px;color:rgba(255,255,255,.35)">No matches for "'+esc(query)+'"</div>';
+    return;
+  }
+  let html='';
+  if(artistMatches.length){
+    html+='<div style="padding:.5rem 1rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.3)">Artists</div>';
+    html+=artistMatches.map(p=>{
+      const name=p.artist_name||p.full_name||p.email||'—';
+      return '<div onclick="jumpToArtistFromSearch(\''+p.id+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" style="padding:.625rem 1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="min-width:0"><div style="font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.email||'')+'</div></div><span style="font-size:10px;color:var(--gold);font-weight:700;flex-shrink:0">'+esc(p.account_id||'')+'</span></div>';
+    }).join('');
+  }
+  if(releaseMatches.length){
+    html+='<div style="padding:.5rem 1rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.3);border-top:1px solid rgba(255,255,255,.06)">Releases</div>';
+    html+=releaseMatches.map(r=>{
+      return '<div onclick="jumpToReleaseFromSearch(\''+esc(r.title||'').replace(/'/g,"\\'")+'\')" style="padding:.625rem 1rem;cursor:pointer"><div style="font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.title||'Untitled')+'</div><div style="font-size:11px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.artist||'')+(r.isrc?' · '+esc(r.isrc):'')+'</div></div>';
+    }).join('');
+  }
+  wrap.style.display='block';
+  wrap.innerHTML=html;
+}
+function jumpToArtistFromSearch(userId,name){
+  const results=document.getElementById('adm-search-results');if(results)results.style.display='none';
+  const input=document.getElementById('adm-global-search');if(input)input.value='';
+  switchAdminTab('users',findAdminTabEl('users'));
+  openArtistModal(userId,name);
+}
+async function jumpToReleaseFromSearch(title){
+  const results=document.getElementById('adm-search-results');if(results)results.style.display='none';
+  const input=document.getElementById('adm-global-search');if(input)input.value='';
+  switchAdminTab('releases',findAdminTabEl('releases'));
+  await loadAdminReleases();
+  const searchInput=document.getElementById('rel-search');
+  if(searchInput){searchInput.value=title;filterReleases();}
 }
 async function exportCSV(type){
   let data=[],filename='',headers=[];
