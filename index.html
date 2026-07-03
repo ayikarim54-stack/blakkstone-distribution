@@ -2687,7 +2687,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="display:flex;gap:8px;margin-bottom:.875rem;flex-wrap:wrap">
           <input id="user-search" type="text" placeholder="Search name, email, account ID..." class="adm-search" oninput="filterUsers()"/>
           <select id="user-plan-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterUsers()">
-            <option value="">All plans</option><option value="solo">Solo</option><option value="artist_plus">Artist+</option><option value="label">Label</option><option value="admin">Admin</option>
+            <option value="">All plans</option><option value="solo_paid">Solo</option><option value="artist_plus">Artist+</option><option value="label">Label</option><option value="admin">Admin</option>
           </select>
           <button class="btn adm-btn-sec btn-sm" onclick="exportArtistsCSV()"><i class="ti ti-download"></i> Export</button>
         </div>
@@ -6480,6 +6480,11 @@ function toast(msg,type){
 
 // ── ADMIN ──────────────────────────────────────────────
 let allReleasesCache=[],allUsersCache=[],allPayoutsCache=[];
+let userRelStats={count:{},streams:{},earnings:{}};
+let payoutProfileMap={};
+function toggleSelectAll(kind,el){
+  document.querySelectorAll('.'+kind+'-cb').forEach(cb=>{cb.checked=el.checked;});
+}
 function switchRoyTab(tab,el){
   document.querySelectorAll('.roy-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.roy-tab-panel').forEach(p=>p.classList.remove('active'));
@@ -6807,11 +6812,26 @@ async function loadAdminUsers(){
   const [{data:allRel}]=await Promise.all([sb.from('releases').select('user_id,streams,earnings')]);
   const relCount={},relStreams={},relEarn={};
   (allRel||[]).forEach(r=>{relCount[r.user_id]=(relCount[r.user_id]||0)+1;relStreams[r.user_id]=(relStreams[r.user_id]||0)+(r.streams||0);relEarn[r.user_id]=(relEarn[r.user_id]||0)+(r.earnings||0);});
+  userRelStats={count:relCount,streams:relStreams,earnings:relEarn};
   allUsersCache=data;
+  renderAdminUsersTable(data);
+}
+function renderAdminUsersTable(data){
+  const tbody=document.getElementById('admin-users-tbody');if(!tbody)return;
+  if(!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists match.</td></tr>';return;}
+  const {count:relCount,streams:relStreams,earnings:relEarn}=userRelStats;
   tbody.innerHTML=data.map(p=>{
     const name=p.artist_name||p.full_name||p.email;const joined=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     return '<tr><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(p.account_id||'—')+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(p.email||'')+'</div></td><td><select class="stsel" onchange="updateUserPlan(\''+p.id+'\',this.value)"><option value="free" '+(p.plan==='free'?'selected':'')+'>Free</option><option value="solo_paid" '+(p.plan==='solo_paid'?'selected':'')+'>Solo</option><option value="artist_plus" '+(p.plan==='artist_plus'?'selected':'')+'>Artist+</option><option value="label" '+(p.plan==='label'?'selected':'')+'>Label</option><option value="admin" '+(p.plan==='admin'?'selected':'')+'>Admin</option></select></td><td style="text-align:center;font-weight:600;color:#fff">'+(relCount[p.id]||0)+'</td><td style="color:rgba(255,255,255,.6)">'+(relStreams[p.id]||0).toLocaleString()+'</td><td style="color:#34d399;font-weight:600">$'+(relEarn[p.id]||0).toFixed(2)+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+joined+'</td><td><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px" onclick="openArtistModal(\''+p.id+'\',\''+esc(name)+'\')"><i class="ti ti-eye"></i></button></td></tr>';
   }).join('');
+}
+function filterUsers(){
+  const q=(document.getElementById('user-search')?.value||'').toLowerCase();
+  const plan=document.getElementById('user-plan-filter')?.value||'';
+  let data=allUsersCache;
+  if(q) data=data.filter(p=>(p.artist_name||'').toLowerCase().includes(q)||(p.full_name||'').toLowerCase().includes(q)||(p.email||'').toLowerCase().includes(q)||(p.account_id||'').toLowerCase().includes(q));
+  if(plan) data=data.filter(p=>p.plan===plan);
+  renderAdminUsersTable(data);
 }
 async function loadAdminPayouts(){
   const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
@@ -6823,19 +6843,29 @@ async function loadAdminPayouts(){
     ]);
     if(error){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:#f87171;padding:1.5rem">'+error.message+'</td></tr>';return;}
     allPayoutsCache=payouts||[];
-    const profileMap={};(profiles||[]).forEach(p=>{profileMap[p.id]=p;});
+    payoutProfileMap={};(profiles||[]).forEach(p=>{payoutProfileMap[p.id]=p;});
     const pending=(payouts||[]).filter(p=>p.status==='pending').length;
     const notice=document.getElementById('payout-pending-notice');
     if(notice&&pending>0) notice.innerHTML='<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1rem"><i class="ti ti-alert-circle"></i> <strong>'+pending+' pending payout(s)</strong></div>';
     else if(notice) notice.innerHTML='';
-    if(!payouts||!payouts.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payout requests yet.</td></tr>';return;}
-    tbody.innerHTML=payouts.map(p=>{
-      const prof=profileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||prof.email||'—';const accId=prof.account_id||'—';
-      const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
-      const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
-      return '<tr><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+(p.method==='momo'?'📱 Mobile Money':'🏦 Bank')+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
-    }).join('');
+    renderAdminPayoutsTable(payouts||[]);
   }catch(e){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Error loading payouts.</td></tr>';}
+}
+function renderAdminPayoutsTable(payouts){
+  const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
+  if(!payouts||!payouts.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payout requests found.</td></tr>';return;}
+  tbody.innerHTML=payouts.map(p=>{
+    const prof=payoutProfileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||prof.email||'—';const accId=prof.account_id||'—';
+    const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
+    const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
+    return '<tr><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+(p.method==='momo'?'📱 Mobile Money':'🏦 Bank')+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+  }).join('');
+}
+function filterPayouts(){
+  const st=document.getElementById('payout-status-filter')?.value||'';
+  let data=allPayoutsCache;
+  if(st) data=data.filter(p=>p.status===st);
+  renderAdminPayoutsTable(data);
 }
 async function loadAdminSubs(){
   const tbody=document.getElementById('admin-subs-tbody');if(!tbody)return;
