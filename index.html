@@ -2508,10 +2508,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="atab" id="atab-messages" onclick="switchAdminTab('messages',this)"><i class="ti ti-message"></i> Messages <span id="msg-alert" style="display:none;background:#3b82f6;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
         <div class="atab" id="atab-broadcast" onclick="switchAdminTab('broadcast',this)"><i class="ti ti-speakerphone"></i> Broadcast</div>
         <div class="atab" id="atab-notif" onclick="switchAdminTab('notifications',this)"><i class="ti ti-bell"></i> Notifications</div>
+        <div class="atab" id="atab-activitylog" onclick="switchAdminTab('activitylog',this)"><i class="ti ti-history"></i> Activity Log</div>
       </div>
 
       <!-- ── DASHBOARD TAB ── -->
       <div class="admin-section active" id="admin-dashboard">
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div class="adm-card-title"><i class="ti ti-list-check"></i> Needs Attention</div>
+          <div id="adm-needs-attention"><div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div></div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
           <div class="adm-card">
             <div class="adm-card-title"><i class="ti ti-chart-line"></i> Revenue Overview</div>
@@ -2897,6 +2902,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- ── NOTIFICATIONS TAB ── -->
       <div class="admin-section" id="admin-notifications">
         <div id="notifications-list"></div>
+      </div>
+
+      <!-- ── ACTIVITY LOG TAB ── -->
+      <div class="admin-section" id="admin-activitylog">
+        <div style="display:flex;gap:8px;margin-bottom:.875rem;align-items:center;flex-wrap:wrap">
+          <p style="font-size:12px;color:rgba(255,255,255,.35);margin:0;flex:1">A running record of admin actions — status changes, deletions, payouts, plan changes, and broadcasts.</p>
+          <button class="btn adm-btn-sec btn-sm" onclick="loadAdminActivityLog()"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
+        <div id="activity-log-list"></div>
       </div>
     </div>
   </div>
@@ -3635,7 +3649,7 @@ function enterDashboard(){
     history.replaceState({page},'',window.location.pathname+'#'+page);
     goPage(page,null);
     loadReleases().then(()=>updateOnboarding());updateWelcomeTime();
-    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();startRealtimeAdmin();requestNotifPermission();}
+    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){console.error('enterDashboard:',e);showView('dashboard');goPage('overview',null);loadReleases();}
 }
 
@@ -3661,7 +3675,7 @@ function goPage(id,el){
   if(id==='myartists')loadMyArtistsGrid();
   if(id==='profile')loadProfileStats();
   if(id==='support')loadMySupportMessages();
-  if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
+  if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
   const mobMap={overview:'mob-overview',releases:'mob-music',submit:'mob-submit',royalties:'mob-royalties',profile:'mob-profile'};
   if(mobMap[id])setMobNav(mobMap[id]);
 }
@@ -3689,6 +3703,16 @@ window.addEventListener('popstate',function(e){
 // ── RELEASES ──────────────────────────────────────────
 let allRelData=[];
 const _releaseMap={};
+function logAudit(targetReleaseId,targetUserId,field,oldValue,newValue){
+  sb.from('admin_audit_log').insert({
+    target_release_id:targetReleaseId||null,
+    target_user_id:targetUserId||null,
+    field,
+    old_value:oldValue!=null?String(oldValue):null,
+    new_value:newValue!=null?String(newValue):null,
+    changed_by:user?.email||'Admin'
+  }).then(({error})=>{if(error)console.error('Audit log insert error ('+field+'):',error);});
+}
 const _messageMap={};
 const _threadIds={};
 const _supportThreadIds={};
@@ -3708,12 +3732,18 @@ async function _softDeleteMessage(id,field){
 }
 async function deleteAdminMessage(id){
   if(!confirm('Delete this message? This cannot be undone.'))return;
-  if(await _softDeleteMessage(id,'deleted_by_admin')){toast('Message deleted','ok');loadAdminMessages();}
+  const msg=_messageMap[id];
+  if(await _softDeleteMessage(id,'deleted_by_admin')){
+    logAudit(null,msg?.from_id||null,'message_deleted',msg?.subject||null,'deleted');
+    toast('Message deleted','ok');loadAdminMessages();
+  }
 }
 async function deleteAdminThread(ids){
   if(!ids||!ids.length)return;
   if(!confirm('Delete this entire conversation ('+ids.length+' message'+(ids.length===1?'':'s')+')? This cannot be undone.'))return;
+  const firstMsg=_messageMap[ids[0]];
   for(const id of ids){await _softDeleteMessage(id,'deleted_by_admin');}
+  logAudit(null,firstMsg?.from_id||null,'conversation_deleted',ids.length+' message'+(ids.length===1?'':'s'),'deleted');
   toast('Conversation deleted','ok');
   loadAdminMessages();
 }
@@ -6373,8 +6403,49 @@ function switchAdminTab(tab,el){
   if(tab==='broadcast')loadBroadcastHistory();
   if(tab==='streams'){initAdminStreams();loadAdminStreamsRecent();}
   if(tab==='royalties'){initAdminRoyalties();}
+  if(tab==='activitylog')loadAdminActivityLog();
 }
-function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();toast('Refreshed','ok');}
+async function loadAdminActivityLog(){
+  const container=document.getElementById('activity-log-list');if(!container)return;
+  container.innerHTML='<div style="text-align:center;padding:2rem"><span class="loader"></span></div>';
+  try{
+    const [{data:logs,error},{data:profiles},{data:releases}]=await Promise.all([
+      sb.from('admin_audit_log').select('*').order('changed_at',{ascending:false}).limit(100),
+      sb.from('profiles').select('id,artist_name,full_name,email'),
+      sb.from('releases').select('id,title')
+    ]);
+    if(error)throw error;
+    if(!logs||!logs.length){container.innerHTML='<div class="empty"><i class="ti ti-history-toggle"></i><p>No admin activity recorded yet.</p></div>';return;}
+    const profileMap={};(profiles||[]).forEach(p=>{profileMap[p.id]=p;});
+    const releaseMap={};(releases||[]).forEach(r=>{releaseMap[r.id]=r;});
+    const fieldLabels={
+      release_status:'Release status changed',release_deleted:'Release deleted',
+      payout_status:'Payout status changed',payout_deleted:'Payout deleted',
+      plan:'Plan changed',streams:'Streams edited',earnings:'Earnings edited',
+      message_deleted:'Message deleted',conversation_deleted:'Conversation deleted',
+      broadcast_sent:'Broadcast sent',account_deletion:'Account deletion processed'
+    };
+    container.innerHTML=logs.map(l=>{
+      const label=fieldLabels[l.field]||l.field;
+      const prof=l.target_user_id?profileMap[l.target_user_id]:null;
+      const rel=l.target_release_id?releaseMap[l.target_release_id]:null;
+      const targetName=rel?.title||prof?.artist_name||prof?.full_name||prof?.email||null;
+      const d=l.changed_at?new Date(l.changed_at).toLocaleString('en-GB'):'—';
+      return '<div style="background:#0e0e14;border:1px solid var(--line);border-radius:11px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+        +'<div style="min-width:0">'
+          +'<div style="font-size:13px;font-weight:600;color:#fff">'+esc(label)+(targetName?' <span style="font-weight:400;color:rgba(255,255,255,.4)">· '+esc(targetName)+'</span>':'')+'</div>'
+          +(l.old_value||l.new_value?'<div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:3px">'+(l.old_value?esc(l.old_value):'—')+' → '+(l.new_value?esc(l.new_value):'—')+'</div>':'')
+          +'<div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:4px">by '+esc(l.changed_by||'Admin')+'</div>'
+        +'</div>'
+        +'<div style="font-size:11px;color:rgba(255,255,255,.25);flex-shrink:0;white-space:nowrap">'+d+'</div>'
+      +'</div>';
+    }).join('');
+  }catch(e){
+    console.error('Activity log load error:',e);
+    container.innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i><p>'+esc('Could not load: '+(e.message||'unknown error'))+'</p></div>';
+  }
+}
+function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();toast('Refreshed','ok');}
 async function loadAdminStats(){
   try{
     const [{data:profiles},{data:releases},{data:payouts},{data:subs}]=await Promise.all([
@@ -6403,6 +6474,30 @@ async function loadAdminStats(){
     set('adm-streams',totalStreams.toLocaleString());
     const pa=document.getElementById('payout-alert');if(pa){pa.style.display=pendingPay.length>0?'inline':'none';pa.textContent=pendingPay.length;}
   }catch(e){console.warn('loadAdminStats:',e);}
+}
+async function loadAdminActionQueue(){
+  const container=document.getElementById('adm-needs-attention');if(!container)return;
+  try{
+    const [{data:releases},{data:payouts},{data:messages},{data:deletions}]=await Promise.all([
+      sb.from('releases').select('id').in('status',['pending','review']),
+      sb.from('payouts').select('id').eq('status','pending').catch(()=>({data:[]})),
+      sb.from('messages').select('id,deleted_by_admin').eq('direction','in').is('read_at',null),
+      sb.from('account_deletion_requests').select('id').eq('status','pending').catch(()=>({data:[]}))
+    ]);
+    const items=[
+      {label:'Pending Releases',count:(releases||[]).length,tab:'releases',icon:'ti-music',color:'#fbbf24'},
+      {label:'Pending Payouts',count:(payouts||[]).length,tab:'payouts',icon:'ti-wallet',color:'#ef4444'},
+      {label:'Unread Messages',count:(messages||[]).filter(m=>!m.deleted_by_admin).length,tab:'messages',icon:'ti-message',color:'#3b82f6'},
+      {label:'Deletion Requests',count:(deletions||[]).length,tab:'users',icon:'ti-user-x',color:'#f97316'}
+    ];
+    const total=items.reduce((a,i)=>a+i.count,0);
+    container.innerHTML=total===0
+      ?'<div style="color:rgba(255,255,255,.35);font-size:12px;padding:.25rem 0"><i class="ti ti-check"></i> All caught up — nothing needs attention.</div>'
+      :items.filter(i=>i.count>0).map(i=>'<div onclick="switchAdminTab(\''+i.tab+'\',document.getElementById(\'atab-'+i.tab+'\'))" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#fff"><i class="ti '+i.icon+'" style="color:'+i.color+'"></i> '+i.label+'</div><span style="font-size:11px;font-weight:700;color:#08080C;background:'+i.color+';padding:2px 9px;border-radius:20px">'+i.count+'</span></div>').join('');
+  }catch(e){
+    console.warn('loadAdminActionQueue:',e);
+    container.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Could not load.</div>';
+  }
 }
 async function loadAdminDashboard(){
   try{
@@ -6469,7 +6564,11 @@ async function bulkStatusUpdate(status){
   const checked=Array.from(document.querySelectorAll('.rel-cb:checked')).map(c=>c.dataset.id);
   if(!checked.length){toast('Select releases first','err');return;}
   if(!confirm('Set '+checked.length+' release(s) to "'+status+'"?'))return;
-  for(const id of checked) await sb.from('releases').update({status}).eq('id',id);
+  for(const id of checked){
+    const rel=allReleasesCache.find(r=>r.id===id);
+    await sb.from('releases').update({status}).eq('id',id);
+    logAudit(id,rel?.user_id||null,'release_status',rel?.status||null,status+' (bulk)');
+  }
   toast(checked.length+' updated','ok');loadAdminReleases();loadAdminStats();
 }
 async function updateStatus(id,status,sel){
@@ -6505,6 +6604,8 @@ async function updateStatus(id,status,sel){
     }).then(({error})=>{if(error)console.error('Status history insert error (status update itself succeeded):',error);});
   }
   if(_releaseMap[id]){_releaseMap[id].status=status;_releaseMap[id].status_reason=update.status_reason;}
+  const relForLog=allReleasesCache.find(r=>r.id===id)||priorRelease;
+  logAudit(id,relForLog?.user_id||null,'release_status',relForLog?.status||oldStatus,status+(needsReason?' — '+reason:''));
   const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',takendown:'color:#9ca3af'};
   if(sel) sel.style.cssText=sc[status]||'';
   toast('Status updated','ok');loadReleases();loadAdminStats();
@@ -6530,12 +6631,14 @@ async function updateField(id,field,value){
 }
 async function deleteRelease(id){
   if(!confirm('Remove this release?'))return;
+  const rel=allReleasesCache.find(r=>r.id===id);
   const {error}=await sb.from('releases').delete().eq('id',id);
   if(error){
     toast('Delete failed — run the admin RLS fix SQL in Supabase','err');
     console.error('deleteRelease error:',error);
     return;
   }
+  logAudit(id,rel?.user_id||null,'release_deleted',rel?.title||null,'deleted');
   toast('Release removed','ok');
   loadAdminReleases();
   loadReleases();
@@ -6543,12 +6646,14 @@ async function deleteRelease(id){
 }
 async function deletePayout(id){
   if(!confirm('Delete this payout request?'))return;
+  const p=allPayoutsCache.find(x=>x.id===id);
   const {error}=await sb.from('payouts').delete().eq('id',id);
   if(error){
     toast('Delete failed — run the admin RLS fix SQL in Supabase','err');
     console.error('deletePayout error:',error);
     return;
   }
+  logAudit(null,p?.user_id||null,'payout_deleted','$'+parseFloat(p?.amount||0).toFixed(2),'deleted');
   toast('Payout deleted','ok');
   loadAdminPayouts();
   loadAdminStats();
@@ -6582,8 +6687,10 @@ async function updatePayoutStatus(id,status){
   }
   const update={status};
   update.failure_reason=status==='failed'?reason:null;
+  const p=allPayoutsCache.find(x=>x.id===id);
   const {error}=await sb.from('payouts').update(update).eq('id',id);
   if(error){toast('Update failed: '+error.message,'err');return;}
+  logAudit(null,p?.user_id||null,'payout_status',p?.status||null,status+(reason?' — '+reason:''));
   toast('Payout marked as '+status,'ok');
   loadAdminPayouts();
   loadAdminStats();
@@ -6836,8 +6943,10 @@ async function markRead(id){
 }
 async function markDeletionCompleted(id){
   if(!confirm('Confirm you have manually deleted this user from Supabase Authentication → Users. This only updates the request status here.'))return;
+  const {data:reqRow}=await sb.from('account_deletion_requests').select('user_id,email').eq('id',id).single().catch(()=>({data:null}));
   const {error}=await sb.from('account_deletion_requests').update({status:'completed',completed_at:new Date().toISOString()}).eq('id',id);
   if(error){console.error('Mark deletion completed error:',error);toast('Could not update: '+error.message,'err');return;}
+  logAudit(null,reqRow?.user_id||null,'account_deletion','pending','completed'+(reqRow?.email?' — '+reqRow.email:''));
   toast('Marked as completed','ok');loadNotifications();
 }
 async function sendAdminMessage(){
@@ -6864,7 +6973,7 @@ async function sendBroadcast(){
     if(error){lastError=error;console.error('Broadcast send error for',p.email,':',error);}else{sent++;}
   }
   document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
-  if(sent>0){toast('Broadcast sent to '+sent+' artist(s)!','ok');}
+  if(sent>0){toast('Broadcast sent to '+sent+' artist(s)!','ok');logAudit(null,null,'broadcast_sent',null,subject+' — '+sent+' recipient(s)');}
   else{toast('Broadcast failed: '+(lastError?.message||'unknown error'),'err');}
   loadBroadcastHistory();
 }
