@@ -3873,7 +3873,7 @@ function releaseGridCard(r){
   if(r.isDraft){
     const ago=r.savedAt?timeSince(new Date(r.savedAt)):'recently';
     const art=r.artUrl?'<img src="'+r.artUrl+'" alt="art">':'<i class="ti ti-file-music"></i>';
-    return '<div class="rg-card" onclick="resumeDraftFromMusic()"><div class="rg-art">'+art+'<span class="rg-badge" style="background:rgba(212,175,55,.9);color:#08080C">Draft</span></div><div class="rg-info"><div class="rg-title">'+esc(r.title||'Untitled release')+'</div><div class="rg-meta">Saved '+ago+'</div></div></div>';
+    return '<div class="rg-card" onclick="resumeDraftFromMusic()"><div class="rg-art">'+art+'<span class="rg-badge" style="background:rgba(212,175,55,.9);color:#08080C">Draft</span><button onclick="event.stopPropagation();deleteDraftFromMusic()" title="Delete draft" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.65);border:none;border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#f87171;z-index:2"><i class="ti ti-trash" style="font-size:13px"></i></button></div><div class="rg-info"><div class="rg-title">'+esc(r.title||'Untitled release')+'</div><div class="rg-meta">Saved '+ago+'</div></div></div>';
   }
   const bc={pending:'rg-badge-pending',review:'rg-badge-review',live:'rg-badge-live',rejected:'rg-badge-rejected',takendown:'rg-badge-takendown'}[r.status]||'rg-badge-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
@@ -3901,6 +3901,15 @@ function releaseRow(r){
 }
 function resumeDraftFromMusic(){
   goPage('submit',null);
+}
+function deleteDraftFromMusic(){
+  if(!confirm('Delete this draft release? This cannot be undone.'))return;
+  try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
+  sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).catch(()=>{});
+  _cachedDraftForMusicTab=null;
+  const banner=document.getElementById('draft-banner');if(banner)banner.style.display='none';
+  toast('Draft deleted','ok');
+  filterReleasesCombined();
 }
 let relFilterState={status:'all',search:'',genre:'',artist:'',sort:'newest',page:1};
 const REL_PAGE_SIZE=20;
