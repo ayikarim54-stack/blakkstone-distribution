@@ -3870,11 +3870,18 @@ function groupSupportMessagesBySubject(messages){
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
 function releaseGridCard(r){
+  if(r.isDraft){
+    const ago=r.savedAt?timeSince(new Date(r.savedAt)):'recently';
+    const art=r.artUrl?'<img src="'+r.artUrl+'" alt="art">':'<i class="ti ti-file-music"></i>';
+    return '<div class="rg-card" onclick="resumeDraftFromMusic()"><div class="rg-art">'+art+'<span class="rg-badge" style="background:rgba(212,175,55,.9);color:#08080C">Draft</span></div><div class="rg-info"><div class="rg-title">'+esc(r.title||'Untitled release')+'</div><div class="rg-meta">Saved '+ago+'</div></div></div>';
+  }
   const bc={pending:'rg-badge-pending',review:'rg-badge-review',live:'rg-badge-live',rejected:'rg-badge-rejected',takendown:'rg-badge-takendown'}[r.status]||'rg-badge-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
   const art=r.artwork_url?'<img src="'+r.artwork_url+'" alt="art">':'<i class="ti ti-music"></i>';
   _releaseMap[r.id]=r;
-  return '<div class="rg-card" onclick="openReleaseById(\''+r.id+'\')"><div class="rg-art">'+art+'<span class="rg-badge '+bc+'">'+bl+'</span></div><div class="rg-info"><div class="rg-title">'+esc(r.title)+'</div><div class="rg-meta">'+esc(r.artist)+'</div></div></div>';
+  const needsAttention=(r.status==='rejected'||r.status==='takendown')&&r.status_reason;
+  const reasonHint=needsAttention?'<div style="font-size:10px;color:#f87171;margin-top:3px;display:flex;align-items:center;gap:4px"><i class="ti ti-alert-circle" style="font-size:11px"></i> Tap for details</div>':'';
+  return '<div class="rg-card" onclick="openReleaseById(\''+r.id+'\')"><div class="rg-art">'+art+'<span class="rg-badge '+bc+'">'+bl+'</span></div><div class="rg-info"><div class="rg-title">'+esc(r.title)+'</div><div class="rg-meta">'+esc(r.artist)+'</div><div class="rg-meta" style="margin-top:3px;color:rgba(255,255,255,.55);font-weight:600">'+(r.streams||0).toLocaleString()+' streams</div>'+reasonHint+'</div></div>';
 }
 function releaseRow(r){
   if(r.isDraft){
@@ -4035,7 +4042,7 @@ function filterReleasesCombined(){
   if(relFilterState.page<1)relFilterState.page=1;
   const pageItems=filtered.slice((relFilterState.page-1)*REL_PAGE_SIZE,relFilterState.page*REL_PAGE_SIZE);
   const displayItems=draftItem&&relFilterState.page===1?[draftItem,...pageItems]:pageItems;
-  document.getElementById('all-releases').innerHTML=displayItems.length?'<div class="rl">'+displayItems.map(r=>releaseRow(r)).join('')+'</div>':'<div class="empty"><i class="ti ti-music-off"></i><p>No results.</p></div>';
+  document.getElementById('all-releases').innerHTML=displayItems.length?'<div class="releases-grid">'+displayItems.map(r=>releaseGridCard(r)).join('')+'</div>':'<div class="empty"><i class="ti ti-music-off"></i><p>No results.</p></div>';
   renderRelPagination(filtered.length,totalPages);
 }
 function renderRelPagination(totalCount,totalPages){
