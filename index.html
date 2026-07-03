@@ -1502,7 +1502,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <h1 id="welcome-h" style="font-size:38px;font-weight:800;letter-spacing:-.5px">Overview</h1>
           <p style="font-size:14px;color:rgba(255,255,255,.45);margin-top:6px">Here's a snapshot of your music's performance this week. <span class="welcome-time" id="welcome-time"></span></p>
         </div>
-        <button class="btn btn-purple" style="border-radius:24px;padding:12px 24px;font-size:14px" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> Create Release</button>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="position:relative;display:none" id="ov-artist-filter-wrap">
+            <button class="btn adm-btn-sec" id="ov-artist-filter-btn" onclick="toggleOvArtistMenu()" style="font-size:13px"><i class="ti ti-user"></i> Viewing: All Artists <i class="ti ti-chevron-down" style="font-size:12px"></i></button>
+            <div id="ov-artist-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#161619;border:1px solid var(--line);border-radius:10px;padding:.5rem;min-width:180px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.4)"></div>
+          </div>
+          <button class="btn btn-purple" style="border-radius:24px;padding:12px 24px;font-size:14px" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> Create Release</button>
+        </div>
       </div>
       <!-- UPCOMING RELEASE COUNTDOWN (shown only if a future release date exists) -->
       <div id="ov-upcoming-banner" style="display:none;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#1d1a3d,#2a1f4d);border:1px solid rgba(212,175,55,.25);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem"></div>
@@ -1525,7 +1531,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div class="ov-card-icon"><i class="ti ti-wavesaw-mono"></i></div>
           <div style="flex:1">
             <div class="ov-card-label">Total Streams</div>
-            <div class="ov-card-value" id="s-streams">—</div>
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <div class="ov-card-value" id="s-streams">—</div>
+              <span id="s-streams-trend" style="font-size:12px;font-weight:700;display:none"></span>
+            </div>
             <div class="ov-card-sub">All stores · all time</div>
           </div>
           <i class="ti ti-trending-up" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
@@ -1542,9 +1551,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="ov-card ov-card-3" onclick="goPageRoyaltiesTab('payouts')" title="View payouts">
           <div class="ov-card-icon"><i class="ti ti-coin"></i></div>
           <div style="flex:1">
-            <div class="ov-card-label">Available Balance</div>
+            <div class="ov-card-label">Available Balance<span id="ov-balance-scope-note" style="display:none;font-weight:400;opacity:.8"> (all artists)</span></div>
             <div class="ov-card-value" id="s-earnings">$0.00</div>
-            <div class="ov-card-sub">Ready to withdraw</div>
+            <div class="ov-card-sub" id="s-earnings-sub">Ready to withdraw</div>
           </div>
           <i class="ti ti-cash" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
         </div>
@@ -1561,7 +1570,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- STREAMS TREND (last 14 real days — hidden if there isn't enough daily data yet) -->
       <div class="adm-card" id="ov-trend-card" style="margin-bottom:1.5rem;display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;flex-wrap:wrap;gap:6px">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3)">Streams — Last 14 Days</div>
+          <div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3)">Streams — Last 14 Days</div>
+            <div id="ov-trend-scope-note" style="display:none;font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">Daily breakdown isn't available per-artist yet — this chart covers all artists on the account.</div>
+          </div>
           <div id="ov-trend-delta" style="font-size:12px;font-weight:700"></div>
         </div>
         <canvas id="ov-trend-chart" height="70"></canvas>
@@ -4223,8 +4235,9 @@ function goRelPage(delta){
 function filterOvSearch(){
   const q=(document.getElementById('ov-search-input')?.value||'').toLowerCase();
   const grid=document.getElementById('ov-releases-grid');if(!grid)return;
-  if(!q){grid.innerHTML=allRelData.slice(0,8).map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';return;}
-  const filtered=allRelData.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
+  const base=ovViewingArtist?(allRelData||[]).filter(r=>r.artist===ovViewingArtist):(allRelData||[]);
+  if(!q){grid.innerHTML=base.slice(0,8).map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';return;}
+  const filtered=base.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
   grid.innerHTML=filtered.map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-search"></i><p>No matches.</p></div>';
 }
 function describeActivityForArtist(l,releaseMap){
@@ -4282,32 +4295,86 @@ async function loadReleases(){
   const releases=allRelData;
   const banner=document.getElementById('announcement-banner');
   if(banner&&releases.length===0&&profile) banner.style.display='flex';
-  const live=releases.filter(r=>r.status==='live').length;
-  const pending=releases.filter(r=>r.status==='pending'||r.status==='review').length;
-  const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
-  const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
-  const isPaidPlan=isCommissionExempt();
-  const grossEarnings=isPaidPlan?earnings:earnings*(1-COMM);
-  // Subtract paid payouts so balance stays accurate
   const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',user.id);
-  const paidOut2=(payoutsData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
-  const pendingOut=(payoutsData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
-  const availableBalance=Math.max(0,grossEarnings-paidOut2-pendingOut);
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('s-total',releases.length);set('s-live-sub',live+' live on DSPs');
-  set('s-pending',pending);set('s-streams',streams.toLocaleString());set('s-earnings','$'+availableBalance.toFixed(2));
-  const rcb=document.getElementById('releases-count-badge');if(rcb) rcb.textContent=releases.length>0?releases.length+' total':'';
-  const grid=document.getElementById('ov-releases-grid');
-  if(grid){const cards=releases.slice(0,8).map(r=>releaseGridCard(r)).join('');grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';}
+  _ovPayoutsCache=payoutsData||[];
+  renderOverviewStats();
   _cachedDraftForMusicTab=await loadDraft();
   filterReleasesCombined();
   renderUpcomingReleaseBanner();
   loadOverviewTrend();
 }
+let ovViewingArtist='';
+let _ovPayoutsCache=[];
+function getOvArtistList(){
+  const artists=new Set();
+  (allRelData||[]).forEach(r=>{if(r.artist)artists.add(r.artist);});
+  return Array.from(artists).sort();
+}
+function toggleOvArtistMenu(){
+  const menu=document.getElementById('ov-artist-menu');if(!menu)return;
+  const opening=menu.style.display==='none';
+  if(!opening){menu.style.display='none';return;}
+  const artists=getOvArtistList();
+  menu.innerHTML='<div onclick="setOvViewingArtist(\'\')" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:'+(ovViewingArtist===''?'var(--gold)':'#fff')+';font-weight:'+(ovViewingArtist===''?'700':'400')+'">All Artists</div>'
+    +artists.map(a=>'<div onclick="setOvViewingArtist(\''+esc(a).replace(/'/g,"\\'")+'\')" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:'+(ovViewingArtist===a?'var(--gold)':'#fff')+';font-weight:'+(ovViewingArtist===a?'700':'400')+'">'+esc(a)+'</div>').join('');
+  menu.style.display='block';
+  document.addEventListener('click',closeOvArtistMenuOnOutsideClick,{capture:true});
+}
+function closeOvArtistMenuOnOutsideClick(e){
+  const menu=document.getElementById('ov-artist-menu');const btn=document.getElementById('ov-artist-filter-btn');
+  if(menu&&!menu.contains(e.target)&&e.target!==btn&&!btn?.contains(e.target)){
+    menu.style.display='none';
+    document.removeEventListener('click',closeOvArtistMenuOnOutsideClick,{capture:true});
+  }
+}
+function setOvViewingArtist(name){
+  ovViewingArtist=name;
+  const menu=document.getElementById('ov-artist-menu');if(menu)menu.style.display='none';
+  document.removeEventListener('click',closeOvArtistMenuOnOutsideClick,{capture:true});
+  const btn=document.getElementById('ov-artist-filter-btn');
+  if(btn)btn.innerHTML='<i class="ti ti-user"></i> Viewing: '+(name?esc(name):'All Artists')+' <i class="ti ti-chevron-down" style="font-size:12px"></i>';
+  renderOverviewStats();
+  renderUpcomingReleaseBanner();
+  const searchInput=document.getElementById('ov-search-input');
+  if(searchInput&&searchInput.value.trim())filterOvSearch();
+}
+function renderOverviewStats(){
+  const allReleases=allRelData||[];
+  const scoped=ovViewingArtist?allReleases.filter(r=>r.artist===ovViewingArtist):allReleases;
+  const live=scoped.filter(r=>r.status==='live').length;
+  const pending=scoped.filter(r=>r.status==='pending'||r.status==='review').length;
+  const streams=scoped.reduce((a,r)=>a+(r.streams||0),0);
+  // Available Balance always reflects the whole account — payout withdrawals aren't
+  // broken down per artist (Blakkstone pays the account holder, not individual roster
+  // artists), so scoping this number per-artist would just be inaccurate.
+  const earnings=allReleases.reduce((a,r)=>a+(r.earnings||0),0);
+  const isPaidPlan=isCommissionExempt();
+  const grossEarnings=isPaidPlan?earnings:earnings*(1-COMM);
+  const paidOut2=(_ovPayoutsCache||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const pendingOut=(_ovPayoutsCache||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
+  const availableBalance=Math.max(0,grossEarnings-paidOut2-pendingOut);
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('s-total',scoped.length);set('s-live-sub',live+' live on DSPs');
+  set('s-pending',pending);set('s-streams',streams.toLocaleString());set('s-earnings','$'+availableBalance.toFixed(2));
+  const balSub=document.getElementById('s-earnings-sub');
+  if(balSub){
+    balSub.textContent=pendingOut>0?'$'+pendingOut.toFixed(2)+' pending withdrawal':'Ready to withdraw';
+  }
+  const balScopeNote=document.getElementById('ov-balance-scope-note');
+  if(balScopeNote)balScopeNote.style.display=ovViewingArtist?'inline':'none';
+  const trendScopeNote=document.getElementById('ov-trend-scope-note');
+  if(trendScopeNote)trendScopeNote.style.display=ovViewingArtist?'block':'none';
+  const rcb=document.getElementById('releases-count-badge');if(rcb) rcb.textContent=scoped.length>0?scoped.length+' total':'';
+  const grid=document.getElementById('ov-releases-grid');
+  if(grid){const cards=scoped.slice(0,8).map(r=>releaseGridCard(r)).join('');grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';}
+  const artistWrap=document.getElementById('ov-artist-filter-wrap');
+  if(artistWrap)artistWrap.style.display=getOvArtistList().length>1?'':'none';
+}
 function renderUpcomingReleaseBanner(){
   const wrap=document.getElementById('ov-upcoming-banner');if(!wrap)return;
   const now=new Date();
-  const upcoming=(allRelData||[]).filter(r=>r.release_date&&new Date(r.release_date)>now&&r.status!=='takendown'&&r.status!=='rejected').sort((a,b)=>new Date(a.release_date)-new Date(b.release_date));
+  const base=ovViewingArtist?(allRelData||[]).filter(r=>r.artist===ovViewingArtist):(allRelData||[]);
+  const upcoming=base.filter(r=>r.release_date&&new Date(r.release_date)>now&&r.status!=='takendown'&&r.status!=='rejected').sort((a,b)=>new Date(a.release_date)-new Date(b.release_date));
   if(!upcoming.length){wrap.style.display='none';wrap.innerHTML='';return;}
   const next=upcoming[0];
   const days=Math.ceil((new Date(next.release_date)-now)/(24*60*60*1000));
@@ -4321,6 +4388,7 @@ function renderUpcomingReleaseBanner(){
 }
 async function loadOverviewTrend(){
   const card=document.getElementById('ov-trend-card');if(!card||!user)return;
+  const trendBadge=document.getElementById('s-streams-trend');
   try{
     const cutoff=new Date();cutoff.setDate(cutoff.getDate()-14);
     const cutoffStr=cutoff.toISOString().split('T')[0];
@@ -4331,7 +4399,7 @@ async function loadOverviewTrend(){
     // Only show a "this week" trend when there's real daily granularity behind it —
     // showing a chart built from smoothed/synthetic monthly totals would misrepresent
     // an actual weekly trend, which is exactly what this card is promising.
-    if(distinctDates.size<4){card.style.display='none';return;}
+    if(distinctDates.size<4){card.style.display='none';if(trendBadge)trendBadge.style.display='none';return;}
     const storeKeys=['spotify','apple_music','youtube_music','audiomack','boomplay','others'];
     const dailyTotals={};
     rows.forEach(r=>{
@@ -4351,15 +4419,22 @@ async function loadOverviewTrend(){
       else if(dd>=fourteenAgo)lastWeek+=dailyTotals[d];
     });
     const deltaEl=document.getElementById('ov-trend-delta');
-    if(deltaEl){
+    if(deltaEl||trendBadge){
       if(lastWeek>0){
         const pct=Math.round(((thisWeek-lastWeek)/lastWeek)*100);
         const up=pct>=0;
-        deltaEl.innerHTML='<span style="color:'+(up?'#34d399':'#f87171')+'"><i class="ti ti-trending-'+(up?'up':'down')+'"></i> '+(up?'+':'')+pct+'% vs last week</span>';
+        if(deltaEl)deltaEl.innerHTML='<span style="color:'+(up?'#34d399':'#f87171')+'"><i class="ti ti-trending-'+(up?'up':'down')+'"></i> '+(up?'+':'')+pct+'% vs last week</span>';
+        if(trendBadge){
+          trendBadge.style.display='inline-flex';
+          trendBadge.style.color=up?'#34d399':'#f87171';
+          trendBadge.innerHTML='<i class="ti ti-trending-'+(up?'up':'down')+'"></i> '+(up?'+':'')+pct+'%';
+        }
       } else if(thisWeek>0){
-        deltaEl.innerHTML='<span style="color:#34d399">New activity this week</span>';
+        if(deltaEl)deltaEl.innerHTML='<span style="color:#34d399">New activity this week</span>';
+        if(trendBadge){trendBadge.style.display='inline-flex';trendBadge.style.color='#34d399';trendBadge.innerHTML='New';}
       } else {
-        deltaEl.innerHTML='';
+        if(deltaEl)deltaEl.innerHTML='';
+        if(trendBadge)trendBadge.style.display='none';
       }
     }
     card.style.display='block';
@@ -4367,6 +4442,7 @@ async function loadOverviewTrend(){
   }catch(e){
     console.error('Overview trend load error:',e);
     card.style.display='none';
+    if(trendBadge)trendBadge.style.display='none';
   }
 }
 
