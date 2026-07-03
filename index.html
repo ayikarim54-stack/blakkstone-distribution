@@ -843,6 +843,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div style="width:34px;height:34px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite"></div>
 </div>
 
+<!-- TAB PROGRESS — brief top-of-screen bar that sweeps on every tab/page
+     click, so switching tabs gives clear visual confirmation it reloaded
+     (instead of an instant, silent swap that can look like nothing happened). -->
+<div id="tab-progress" style="position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,#D4AF37,#e8c97a);z-index:10000;opacity:0;pointer-events:none"></div>
+
 <!-- ══════════════ LANDING ══════════════ -->
 <div class="view" id="landing">
   <!-- STICKY NAV -->
@@ -3723,7 +3728,36 @@ async function refreshProfileAndUpgradePage(){
     if(data){profile=data;updateUpgradePage(profile.plan);}
   }catch(e){console.warn('refreshProfileAndUpgradePage:',e);}
 }
+let _tabProgressTimer1=null,_tabProgressTimer2=null,_tabProgressHideTimer=null;
+function startPageProgress(){
+  const prog=document.getElementById('tab-progress');if(!prog)return;
+  if(_tabProgressTimer1)clearTimeout(_tabProgressTimer1);
+  if(_tabProgressTimer2)clearTimeout(_tabProgressTimer2);
+  if(_tabProgressHideTimer)clearTimeout(_tabProgressHideTimer);
+  prog.style.transition='none';
+  prog.style.width='0%';
+  prog.style.opacity='1';
+  void prog.offsetWidth; // force reflow so the transition below animates from 0
+  prog.style.transition='width .3s ease';
+  prog.style.width='55%';
+  _tabProgressTimer1=setTimeout(()=>{prog.style.width='80%';},300);
+  _tabProgressTimer2=setTimeout(()=>finishPageProgress(),700);
+}
+function finishPageProgress(){
+  const prog=document.getElementById('tab-progress');if(!prog)return;
+  if(_tabProgressTimer1)clearTimeout(_tabProgressTimer1);
+  if(_tabProgressTimer2)clearTimeout(_tabProgressTimer2);
+  prog.style.transition='width .2s ease';
+  prog.style.width='100%';
+  if(_tabProgressHideTimer)clearTimeout(_tabProgressHideTimer);
+  _tabProgressHideTimer=setTimeout(()=>{
+    prog.style.transition='opacity .25s ease';
+    prog.style.opacity='0';
+    _tabProgressHideTimer=setTimeout(()=>{prog.style.width='0%';},250);
+  },150);
+}
 function goPage(id,el){
+  startPageProgress();
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
   if(_supportRealtimeChannel){try{sb.removeChannel(_supportRealtimeChannel);}catch(e){}_supportRealtimeChannel=null;}
@@ -3747,6 +3781,7 @@ function goPage(id,el){
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
   const mobMap={overview:'mob-overview',releases:'mob-music',submit:'mob-submit',royalties:'mob-royalties',profile:'mob-profile'};
   if(mobMap[id])setMobNav(mobMap[id]);
+  finishPageProgress();
 }
 function goPageFilterReleases(filter){
   goPage('releases',null);
@@ -6702,6 +6737,7 @@ function toggleSelectAll(kind,el){
   document.querySelectorAll('.'+kind+'-cb').forEach(cb=>{cb.checked=el.checked;});
 }
 function switchRoyTab(tab,el){
+  startPageProgress();
   document.querySelectorAll('.roy-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.roy-tab-panel').forEach(p=>p.classList.remove('active'));
   const panel=document.getElementById('rtpanel-'+tab);
@@ -6711,9 +6747,11 @@ function switchRoyTab(tab,el){
     history.replaceState({page:'royalties',sub:tab},'',pagePath('royalties',tab==='sales'?null:tab));
   }
   if(tab==='payouts') loadPayout();
+  finishPageProgress();
 }
 
 function switchAdminTab(tab,el){
+  startPageProgress();
   document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
   const sec=document.getElementById('admin-'+tab);if(sec) sec.classList.add('active');
@@ -6733,6 +6771,7 @@ function switchAdminTab(tab,el){
   if(tab==='streams'){initAdminStreams();loadAdminStreamsRecent();}
   if(tab==='royalties'){initAdminRoyalties();}
   if(tab==='activitylog')loadAdminActivityLog();
+  finishPageProgress();
 }
 async function loadAdminActivityLog(){
   const container=document.getElementById('activity-log-list');if(!container)return;
