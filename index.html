@@ -3693,35 +3693,38 @@ const _messageMap={};
 const _threadIds={};
 const _supportThreadIds={};
 const _supportThreadSubjects={};
-async function _deleteMessageRow(id){
-  const {error}=await sb.from('messages').delete().eq('id',id);
-  if(error){toast('Could not delete: '+error.message,'err');return false;}
+async function _softDeleteMessage(id,field){
+  const otherField=field==='deleted_by_admin'?'deleted_by_artist':'deleted_by_admin';
+  const msg=_messageMap[id];
+  if(msg&&msg[otherField]===true){
+    const {error}=await sb.from('messages').delete().eq('id',id);
+    if(error){toast('Could not delete: '+error.message,'err');return false;}
+  }else{
+    const {error}=await sb.from('messages').update({[field]:true}).eq('id',id);
+    if(error){toast('Could not delete: '+error.message,'err');return false;}
+  }
   delete _messageMap[id];
   return true;
 }
 async function deleteAdminMessage(id){
   if(!confirm('Delete this message? This cannot be undone.'))return;
-  if(await _deleteMessageRow(id)){toast('Message deleted','ok');loadAdminMessages();}
+  if(await _softDeleteMessage(id,'deleted_by_admin')){toast('Message deleted','ok');loadAdminMessages();}
 }
 async function deleteAdminThread(ids){
   if(!ids||!ids.length)return;
   if(!confirm('Delete this entire conversation ('+ids.length+' message'+(ids.length===1?'':'s')+')? This cannot be undone.'))return;
-  const {error}=await sb.from('messages').delete().in('id',ids);
-  if(error){toast('Could not delete: '+error.message,'err');return;}
-  ids.forEach(id=>delete _messageMap[id]);
+  for(const id of ids){await _softDeleteMessage(id,'deleted_by_admin');}
   toast('Conversation deleted','ok');
   loadAdminMessages();
 }
 async function deleteSupportMessage(id){
   if(!confirm('Delete this message? This cannot be undone.'))return;
-  if(await _deleteMessageRow(id)){toast('Message deleted','ok');loadMySupportMessages();}
+  if(await _softDeleteMessage(id,'deleted_by_artist')){toast('Message deleted','ok');loadMySupportMessages();}
 }
 async function deleteSupportThread(ids){
   if(!ids||!ids.length)return;
   if(!confirm('Delete this entire conversation? This cannot be undone.'))return;
-  const {error}=await sb.from('messages').delete().in('id',ids);
-  if(error){toast('Could not delete: '+error.message,'err');return;}
-  ids.forEach(id=>delete _messageMap[id]);
+  for(const id of ids){await _softDeleteMessage(id,'deleted_by_artist');}
   toast('Conversation deleted','ok');
   loadMySupportMessages();
 }
@@ -6667,9 +6670,11 @@ async function loadAdminMessages(){
   try{
     const {data,error}=await sb.from('messages').select('*').order('created_at',{ascending:false}).limit(50);
     if(error)throw error;
-    const unread=(data||[]).filter(m=>!m.read_at&&m.direction==='in').length;
+    (data||[]).forEach(m=>{_messageMap[m.id]=m;});
+    const visible=(data||[]).filter(m=>!m.deleted_by_admin);
+    const unread=visible.filter(m=>!m.read_at&&m.direction==='in').length;
     const msgAlert=document.getElementById('msg-alert');if(msgAlert){msgAlert.style.display=unread>0?'inline':'none';msgAlert.textContent=unread;}
-    if(!data||!data.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
+    if(!visible.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
     // Resolve real artist names for both directions — profiles keyed by id (covers 'in' messages via from_id)
     // AND by lowercased email (covers 'out' messages, which only ever store to_email, no to_id column exists)
     const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,email,account_id');
@@ -6678,8 +6683,7 @@ async function loadAdminMessages(){
       profileMap[p.id]=p;
       if(p.email)profileMap[p.email.toLowerCase()]=p;
     });
-    data.forEach(m=>{_messageMap[m.id]=m;});
-    const threads=groupMessagesByThread(data,profileMap);
+    const threads=groupMessagesByThread(visible,profileMap);
     renderMessageThreads(threads);
   }catch(e){
     console.error('Messages load error:',e);
@@ -6755,7 +6759,7 @@ async function loadNotifications(){
     const [{data:payouts},{data:releases},{data:messages},{data:deletions}]=await Promise.all([
       sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
       sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false}),
-      sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications messages query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]})),
+      sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications messages query error:',r.error);return {data:(r.data||[]).filter(m=>!m.deleted_by_admin)};}).catch(()=>({data:[]})),
       sb.from('account_deletion_requests').select('*').eq('status','pending').order('requested_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications deletion query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]}))
     ]);
     const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,account_id');
@@ -6876,7 +6880,8 @@ async function loadMySupportMessages(){
     const {data,error}=await sb.from('messages').select('*').or('to_email.eq.'+user.email+',from_id.eq.'+user.id).order('created_at',{ascending:false}).limit(50);
     if(error)throw error;
     (data||[]).forEach(m=>{_messageMap[m.id]=m;});
-    renderSupportThreads(groupSupportMessagesBySubject(data||[]));
+    const visible=(data||[]).filter(m=>!m.deleted_by_artist);
+    renderSupportThreads(groupSupportMessagesBySubject(visible));
     (data||[]).filter(m=>m.direction==='out'&&!m.read_at).forEach(m=>{sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',m.id).then(({error})=>{if(error)console.error('Mark read error:',error);});});
     startSupportRealtime();
   }catch(e){
