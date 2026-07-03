@@ -3645,11 +3645,15 @@ function enterDashboard(){
     const _rm=getRosterMax();
     if(maNav)maNav.style.display=_rm>0?'':'none';
     showView('dashboard');
-    const pathPage=window.location.pathname.replace(/^\/|\/$/g,'')||'overview';
+    const {page:pathPage,sub:pathSub}=parsePath();
     const validPages=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
     const page=validPages.includes(pathPage)?pathPage:'overview';
     history.replaceState({page},'',pagePath(page));
     goPage(page,null);
+    if(page==='royalties'&&['sales','reports','payouts'].includes(pathSub)){
+      const target=document.getElementById('rtab-'+pathSub);
+      if(target)switchRoyTab(pathSub,target);
+    }
     loadReleases().then(()=>updateOnboarding());updateWelcomeTime();
     if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){console.error('enterDashboard:',e);showView('dashboard');goPage('overview',null);loadReleases();}
@@ -3659,8 +3663,14 @@ let selectedPlan='artist_plus',billing='yearly',payoutMethod=null,momoNetwork=nu
 let _wizardAutosaveTimer=null;
 let _analyticsTickTimer=null;
 let _supportRealtimeChannel=null;
-function pagePath(id){
-  return id==='overview' ? '/' : '/'+id;
+function parsePath(){
+  const raw=window.location.pathname.replace(/^\/|\/$/g,'');
+  const parts=raw.split('/').filter(Boolean);
+  return {page:parts[0]||'overview',sub:parts[1]||null};
+}
+function pagePath(id,sub){
+  if(id==='overview')return '/';
+  return sub ? '/'+id+'/'+sub : '/'+id;
 }
 function goPage(id,el){
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
@@ -3696,8 +3706,9 @@ function goPageRoyaltiesTab(tab){
 }
 window.addEventListener('popstate',function(e){
   if(!user)return;
-  const pathPage=window.location.pathname.replace(/^\/|\/$/g,'')||'overview';
+  const {page:pathPage,sub:pathSub}=parsePath();
   const page=e.state?.page||pathPage;
+  const roytab=e.state?.roytab||pathSub;
   const valid=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
   if(!valid.includes(page))return;
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
@@ -3708,6 +3719,10 @@ window.addEventListener('popstate',function(e){
   document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+page+"'"))n.classList.add('active');});
   if(page==='analytics')loadAnalytics();if(page==='royalties')loadRoyalties();
+  if(page==='royalties'&&['sales','reports','payouts'].includes(roytab)){
+    const target=document.getElementById('rtab-'+roytab);
+    if(target)switchRoyTab(roytab,target);
+  }
   if(page==='payout')loadPayout();
   if(page==='myartists')loadMyArtistsGrid();
   if(page==='support')loadMySupportMessages();
@@ -6407,6 +6422,9 @@ function switchRoyTab(tab,el){
   const panel=document.getElementById('rtpanel-'+tab);
   if(panel) panel.classList.add('active');
   if(el) el.classList.add('active');
+  if(document.getElementById('page-royalties')?.classList.contains('active')){
+    history.replaceState({page:'royalties',roytab:tab},'',pagePath('royalties',tab==='sales'?null:tab));
+  }
   if(tab==='payouts') loadPayout();
 }
 
