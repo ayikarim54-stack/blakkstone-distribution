@@ -3661,7 +3661,14 @@ function enterDashboard(){
         if(target)switchAdminTab(pathSub,target);
       }
     }
-    loadReleases().then(()=>updateOnboarding());updateWelcomeTime();
+    loadReleases().then(()=>{
+      updateOnboarding();
+      if(page==='releases'&&pathSub&&_releaseMap[pathSub]){
+        openReleaseModal(_releaseMap[pathSub],false);
+        history.replaceState({page:'releases',sub:pathSub},'',pagePath('releases',pathSub));
+      }
+    });
+    updateWelcomeTime();
     if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){console.error('enterDashboard:',e);showView('dashboard');goPage('overview',null);loadReleases();}
 }
@@ -3734,6 +3741,13 @@ window.addEventListener('popstate',function(e){
     if(target)switchRoyTab(sub,target);
   }
   if(page==='payout')loadPayout();
+  if(page==='releases'){
+    if(sub&&_releaseMap[sub]){
+      openReleaseModal(_releaseMap[sub],false);
+    }else{
+      closeReleaseModal();
+    }
+  }
   if(page==='myartists')loadMyArtistsGrid();
   if(page==='support')loadMySupportMessages();
   if(page==='submit')initWizard();
@@ -3982,8 +3996,9 @@ async function loadReleases(){
 }
 
 // ── RELEASE MODAL ──────────────────────────────────────
-function openReleaseById(id){const r=_releaseMap[id];if(r)openReleaseModal(r);}
-function openReleaseModal(r){
+function openReleaseById(id,updateUrl){const r=_releaseMap[id];if(r)openReleaseModal(r,updateUrl);}
+function openReleaseModal(r,updateUrl){
+  if(updateUrl===undefined)updateUrl=true;
   _currentModalReleaseId=r.id;
   const isPaid=isCommissionExempt();
   const comm=isPaid?0:(r.earnings||0)*COMM;const payout=(r.earnings||0)-comm;
@@ -4055,6 +4070,9 @@ function openReleaseModal(r){
   loadSmartLinkStats(r.id);
   renderSplitSheet(r);
   document.getElementById('release-overlay').classList.add('open');
+  if(updateUrl&&document.getElementById('page-releases')?.classList.contains('active')){
+    history.pushState({page:'releases',sub:r.id},'',pagePath('releases',r.id));
+  }
 }
 let _currentModalReleaseId=null;
 function copySmartLink(){
@@ -4083,7 +4101,13 @@ async function savePlatformLinks(releaseId){
   if(_releaseMap[releaseId])_releaseMap[releaseId].platform_links=links;
   toast('Smart link platforms saved','ok');
 }
-function closeReleaseModal(){document.getElementById('release-overlay').classList.remove('open');}
+function closeReleaseModal(){
+  document.getElementById('release-overlay').classList.remove('open');
+  const {page,sub}=parsePath();
+  if(page==='releases'&&sub){
+    history.replaceState({page:'releases'},'',pagePath('releases'));
+  }
+}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal();closeArtistModal();closePaystack();}});
 
 
