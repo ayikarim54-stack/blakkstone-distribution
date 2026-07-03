@@ -1810,6 +1810,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div style="font-size:14px;color:rgba(255,255,255,.35)">WAV, FLAC, or AIFF — lossless masters only, or <span style="color:var(--gold);text-decoration:underline;cursor:pointer">browse your files</span></div>
           </div>
           <input type="file" id="audio-input-multi" accept=".wav,.flac,.aiff,audio/wav,audio/x-wav,audio/flac,audio/aiff" multiple style="display:none" onchange="handleAudioSelect(this)">
+          <audio id="wiz-audio-preview" style="display:none" onended="onWizAudioEnded()"></audio>
           <div id="track-list" style="margin-top:1.5rem;text-align:left"></div>
           <div id="fast-pass-nudge" style="display:none;align-items:center;gap:8px;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.2);border-radius:9px;padding:.625rem 1rem;font-size:12px;color:rgba(255,255,255,.7);margin-top:1rem;max-width:600px;margin-left:auto;margin-right:auto"></div>
           <div style="display:flex;justify-content:flex-end;margin-top:2rem">
@@ -3857,6 +3858,11 @@ function goPage(id,el){
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
   if(_supportRealtimeChannel){try{sb.removeChannel(_supportRealtimeChannel);}catch(e){}_supportRealtimeChannel=null;}
+  if(_previewingTrackId){
+    const previewAudio=document.getElementById('wiz-audio-preview');
+    if(previewAudio){previewAudio.pause();previewAudio.src='';}
+    _previewingTrackId=null;
+  }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const pageEl=document.getElementById('page-'+id);if(!pageEl)return;
   pageEl.classList.add('active');
@@ -6489,10 +6495,16 @@ function removeTrack(id){
   if(track?.storagePath){
     sb.storage.from('audio').remove([track.storagePath]).catch(()=>{});
   }
+  if(_previewingTrackId===id){
+    const audio=document.getElementById('wiz-audio-preview');
+    if(audio){audio.pause();audio.src='';}
+    _previewingTrackId=null;
+  }
   wizTracks=wizTracks.filter(t=>t.id!==id);
   renderTrackList();renderTracklistDetails();
   saveDraftSilent();
 }
+let _previewingTrackId=null;
 function renderTrackList(){
   const el=document.getElementById('track-list');if(!el)return;
   el.innerHTML=wizTracks.map((t,i)=>{
@@ -6500,8 +6512,35 @@ function renderTrackList(){
       ?'<span class="loader" style="margin-right:4px"></span>'
       :t.url?'<i class="ti ti-cloud-check" style="color:#34d399;font-size:14px;margin-right:4px" title="Saved to cloud"></i>'
       :'<i class="ti ti-file-music" style="color:rgba(255,255,255,.3);font-size:14px;margin-right:4px"></i>';
-    return '<div class="track-item"><div class="track-num">'+(i+1)+'</div>'+statusIcon+'<div class="track-name">'+esc(t.name)+'</div><div class="track-size">'+(t.size/1024/1024).toFixed(1)+'MB</div><button class="track-remove" onclick="removeTrack(\''+t.id+'\')">×</button></div>';
+    const isPlaying=_previewingTrackId===t.id;
+    const playBtn='<button class="track-play-btn" onclick="event.stopPropagation();previewTrack(\''+t.id+'\')" title="'+(isPlaying?'Pause preview':'Preview this track')+'" style="background:'+(isPlaying?'var(--gold)':'rgba(255,255,255,.08)')+';border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:'+(isPlaying?'#08080C':'rgba(255,255,255,.6)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-'+(isPlaying?'player-pause-filled':'player-play-filled')+'" style="font-size:12px"></i></button>';
+    return '<div class="track-item">'+playBtn+'<div class="track-num">'+(i+1)+'</div>'+statusIcon+'<div class="track-name">'+esc(t.name)+'</div><div class="track-size">'+(t.size/1024/1024).toFixed(1)+'MB</div><button class="track-remove" onclick="removeTrack(\''+t.id+'\')">×</button></div>';
   }).join('');
+}
+function previewTrack(id){
+  const audio=document.getElementById('wiz-audio-preview');if(!audio)return;
+  const track=wizTracks.find(t=>t.id===id);if(!track)return;
+  if(_previewingTrackId===id&&!audio.paused){
+    audio.pause();
+    _previewingTrackId=null;
+    renderTrackList();
+    return;
+  }
+  const url=track.file?URL.createObjectURL(track.file):track.url;
+  if(!url){toast('Audio isn\'t available to preview yet','err');return;}
+  audio.src=url;
+  audio.play().then(()=>{
+    _previewingTrackId=id;
+    renderTrackList();
+  }).catch(()=>{
+    toast('Could not play this file','err');
+    _previewingTrackId=null;
+    renderTrackList();
+  });
+}
+function onWizAudioEnded(){
+  _previewingTrackId=null;
+  renderTrackList();
 }
 function renderTracklistDetails(){
   const el=document.getElementById('tracklist-details');if(!el)return;
