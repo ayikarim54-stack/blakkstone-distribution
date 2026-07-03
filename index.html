@@ -3732,12 +3732,32 @@ function updateUpgradePage(plan){
   const soloBtn=document.getElementById('ug-solo-btn');
   const apBtn=document.getElementById('ug-artist-btn');
   const lBtn=document.getElementById('ug-label-btn');
-  if(soloBtn){soloBtn.textContent='Get Solo';soloBtn.disabled=false;soloBtn.className='btn btn-purple';}
-  if(apBtn){apBtn.innerHTML='<i class="ti ti-crown"></i> Get Artist+';apBtn.disabled=false;apBtn.className='btn btn-gold';}
-  if(lBtn){lBtn.textContent='Get Label';lBtn.disabled=false;lBtn.className='btn';}
+  if(soloBtn){soloBtn.textContent='Get Solo';soloBtn.disabled=false;soloBtn.className='btn btn-purple';soloBtn.title='';}
+  if(apBtn){apBtn.innerHTML='<i class="ti ti-crown"></i> Get Artist+';apBtn.disabled=false;apBtn.className='btn btn-gold';apBtn.title='';}
+  if(lBtn){lBtn.textContent='Get Label';lBtn.disabled=false;lBtn.className='btn';lBtn.title='';}
   if(plan==='solo_paid'&&soloBtn){soloBtn.textContent='Current Plan';soloBtn.disabled=true;soloBtn.className='btn btn-ghost';}
   if(plan==='artist_plus'&&apBtn){apBtn.textContent='Current Plan';apBtn.disabled=true;apBtn.className='btn btn-ghost';}
   if(plan==='label'&&lBtn){lBtn.textContent='Current Plan';lBtn.disabled=true;lBtn.className='btn btn-ghost';}
+  // Disable any plan ranked below the current one — a paid subscriber shouldn't be able to
+  // accidentally purchase a downgrade. It would charge full price (no discount, since
+  // calculateUpgradeDiscount already excludes downgrades from the credit calculation) and can
+  // strand roster artists behind a lower plan's smaller artist-slot limit.
+  const currentRank=PLAN_TIER_RANK[plan]||0;
+  const tierButtons=[
+    {rank:PLAN_TIER_RANK.solo,btn:soloBtn},
+    {rank:PLAN_TIER_RANK.artist_plus,btn:apBtn},
+    {rank:PLAN_TIER_RANK.label,btn:lBtn}
+  ];
+  if(currentRank>0){
+    tierButtons.forEach(t=>{
+      if(t.btn&&t.rank<currentRank){
+        t.btn.textContent='Included in your plan';
+        t.btn.disabled=true;
+        t.btn.className='btn btn-ghost';
+        t.btn.title='You already have a higher tier — downgrading isn\'t available here.';
+      }
+    });
+  }
   const title=document.getElementById('ug-hero-title');
   const sub=document.getElementById('ug-hero-sub');
   if(plan==='solo_paid'){
@@ -9102,6 +9122,12 @@ async function loadRoyRecentEntries(){
 // ── PAYSTACK ──────────────────────────────────────────────
 let currentUpgradeDiscount=null;
 function openPaystack(plan){
+  const currentRank=PLAN_TIER_RANK[profile?.plan]||0;
+  const targetRank=PLAN_TIER_RANK[plan]||0;
+  if(currentRank>0&&targetRank<currentRank){
+    toast('You already have a higher tier plan — downgrading isn\'t available here. Contact Support if you need to change this.','err');
+    return;
+  }
   selectedPlan=plan||'artist_plus';
   const p=PLANS[selectedPlan];
   document.getElementById('pay-modal-title').textContent='Get '+p.label+' Plan';
