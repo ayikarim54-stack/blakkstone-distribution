@@ -1560,6 +1560,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- MUSIC / RELEASES -->
     <div class="page" id="page-releases">
+      <div id="rel-list-view">
       <div class="ph">
         <div><h1>Music</h1><p>All your submitted releases.</p></div>
         <button class="btn btn-purple" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> New Release</button>
@@ -1585,6 +1586,116 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <div id="rel-active-filters" style="display:none;margin-bottom:.75rem"></div>
       <div id="all-releases"></div>
+      </div>
+
+      <!-- RELEASE DETAIL VIEW — a real in-flow page, not a modal -->
+      <div id="rel-detail-view" class="roy-center" style="display:none">
+        <div style="margin-bottom:1.5rem">
+          <a onclick="closeReleaseModal()" style="display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.5);font-size:14px;cursor:pointer;text-decoration:none"><i class="ti ti-chevron-left"></i> Back to Catalog</a>
+        </div>
+        <div id="rel-modal-reason-banner" style="display:none;padding:1rem 1.25rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;margin-bottom:1.5rem"></div>
+        <div id="rel-modal-history-section" style="margin-bottom:1rem"></div>
+
+        <!-- HERO -->
+        <div style="display:flex;gap:1.75rem;margin-bottom:2rem;flex-wrap:wrap">
+          <div id="rel-modal-art" style="width:180px;height:180px;border-radius:14px;background:#333;flex-shrink:0;overflow:hidden"></div>
+          <div style="flex:1;min-width:240px">
+            <div id="rel-modal-title" style="font-size:28px;font-weight:800;color:#fff;margin-bottom:5px;line-height:1.15"></div>
+            <div id="rel-modal-artist" style="font-size:15px;color:rgba(255,255,255,.5);margin-bottom:14px"></div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div id="rel-modal-status-badge"></div>
+              <span id="rel-modal-genre-pill" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);background:rgba(255,255,255,.07);padding:3px 9px;border-radius:20px"></span>
+              <span id="rel-modal-priority-badge"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PERFORMANCE -->
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Performance</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem">
+            <div style="background:#08080C;border-radius:10px;padding:1rem">
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-wavesaw-mono" style="color:var(--gold)"></i> Streams</div>
+              <div id="rel-modal-streams" style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px">0</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px">Total plays</div>
+            </div>
+            <div style="background:#08080C;border-radius:10px;padding:1rem">
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-coin" style="color:#34d399"></i> Gross</div>
+              <div id="rel-modal-earnings" style="font-size:26px;font-weight:800;color:#34d399;letter-spacing:-.5px">$0.00</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px">Before commission</div>
+            </div>
+            <div style="background:#08080C;border-radius:10px;padding:1rem">
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-wallet" style="color:#fbbf24"></i> Payout</div>
+              <div id="rel-modal-payout" style="font-size:26px;font-weight:800;color:#fbbf24;letter-spacing:-.5px">$0.00</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px" id="rel-modal-payout-sub">Your share</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STREAM CHART -->
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Streams by Reporting Period</div>
+          <canvas id="rel-modal-chart" height="100"></canvas>
+        </div>
+
+        <!-- STORE BREAKDOWN -->
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Earnings by Store</div>
+          <div id="rel-modal-stores" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+
+        <!-- SPLIT SHEET -->
+        <div id="rel-modal-splits-wrap" class="adm-card" style="margin-bottom:1.25rem;display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3)">Split Sheet</div>
+            <button class="btn adm-btn-sec btn-sm" style="font-size:10px;padding:3px 9px" onclick="exportSplitStatement()"><i class="ti ti-download"></i> Statement CSV</button>
+          </div>
+          <div id="rel-modal-splits" style="display:flex;flex-direction:column"></div>
+          <div style="font-size:11px;color:rgba(255,255,255,.25);line-height:1.6;margin-top:.75rem">Shares are calculated from this release's net payout. Blakkstone pays the account holder; distributing contributor shares is the account holder's responsibility.</div>
+        </div>
+
+        <!-- SMART LINK PERFORMANCE -->
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Smart Link Performance</div>
+          <div id="rel-modal-slstats"></div>
+        </div>
+
+        <!-- RELEASE INFO -->
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Release Info</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem">
+            <div>
+              <div style="font-size:11px;color:rgba(255,255,255,.35)">Release Date</div>
+              <div id="rel-modal-date" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
+            </div>
+            <div id="rel-modal-isrc-cell" style="display:none">
+              <div style="font-size:11px;color:rgba(255,255,255,.35)">ISRC</div>
+              <div id="rel-modal-isrc" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;font-family:monospace">—</div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:rgba(255,255,255,.35)">Status</div>
+              <div id="rel-modal-status-text" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:rgba(255,255,255,.35)">Submitted</div>
+              <div id="rel-modal-submitted" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTES -->
+        <div id="rel-modal-notes-wrap" class="adm-card" style="display:none;margin-bottom:1.25rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.5rem">Distribution Notes</div>
+          <div id="rel-modal-notes" style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7"></div>
+        </div>
+
+        <!-- SMART LINK -->
+        <div class="adm-card" style="margin-bottom:2rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Smart Link</div>
+          <button class="btn adm-btn-sec btn-sm" style="margin-bottom:.875rem" onclick="copySmartLink()"><i class="ti ti-link"></i> Copy Shareable Link</button>
+          <div id="rel-modal-platform-links"></div>
+        </div>
+      </div>
     </div>
 
     <!-- SUBMIT - 5 STEP WIZARD -->
@@ -2918,118 +3029,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
-<!-- RELEASE DETAIL MODAL -->
-<div class="overlay" id="release-overlay" onclick="if(event.target===this)closeReleaseModal()">
-  <div class="modal" style="max-width:640px;width:94%;padding:0;overflow:hidden">
-    <!-- HEADER -->
-    <div style="display:flex;gap:1.25rem;padding:1.5rem 1.5rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.07);align-items:flex-start">
-      <div id="rel-modal-art" style="width:88px;height:88px;border-radius:10px;background:#333;flex-shrink:0;overflow:hidden"></div>
-      <div style="flex:1;min-width:0">
-        <div id="rel-modal-title" style="font-size:20px;font-weight:800;color:#fff;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
-        <div id="rel-modal-artist" style="font-size:14px;color:rgba(255,255,255,.5);margin-bottom:8px"></div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <div id="rel-modal-status-badge"></div>
-          <span id="rel-modal-genre-pill" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);background:rgba(255,255,255,.07);padding:3px 9px;border-radius:20px"></span>
-          <span id="rel-modal-priority-badge"></span>
-        </div>
-      </div>
-      <button onclick="closeReleaseModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:24px;line-height:1;padding:0;flex-shrink:0">×</button>
-    </div>
-    <div id="rel-modal-reason-banner" style="display:none;padding:1rem 1.5rem;background:rgba(239,68,68,.08);border-bottom:1px solid rgba(239,68,68,.2)"></div>
-    <div id="rel-modal-history-section" style="padding:0 1.5rem"></div>
-
-    <!-- ANALYTICS STATS -->
-    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Performance</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem">
-        <div style="background:#08080C;border-radius:10px;padding:1rem">
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-wavesaw-mono" style="color:var(--gold)"></i> Streams</div>
-          <div id="rel-modal-streams" style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px">0</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px">Total plays</div>
-        </div>
-        <div style="background:#08080C;border-radius:10px;padding:1rem">
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-coin" style="color:#34d399"></i> Gross</div>
-          <div id="rel-modal-earnings" style="font-size:26px;font-weight:800;color:#34d399;letter-spacing:-.5px">$0.00</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px">Before commission</div>
-        </div>
-        <div style="background:#08080C;border-radius:10px;padding:1rem">
-          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-wallet" style="color:#fbbf24"></i> Payout</div>
-          <div id="rel-modal-payout" style="font-size:26px;font-weight:800;color:#fbbf24;letter-spacing:-.5px">$0.00</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px" id="rel-modal-payout-sub">Your share</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- STREAM CHART -->
-    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Streams by Reporting Period</div>
-      <canvas id="rel-modal-chart" height="100"></canvas>
-    </div>
-
-    <!-- STORE BREAKDOWN -->
-    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Earnings by Store</div>
-      <div id="rel-modal-stores" style="display:flex;flex-direction:column;gap:6px"></div>
-    </div>
-
-    <!-- SPLIT SHEET -->
-    <div id="rel-modal-splits-wrap" style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07);display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3)">Split Sheet</div>
-        <button class="btn adm-btn-sec btn-sm" style="font-size:10px;padding:3px 9px" onclick="exportSplitStatement()"><i class="ti ti-download"></i> Statement CSV</button>
-      </div>
-      <div id="rel-modal-splits" style="display:flex;flex-direction:column"></div>
-      <div style="font-size:11px;color:rgba(255,255,255,.25);line-height:1.6;margin-top:.75rem">Shares are calculated from this release's net payout. Blakkstone pays the account holder; distributing contributor shares is the account holder's responsibility.</div>
-    </div>
-
-    <!-- SMART LINK PERFORMANCE -->
-    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Smart Link Performance</div>
-      <div id="rel-modal-slstats"></div>
-    </div>
-
-    <!-- RELEASE INFO -->
-    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Release Info</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem">
-        <div>
-          <div style="font-size:11px;color:rgba(255,255,255,.35)">Release Date</div>
-          <div id="rel-modal-date" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
-        </div>
-        <div id="rel-modal-isrc-cell" style="display:none">
-          <div style="font-size:11px;color:rgba(255,255,255,.35)">ISRC</div>
-          <div id="rel-modal-isrc" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;font-family:monospace">—</div>
-        </div>
-        <div>
-          <div style="font-size:11px;color:rgba(255,255,255,.35)">Status</div>
-          <div id="rel-modal-status-text" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
-        </div>
-        <div>
-          <div style="font-size:11px;color:rgba(255,255,255,.35)">Submitted</div>
-          <div id="rel-modal-submitted" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NOTES -->
-    <div id="rel-modal-notes-wrap" style="display:none;padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.5rem">Distribution Notes</div>
-      <div id="rel-modal-notes" style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7"></div>
-    </div>
-
-    <!-- SMART LINK -->
-    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,.07)">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Smart Link</div>
-      <button class="btn adm-btn-sec btn-sm" style="margin-bottom:.875rem" onclick="copySmartLink()"><i class="ti ti-link"></i> Copy Shareable Link</button>
-      <div id="rel-modal-platform-links"></div>
-    </div>
-
-    <!-- ACTIONS -->
-    <div style="padding:1.25rem 1.5rem;display:flex;gap:8px">
-      <button class="btn btn-purple" style="flex:1;justify-content:center" onclick="closeReleaseModal()"><i class="ti ti-x"></i> Close</button>
-    </div>
-  </div>
-</div>
 
 <!-- ARTIST DETAIL MODAL -->
 <div class="overlay" id="artist-overlay">
@@ -4069,7 +4068,9 @@ function openReleaseModal(r,updateUrl){
   renderPlatformLinksEditor(r);
   loadSmartLinkStats(r.id);
   renderSplitSheet(r);
-  document.getElementById('release-overlay').classList.add('open');
+  document.getElementById('rel-list-view').style.display='none';
+  document.getElementById('rel-detail-view').style.display='block';
+  window.scrollTo({top:0,behavior:'instant'});
   if(updateUrl&&document.getElementById('page-releases')?.classList.contains('active')){
     history.pushState({page:'releases',sub:r.id},'',pagePath('releases',r.id));
   }
@@ -4102,7 +4103,8 @@ async function savePlatformLinks(releaseId){
   toast('Smart link platforms saved','ok');
 }
 function closeReleaseModal(){
-  document.getElementById('release-overlay').classList.remove('open');
+  document.getElementById('rel-detail-view').style.display='none';
+  document.getElementById('rel-list-view').style.display='';
   const {page,sub}=parsePath();
   if(page==='releases'&&sub){
     history.replaceState({page:'releases'},'',pagePath('releases'));
