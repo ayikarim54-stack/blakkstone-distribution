@@ -2388,7 +2388,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">One link, all your music — fans see your live releases and can sign up for notifications on what's coming.</p>
         <div style="display:flex;gap:8px;margin-bottom:1.25rem">
           <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="copyArtistLink(user.id)"><i class="ti ti-link"></i> Copy My Page Link</button>
-          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="window.open(window.location.origin+window.location.pathname+'?artist='+user.id,'_blank')"><i class="ti ti-eye"></i> Preview</button>
+          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="window.open(window.location.origin+'/?artist='+user.id,'_blank')"><i class="ti ti-eye"></i> Preview</button>
         </div>
         <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-lock"></i> Change Password</div>
@@ -3645,10 +3645,10 @@ function enterDashboard(){
     const _rm=getRosterMax();
     if(maNav)maNav.style.display=_rm>0?'':'none';
     showView('dashboard');
-    const hashPage=window.location.hash.replace('#','');
+    const pathPage=window.location.pathname.replace(/^\/|\/$/g,'')||'overview';
     const validPages=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
-    const page=validPages.includes(hashPage)?hashPage:'overview';
-    history.replaceState({page},'',window.location.pathname+'#'+page);
+    const page=validPages.includes(pathPage)?pathPage:'overview';
+    history.replaceState({page},'',pagePath(page));
     goPage(page,null);
     loadReleases().then(()=>updateOnboarding());updateWelcomeTime();
     if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();startRealtimeAdmin();requestNotifPermission();}
@@ -3659,6 +3659,9 @@ let selectedPlan='artist_plus',billing='yearly',payoutMethod=null,momoNetwork=nu
 let _wizardAutosaveTimer=null;
 let _analyticsTickTimer=null;
 let _supportRealtimeChannel=null;
+function pagePath(id){
+  return id==='overview' ? '/' : '/'+id;
+}
 function goPage(id,el){
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
@@ -3669,7 +3672,7 @@ function goPage(id,el){
   document.querySelectorAll('.tnav-item').forEach(n=>n.classList.remove('active'));
   if(el)el.classList.add('active');
   else document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+id+"'"))n.classList.add('active');});
-  history.pushState({page:id},'',window.location.pathname+'#'+id);
+  history.pushState({page:id},'',pagePath(id));
   if(id==='analytics')loadAnalytics();
   if(id==='submit')initWizard();
   if(id==='royalties'){loadRoyalties();}
@@ -3693,7 +3696,8 @@ function goPageRoyaltiesTab(tab){
 }
 window.addEventListener('popstate',function(e){
   if(!user)return;
-  const page=e.state?.page||window.location.hash.replace('#','')||'overview';
+  const pathPage=window.location.pathname.replace(/^\/|\/$/g,'')||'overview';
+  const page=e.state?.page||pathPage;
   const valid=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
   if(!valid.includes(page))return;
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
@@ -4023,7 +4027,7 @@ function openReleaseModal(r){
 let _currentModalReleaseId=null;
 function copySmartLink(){
   if(!_currentModalReleaseId)return;
-  const url=window.location.origin+window.location.pathname+'?link='+_currentModalReleaseId;
+  const url=window.location.origin+'/?link='+_currentModalReleaseId;
   navigator.clipboard.writeText(url).then(()=>toast('Smart link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
 }
 function renderPlatformLinksEditor(r){
@@ -5197,7 +5201,7 @@ async function submitNotifyMe(releaseId){
 // ── PUBLIC ARTIST PAGE ────────────────────────────────────
 function copyArtistLink(id){
   if(!id)return;
-  const url=window.location.origin+window.location.pathname+'?artist='+id;
+  const url=window.location.origin+'/?artist='+id;
   navigator.clipboard.writeText(url).then(()=>toast('Artist page link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
 }
 function artistPageNotFound(){
