@@ -1704,10 +1704,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
 
         <!-- SMART LINK -->
-        <div class="adm-card" style="margin-bottom:2rem">
+        <div class="adm-card" style="margin-bottom:1.25rem">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Smart Link</div>
           <button class="btn adm-btn-sec btn-sm" style="margin-bottom:.875rem" onclick="copySmartLink()"><i class="ti ti-link"></i> Copy Shareable Link</button>
           <div id="rel-modal-platform-links"></div>
+        </div>
+
+        <!-- TAKEDOWN REQUEST -->
+        <div id="rel-modal-takedown-wrap" class="adm-card" style="margin-bottom:2rem;display:none">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Takedown</div>
+          <div id="rel-modal-takedown-body"></div>
         </div>
       </div>
     </div>
@@ -4185,6 +4191,7 @@ function openReleaseModal(r,updateUrl){
   renderPlatformLinksEditor(r);
   loadSmartLinkStats(r.id);
   renderSplitSheet(r);
+  renderTakedownSection(r);
   document.getElementById('rel-list-view').style.display='none';
   document.getElementById('rel-detail-view').style.display='block';
   window.scrollTo({top:0,behavior:'instant'});
@@ -4197,6 +4204,42 @@ function copySmartLink(){
   if(!_currentModalReleaseId)return;
   const url=window.location.origin+'/?link='+_currentModalReleaseId;
   navigator.clipboard.writeText(url).then(()=>toast('Smart link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
+}
+async function renderTakedownSection(r){
+  const wrap=document.getElementById('rel-modal-takedown-wrap');
+  const body=document.getElementById('rel-modal-takedown-body');
+  if(!wrap||!body)return;
+  if(r.status!=='live'){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  body.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">Checking status…</div>';
+  try{
+    const {data,error}=await sb.from('release_takedown_requests').select('id,requested_at').eq('release_id',r.id).eq('status','pending').limit(1);
+    if(error)throw error;
+    if(data&&data.length){
+      const dt=data[0].requested_at?new Date(data[0].requested_at).toLocaleDateString('en-GB'):'—';
+      body.innerHTML='<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#fbbf24"><i class="ti ti-clock"></i> Takedown requested on '+dt+' — our team will process this shortly.</div>';
+    } else {
+      body.innerHTML='<p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:.875rem">Want this release removed from all stores? This is permanent — the release will stop being sold or streamed once processed, and cannot be automatically restored.</p><button class="btn-danger-outline" style="padding:8px 16px;font-size:13px" onclick="requestReleaseTakedown(\''+r.id+'\')"><i class="ti ti-alert-triangle"></i> Request Takedown</button>';
+    }
+  }catch(e){
+    console.error('Takedown status check error:',e);
+    body.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">Could not check takedown status — run the takedown requests SQL in Supabase if this is new.</div>';
+  }
+}
+async function requestReleaseTakedown(releaseId){
+  const reason=prompt('Optional: tell us why you want this release taken down (helps our team process it faster).');
+  if(reason===null)return;
+  if(!confirm('Are you sure? Requesting a takedown will remove this release from all stores once processed, and cannot be undone.'))return;
+  try{
+    const {error}=await sb.from('release_takedown_requests').insert({release_id:releaseId,user_id:user.id,reason:reason.trim()||null,status:'pending'});
+    if(error)throw error;
+    toast('Takedown request submitted','ok');
+    const r=_releaseMap[releaseId];
+    if(r)renderTakedownSection(r);
+  }catch(e){
+    console.error('Request takedown error:',e);
+    toast('Could not submit request: '+(e.message||'please try again.'),'err');
+  }
 }
 function renderPlatformLinksEditor(r){
   const wrap=document.getElementById('rel-modal-platform-links');if(!wrap)return;
@@ -6680,22 +6723,24 @@ async function loadAdminStats(){
 async function loadAdminActionQueue(){
   const container=document.getElementById('adm-needs-attention');if(!container)return;
   try{
-    const [{data:releases},{data:payouts},{data:messages},{data:deletions}]=await Promise.all([
+    const [{data:releases},{data:payouts},{data:messages},{data:deletions},{data:takedowns}]=await Promise.all([
       sb.from('releases').select('id').in('status',['pending','review']),
       sb.from('payouts').select('id').eq('status','pending').catch(()=>({data:[]})),
       sb.from('messages').select('id,deleted_by_admin').eq('direction','in').is('read_at',null),
-      sb.from('account_deletion_requests').select('id').eq('status','pending').catch(()=>({data:[]}))
+      sb.from('account_deletion_requests').select('id').eq('status','pending').catch(()=>({data:[]})),
+      sb.from('release_takedown_requests').select('id').eq('status','pending').catch(()=>({data:[]}))
     ]);
     const items=[
       {label:'Pending Releases',count:(releases||[]).length,tab:'releases',icon:'ti-music',color:'#fbbf24'},
       {label:'Pending Payouts',count:(payouts||[]).length,tab:'payouts',icon:'ti-wallet',color:'#ef4444'},
       {label:'Unread Messages',count:(messages||[]).filter(m=>!m.deleted_by_admin).length,tab:'messages',icon:'ti-message',color:'#3b82f6'},
-      {label:'Deletion Requests',count:(deletions||[]).length,tab:'users',icon:'ti-user-x',color:'#f97316'}
+      {label:'Deletion Requests',count:(deletions||[]).length,tab:'notifications',icon:'ti-user-x',color:'#f97316'},
+      {label:'Takedown Requests',count:(takedowns||[]).length,tab:'notifications',icon:'ti-broadcast-off',color:'#fbbf24'}
     ];
     const total=items.reduce((a,i)=>a+i.count,0);
     container.innerHTML=total===0
       ?'<div style="color:rgba(255,255,255,.35);font-size:12px;padding:.25rem 0"><i class="ti ti-check"></i> All caught up — nothing needs attention.</div>'
-      :items.filter(i=>i.count>0).map(i=>'<div onclick="switchAdminTab(\''+i.tab+'\',document.getElementById(\'atab-'+i.tab+'\'))" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#fff"><i class="ti '+i.icon+'" style="color:'+i.color+'"></i> '+i.label+'</div><span style="font-size:11px;font-weight:700;color:#08080C;background:'+i.color+';padding:2px 9px;border-radius:20px">'+i.count+'</span></div>').join('');
+      :items.filter(i=>i.count>0).map(i=>'<div onclick="switchAdminTab(\''+i.tab+'\',findAdminTabEl(\''+i.tab+'\'))" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#fff"><i class="ti '+i.icon+'" style="color:'+i.color+'"></i> '+i.label+'</div><span style="font-size:11px;font-weight:700;color:#08080C;background:'+i.color+';padding:2px 9px;border-radius:20px">'+i.count+'</span></div>').join('');
   }catch(e){
     console.warn('loadAdminActionQueue:',e);
     container.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Could not load.</div>';
@@ -7095,11 +7140,12 @@ function replyToMessage(id){
 async function loadNotifications(){
   const container=document.getElementById('notifications-list');if(!container)return;
   try{
-    const [{data:payouts},{data:releases},{data:messages},{data:deletions}]=await Promise.all([
+    const [{data:payouts},{data:releases},{data:messages},{data:deletions},{data:takedowns}]=await Promise.all([
       sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
       sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false}),
       sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications messages query error:',r.error);return {data:(r.data||[]).filter(m=>!m.deleted_by_admin)};}).catch(()=>({data:[]})),
-      sb.from('account_deletion_requests').select('*').eq('status','pending').order('requested_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications deletion query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]}))
+      sb.from('account_deletion_requests').select('*').eq('status','pending').order('requested_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications deletion query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]})),
+      sb.from('release_takedown_requests').select('*').eq('status','pending').order('requested_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications takedown query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]}))
     ]);
     const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,account_id');
     const profileMap={};(profList||[]).forEach(p=>{profileMap[p.id]=p;});
@@ -7121,7 +7167,13 @@ async function loadNotifications(){
         }catch(e){console.error('Deletion context fetch error for',d.id,e);deletionContext[d.id]=null;}
       }));
     }
-    const total=(payouts?.length||0)+(releases?.length||0)+(messages?.length||0)+(deletions?.length||0);
+    const takedownReleaseMap={};
+    if(takedowns?.length){
+      const ids=[...new Set(takedowns.map(t=>t.release_id))];
+      const {data:relData}=await sb.from('releases').select('id,title,artist').in('id',ids).catch(()=>({data:[]}));
+      (relData||[]).forEach(r=>{takedownReleaseMap[r.id]=r;});
+    }
+    const total=(payouts?.length||0)+(releases?.length||0)+(messages?.length||0)+(deletions?.length||0)+(takedowns?.length||0);
     const badge=document.getElementById('notif-badge');if(badge){badge.style.display=total>0?'inline':'none';badge.textContent=total;}
     const badgeAdmin=document.getElementById('notif-badge-admin');if(badgeAdmin){badgeAdmin.style.display=total>0?'inline':'none';badgeAdmin.textContent=total;}
     let html='';
@@ -7145,6 +7197,16 @@ async function loadNotifications(){
           ctxRow='<div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:6px">Could not load account context.</div>';
         }
         return '<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(d.email||'')+' · Requested '+dt+'</div>'+reason+'</div><button class="btn btn-sm" style="background:#ef4444;color:#fff;flex-shrink:0" onclick="markDeletionCompleted(\''+d.id+'\')">Mark Done</button></div>'+ctxRow+'</div>';
+      }).join('');
+    }
+    if(takedowns?.length){
+      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#fbbf24;margin-bottom:.5rem">Takedown Requests ('+takedowns.length+')</div>';
+      html+=takedowns.map(t=>{
+        const prof=profileMap[t.user_id]||{};const name=prof.artist_name||prof.full_name||'—';
+        const rel=takedownReleaseMap[t.release_id]||{};
+        const dt=t.requested_at?new Date(t.requested_at).toLocaleDateString('en-GB'):'—';
+        const reason=t.reason?'<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;font-style:italic">"'+esc(t.reason)+'"</div>':'';
+        return '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">"'+esc(rel.title||'Unknown release')+'" — '+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">Requested '+dt+'</div>'+reason+'</div><button class="btn btn-sm" style="background:#fbbf24;color:#08080C;font-weight:700;flex-shrink:0" onclick="markTakedownCompleted(\''+t.id+'\')">Mark Done</button></div></div>';
       }).join('');
     }
     if(messages?.length){
@@ -7174,6 +7236,21 @@ async function markDeletionCompleted(id){
   const {error}=await sb.from('account_deletion_requests').update({status:'completed',completed_at:new Date().toISOString()}).eq('id',id);
   if(error){console.error('Mark deletion completed error:',error);toast('Could not update: '+error.message,'err');return;}
   logAudit(null,reqRow?.user_id||null,'account_deletion','pending','completed'+(reqRow?.email?' — '+reqRow.email:''));
+  toast('Marked as completed','ok');loadNotifications();
+}
+async function markTakedownCompleted(id){
+  if(!confirm('Confirm you have removed this release from all DSPs. This will mark the release as Taken Down.'))return;
+  const {data:reqRow}=await sb.from('release_takedown_requests').select('release_id,user_id,reason').eq('id',id).single().catch(()=>({data:null}));
+  const {error}=await sb.from('release_takedown_requests').update({status:'completed',completed_at:new Date().toISOString()}).eq('id',id);
+  if(error){console.error('Mark takedown completed error:',error);toast('Could not update: '+error.message,'err');return;}
+  if(reqRow?.release_id){
+    const {error:relErr}=await sb.from('releases').update({status:'takendown',status_reason:reqRow.reason||'Requested by artist'}).eq('id',reqRow.release_id);
+    if(relErr){console.error('Release status update error (takedown request still marked completed):',relErr);}
+    else{
+      logAudit(reqRow.release_id,reqRow.user_id||null,'release_status','live','takendown (artist requested)');
+      if(_releaseMap[reqRow.release_id]){_releaseMap[reqRow.release_id].status='takendown';}
+    }
+  }
   toast('Marked as completed','ok');loadNotifications();
 }
 async function sendAdminMessage(){
