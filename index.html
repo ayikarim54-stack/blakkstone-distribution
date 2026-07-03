@@ -2600,7 +2600,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div id="adm-export-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#161619;border:1px solid var(--line);border-radius:10px;padding:.5rem;min-width:170px;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.4)">
               <div onclick="closeAdminExportMenu();exportArtistsCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:#fff">Artists</div>
               <div onclick="closeAdminExportMenu();exportReleasesCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:#fff">Releases</div>
-              <div onclick="closeAdminExportMenu();exportPayoutsCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:#fff">Payouts</div>
+              <div onclick="closeAdminExportMenu();exportPayoutsCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:#fff">Payouts (all)</div>
+              <div onclick="closeAdminExportMenu();exportPendingPayoutsCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:var(--gold)">Payment Run (pending)</div>
               <div onclick="closeAdminExportMenu();exportSubsCSV()" style="padding:8px 10px;font-size:13px;border-radius:6px;cursor:pointer;color:#fff">Subscriptions</div>
             </div>
           </div>
@@ -2749,7 +2750,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </select>
           <button class="btn adm-btn-sec btn-sm" onclick="bulkPayoutStatusUpdate('paid')"><i class="ti ti-check"></i> Mark Selected as Paid</button>
           <button class="btn adm-btn-sec btn-sm" onclick="bulkPayoutStatusUpdate('failed')" style="color:#f87171;border-color:#f87171"><i class="ti ti-x"></i> Mark Selected as Failed</button>
-          <button class="btn adm-btn-sec btn-sm" onclick="exportPayoutsCSV()"><i class="ti ti-download"></i> Export</button>
+          <button class="btn adm-btn-sec btn-sm" onclick="exportPayoutsCSV()"><i class="ti ti-download"></i> Export All</button>
+          <button class="btn btn-gold btn-sm" onclick="exportPendingPayoutsCSV()" title="Pending payouts only, sorted by network — ready for a payment run"><i class="ti ti-file-invoice"></i> Export Payment Run</button>
         </div>
         <div class="tw"><table>
           <thead><tr><th><input type="checkbox" id="select-all-payout" onchange="toggleSelectAll('payout',this)" style="accent-color:var(--gold)"></th><th>Account ID</th><th>Artist</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
@@ -2759,6 +2761,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
       <!-- ── STREAMS TAB ── -->
       <div class="admin-section" id="admin-streams">
+        <div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:.875rem 1.1rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px;font-size:12.5px;color:rgba(255,255,255,.6)"><i class="ti ti-file-import" style="color:var(--gold);font-size:18px"></i> Adding a lot of entries at once? Bulk-import a distributor report instead of typing them in one by one.</div>
+          <button class="btn btn-gold btn-sm" onclick="switchAdminTab('royalties',findAdminTabEl('royalties'))"><i class="ti ti-upload"></i> Go to CSV Import</button>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
           <!-- ADD DAILY STREAMS FORM -->
           <div class="adm-card">
@@ -3066,10 +3072,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div class="fg">
               <label>Send to</label>
               <div style="display:flex;flex-direction:column;gap:8px;margin-top:.5rem">
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-all" checked style="accent-color:var(--gold)"> All artists</label>
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-solo" style="accent-color:var(--gold)"> Solo plan only</label>
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-paid" style="accent-color:var(--gold)"> Paid plans only</label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-all" checked onchange="toggleBroadcastPlanRows()" style="accent-color:var(--gold)"> All artists</label>
+                <div id="bc-plan-rows" style="display:none;flex-direction:column;gap:8px;padding-left:1.5rem">
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-free" style="accent-color:var(--gold)"> Free plan</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-solo" style="accent-color:var(--gold)"> Solo plan</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-artistplus" style="accent-color:var(--gold)"> Artist+ plan</label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="bc-label" style="accent-color:var(--gold)"> Label plan</label>
+                </div>
               </div>
+            </div>
+            <div class="fg">
+              <label>Narrow further (optional)</label>
+              <input id="bc-custom-filter" type="text" placeholder="Only artists matching name, email, or account ID...">
             </div>
             <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:.5rem" onclick="sendBroadcast()"><i class="ti ti-speakerphone"></i> Send Broadcast</button>
           </div>
@@ -7591,13 +7605,32 @@ async function sendAdminMessage(){
     document.getElementById('msg-body').value='';toast('Message sent','ok');loadAdminMessages();
   }catch(e){console.error('Send admin message error:',e);toast('Could not send: '+(e.message||'please try again.'),'err');}
 }
+function toggleBroadcastPlanRows(){
+  const all=document.getElementById('bc-all')?.checked;
+  const rows=document.getElementById('bc-plan-rows');
+  if(rows)rows.style.display=all?'none':'flex';
+}
 async function sendBroadcast(){
   const subject=document.getElementById('bc-subject')?.value.trim();const body=document.getElementById('bc-body')?.value.trim();
   if(!subject||!body){toast('Fill in subject and message','err');return;}
-  const {data:allProfiles}=await sb.from('profiles').select('id,email,artist_name,plan');
+  const {data:allProfiles}=await sb.from('profiles').select('id,email,artist_name,full_name,account_id,plan');
   let targets=allProfiles||[];
-  const toAll=document.getElementById('bc-all')?.checked;const toSolo=document.getElementById('bc-solo')?.checked;const toPaid=document.getElementById('bc-paid')?.checked;
-  if(!toAll) targets=targets.filter(p=>(toSolo&&p.plan==='solo_paid')||(toPaid&&(p.plan==='artist_plus'||p.plan==='label')));
+  const toAll=document.getElementById('bc-all')?.checked;
+  if(!toAll){
+    const planMap={free:document.getElementById('bc-free')?.checked,solo_paid:document.getElementById('bc-solo')?.checked,artist_plus:document.getElementById('bc-artistplus')?.checked,label:document.getElementById('bc-label')?.checked};
+    const anyChecked=Object.values(planMap).some(Boolean);
+    if(!anyChecked){toast('Select at least one plan segment, or check "All artists"','err');return;}
+    targets=targets.filter(p=>planMap[p.plan]);
+  }
+  const customFilter=(document.getElementById('bc-custom-filter')?.value||'').trim().toLowerCase();
+  if(customFilter){
+    targets=targets.filter(p=>
+      (p.artist_name||'').toLowerCase().includes(customFilter)||
+      (p.full_name||'').toLowerCase().includes(customFilter)||
+      (p.email||'').toLowerCase().includes(customFilter)||
+      (p.account_id||'').toLowerCase().includes(customFilter)
+    );
+  }
   if(!targets.length){toast('No artists match','err');return;}
   if(!confirm('Send to '+targets.length+' artist(s)?'))return;
   let sent=0,lastError=null;
@@ -7606,6 +7639,7 @@ async function sendBroadcast(){
     if(error){lastError=error;console.error('Broadcast send error for',p.email,':',error);}else{sent++;}
   }
   document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
+  const cf=document.getElementById('bc-custom-filter');if(cf)cf.value='';
   if(sent>0){toast('Broadcast sent to '+sent+' artist(s)!','ok');logAudit(null,null,'broadcast_sent',null,subject+' — '+sent+' recipient(s)');}
   else{toast('Broadcast failed: '+(lastError?.message||'unknown error'),'err');}
   loadBroadcastHistory();
@@ -7773,13 +7807,15 @@ async function exportCSV(type){
   let data=[],filename='',headers=[];
   if(type==='artists'){const {data:d}=await sb.from('profiles').select('*').order('created_at',{ascending:false});data=d||[];filename='blakkstone-artists.csv';headers=['Account ID','Name','Email','Plan','Created'];data=data.map(p=>[p.account_id||'',p.artist_name||p.full_name||'',p.email||'',p.plan||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);}
   else if(type==='releases'){const {data:d}=await sb.from('releases').select('*, profiles(artist_name,account_id)').order('submitted_at',{ascending:false});data=d||[];filename='blakkstone-releases.csv';headers=['Account ID','Artist','Title','Genre','Release Date','Status','Streams','Earnings'];data=data.map(r=>[r.profiles?.account_id||'',r.profiles?.artist_name||'',r.title||'',r.genre||'',r.release_date||'',r.status||'',r.streams||0,r.earnings||0]);}
-  else if(type==='payouts'){const {data:d}=await sb.from('payouts').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));data=d||[];filename='blakkstone-payouts.csv';headers=['Account ID','Artist','Method','Amount','Status','Date'];data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.amount||0,p.status||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);}
+  else if(type==='payouts'){const {data:d}=await sb.from('payouts').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));data=d||[];filename='blakkstone-payouts.csv';headers=['Account ID','Artist','Method','Network','Account Details','Amount','Status','Date'];data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.network||'',p.account||'',p.amount||0,p.status||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);}
+  else if(type==='payouts_pending'){const {data:d}=await sb.from('payouts').select('*, profiles(artist_name,account_id)').eq('status','pending').order('network',{ascending:true}).catch(()=>({data:[]}));data=d||[];filename='blakkstone-payment-run-'+new Date().toISOString().split('T')[0]+'.csv';headers=['Account ID','Artist','Method','Network','Account Details','Amount'];data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.network||'',p.account||'',p.amount||0]);}
   else if(type==='subscriptions'){const {data:d}=await sb.from('subscriptions').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));data=d||[];filename='blakkstone-subscriptions.csv';headers=['Account ID','Artist','Plan','USD','GHS','Ref','Date'];data=data.map(s=>[s.profiles?.account_id||'',s.profiles?.artist_name||'',s.plan||'',s.amount_usd||0,s.amount_ghs||0,s.paystack_ref||'',s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'']);}
+  if(type==='payouts_pending'&&!data.length){toast('No pending payouts to export','err');return;}
   const csv=[headers,...data].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);toast('Exported '+filename,'ok');
 }
-function exportArtistsCSV(){exportCSV('artists');}function exportReleasesCSV(){exportCSV('releases');}function exportPayoutsCSV(){exportCSV('payouts');}function exportSubsCSV(){exportCSV('subscriptions');}
+function exportArtistsCSV(){exportCSV('artists');}function exportReleasesCSV(){exportCSV('releases');}function exportPayoutsCSV(){exportCSV('payouts');}function exportSubsCSV(){exportCSV('subscriptions');}function exportPendingPayoutsCSV(){exportCSV('payouts_pending');}
 async function exportMyEarningsCSV(){
   if(!user)return;
   try{
