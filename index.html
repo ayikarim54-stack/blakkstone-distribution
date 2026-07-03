@@ -1575,7 +1575,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="rel-search-bar">
         <div style="position:relative;flex:1">
           <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.3);font-size:15px;pointer-events:none"></i>
-          <input type="text" placeholder="Search for a release..." id="rel-search-input" oninput="filterReleasesCombined()" style="padding-left:38px;width:100%">
+          <input type="text" placeholder="Search for a release..." id="rel-search-input" oninput="relFilterState.page=1;filterReleasesCombined()" style="padding-left:38px;width:100%">
         </div>
         <select id="rel-sort-select" onchange="setRelSort(this.value)" class="stsel" style="padding:9px 12px;font-size:13px;flex-shrink:0">
           <option value="newest">Newest</option>
@@ -1593,6 +1593,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <div id="rel-active-filters" style="display:none;margin-bottom:.75rem"></div>
       <div id="all-releases"></div>
+      <div id="rel-pagination"></div>
       </div>
 
       <!-- RELEASE DETAIL VIEW — a real in-flow page, not a modal -->
@@ -3888,9 +3889,11 @@ function releaseRow(r){
 function resumeDraftFromMusic(){
   goPage('submit',null);
 }
-let relFilterState={status:'all',search:'',genre:'',sort:'newest'};
+let relFilterState={status:'all',search:'',genre:'',sort:'newest',page:1};
+const REL_PAGE_SIZE=20;
 function setRelSort(sort){
   relFilterState.sort=sort;
+  relFilterState.page=1;
   filterReleasesCombined();
 }
 function sortReleases(list,sort){
@@ -3913,6 +3916,7 @@ function renderReleasesList(releases,filter){
 function filterRelTab(filter,el){
   document.querySelectorAll('.rel-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
   relFilterState.status=filter;
+  relFilterState.page=1;
   filterReleasesCombined();
 }
 function getRelGenreList(){
@@ -3942,6 +3946,7 @@ function closeRelGenreMenuOnOutsideClick(e){
 }
 function setRelGenreFilter(genre){
   relFilterState.genre=genre;
+  relFilterState.page=1;
   document.getElementById('rel-genre-menu').style.display='none';
   document.removeEventListener('click',closeRelGenreMenuOnOutsideClick,{capture:true});
   const btn=document.getElementById('rel-filter-btn');
@@ -3960,12 +3965,13 @@ function filterReleasesCombined(){
   if(relFilterState.genre)filtered=filtered.filter(r=>r.genre===relFilterState.genre);
   if(relFilterState.search)filtered=filtered.filter(r=>(r.title||'').toLowerCase().includes(relFilterState.search)||(r.artist||'').toLowerCase().includes(relFilterState.search));
   filtered=sortReleases(filtered,relFilterState.sort);
-  // Splice in the saved draft (if any) on All/In Progress views — display-only, never added to allRelData
+  // Draft is display-only, never added to allRelData, and always pinned to the very top of page 1
+  let draftItem=null;
   if((s==='all'||s==='pending')&&_cachedDraftForMusicTab){
     const d=_cachedDraftForMusicTab;
     const matchesSearch=!relFilterState.search||(d.title||'').toLowerCase().includes(relFilterState.search);
     const matchesGenre=!relFilterState.genre||d.genre===relFilterState.genre;
-    if(matchesSearch&&matchesGenre) filtered=[{...d,isDraft:true},...filtered];
+    if(matchesSearch&&matchesGenre) draftItem={...d,isDraft:true};
   }
   const activeWrap=document.getElementById('rel-active-filters');
   if(activeWrap){
@@ -3976,7 +3982,33 @@ function filterReleasesCombined(){
       activeWrap.style.display='none';activeWrap.innerHTML='';
     }
   }
-  document.getElementById('all-releases').innerHTML=filtered.length?'<div class="rl">'+filtered.map(r=>releaseRow(r)).join('')+'</div>':'<div class="empty"><i class="ti ti-music-off"></i><p>No results.</p></div>';
+  const totalPages=Math.max(1,Math.ceil(filtered.length/REL_PAGE_SIZE));
+  if(relFilterState.page>totalPages)relFilterState.page=totalPages;
+  if(relFilterState.page<1)relFilterState.page=1;
+  const pageItems=filtered.slice((relFilterState.page-1)*REL_PAGE_SIZE,relFilterState.page*REL_PAGE_SIZE);
+  const displayItems=draftItem&&relFilterState.page===1?[draftItem,...pageItems]:pageItems;
+  document.getElementById('all-releases').innerHTML=displayItems.length?'<div class="rl">'+displayItems.map(r=>releaseRow(r)).join('')+'</div>':'<div class="empty"><i class="ti ti-music-off"></i><p>No results.</p></div>';
+  renderRelPagination(filtered.length,totalPages);
+}
+function renderRelPagination(totalCount,totalPages){
+  const wrap=document.getElementById('rel-pagination');if(!wrap)return;
+  if(totalPages<=1){wrap.innerHTML='';return;}
+  const page=relFilterState.page;
+  const start=(page-1)*REL_PAGE_SIZE+1;
+  const end=Math.min(page*REL_PAGE_SIZE,totalCount);
+  wrap.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.25rem;flex-wrap:wrap;gap:10px">'
+    +'<div style="font-size:12px;color:rgba(255,255,255,.35)">Showing '+start+'–'+end+' of '+totalCount+'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<button class="btn adm-btn-sec btn-sm" '+(page<=1?'disabled':'')+' onclick="goRelPage(-1)" style="padding:6px 12px'+(page<=1?';opacity:.4;cursor:not-allowed':'')+'"><i class="ti ti-chevron-left"></i> Prev</button>'
+      +'<span style="font-size:12px;color:rgba(255,255,255,.5)">Page '+page+' of '+totalPages+'</span>'
+      +'<button class="btn adm-btn-sec btn-sm" '+(page>=totalPages?'disabled':'')+' onclick="goRelPage(1)" style="padding:6px 12px'+(page>=totalPages?';opacity:.4;cursor:not-allowed':'')+'">Next <i class="ti ti-chevron-right"></i></button>'
+    +'</div>'
+  +'</div>';
+}
+function goRelPage(delta){
+  relFilterState.page=Math.max(1,relFilterState.page+delta);
+  filterReleasesCombined();
+  document.getElementById('rel-list-view')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function filterOvSearch(){
   const q=(document.getElementById('ov-search-input')?.value||'').toLowerCase();
