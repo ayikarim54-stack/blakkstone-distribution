@@ -2728,6 +2728,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
       <!-- ── ARTISTS TAB ── -->
       <div class="admin-section" id="admin-users">
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.75rem"><i class="ti ti-crown"></i> Admin Team</div>
+          <div id="admin-team-list"></div>
+        </div>
         <div style="display:flex;gap:8px;margin-bottom:.875rem;flex-wrap:wrap">
           <input id="user-search" type="text" placeholder="Search name, email, account ID..." class="adm-search" oninput="filterUsers()"/>
           <select id="user-plan-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterUsers()">
@@ -3173,6 +3177,9 @@ const SB_URL='https://rzfnocgqcompyddlzdjy.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6Zm5vY2dxY29tcHlkZGx6ZGp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwODg3OTcsImV4cCI6MjA5NzY2NDc5N30.mtYUXicTAfRo_GqN5R-zbJj8x12aItFAk0hE6Sb3crU';
 const PK='pk_live_cc83d66ba957fe1358d7246e796ab0e81715fdf9';
 const ADMIN_EMAIL='blakkstonemusic@hotmail.com';
+function isAdmin(){
+  return profile?.plan==='admin'||user?.email===ADMIN_EMAIL;
+}
 const COMM=0.09;
 // Single source of truth for "does this account pay Blakkstone's 9% commission or not."
 // Previously duplicated identically across 7 separate functions — consolidated here so a
@@ -3603,12 +3610,12 @@ async function loadProfile(u){
   user=u;
   const {data}=await sb.from('profiles').select('*').eq('id',u.id).single();
   profile=data;
-  const isAdmin=profile?.plan==='admin'||u.email===ADMIN_EMAIL;
+  const adminNow=isAdmin();
   // Real enforcement: a genuinely lapsed paid plan reverts to Free before any access decision is made.
   // This never touches existing releases or roster artists — those stay exactly as they are, protected
   // by the roster-lock system already in place. Only future privileges (commission exemption, roster room) stop.
   let justLapsedPlan=null;
-  if(!isAdmin&&profile?.plan_expires_at&&['solo_paid','artist_plus','label'].includes(profile.plan)){
+  if(!adminNow&&profile?.plan_expires_at&&['solo_paid','artist_plus','label'].includes(profile.plan)){
     const hasExpired=new Date(profile.plan_expires_at)<new Date();
     if(hasExpired){
       const {error:revertError}=await sb.from('profiles').update({plan:'free'}).eq('id',u.id);
@@ -3625,7 +3632,7 @@ async function loadProfile(u){
       }
     }
   }
-  const hasPlan=isAdmin||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
+  const hasPlan=adminNow||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
   if(!hasPlan){showPaywall(justLapsedPlan);}else{enterDashboard();}
 }
 function showPaywall(lapsedPlan){
@@ -3712,16 +3719,16 @@ function enterDashboard(){
   try{
     const name=profile?.full_name||profile?.artist_name||user.email.split('@')[0];
     const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const isAdmin=profile?.plan==='admin'||user.email===ADMIN_EMAIL;
+    const adminNow=isAdmin();
     const isPaid=['label','artist_plus','solo_paid'].includes(profile?.plan||'');
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     set('tnav-name',name.split(' ')[0]);
     set('tnav-account-id',profile?.account_id||'');
     setAvatarDisplay(initials,profile?.avatar_url);
-    const adminNav=document.getElementById('admin-nav');if(adminNav) adminNav.style.display=isAdmin?'flex':'none';
+    const adminNav=document.getElementById('admin-nav');if(adminNav) adminNav.style.display=adminNow?'flex':'none';
     const isMaxedOut=profile?.plan==='label';
     const upgradeNav=document.getElementById('upgrade-nav');
-    if(upgradeNav) upgradeNav.style.display=(isAdmin||isMaxedOut)?'none':'flex';
+    if(upgradeNav) upgradeNav.style.display=(adminNow||isMaxedOut)?'none':'flex';
     set('welcome-h','Hi, '+name.split(' ')[0]+' 👋');
     const lr=document.getElementById('lnav-right');
     if(lr) lr.innerHTML='<button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>';
@@ -3734,7 +3741,7 @@ function enterDashboard(){
       const pdn=document.getElementById('profile-display-name');if(pdn) pdn.textContent=profile.artist_name||profile.full_name||'';
       const paid=document.getElementById('profile-account-id');if(paid) paid.textContent=profile.account_id||'Assigning...';
     }
-    updateCommBar(isPaid,isAdmin);updateUpgradePage(profile?.plan);
+    updateCommBar(isPaid,adminNow);updateUpgradePage(profile?.plan);
     const maNav=document.getElementById('myartists-nav');
     const _rm=getRosterMax();
     if(maNav)maNav.style.display=_rm>0?'':'none';
@@ -3763,7 +3770,7 @@ function enterDashboard(){
       }
     });
     updateWelcomeTime();
-    if(isAdmin){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();startRealtimeAdmin();requestNotifPermission();}
+    if(adminNow){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){console.error('enterDashboard:',e);showView('dashboard');goPage('overview',null);loadReleases();}
 }
 
@@ -4361,8 +4368,8 @@ async function requestReleaseTakedown(releaseId){
 }
 function renderPlatformLinksEditor(r){
   const wrap=document.getElementById('rel-modal-platform-links');if(!wrap)return;
-  const isAdmin=profile?.plan==='admin'||user?.email===ADMIN_EMAIL;
-  if(!isAdmin){wrap.innerHTML='';return;}
+  const adminNow=isAdmin();
+  if(!adminNow){wrap.innerHTML='';return;}
   const links=r.platform_links||{};
   wrap.innerHTML='<div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Paste platform URLs once this is live elsewhere — these power the buttons fans see on the smart link.</div>'
     +DSP_STORES.filter(s=>s.logo).map(s=>{
@@ -5312,8 +5319,7 @@ async function submitDeleteAccountRequest(){
 // ── ARTIST ROSTER ──────────────────────────────────────────
 function getRosterMax(){
   const plan=profile?.plan||'';
-  const isAdmin=user?.email===ADMIN_EMAIL;
-  if(isAdmin||plan==='label')return 5;
+  if(isAdmin()||plan==='label')return 5;
   if(plan==='artist_plus')return 2;
   return 0;
 }
@@ -7224,7 +7230,9 @@ async function updateUserPlan(id,plan){
       old_value:oldPlan,new_value:plan,
       changed_by:user?.email||'Admin'
     }).then(({error})=>{if(error)console.error('Audit log insert error (plan change itself succeeded):',error);});
-    toast('Plan updated','ok');loadAdminStats();
+    const cached=(allUsersCache||[]).find(p=>p.id===id);
+    if(cached)cached.plan=plan;
+    toast('Plan updated','ok');loadAdminStats();loadAdminTeam();
   }catch(e){
     console.error('Update user plan error:',e);
     toast('Could not update plan: '+(e.message||'please try again.'),'err');
@@ -7262,6 +7270,39 @@ async function loadAdminUsers(){
   userRelStats={count:relCount,streams:relStreams,earnings:relEarn};
   allUsersCache=data;
   renderAdminUsersTable(data);
+  loadAdminTeam();
+}
+async function loadAdminTeam(){
+  const wrap=document.getElementById('admin-team-list');if(!wrap)return;
+  wrap.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div>';
+  try{
+    const admins=(allUsersCache||[]).filter(p=>p.plan==='admin');
+    if(!admins.length){
+      wrap.innerHTML='<div style="color:rgba(255,255,255,.35);font-size:12px">No accounts currently have the Admin plan. '+esc(ADMIN_EMAIL)+' always has access via the built-in primary admin account.</div>';
+      return;
+    }
+    const {data:grants}=await sb.from('admin_audit_log').select('target_user_id,changed_at,changed_by').eq('field','plan').eq('new_value','admin').order('changed_at',{ascending:false}).catch(()=>({data:[]}));
+    const grantMap={};
+    (grants||[]).forEach(g=>{if(!grantMap[g.target_user_id])grantMap[g.target_user_id]=g;});
+    wrap.innerHTML=admins.map(p=>{
+      const name=p.artist_name||p.full_name||p.email||'—';
+      const grant=grantMap[p.id];
+      const grantedNote=grant?('Granted '+new Date(grant.changed_at).toLocaleDateString('en-GB')+' by '+esc(grant.changed_by||'—')):'Granted before activity logging started';
+      const isPrimary=p.email===ADMIN_EMAIL;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem .9rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;margin-bottom:6px">'
+        +'<div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+(isPrimary?' <span style="font-size:10px;color:var(--gold);font-weight:700">· Primary</span>':'')+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(p.email||'')+' · '+grantedNote+'</div></div>'
+        +(isPrimary?'<span style="font-size:11px;color:rgba(255,255,255,.25)" title="The primary admin account is set in code and can\'t be revoked here">Protected</span>':'<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:#f87171" onclick="revokeAdmin(\''+p.id+'\',\''+esc(name).replace(/'/g,"\\'")+'\')">Revoke</button>')
+      +'</div>';
+    }).join('');
+  }catch(e){
+    console.error('Admin team load error:',e);
+    wrap.innerHTML='<div style="color:#ef4444;font-size:12px">Could not load admin team.</div>';
+  }
+}
+async function revokeAdmin(id,name){
+  if(!confirm('Revoke admin access for '+name+'? Their plan will be set to Free — you can assign them a different plan afterward if they should stay a regular artist account.'))return;
+  await updateUserPlan(id,'free');
+  await loadAdminUsers();
 }
 function renderAdminUsersTable(data){
   const tbody=document.getElementById('admin-users-tbody');if(!tbody)return;
@@ -8952,8 +8993,7 @@ function renderSplitRows(){
   });
   // Poll every 30s for new payout requests as realtime fallback
   setInterval(async()=>{
-    const isAdmin=profile?.plan==='admin'||user?.email===ADMIN_EMAIL;
-    if(!isAdmin||!user)return;
+    if(!isAdmin()||!user)return;
     await loadAdminStats();
     await loadNotifications();
   },30000);
