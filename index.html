@@ -3716,6 +3716,13 @@ function pagePath(id,sub){
   if(id==='overview')return '/';
   return sub ? '/'+id+'/'+sub : '/'+id;
 }
+async function refreshProfileAndUpgradePage(){
+  try{
+    const {data,error}=await sb.from('profiles').select('*').eq('id',user.id).single();
+    if(error)throw error;
+    if(data){profile=data;updateUpgradePage(profile.plan);}
+  }catch(e){console.warn('refreshProfileAndUpgradePage:',e);}
+}
 function goPage(id,el){
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
@@ -3727,12 +3734,15 @@ function goPage(id,el){
   if(el)el.classList.add('active');
   else document.querySelectorAll('.tnav-item').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+id+"'"))n.classList.add('active');});
   history.pushState({page:id},'',pagePath(id));
+  if(id==='overview')loadReleases();
+  if(id==='releases')loadReleases();
   if(id==='analytics')loadAnalytics();
   if(id==='submit')initWizard();
   if(id==='royalties'){loadRoyalties();}
   if(id==='payout')loadPayout();
   if(id==='myartists')loadMyArtistsGrid();
   if(id==='profile')loadProfileStats();
+  if(id==='upgrade')refreshProfileAndUpgradePage();
   if(id==='support')loadMySupportMessages();
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
   const mobMap={overview:'mob-overview',releases:'mob-music',submit:'mob-submit',royalties:'mob-royalties',profile:'mob-profile'};
@@ -3768,7 +3778,9 @@ window.addEventListener('popstate',function(e){
     if(target)switchRoyTab(sub,target);
   }
   if(page==='payout')loadPayout();
+  if(page==='overview')loadReleases();
   if(page==='releases'){
+    loadReleases();
     if(sub&&_releaseMap[sub]){
       openReleaseModal(_releaseMap[sub],false);
     }else{
@@ -3778,6 +3790,7 @@ window.addEventListener('popstate',function(e){
   if(page==='myartists')loadMyArtistsGrid();
   if(page==='support')loadMySupportMessages();
   if(page==='submit')initWizard();
+  if(page==='upgrade')refreshProfileAndUpgradePage();
   if(page==='admin'){
     loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();
     const adminTabs=['dashboard','releases','users','payouts','streams','royalties','subs','reports','messages','broadcast','notifications','activitylog'];
@@ -6652,6 +6665,13 @@ function switchAdminTab(tab,el){
   if(document.getElementById('page-admin')?.classList.contains('active')){
     history.replaceState({page:'admin',sub:tab},'',pagePath('admin',tab==='dashboard'?null:tab));
   }
+  if(tab==='dashboard'){loadAdminStats();loadAdminDashboard();loadAdminActionQueue();}
+  if(tab==='releases')loadAdminReleases();
+  if(tab==='users')loadAdminUsers();
+  if(tab==='payouts')loadAdminPayouts();
+  if(tab==='subs')loadAdminSubs();
+  if(tab==='messages')loadAdminMessages();
+  if(tab==='notifications')loadNotifications();
   if(tab==='reports')loadAdminReports();
   if(tab==='broadcast')loadBroadcastHistory();
   if(tab==='streams'){initAdminStreams();loadAdminStreamsRecent();}
