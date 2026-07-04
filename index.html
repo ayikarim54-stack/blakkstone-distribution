@@ -2295,9 +2295,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
                   <label>Amount to Withdraw (USD)</label>
                   <div style="display:flex;align-items:center;gap:8px">
                     <span style="font-size:20px;font-weight:700;color:rgba(255,255,255,.4)">$</span>
-                    <input id="withdraw-amount" type="number" min="1" step="0.01" placeholder="0.00" style="font-size:20px;font-weight:700;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;color:#fff;width:100%;font-family:Inter,sans-serif;outline:none">
+                    <input id="withdraw-amount" type="number" min="1" step="0.01" placeholder="0.00" oninput="updateWithdrawGhsPreview()" style="font-size:20px;font-weight:700;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;color:#fff;width:100%;font-family:Inter,sans-serif;outline:none">
+                    <button type="button" onclick="fillMaxWithdraw()" style="flex-shrink:0;background:rgba(212,175,55,.12);color:var(--gold);border:1px solid rgba(212,175,55,.25);border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer">Max</button>
                   </div>
-                  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:5px">Min. $1.00</div>
+                  <div style="display:flex;justify-content:space-between;margin-top:5px">
+                    <div style="font-size:11px;color:rgba(255,255,255,.3)">Min. $1.00</div>
+                    <div style="font-size:11px;color:rgba(255,255,255,.35)" id="withdraw-ghs-preview"></div>
+                  </div>
                 </div>
                 <button class="btn btn-purple" style="width:100%;justify-content:center" id="payout-submit-btn" onclick="showPayoutMethods()"><i class="ti ti-wallet"></i> Withdraw</button>
               </div>
@@ -5418,6 +5422,20 @@ function contactSupportAboutPayout(amount){
     if(bodyEl){bodyEl.value='Hi, my payout of $'+amount+' failed and I\'d like help resolving it.';bodyEl.focus();}
   },150);
 }
+function fillMaxWithdraw(){
+  const label=document.getElementById('payout-available-label');
+  const bal=parseFloat((label?.textContent||'$0').replace(/[^0-9.]/g,''))||0;
+  const input=document.getElementById('withdraw-amount');
+  if(input){input.value=bal.toFixed(2);updateWithdrawGhsPreview();}
+}
+function updateWithdrawGhsPreview(){
+  const input=document.getElementById('withdraw-amount');
+  const preview=document.getElementById('withdraw-ghs-preview');
+  if(!input||!preview)return;
+  const usd=parseFloat(input.value||0);
+  if(!usd||usd<=0){preview.textContent='';return;}
+  preview.textContent='≈ GHS '+(usd*GHS_RATE).toFixed(2);
+}
 function showPayoutMethods(){
   const amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
   if(!amt||amt<1){toast('Enter a valid amount (min $1.00)','err');return;}
@@ -5477,6 +5495,7 @@ async function submitPayout(){
     const {error}=await sb.from('payouts').insert({user_id:user.id,method:payoutMethod,network:network||null,account,amount:amt,status:'pending'});
     if(error)throw error;
     document.getElementById('withdraw-amount').value='';
+    updateWithdrawGhsPreview();
     toast('Payout request submitted! Processing in 5–7 business days.','ok');
     sendPayoutNotificationEmail(amt,payoutMethod,network,account);
     loadPayout();
