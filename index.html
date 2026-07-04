@@ -2526,7 +2526,21 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
         <div class="fg"><label>Artist / Label Name</label><input id="p-an" type="text"></div>
         <p id="p-an-lock-note" style="display:none;font-size:11px;color:rgba(255,255,255,.4);margin:-.75rem 0 .875rem"><i class="ti ti-lock"></i> Locked — you have releases already submitted under this name.</p>
-        <div class="fg"><label>Email</label><input id="p-em" type="email" disabled style="opacity:.4;cursor:not-allowed"></div>
+        <div class="fg">
+          <label>Email</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="p-em" type="email" disabled style="opacity:.4;cursor:not-allowed;flex:1">
+            <button type="button" class="btn adm-btn-sec btn-sm" onclick="toggleChangeEmailForm()" style="flex-shrink:0">Change</button>
+          </div>
+        </div>
+        <div id="change-email-form" style="display:none;background:#08080C;border:1px solid var(--line);border-radius:10px;padding:1rem;margin:-.5rem 0 1.25rem">
+          <div class="fg" style="margin-bottom:.75rem"><label>New Email</label><input id="p-new-email" type="email" placeholder="new@email.com" onkeydown="if(event.key==='Enter')requestEmailChange()"></div>
+          <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:.875rem">We'll send a confirmation link to your new address. Your current email stays active — and support messages keep matching it — until you click that link.</p>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="toggleChangeEmailForm(false)">Cancel</button>
+            <button class="btn btn-purple btn-sm" id="change-email-btn" onclick="requestEmailChange()">Send Confirmation Link</button>
+          </div>
+        </div>
         <button class="btn btn-purple" id="save-profile-btn" onclick="saveProfile()"><i class="ti ti-device-floppy"></i> Save Changes</button>
         <div class="divhr" id="myartists-pointer-divider" style="display:none"></div>
         <p id="myartists-pointer" style="display:none;font-size:12px;color:rgba(255,255,255,.4)">Managing multiple artists? Add and remove names on the <a onclick="goPage('myartists',null)" style="color:var(--gold);cursor:pointer">My Artists</a> page.</p>
@@ -5865,6 +5879,32 @@ async function updatePassword(pwId,pw2Id,onSuccess){
 }
 async function changePassword(){
   await updatePassword('p-pw','p-pw2',()=>toast('Password updated!','ok'));
+}
+function toggleChangeEmailForm(show){
+  const form=document.getElementById('change-email-form');if(!form)return;
+  const opening=show!==undefined?show:form.style.display==='none';
+  form.style.display=opening?'block':'none';
+  if(opening){
+    const input=document.getElementById('p-new-email');if(input){input.value='';input.focus();}
+  }
+}
+async function requestEmailChange(){
+  const newEmail=document.getElementById('p-new-email')?.value.trim();
+  if(!newEmail){toast('Enter your new email address','err');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)){toast('Enter a valid email address','err');return;}
+  if(newEmail.toLowerCase()===(user?.email||'').toLowerCase()){toast('That\'s already your current email','err');return;}
+  const btn=document.getElementById('change-email-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="loader"></span> Sending...';}
+  try{
+    const {error}=await sb.auth.updateUser({email:newEmail});
+    if(error)throw error;
+    toast('Confirmation link sent to '+newEmail+'. Click it to finish the change — your current email stays active until then.','ok');
+    toggleChangeEmailForm(false);
+  }catch(e){
+    console.error('Email change request error:',e);
+    toast('Could not send confirmation: '+(e.message||'please try again.'),'err');
+  }
+  if(btn){btn.disabled=false;btn.innerHTML='Send Confirmation Link';}
 }
 async function doPasswordUpdate(){
   const btn=document.getElementById('set-pw-btn');
@@ -9427,6 +9467,22 @@ function renderSplitRows(){
   }
   sb.auth.onAuthStateChange(async(event,session)=>{
     if(event==='SIGNED_IN'&&session?.user&&!user&&!isRecovery)await loadProfile(session.user);
+    if(event==='USER_UPDATED'&&session?.user){
+      const oldEmail=user?.email;
+      user=session.user;
+      const newEmail=session.user.email;
+      if(profile&&newEmail&&newEmail!==oldEmail){
+        const {error}=await sb.from('profiles').update({email:newEmail}).eq('id',session.user.id);
+        if(!error){
+          profile.email=newEmail;
+          const emEl=document.getElementById('p-em');if(emEl)emEl.value=newEmail;
+          const supEmEl=document.getElementById('support-my-email');if(supEmEl)supEmEl.textContent=newEmail;
+          toast('Your email has been updated to '+newEmail,'ok');
+        } else {
+          console.error('Failed to sync new email to profiles table (auth email itself is already updated):',error);
+        }
+      }
+    }
   });
   // Poll every 30s for new payout requests as realtime fallback
   setInterval(async()=>{
