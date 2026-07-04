@@ -2156,6 +2156,24 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div id="my-artists-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem"></div>
     </div>
 
+    <!-- ROSTER ARTIST PROFILE MODAL (bio + social links) -->
+    <div id="roster-profile-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:1.5rem" onclick="if(event.target===this)closeRosterProfileModal()">
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.75rem;max-width:420px;width:100%;max-height:85vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+          <div style="font-size:16px;font-weight:800;color:#fff">Edit Profile — <span id="roster-profile-name"></span></div>
+          <button onclick="closeRosterProfileModal()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;line-height:1">&times;</button>
+        </div>
+        <div class="fg"><label>Bio</label><textarea id="roster-profile-bio" placeholder="A short bio for this artist's public page..." style="min-height:90px"></textarea></div>
+        <div class="fg"><label>Instagram</label><input id="roster-profile-instagram" type="text" placeholder="@handle or full URL"></div>
+        <div class="fg"><label>X (Twitter)</label><input id="roster-profile-twitter" type="text" placeholder="@handle or full URL"></div>
+        <div class="fg"><label>TikTok</label><input id="roster-profile-tiktok" type="text" placeholder="@handle or full URL"></div>
+        <div style="display:flex;gap:8px;margin-top:.5rem">
+          <button class="btn" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5)" onclick="closeRosterProfileModal()">Cancel</button>
+          <button class="btn btn-gold" id="roster-profile-save-btn" style="flex:1;justify-content:center" onclick="saveRosterProfile()"><i class="ti ti-device-floppy"></i> Save</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ROYALTIES -->
     <div class="page" id="page-royalties">
       <!-- HEADER -->
@@ -4963,7 +4981,7 @@ function closeReleaseModal(){
     history.replaceState({page:'releases'},'',pagePath('releases'));
   }
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal();closeArtistModal();closePaystack();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal();closeArtistModal();closePaystack();closeRosterProfileModal();}});
 
 
 // ── ANALYTICS ──────────────────────────────────────────
@@ -6040,7 +6058,8 @@ function renderMyArtistsGrid(counts){
     const editDeleteIcons=locked?'':'<button onclick="event.stopPropagation();startEditRosterArtist(\''+a.id+'\')" title="Edit name" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-pencil" style="font-size:12px"></i></button>'
       +'<button onclick="event.stopPropagation();deleteRosterArtist(\''+a.id+'\')" title="Remove" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:12px"></i></button>';
     const shareIcon='<button onclick="event.stopPropagation();copyRosterArtistLink(\''+a.id+'\')" title="Copy public page link" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-link" style="font-size:12px"></i></button>';
-    const actions='<div style="position:absolute;top:10px;right:10px;display:flex;gap:4px">'+lockIcon+shareIcon+editDeleteIcons+'</div>';
+    const profileIcon='<button onclick="event.stopPropagation();openRosterProfileModal(\''+a.id+'\')" title="Edit bio & social links" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-id-badge-2" style="font-size:12px"></i></button>';
+    const actions='<div style="position:absolute;top:10px;right:10px;display:flex;gap:4px">'+lockIcon+shareIcon+profileIcon+editDeleteIcons+'</div>';
     const nameDisplay=locked
       ?'<div id="rname-'+a.id+'" style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div>'
       :'<div id="rname-'+a.id+'"><div id="rname-view-'+a.id+'" style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div><div id="rname-edit-'+a.id+'" style="display:none"><input id="rname-input-'+a.id+'" type="text" value="'+esc(a.name)+'" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')saveEditRosterArtist(\''+a.id+'\');if(event.key===\'Escape\')cancelEditRosterArtist(\''+a.id+'\')" style="width:100%;text-align:center;font-size:14px;font-weight:700;border:1px solid #7a6ff0;border-radius:6px;padding:4px 8px;margin-bottom:6px"><div style="display:flex;gap:4px;justify-content:center" onclick="event.stopPropagation()"><button onclick="saveEditRosterArtist(\''+a.id+'\')" class="btn btn-gold btn-sm" style="padding:3px 10px;font-size:11px">Save</button><button onclick="cancelEditRosterArtist(\''+a.id+'\')" class="btn btn-sm" style="padding:3px 10px;font-size:11px;background:rgba(0,0,0,.06);color:rgba(0,0,0,.5)">Cancel</button></div></div></div>';
@@ -6093,6 +6112,41 @@ async function deleteRosterArtist(id){
     console.error('Delete roster artist error:',e);
     toast('Could not remove: '+(e.message||'please try again.'),'err');
   }
+}
+function openRosterProfileModal(id){
+  const a=_rosterCache.find(a=>a.id===id);if(!a)return;
+  document.getElementById('roster-profile-name').textContent=a.name;
+  document.getElementById('roster-profile-bio').value=a.bio||'';
+  document.getElementById('roster-profile-instagram').value=a.instagram||'';
+  document.getElementById('roster-profile-twitter').value=a.twitter||'';
+  document.getElementById('roster-profile-tiktok').value=a.tiktok||'';
+  document.getElementById('roster-profile-overlay').dataset.artistId=id;
+  document.getElementById('roster-profile-overlay').style.display='flex';
+}
+function closeRosterProfileModal(){
+  document.getElementById('roster-profile-overlay').style.display='none';
+}
+async function saveRosterProfile(){
+  const id=document.getElementById('roster-profile-overlay').dataset.artistId;
+  if(!id)return;
+  const bio=document.getElementById('roster-profile-bio').value.trim();
+  const instagram=document.getElementById('roster-profile-instagram').value.trim();
+  const twitter=document.getElementById('roster-profile-twitter').value.trim();
+  const tiktok=document.getElementById('roster-profile-tiktok').value.trim();
+  const btn=document.getElementById('roster-profile-save-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="loader"></span> Saving...';}
+  try{
+    const {error}=await sb.from('roster_artists').update({bio,instagram,twitter,tiktok}).eq('id',id);
+    if(error)throw error;
+    const a=_rosterCache.find(a=>a.id===id);
+    if(a){a.bio=bio;a.instagram=instagram;a.twitter=twitter;a.tiktok=tiktok;}
+    toast('Profile updated!','ok');
+    closeRosterProfileModal();
+  }catch(e){
+    console.error('Save roster profile error:',e);
+    toast('Could not save: '+(e.message||'run the roster_artist_profile SQL in Supabase first'),'err');
+  }
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save';}
 }
 function startEditRosterArtist(id){
   const count=_rosterReleaseCounts[_rosterCache.find(a=>a.id===id)?.name||'']||0;
@@ -6358,7 +6412,25 @@ function renderArtistPage(rows,overrideName){
   const first=rows[0];
   const name=overrideName||first.artist_name||first.full_name||'Artist';
   const av=first.avatar_url?'<img src="'+esc(first.avatar_url)+'" alt="'+esc(name)+'" style="width:96px;height:96px;border-radius:50%;object-fit:cover">':'<div style="width:96px;height:96px;border-radius:50%;background:var(--panel);display:flex;align-items:center;justify-content:center"><i class="ti ti-user" style="font-size:32px;color:rgba(255,255,255,.2)"></i></div>';
-  const header='<div style="text-align:center;margin-bottom:2rem"><div style="margin:0 auto 1rem;width:96px">'+av+'</div><h1 style="font-size:22px;font-weight:800;color:#fff">'+esc(name)+'</h1></div>';
+  const bio=first.bio?'<p style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.6;max-width:360px;margin:0 auto 1rem">'+esc(first.bio)+'</p>':'';
+  function socialUrl(handle,platform){
+    if(!handle)return null;
+    if(/^https?:\/\//i.test(handle))return handle;
+    const clean=handle.replace(/^@/,'');
+    const bases={instagram:'https://instagram.com/',twitter:'https://x.com/',tiktok:'https://tiktok.com/@'};
+    return bases[platform]+clean;
+  }
+  const socialIcons=[
+    {key:'instagram',icon:'ti-brand-instagram'},
+    {key:'twitter',icon:'ti-brand-x'},
+    {key:'tiktok',icon:'ti-brand-tiktok'}
+  ].map(s=>{
+    const url=socialUrl(first[s.key],s.key);
+    if(!url)return'';
+    return '<a href="'+esc(url)+'" target="_blank" rel="noopener" style="width:36px;height:36px;border-radius:50%;background:var(--panel);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);text-decoration:none"><i class="ti '+s.icon+'" style="font-size:16px"></i></a>';
+  }).filter(Boolean).join('');
+  const socialsRow=socialIcons?'<div style="display:flex;gap:10px;justify-content:center;margin-bottom:1.5rem">'+socialIcons+'</div>':'';
+  const header='<div style="text-align:center;margin-bottom:2rem"><div style="margin:0 auto 1rem;width:96px">'+av+'</div><h1 style="font-size:22px;font-weight:800;color:#fff;margin-bottom:'+(bio?'.5rem':'0')+'">'+esc(name)+'</h1>'+bio+socialsRow+'</div>';
   const bl={pending:'Coming Soon',review:'Coming Soon',live:'Live'};
   const bc={pending:'b-pending',review:'b-pending',live:'b-live'};
   const tiles=rows.map(r=>{
