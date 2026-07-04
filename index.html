@@ -2318,6 +2318,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                     <div class="pmethods">
                       <div class="popt" id="opt-momo" onclick="selectPayout('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div><div class="popt-sub">MTN, Vodafone, AirtelTigo</div></div>
                       <div class="popt" id="opt-bank" onclick="selectPayout('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank Transfer</div><div class="popt-sub">Ghana local bank</div></div>
+                      <div class="popt" id="opt-payoneer" onclick="selectPayout('payoneer')"><i class="ti ti-world"></i><div class="popt-title">Payoneer</div><div class="popt-sub">International artists</div></div>
                     </div>
                   </div>
                   <div id="momo-fields" style="display:none">
@@ -2331,6 +2332,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
                     <div class="fg"><label>Account Number</label><input id="bank-acc" type="text" placeholder="Account number"></div>
                     <div class="fg"><label>Account Name</label><input id="bank-acc-name" type="text" placeholder="Name on bank account"></div>
                     <div class="fg"><label>Branch (optional)</label><input id="bank-branch" type="text" placeholder="Branch name"></div>
+                  </div>
+                  <div id="payoneer-fields" style="display:none">
+                    <div class="fg"><label>Payoneer Email</label><input id="payoneer-email" type="email" placeholder="you@example.com"></div>
+                    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:-.5rem;margin-bottom:.875rem">Use the email address linked to your Payoneer account. Don't have one yet? <a href="https://www.payoneer.com" target="_blank" rel="noopener" style="color:var(--gold)">Sign up free</a> first.</div>
                   </div>
                   <div id="payout-submit-wrap" style="display:none;margin-top:.5rem">
                     <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Processed within 5–7 business days.</div>
@@ -2367,6 +2372,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                 <div class="pmethods" style="margin-bottom:.875rem">
                   <div class="popt" id="new-opt-momo" onclick="selectNewMethod('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div></div>
                   <div class="popt" id="new-opt-bank" onclick="selectNewMethod('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank</div></div>
+                  <div class="popt" id="new-opt-payoneer" onclick="selectNewMethod('payoneer')"><i class="ti ti-world"></i><div class="popt-title">Payoneer</div></div>
                 </div>
                 <div id="new-momo-fields" style="display:none">
                   <div class="momo-nets" style="margin-bottom:.75rem">
@@ -2381,6 +2387,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
                   <div class="fg"><label>Bank Name</label><input id="new-bank-name" type="text" placeholder="e.g. GCB Bank"></div>
                   <div class="fg"><label>Account Number</label><input id="new-bank-acc" type="text" placeholder="Account number"></div>
                   <div class="fg"><label>Account Name</label><input id="new-bank-acc-name" type="text" placeholder="Name on account"></div>
+                </div>
+                <div id="new-payoneer-fields" style="display:none">
+                  <div class="fg"><label>Payoneer Email</label><input id="new-payoneer-email" type="email" placeholder="you@example.com"></div>
                 </div>
                 <div style="display:flex;gap:8px;margin-top:.875rem">
                   <button class="btn btn-purple btn-sm" style="flex:1;justify-content:center" onclick="savePayoutMethod()"><i class="ti ti-device-floppy"></i> Save</button>
@@ -2883,6 +2892,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <button class="btn adm-btn-sec btn-sm" onclick="bulkPayoutStatusUpdate('failed')" style="color:#f87171;border-color:#f87171"><i class="ti ti-x"></i> Mark Selected as Failed</button>
           <button class="btn adm-btn-sec btn-sm" onclick="exportPayoutsCSV()"><i class="ti ti-download"></i> Export All</button>
           <button class="btn btn-gold btn-sm" onclick="exportPendingPayoutsCSV()" title="Pending payouts only, sorted by network — ready for a payment run"><i class="ti ti-file-invoice"></i> Export Payment Run</button>
+          <button class="btn adm-btn-sec btn-sm" onclick="exportPayoneerBatchCSV()" title="Pending Payoneer payouts only, formatted for Payoneer's Batch Payment upload"><i class="ti ti-world"></i> Export Payoneer CSV</button>
         </div>
         <div class="tw"><table>
           <thead><tr><th><input type="checkbox" id="select-all-payout" onchange="toggleSelectAll('payout',this)" style="accent-color:var(--gold)"></th><th>Account ID</th><th>Artist</th><th>Method</th><th>Network</th><th>Account Details</th><th>Amount</th><th>Status</th><th>Requested</th><th>Action</th></tr></thead>
@@ -5405,7 +5415,8 @@ async function loadPayout(){
     const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171'}[p.status]||'';
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'';
     const stLabel={pending:'⏳ Pending',processing:'🔄 Processing',paid:'✅ Paid',failed:'❌ Failed',cancelled:'🚫 Cancelled'}[p.status]||p.status;
-    const mainRow='<tr><td style="font-weight:700;color:#fff">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td>'+(p.method==='momo'?'📱 '+(p.network||'')+' MoMo':'🏦 Bank')+'</td><td style="color:rgba(255,255,255,.35)">'+d+'</td><td><span style="font-size:11px;font-weight:600;'+sc+'">'+stLabel+'</span>'+(p.status==='pending'?' <button class="btn-danger-outline" style="font-size:10px;padding:2px 7px;margin-left:4px" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</td></tr>';
+    const methodLabel=p.method==='momo'?'📱 '+(p.network||'')+' MoMo':p.method==='payoneer'?'🌐 Payoneer':'🏦 Bank';
+    const mainRow='<tr><td style="font-weight:700;color:#fff">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td>'+methodLabel+'</td><td style="color:rgba(255,255,255,.35)">'+d+'</td><td><span style="font-size:11px;font-weight:600;'+sc+'">'+stLabel+'</span>'+(p.status==='pending'?' <button class="btn-danger-outline" style="font-size:10px;padding:2px 7px;margin-left:4px" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</td></tr>';
     if(p.status==='failed'){
       const reasonText=p.failure_reason?esc(p.failure_reason):'No reason was recorded for this failure.';
       const failRow='<tr><td colspan="4" style="padding:0 0 .75rem"><div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:9px;padding:.75rem 1rem;margin-top:-4px"><div style="font-size:12px;color:#f87171;line-height:1.6"><strong>Why this failed:</strong> '+reasonText+'</div><div style="display:flex;gap:8px;margin-top:.625rem"><button class="btn btn-gold btn-sm" style="padding:5px 12px;font-size:11px" onclick="goPage(\'profile\',null)"><i class="ti ti-edit"></i> Update payout details & retry</button><button class="btn adm-btn-sec btn-sm" style="padding:5px 12px;font-size:11px" onclick="contactSupportAboutPayout(\''+esc((p.amount||0).toFixed(2))+'\')"><i class="ti ti-headset"></i> Message Support</button></div></div></td></tr>';
@@ -5446,8 +5457,10 @@ function selectPayout(method){
   payoutMethod=method;
   document.getElementById('opt-momo').classList.toggle('sel',method==='momo');
   document.getElementById('opt-bank').classList.toggle('sel',method==='bank');
+  document.getElementById('opt-payoneer').classList.toggle('sel',method==='payoneer');
   document.getElementById('momo-fields').style.display=method==='momo'?'block':'none';
   document.getElementById('bank-fields').style.display=method==='bank'?'block':'none';
+  document.getElementById('payoneer-fields').style.display=method==='payoneer'?'block':'none';
   document.getElementById('payout-submit-wrap').style.display='block';
 }
 function selNet(net){
@@ -5485,6 +5498,10 @@ async function submitPayout(){
       const name=document.getElementById('momo-name').value.trim();
       if(!num||!name){toast('Fill in all Mobile Money fields','err');return;}
       account=name+' — '+num;network=momoNetwork;
+    } else if(payoutMethod==='payoneer'){
+      const email=document.getElementById('payoneer-email').value.trim();
+      if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Enter a valid Payoneer email address','err');return;}
+      account=email;
     } else {
       const bank=document.getElementById('bank-name').value.trim();
       const acc=document.getElementById('bank-acc').value.trim();
@@ -5538,9 +5555,9 @@ function renderSavedMethods(){
     return;
   }
   el.innerHTML=savedMethods.map(m=>{
-    const icon=m.method==='momo'?'ti-device-mobile':'ti-building-bank';
-    const label=m.method==='momo'?`📱 ${m.network} MoMo`:'🏦 Bank Transfer';
-    const detail=m.method==='momo'?m.number:m.account_number;
+    const icon=m.method==='momo'?'ti-device-mobile':m.method==='payoneer'?'ti-world':'ti-building-bank';
+    const label=m.method==='momo'?`📱 ${m.network} MoMo`:m.method==='payoneer'?'🌐 Payoneer':'🏦 Bank Transfer';
+    const detail=m.method==='momo'?m.number:m.method==='payoneer'?m.payoneer_email:m.account_number;
     const isDefault=m.is_default;
     return `<div style="background:var(--surface2);border:1px solid ${isDefault?'rgba(212,175,55,.3)':'rgba(255,255,255,.07)'};border-radius:10px;padding:.875rem;margin-bottom:8px;display:flex;align-items:center;gap:.75rem">
       <div style="width:36px;height:36px;border-radius:8px;background:rgba(212,175,55,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -5571,8 +5588,8 @@ function renderQuickPick(){
   wrap.style.display='block';
   if(newToggle) newToggle.style.display='none';
   el.innerHTML=savedMethods.map(m=>{
-    const icon=m.method==='momo'?'ti-device-mobile':'ti-building-bank';
-    const label=m.method==='momo'?`${m.network} MoMo — ${m.number}`:`${m.bank_name} — ${m.account_number}`;
+    const icon=m.method==='momo'?'ti-device-mobile':m.method==='payoneer'?'ti-world':'ti-building-bank';
+    const label=m.method==='momo'?`${m.network} MoMo — ${m.number}`:m.method==='payoneer'?`Payoneer — ${m.payoneer_email}`:`${m.bank_name} — ${m.account_number}`;
     const isDefault=m.is_default;
     return `<div style="background:${isDefault?'rgba(212,175,55,.07)':'var(--surface2)'};border:1.5px solid ${isDefault?'rgba(212,175,55,.3)':'rgba(255,255,255,.08)'};border-radius:10px;padding:.75rem 1rem;margin-bottom:7px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .15s"
       onclick="useQuickMethod('${m.id}')" onmouseover="this.style.borderColor='rgba(212,175,55,.4)'" onmouseout="this.style.borderColor='${isDefault?'rgba(212,175,55,.3)':'rgba(255,255,255,.08)'}'">
@@ -5596,8 +5613,10 @@ function useQuickMethod(id){
   if(m.method==='momo'){
     document.getElementById('opt-momo')?.classList.add('sel');
     document.getElementById('opt-bank')?.classList.remove('sel');
+    document.getElementById('opt-payoneer')?.classList.remove('sel');
     document.getElementById('momo-fields').style.display='block';
     document.getElementById('bank-fields').style.display='none';
+    document.getElementById('payoneer-fields').style.display='none';
     document.getElementById('momo-number').value=m.number||'';
     document.getElementById('momo-name').value=m.account_name||'';
     if(m.network){
@@ -5605,11 +5624,21 @@ function useQuickMethod(id){
       ['mtn-btn','voda-btn','airtel-btn'].forEach(id=>document.getElementById(id)?.classList.remove('sel'));
       document.getElementById(map[m.network])?.classList.add('sel');
     }
+  } else if(m.method==='payoneer'){
+    document.getElementById('opt-payoneer')?.classList.add('sel');
+    document.getElementById('opt-momo')?.classList.remove('sel');
+    document.getElementById('opt-bank')?.classList.remove('sel');
+    document.getElementById('payoneer-fields').style.display='block';
+    document.getElementById('momo-fields').style.display='none';
+    document.getElementById('bank-fields').style.display='none';
+    document.getElementById('payoneer-email').value=m.payoneer_email||'';
   } else {
     document.getElementById('opt-bank')?.classList.add('sel');
     document.getElementById('opt-momo')?.classList.remove('sel');
+    document.getElementById('opt-payoneer')?.classList.remove('sel');
     document.getElementById('bank-fields').style.display='block';
     document.getElementById('momo-fields').style.display='none';
+    document.getElementById('payoneer-fields').style.display='none';
     document.getElementById('bank-name').value=m.bank_name||'';
     document.getElementById('bank-acc').value=m.account_number||'';
     document.getElementById('bank-acc-name').value=m.account_name||'';
@@ -5632,8 +5661,10 @@ function selectNewMethod(type){
   newMethodType=type;
   document.getElementById('new-opt-momo')?.classList.toggle('sel',type==='momo');
   document.getElementById('new-opt-bank')?.classList.toggle('sel',type==='bank');
+  document.getElementById('new-opt-payoneer')?.classList.toggle('sel',type==='payoneer');
   document.getElementById('new-momo-fields').style.display=type==='momo'?'block':'none';
   document.getElementById('new-bank-fields').style.display=type==='bank'?'block':'none';
+  document.getElementById('new-payoneer-fields').style.display=type==='payoneer'?'block':'none';
 }
 
 function selNewNet(net){
@@ -5653,6 +5684,11 @@ async function savePayoutMethod(){
     if(!num||!name){toast('Fill in all MoMo fields','err');return;}
     row.network=newMethodNetwork;row.number=num;row.account_name=name;
     row.nickname=newMethodNetwork+' MoMo · '+num;
+  } else if(newMethodType==='payoneer'){
+    const email=document.getElementById('new-payoneer-email')?.value.trim();
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Enter a valid Payoneer email address','err');return;}
+    row.payoneer_email=email;
+    row.nickname='Payoneer · '+email;
   } else {
     const bank=document.getElementById('new-bank-name')?.value.trim();
     const acc=document.getElementById('new-bank-acc')?.value.trim();
@@ -5669,7 +5705,7 @@ async function savePayoutMethod(){
     await loadSavedMethods();
   }catch(e){
     if(e.message?.includes('does not exist')){
-      toast('Run the payout_methods SQL in Supabase first','err');
+      toast('Run the payout_methods SQL in Supabase first (and the Payoneer column update, if using Payoneer)','err');
     } else {
       toast('Error: '+e.message,'err');
     }
@@ -8020,7 +8056,8 @@ function renderAdminPayoutsTable(payouts){
     const prof=payoutProfileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||prof.email||'—';const accId=prof.account_id||'—';
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
-    return '<tr><td><input type="checkbox" class="payout-cb" data-id="'+p.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+(p.method==='momo'?'📱 Mobile Money':'🏦 Bank')+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    const adminMethodLabel=p.method==='momo'?'📱 Mobile Money':p.method==='payoneer'?'🌐 Payoneer':'🏦 Bank';
+    return '<tr><td><input type="checkbox" class="payout-cb" data-id="'+p.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+adminMethodLabel+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
   }).join('');
 }
 function filterPayouts(){
@@ -8694,6 +8731,30 @@ async function exportCSV(type){
   const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);toast('Exported '+filename,'ok');
 }
 function exportArtistsCSV(){exportCSV('artists');}function exportReleasesCSV(){exportCSV('releases');}function exportPayoutsCSV(){exportCSV('payouts');}function exportSubsCSV(){exportCSV('subscriptions');}function exportPendingPayoutsCSV(){exportCSV('payouts_pending');}
+async function exportPayoneerBatchCSV(){
+  // Matches Payoneer's own "Batch Payment" upload format exactly: recipient email,
+  // amount, currency, description — 4 columns, headers required, USD only (that's
+  // a real constraint of Payoneer's Batch Payment feature, not a Blakkstone choice).
+  // Upload this file at: Payoneer dashboard → Pay → Batch Payment.
+  try{
+    const {data,error}=await sb.from('payouts').select('*, profiles(artist_name,account_id)').eq('status','pending').eq('method','payoneer').order('created_at',{ascending:true});
+    if(error)throw error;
+    if(!data||!data.length){toast('No pending Payoneer payouts to export','err');return;}
+    const lines=[['Recipient Email','Amount','Currency','Description']];
+    data.forEach(p=>{
+      const email=p.account||'';
+      const who=p.profiles?.account_id||p.profiles?.artist_name||'artist';
+      lines.push([email,parseFloat(p.amount||0).toFixed(2),'USD','Blakkstone royalty payout — '+who]);
+    });
+    const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='payoneer-batch-payment-'+new Date().toISOString().split('T')[0]+'.csv';a.click();URL.revokeObjectURL(url);
+    toast(data.length+' Payoneer payout(s) exported — upload in Payoneer under Pay → Batch Payment','ok');
+  }catch(e){
+    console.error('Payoneer CSV export error:',e);
+    toast('Could not export: '+(e.message||'please try again.'),'err');
+  }
+}
 async function exportMyEarningsCSV(){
   if(!user)return;
   try{
