@@ -1264,6 +1264,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="auth-r">
       <h3 id="auth-title">Create your account</h3>
       <p id="auth-sub">Start distributing your music globally.</p>
+      <div id="oauth-section">
+        <button type="button" class="btn" onclick="signInWithGoogle()" style="width:100%;justify-content:center;gap:10px;background:#fff;color:#111;border:1px solid #ddd;margin-bottom:1rem">
+          <img src="https://cdn.simpleicons.org/google/4285F4" width="18" height="18" alt="Google" style="object-fit:contain">
+          Continue with Google
+        </button>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <span style="font-size:12px;color:var(--muted)">or</span>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+        </div>
+      </div>
       <div id="signup-fields">
         <div class="frow">
           <div class="fg"><label>First name</label><input id="fn" type="text" placeholder="Kwame" onkeydown="if(event.key==='Enter')document.getElementById('ln').focus()"></div>
@@ -3634,12 +3645,28 @@ function showView(id){
 
 // ── AUTH ──────────────────────────────────────────────
 let authMode='signup';
+async function signInWithGoogle(){
+  try{
+    const {error}=await sb.auth.signInWithOAuth({
+      provider:'google',
+      options:{redirectTo:window.location.origin+'/'}
+    });
+    if(error)throw error;
+    // No further code runs here on success — the browser navigates away to Google's
+    // consent screen, then back to redirectTo once the user approves.
+  }catch(e){
+    console.error('Google sign-in error:',e);
+    toast('Could not start Google sign-in: '+(e.message||'please try again.'),'err');
+  }
+}
 function showAuth(mode){
   authMode=mode;
   const isSignup=mode==='signup';
   const isForgot=mode==='forgot';
   document.getElementById('signup-fields').style.display=isSignup?'block':'none';
   document.getElementById('pw-field-group').style.display=isForgot?'none':'block';
+  const oauthSection=document.getElementById('oauth-section');
+  if(oauthSection)oauthSection.style.display=isForgot?'none':'block';
   const forgotLink=document.getElementById('forgot-pw-link');
   if(forgotLink) forgotLink.style.display=(mode==='login')?'block':'none';
   document.getElementById('auth-btn').textContent=isForgot?'Send reset link':(isSignup?'Create account':'Log in');
@@ -3721,7 +3748,21 @@ async function doForgotPasswordRequest(){
 let user=null,profile=null;
 async function loadProfile(u){
   user=u;
-  const {data}=await sb.from('profiles').select('*').eq('id',u.id).single();
+  let {data}=await sb.from('profiles').select('*').eq('id',u.id).single();
+  if(!data){
+    // No profile row exists yet — this is a first-time sign-in via an OAuth provider
+    // (Google), which never gets the explicit profiles.upsert() the email/password
+    // signup flow does inline. Create it now from whatever identity info the
+    // provider handed back, so this account works everywhere else in the app that
+    // expects a real profiles row to exist.
+    const meta=u.user_metadata||{};
+    const fullName=meta.full_name||meta.name||(u.email?u.email.split('@')[0]:'');
+    const avatarUrl=meta.avatar_url||meta.picture||null;
+    const newProfile={id:u.id,email:u.email,full_name:fullName,artist_name:fullName,plan:'free',avatar_url:avatarUrl};
+    const {data:created,error:createErr}=await sb.from('profiles').upsert(newProfile).select().single();
+    if(createErr)console.error('Profile auto-create error for new OAuth sign-in:',createErr);
+    data=created||newProfile;
+  }
   profile=data;
   const adminNow=isAdmin();
   // Real enforcement: a genuinely lapsed paid plan reverts to Free before any access decision is made.
