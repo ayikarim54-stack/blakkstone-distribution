@@ -2152,25 +2152,111 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <!-- ARTISTS -->
     <!-- MY ARTISTS (roster, Artist+/Label/admin only) -->
     <div class="page" id="page-myartists">
-      <div class="ph"><div><h1>My Artists</h1><p>The artist names you can release under.</p></div><div id="roster-limit-note" style="font-size:12px;color:rgba(255,255,255,.4);font-weight:600"></div></div>
-      <div id="my-artists-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem"></div>
-    </div>
+      <div id="myartists-list-view">
+        <div class="ph"><div><h1>My Artists</h1><p>The artist names you can release under.</p></div><div id="roster-limit-note" style="font-size:12px;color:rgba(255,255,255,.4);font-weight:600"></div></div>
+        <div id="my-artists-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem"></div>
+      </div>
 
-    <!-- ROSTER ARTIST PROFILE MODAL (bio + social links) -->
-    <div id="roster-profile-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:1.5rem" onclick="if(event.target===this)closeRosterProfileModal()">
-      <div style="background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.75rem;max-width:420px;width:100%;max-height:85vh;overflow-y:auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-          <div style="font-size:16px;font-weight:800;color:#fff">Edit Profile — <span id="roster-profile-name"></span></div>
-          <button onclick="closeRosterProfileModal()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;line-height:1">&times;</button>
+      <!-- ARTIST OVERVIEW (full detail sub-view) -->
+      <div id="myartist-detail-view" style="display:none">
+      <div onclick="closeMyArtistDetail()" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;margin-bottom:1.25rem;width:fit-content"><i class="ti ti-chevron-left"></i> Back to My Artists</div>
+      <div style="display:flex;gap:2.5rem;align-items:flex-start;flex-wrap:wrap">
+        <!-- LEFT SIDEBAR -->
+        <div style="width:270px;flex-shrink:0">
+          <label style="display:block;width:100%;aspect-ratio:1;border-radius:14px;background:var(--panel);border:1px solid var(--line);cursor:pointer;position:relative;overflow:hidden;margin-bottom:1rem" title="Update artist image">
+            <div id="artdet-avatar-wrap" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"></div>
+            <input type="file" accept="image/*" style="display:none" onchange="uploadArtistDetailAvatar(this)">
+          </label>
+          <h2 id="artdet-name" style="font-size:20px;font-weight:800;color:#fff;margin-bottom:.5rem"></h2>
+          <span style="display:inline-block;background:#7a6ff0;color:#fff;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 10px;border-radius:6px;text-transform:uppercase;margin-bottom:1.25rem">Roster Artist</span>
+
+          <div id="artdet-fields-view" style="font-size:13px;color:rgba(255,255,255,.6);line-height:2.1"></div>
+          <div id="artdet-fields-edit" style="display:none">
+            <div class="fg"><label>Type</label><select id="artdet-in-type" class="stsel" style="width:100%;padding:8px"><option value="">—</option><option value="Solo">Solo</option><option value="Band">Band</option><option value="Duo">Duo</option><option value="Group">Group</option><option value="Producer">Producer</option><option value="DJ">DJ</option></select></div>
+            <div class="fg"><label>Genre</label><input id="artdet-in-genre" type="text" placeholder="e.g. Afrobeats"></div>
+            <div class="fg"><label>Bio</label><textarea id="artdet-in-bio" placeholder="A short bio..." style="min-height:80px"></textarea></div>
+            <div class="fg"><label>Country</label><input id="artdet-in-country" type="text" placeholder="e.g. Ghana"></div>
+            <div class="fg"><label>Website</label><input id="artdet-in-website" type="text" placeholder="https://..."></div>
+          </div>
+
+          <div style="border-top:1px solid var(--line);margin:1.25rem 0;padding-top:1.25rem">
+            <div id="artdet-dsp-view"></div>
+            <div id="artdet-dsp-edit" style="display:none">
+              <div class="fg"><label>Spotify ID</label><input id="artdet-in-spotify" type="text" placeholder="Spotify artist ID"></div>
+              <div class="fg"><label>Apple Music ID</label><input id="artdet-in-apple" type="text" placeholder="Apple Music artist ID"></div>
+              <div class="fg"><label>YouTube Channel ID</label><input id="artdet-in-yt" type="text" placeholder="YouTube channel ID"></div>
+              <div class="fg"><label>Deezer ID</label><input id="artdet-in-deezer" type="text" placeholder="Deezer artist ID"></div>
+              <div class="fg"><label>Audiomack ID</label><input id="artdet-in-audiomack" type="text" placeholder="Audiomack artist ID"></div>
+              <div class="fg"><label>Boomplay ID</label><input id="artdet-in-boomplay" type="text" placeholder="Boomplay artist ID"></div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--line);padding-top:1.25rem;margin-bottom:1.25rem">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:.4rem">Last 90 Days Streams</div>
+            <div id="artdet-streams" style="font-size:26px;font-weight:800;color:#fff">—</div>
+          </div>
+
+          <div style="border-top:1px solid var(--line);padding-top:1.25rem">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:.6rem">Social Links</div>
+            <div id="artdet-social-view" style="font-size:13px;color:rgba(255,255,255,.6);line-height:2.1"></div>
+            <div id="artdet-social-edit" style="display:none">
+              <div class="fg"><label>Facebook</label><input id="artdet-in-facebook" type="text" placeholder="@handle or URL"></div>
+              <div class="fg"><label>X (Twitter)</label><input id="artdet-in-twitter" type="text" placeholder="@handle or URL"></div>
+              <div class="fg"><label>Instagram</label><input id="artdet-in-instagram" type="text" placeholder="@handle or URL"></div>
+              <div class="fg"><label>YouTube</label><input id="artdet-in-youtube" type="text" placeholder="@handle or URL"></div>
+              <div class="fg"><label>TikTok</label><input id="artdet-in-tiktok" type="text" placeholder="@handle or URL"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:1.25rem">
+            <a id="artdet-edit-link" onclick="toggleArtistDetailEdit()" style="font-size:12px;color:var(--gold);text-decoration:underline;cursor:pointer">Edit artist profile</a>
+            <div id="artdet-edit-actions" style="display:none;gap:8px;margin-top:.75rem">
+              <button class="btn btn-gold btn-sm" id="artdet-save-btn" onclick="saveArtistDetailProfile()"><i class="ti ti-device-floppy"></i> Save</button>
+              <button class="btn btn-sm" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4)" onclick="toggleArtistDetailEdit(false)">Cancel</button>
+            </div>
+          </div>
         </div>
-        <div class="fg"><label>Bio</label><textarea id="roster-profile-bio" placeholder="A short bio for this artist's public page..." style="min-height:90px"></textarea></div>
-        <div class="fg"><label>Instagram</label><input id="roster-profile-instagram" type="text" placeholder="@handle or full URL"></div>
-        <div class="fg"><label>X (Twitter)</label><input id="roster-profile-twitter" type="text" placeholder="@handle or full URL"></div>
-        <div class="fg"><label>TikTok</label><input id="roster-profile-tiktok" type="text" placeholder="@handle or full URL"></div>
-        <div style="display:flex;gap:8px;margin-top:.5rem">
-          <button class="btn" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5)" onclick="closeRosterProfileModal()">Cancel</button>
-          <button class="btn btn-gold" id="roster-profile-save-btn" style="flex:1;justify-content:center" onclick="saveRosterProfile()"><i class="ti ti-device-floppy"></i> Save</button>
+
+        <!-- RIGHT MAIN -->
+        <div style="flex:1;min-width:280px">
+          <div style="display:flex;gap:1.5rem;border-bottom:1px solid var(--line);margin-bottom:1.5rem">
+            <div class="an-v2-navitem active" style="width:auto;padding:8px 0;border-radius:0;border-bottom:2px solid var(--gold)">Overview</div>
+            <div class="an-v2-navitem" style="width:auto;padding:8px 0;border-radius:0;cursor:pointer" onclick="goToArtistReleasesFromDetail()">Releases</div>
+          </div>
+
+          <h1 style="font-size:26px;font-weight:800;color:#fff;margin-bottom:1.5rem"><span id="artdet-name2"></span> <span style="font-weight:400;color:rgba(255,255,255,.4)">Overview</span></h1>
+
+          <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.75rem;display:flex;margin-bottom:2rem">
+            <div style="flex:1;text-align:center">
+              <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.5rem">Releases</div>
+              <div id="artdet-stat-releases" style="font-size:26px;font-weight:800;color:var(--gold)">—</div>
+            </div>
+            <div style="width:1px;background:var(--line)"></div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.5rem">Tracks</div>
+              <div id="artdet-stat-tracks" style="font-size:26px;font-weight:800;color:var(--gold)">—</div>
+            </div>
+            <div style="width:1px;background:var(--line)"></div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.5rem">Lifetime Streams</div>
+              <div id="artdet-stat-streams" style="font-size:26px;font-weight:800;color:var(--gold)">—</div>
+            </div>
+          </div>
+
+          <h2 style="font-size:19px;font-weight:800;color:#fff;margin-bottom:1.25rem"><span id="artdet-name3"></span> <span style="font-weight:400;color:rgba(255,255,255,.4)">Sales &amp; Trends</span></h2>
+          <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.75rem;display:flex;gap:2rem;flex-wrap:wrap">
+            <div style="flex:1;min-width:220px">
+              <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:1rem">See how much this artist has earned and view royalties by release.</p>
+              <button class="btn" style="background:transparent;border:1px solid var(--gold);color:var(--gold)" onclick="goPage('royalties',null)">View Royalties</button>
+            </div>
+            <div style="width:1px;background:var(--line)"></div>
+            <div style="flex:1;min-width:220px">
+              <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:1rem">Discover how this artist's music is performing across every platform.</p>
+              <button class="btn" style="background:transparent;border:1px solid var(--gold);color:var(--gold)" onclick="goPage('analytics',null)">View Analytics</button>
+            </div>
+          </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -4089,7 +4175,7 @@ function goPage(id,el){
   if(id==='submit')initWizard();
   if(id==='royalties'){loadRoyalties();}
   if(id==='payout')loadPayout();
-  if(id==='myartists')loadMyArtistsGrid();
+  if(id==='myartists'){closeMyArtistDetail();loadMyArtistsGrid();}
   if(id==='profile')loadProfileStats();
   if(id==='upgrade')refreshProfileAndUpgradePage();
   if(id==='support')loadMySupportMessages();
@@ -4981,7 +5067,7 @@ function closeReleaseModal(){
     history.replaceState({page:'releases'},'',pagePath('releases'));
   }
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal();closeArtistModal();closePaystack();closeRosterProfileModal();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal();closeArtistModal();closePaystack();closeMyArtistDetail();}});
 
 
 // ── ANALYTICS ──────────────────────────────────────────
@@ -6058,8 +6144,7 @@ function renderMyArtistsGrid(counts){
     const editDeleteIcons=locked?'':'<button onclick="event.stopPropagation();startEditRosterArtist(\''+a.id+'\')" title="Edit name" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-pencil" style="font-size:12px"></i></button>'
       +'<button onclick="event.stopPropagation();deleteRosterArtist(\''+a.id+'\')" title="Remove" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-trash" style="font-size:12px"></i></button>';
     const shareIcon='<button onclick="event.stopPropagation();copyRosterArtistLink(\''+a.id+'\')" title="Copy public page link" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-link" style="font-size:12px"></i></button>';
-    const profileIcon='<button onclick="event.stopPropagation();openRosterProfileModal(\''+a.id+'\')" title="Edit bio & social links" style="background:rgba(0,0,0,.06);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center"><i class="ti ti-id-badge-2" style="font-size:12px"></i></button>';
-    const actions='<div style="position:absolute;top:10px;right:10px;display:flex;gap:4px">'+lockIcon+shareIcon+profileIcon+editDeleteIcons+'</div>';
+    const actions='<div style="position:absolute;top:10px;right:10px;display:flex;gap:4px">'+lockIcon+shareIcon+editDeleteIcons+'</div>';
     const nameDisplay=locked
       ?'<div id="rname-'+a.id+'" style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div>'
       :'<div id="rname-'+a.id+'"><div id="rname-view-'+a.id+'" style="font-size:15px;font-weight:700;color:#15151a">'+esc(a.name)+'</div><div id="rname-edit-'+a.id+'" style="display:none"><input id="rname-input-'+a.id+'" type="text" value="'+esc(a.name)+'" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')saveEditRosterArtist(\''+a.id+'\');if(event.key===\'Escape\')cancelEditRosterArtist(\''+a.id+'\')" style="width:100%;text-align:center;font-size:14px;font-weight:700;border:1px solid #7a6ff0;border-radius:6px;padding:4px 8px;margin-bottom:6px"><div style="display:flex;gap:4px;justify-content:center" onclick="event.stopPropagation()"><button onclick="saveEditRosterArtist(\''+a.id+'\')" class="btn btn-gold btn-sm" style="padding:3px 10px;font-size:11px">Save</button><button onclick="cancelEditRosterArtist(\''+a.id+'\')" class="btn btn-sm" style="padding:3px 10px;font-size:11px;background:rgba(0,0,0,.06);color:rgba(0,0,0,.5)">Cancel</button></div></div></div>';
@@ -6069,7 +6154,7 @@ function renderMyArtistsGrid(counts){
       +'<div style="width:80px;height:80px;border-radius:50%;background:#eceaf8;display:flex;align-items:center;justify-content:center;overflow:hidden">'+avatarInner+'</div>'
       +'<label onclick="event.stopPropagation()" title="Upload photo" style="position:absolute;bottom:-2px;right:-2px;width:26px;height:26px;border-radius:50%;background:#7a6ff0;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff"><i class="ti ti-camera" style="font-size:12px;color:#fff"></i><input type="file" accept="image/*" style="display:none" onchange="uploadRosterAvatar(\''+a.id+'\',this)"></label>'
       +'</div>';
-    return '<div onclick="goToArtistReleases(\''+esc(a.name).replace(/'/g,"\\'")+'\')" style="background:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;position:relative;cursor:pointer">'+actions+avatar+nameDisplay+'<div style="font-size:12px;color:#7a6ff0;font-weight:600;margin-top:4px">'+n+' Release'+(n===1?'':'s')+'</div><div style="font-size:11px;color:rgba(0,0,0,.4);margin-top:2px">'+stats+'</div>'+lockedNote+'</div>';
+    return '<div onclick="openMyArtistDetail(\''+a.id+'\')" style="background:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;position:relative;cursor:pointer">'+actions+avatar+nameDisplay+'<div style="font-size:12px;color:#7a6ff0;font-weight:600;margin-top:4px">'+n+' Release'+(n===1?'':'s')+'</div><div style="font-size:11px;color:rgba(0,0,0,.4);margin-top:2px">'+stats+'</div>'+lockedNote+'</div>';
   }).join('');
   const addTile=_rosterCache.length<max?'<div onclick="document.getElementById(\'myartist-add-name\').focus()" style="border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:1.5rem 1rem;text-align:center;cursor:text;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:178px"><div style="width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem"><i class="ti ti-plus" style="font-size:24px;color:rgba(255,255,255,.6)"></i></div><input id="myartist-add-name" type="text" placeholder="Artist name" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')addRosterArtist()" style="background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:13px;width:100%;text-align:center;margin-bottom:8px"><button id="roster-add-btn" onclick="event.stopPropagation();addRosterArtist()" class="btn btn-gold btn-sm" style="width:100%;justify-content:center">Add Artist</button></div>':'';
   grid.innerHTML=(cards||'')+addTile;
@@ -6113,40 +6198,149 @@ async function deleteRosterArtist(id){
     toast('Could not remove: '+(e.message||'please try again.'),'err');
   }
 }
-function openRosterProfileModal(id){
+let _currentArtistDetailId=null;
+function socialLinkUrl(handle,platform){
+  if(!handle)return null;
+  if(/^https?:\/\//i.test(handle))return handle;
+  const clean=handle.replace(/^@/,'');
+  const bases={instagram:'https://instagram.com/',twitter:'https://x.com/',tiktok:'https://tiktok.com/@',facebook:'https://facebook.com/',youtube:'https://youtube.com/'+(clean.startsWith('@')?'':'@')};
+  return (bases[platform]||'')+clean;
+}
+async function openMyArtistDetail(id){
   const a=_rosterCache.find(a=>a.id===id);if(!a)return;
-  document.getElementById('roster-profile-name').textContent=a.name;
-  document.getElementById('roster-profile-bio').value=a.bio||'';
-  document.getElementById('roster-profile-instagram').value=a.instagram||'';
-  document.getElementById('roster-profile-twitter').value=a.twitter||'';
-  document.getElementById('roster-profile-tiktok').value=a.tiktok||'';
-  document.getElementById('roster-profile-overlay').dataset.artistId=id;
-  document.getElementById('roster-profile-overlay').style.display='flex';
+  _currentArtistDetailId=id;
+  document.getElementById('myartists-list-view').style.display='none';
+  document.getElementById('myartist-detail-view').style.display='block';
+  toggleArtistDetailEdit(false);
+
+  document.getElementById('artdet-name').textContent=a.name;
+  document.getElementById('artdet-name2').textContent=a.name;
+  document.getElementById('artdet-name3').textContent=a.name;
+  const avWrap=document.getElementById('artdet-avatar-wrap');
+  avWrap.innerHTML=a.avatar_url?'<img src="'+esc(a.avatar_url)+'" alt="'+esc(a.name)+'" style="width:100%;height:100%;object-fit:cover">':'<i class="ti ti-camera" style="font-size:32px;color:rgba(255,255,255,.25)"></i>';
+
+  renderArtistDetailViewFields(a);
+
+  document.getElementById('artdet-streams').textContent=(_rosterStreams[a.name]||0).toLocaleString();
+  document.getElementById('artdet-stat-streams').textContent=(_rosterStreams[a.name]||0).toLocaleString();
+  const relCount=_rosterReleaseCounts[a.name]||0;
+  document.getElementById('artdet-stat-releases').textContent=relCount;
+  document.getElementById('artdet-stat-tracks').textContent='—';
+
+  // Track count needs a join across this artist's releases → release_tracks.
+  // Falls back gracefully (shows release count instead) if release_tracks
+  // isn't set up yet, or if this artist has no releases.
+  try{
+    const {data:rels}=await sb.from('releases').select('id').eq('user_id',user.id).eq('artist',a.name);
+    const ids=(rels||[]).map(r=>r.id);
+    if(!ids.length){document.getElementById('artdet-stat-tracks').textContent='0';return;}
+    const {data:tracks,error}=await sb.from('release_tracks').select('id').in('release_id',ids);
+    if(error)throw error;
+    document.getElementById('artdet-stat-tracks').textContent=(tracks||[]).length;
+  }catch(e){
+    console.error('Track count load error (falling back to release count):',e);
+    document.getElementById('artdet-stat-tracks').textContent=relCount;
+  }
 }
-function closeRosterProfileModal(){
-  document.getElementById('roster-profile-overlay').style.display='none';
+function renderArtistDetailViewFields(a){
+  const fieldRow=(label,val)=>'<div><span style="color:rgba(255,255,255,.35)">'+label+':</span> '+(val?esc(val):'<span style="color:rgba(255,255,255,.25)">—</span>')+'</div>';
+  document.getElementById('artdet-fields-view').innerHTML=
+    fieldRow('Type',a.artist_type)+fieldRow('Genre',a.genre)+fieldRow('Bio',a.bio)+fieldRow('Country',a.country)+fieldRow('Website',a.website);
+
+  const dspRow=(label,icon,val)=>'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><i class="ti '+icon+'" style="font-size:16px;color:rgba(255,255,255,.4);width:18px"></i><div><div style="font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.4px">'+label+'</div><div style="font-size:12px;color:rgba(255,255,255,.6)">'+(val?esc(val):'—')+'</div></div></div>';
+  document.getElementById('artdet-dsp-view').innerHTML=
+    dspRow('Spotify ID','ti-brand-spotify',a.spotify_id)+dspRow('Apple Music ID','ti-brand-apple',a.apple_music_id)+dspRow('YouTube Channel ID','ti-brand-youtube',a.youtube_channel_id)+dspRow('Deezer ID','ti-music',a.deezer_id)+dspRow('Audiomack ID','ti-music',a.audiomack_id)+dspRow('Boomplay ID','ti-music',a.boomplay_id);
+
+  const socialRow=(label,icon,handle,platform)=>{
+    const url=socialLinkUrl(handle,platform);
+    return '<div>'+(url?'<a href="'+esc(url)+'" target="_blank" rel="noopener" style="color:rgba(255,255,255,.6);text-decoration:none"><i class="ti '+icon+'" style="margin-right:6px;color:rgba(255,255,255,.4)"></i>'+label+'</a>':'<span style="color:rgba(255,255,255,.25)"><i class="ti '+icon+'" style="margin-right:6px"></i>'+label+'</span>')+'</div>';
+  };
+  document.getElementById('artdet-social-view').innerHTML=
+    socialRow('Facebook','ti-brand-facebook',a.facebook,'facebook')+socialRow('X','ti-brand-x',a.twitter,'twitter')+socialRow('Instagram','ti-brand-instagram',a.instagram,'instagram')+socialRow('YouTube','ti-brand-youtube',a.youtube,'youtube')+socialRow('TikTok','ti-brand-tiktok',a.tiktok,'tiktok');
 }
-async function saveRosterProfile(){
-  const id=document.getElementById('roster-profile-overlay').dataset.artistId;
-  if(!id)return;
-  const bio=document.getElementById('roster-profile-bio').value.trim();
-  const instagram=document.getElementById('roster-profile-instagram').value.trim();
-  const twitter=document.getElementById('roster-profile-twitter').value.trim();
-  const tiktok=document.getElementById('roster-profile-tiktok').value.trim();
-  const btn=document.getElementById('roster-profile-save-btn');
+function closeMyArtistDetail(){
+  document.getElementById('myartist-detail-view').style.display='none';
+  document.getElementById('myartists-list-view').style.display='block';
+  _currentArtistDetailId=null;
+}
+function goToArtistReleasesFromDetail(){
+  const a=_rosterCache.find(a=>a.id===_currentArtistDetailId);if(!a)return;
+  goToArtistReleases(a.name);
+}
+function toggleArtistDetailEdit(show){
+  const a=_rosterCache.find(a=>a.id===_currentArtistDetailId);
+  const opening=show!==undefined?show:document.getElementById('artdet-fields-edit').style.display==='none';
+  document.getElementById('artdet-fields-view').style.display=opening?'none':'block';
+  document.getElementById('artdet-fields-edit').style.display=opening?'block':'none';
+  document.getElementById('artdet-dsp-view').style.display=opening?'none':'block';
+  document.getElementById('artdet-dsp-edit').style.display=opening?'block':'none';
+  document.getElementById('artdet-social-view').style.display=opening?'none':'block';
+  document.getElementById('artdet-social-edit').style.display=opening?'block':'none';
+  document.getElementById('artdet-edit-link').style.display=opening?'none':'inline';
+  document.getElementById('artdet-edit-actions').style.display=opening?'flex':'none';
+  if(opening&&a){
+    document.getElementById('artdet-in-type').value=a.artist_type||'';
+    document.getElementById('artdet-in-genre').value=a.genre||'';
+    document.getElementById('artdet-in-bio').value=a.bio||'';
+    document.getElementById('artdet-in-country').value=a.country||'';
+    document.getElementById('artdet-in-website').value=a.website||'';
+    document.getElementById('artdet-in-spotify').value=a.spotify_id||'';
+    document.getElementById('artdet-in-apple').value=a.apple_music_id||'';
+    document.getElementById('artdet-in-yt').value=a.youtube_channel_id||'';
+    document.getElementById('artdet-in-deezer').value=a.deezer_id||'';
+    document.getElementById('artdet-in-audiomack').value=a.audiomack_id||'';
+    document.getElementById('artdet-in-boomplay').value=a.boomplay_id||'';
+    document.getElementById('artdet-in-facebook').value=a.facebook||'';
+    document.getElementById('artdet-in-twitter').value=a.twitter||'';
+    document.getElementById('artdet-in-instagram').value=a.instagram||'';
+    document.getElementById('artdet-in-youtube').value=a.youtube||'';
+    document.getElementById('artdet-in-tiktok').value=a.tiktok||'';
+  }
+}
+async function saveArtistDetailProfile(){
+  const id=_currentArtistDetailId;if(!id)return;
+  const row={
+    artist_type:document.getElementById('artdet-in-type').value.trim(),
+    genre:document.getElementById('artdet-in-genre').value.trim(),
+    bio:document.getElementById('artdet-in-bio').value.trim(),
+    country:document.getElementById('artdet-in-country').value.trim(),
+    website:document.getElementById('artdet-in-website').value.trim(),
+    spotify_id:document.getElementById('artdet-in-spotify').value.trim(),
+    apple_music_id:document.getElementById('artdet-in-apple').value.trim(),
+    youtube_channel_id:document.getElementById('artdet-in-yt').value.trim(),
+    deezer_id:document.getElementById('artdet-in-deezer').value.trim(),
+    audiomack_id:document.getElementById('artdet-in-audiomack').value.trim(),
+    boomplay_id:document.getElementById('artdet-in-boomplay').value.trim(),
+    facebook:document.getElementById('artdet-in-facebook').value.trim(),
+    twitter:document.getElementById('artdet-in-twitter').value.trim(),
+    instagram:document.getElementById('artdet-in-instagram').value.trim(),
+    youtube:document.getElementById('artdet-in-youtube').value.trim(),
+    tiktok:document.getElementById('artdet-in-tiktok').value.trim()
+  };
+  const btn=document.getElementById('artdet-save-btn');
   if(btn){btn.disabled=true;btn.innerHTML='<span class="loader"></span> Saving...';}
   try{
-    const {error}=await sb.from('roster_artists').update({bio,instagram,twitter,tiktok}).eq('id',id);
+    const {error}=await sb.from('roster_artists').update(row).eq('id',id);
     if(error)throw error;
     const a=_rosterCache.find(a=>a.id===id);
-    if(a){a.bio=bio;a.instagram=instagram;a.twitter=twitter;a.tiktok=tiktok;}
+    if(a)Object.assign(a,row);
     toast('Profile updated!','ok');
-    closeRosterProfileModal();
+    renderArtistDetailViewFields(a);
+    toggleArtistDetailEdit(false);
   }catch(e){
-    console.error('Save roster profile error:',e);
-    toast('Could not save: '+(e.message||'run the roster_artist_profile SQL in Supabase first'),'err');
+    console.error('Save artist profile error:',e);
+    toast('Could not save: '+(e.message||'run the roster_artist_profile_v2 SQL in Supabase first'),'err');
   }
   if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save';}
+}
+async function uploadArtistDetailAvatar(input){
+  const id=_currentArtistDetailId;if(!id||!input.files[0])return;
+  await uploadRosterAvatar(id,input);
+  const a=_rosterCache.find(a=>a.id===id);
+  if(a){
+    const avWrap=document.getElementById('artdet-avatar-wrap');
+    if(avWrap)avWrap.innerHTML=a.avatar_url?'<img src="'+esc(a.avatar_url)+'" alt="'+esc(a.name)+'" style="width:100%;height:100%;object-fit:cover">':'<i class="ti ti-camera" style="font-size:32px;color:rgba(255,255,255,.25)"></i>';
+  }
 }
 function startEditRosterArtist(id){
   const count=_rosterReleaseCounts[_rosterCache.find(a=>a.id===id)?.name||'']||0;
