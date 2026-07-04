@@ -3583,11 +3583,22 @@ function copyAccountId(){
 
 
 // ── VIEWS ──────────────────────────────────────────────
+let _currencyDetectionStarted=false;
+function startCurrencyDetectionOnce(){
+  if(_currencyDetectionStarted)return;
+  _currencyDetectionStarted=true;
+  currentDisplayCurrency=detectDisplayCurrency();
+  refreshAllDisplayedPrices();
+  const csLabel=document.getElementById('currency-switcher-label');if(csLabel)csLabel.textContent=currentDisplayCurrency;
+  fetchLiveCurrencyRates(); // fire-and-forget, fails safely to fallback rates already in place
+  detectCurrencyByIP(); // fire-and-forget, upgrades the locale guess to a real IP-based country match if it succeeds
+}
 function showView(id){
   const boot=document.getElementById('boot-loader');if(boot)boot.style.display='none';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   updateSupportBubble();
+  if(id==='landing')startCurrencyDetectionOnce();
 }
 
 // ── AUTH ──────────────────────────────────────────────
@@ -9534,12 +9545,11 @@ function renderSplitRows(){
   const style=document.createElement('style');
   style.textContent='@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}';
   document.head.appendChild(style);
-  // Currency detection — instant locale-based guess first, live rates fetched in background after
-  currentDisplayCurrency=detectDisplayCurrency();
-  refreshAllDisplayedPrices();
-  const csLabel=document.getElementById('currency-switcher-label');if(csLabel)csLabel.textContent=currentDisplayCurrency;
-  fetchLiveCurrencyRates(); // fire-and-forget, fails safely to fallback rates already in place
-  detectCurrencyByIP(); // fire-and-forget, upgrades the locale guess to a real IP-based country match if it succeeds
+  // Currency detection now only runs when the landing page is actually shown (see
+  // startCurrencyDetectionOnce, triggered from showView) — not on every app load
+  // regardless of destination. A logged-in user going straight to their dashboard
+  // never needs an IP lookup or a live exchange-rate fetch for a pricing table
+  // they'll never see.
   const linkId=new URLSearchParams(window.location.search).get('link');
   if(linkId){
     showView('smartlink');
