@@ -2633,6 +2633,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div class="slabel" style="margin-bottom:1rem"><i class="ti ti-send"></i> New Message</div>
           <div class="fg"><label>Subject</label><input id="sup-subject" type="text" placeholder="What's this about?"></div>
           <div class="fg"><label>Message</label><textarea id="sup-body" placeholder="Describe your issue or question..." style="min-height:140px"></textarea></div>
+          <div class="fg">
+            <label>Attachment (optional)</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button type="button" class="btn adm-btn-sec btn-sm" onclick="document.getElementById('sup-attachment-input').click()"><i class="ti ti-paperclip"></i> Attach File</button>
+              <span id="sup-attachment-name" style="font-size:12px;color:rgba(255,255,255,.4)"></span>
+              <button type="button" id="sup-attachment-clear" onclick="clearSupportAttachment()" style="display:none;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:16px;padding:0">×</button>
+            </div>
+            <input type="file" id="sup-attachment-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="onSupportAttachmentSelected(this)">
+          </div>
           <button class="btn btn-gold" id="sup-send-btn" style="width:100%;justify-content:center" onclick="sendSupportMessage()"><i class="ti ti-send"></i> Send Message</button>
           <p style="font-size:11px;color:rgba(255,255,255,.3);margin-top:.75rem">We typically reply within 24 hours.</p>
         </div>
@@ -3116,6 +3125,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div class="fg"><label>To (email)</label><input id="msg-to" type="email" placeholder="artist@email.com"></div>
             <div class="fg"><label>Subject</label><input id="msg-subject" type="text" placeholder="Message subject"></div>
             <div class="fg"><label>Message</label><textarea id="msg-body" placeholder="Type your message..." style="min-height:120px"></textarea></div>
+            <div class="fg">
+              <label>Attachment (optional)</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <button type="button" class="btn adm-btn-sec btn-sm" onclick="document.getElementById('msg-attachment-input').click()"><i class="ti ti-paperclip"></i> Attach File</button>
+                <span id="msg-attachment-name" style="font-size:12px;color:rgba(255,255,255,.4)"></span>
+                <button type="button" id="msg-attachment-clear" onclick="clearAdminAttachment()" style="display:none;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:16px;padding:0">×</button>
+              </div>
+              <input type="file" id="msg-attachment-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="onAdminAttachmentSelected(this)">
+            </div>
             <button class="btn btn-purple" style="width:100%;justify-content:center" onclick="sendAdminMessage()"><i class="ti ti-send"></i> Send Message</button>
           </div>
         </div>
@@ -8074,7 +8092,7 @@ function renderMessageThreads(threads){
       +'<div id="'+threadId+'-body" style="display:none;padding:0 1.1rem 1rem;border-top:1px solid rgba(255,255,255,.06)">'
         +t.messages.map(m=>{
           const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';const isIn=m.direction==='in';
-          return '<div style="padding-top:.75rem"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.35rem;gap:8px"><div style="font-size:12px;font-weight:600;color:#fff;min-width:0">'+(isIn?'📨 '+esc(t.name):'📤 You')+' <span style="font-weight:400;color:rgba(255,255,255,.3)">· '+esc(m.subject||'')+'</span></div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><span style="font-size:10px;color:rgba(255,255,255,.25)">'+d+'</span>'+(isIn?'<button class="btn btn-purple btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();replyToMessage(\''+m.id+'\')"><i class="ti ti-arrow-back-up"></i> Reply</button>':'')+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();markRead(\''+m.id+'\')">Mark read</button>':'')+'<button class="btn adm-btn-sec btn-sm" title="Delete message" style="padding:2px 6px;font-size:10px;color:#f87171" onclick="event.stopPropagation();deleteAdminMessage(\''+m.id+'\')"><i class="ti ti-trash"></i></button></div></div><div style="font-size:12.5px;color:rgba(255,255,255,.6);white-space:pre-wrap">'+esc(m.body||'')+'</div></div>';
+          return '<div style="padding-top:.75rem"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.35rem;gap:8px"><div style="font-size:12px;font-weight:600;color:#fff;min-width:0">'+(isIn?'📨 '+esc(t.name):'📤 You')+' <span style="font-weight:400;color:rgba(255,255,255,.3)">· '+esc(m.subject||'')+'</span></div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><span style="font-size:10px;color:rgba(255,255,255,.25)">'+d+'</span>'+(isIn?'<button class="btn btn-purple btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();replyToMessage(\''+m.id+'\')"><i class="ti ti-arrow-back-up"></i> Reply</button>':'')+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();markRead(\''+m.id+'\')">Mark read</button>':'')+'<button class="btn adm-btn-sec btn-sm" title="Delete message" style="padding:2px 6px;font-size:10px;color:#f87171" onclick="event.stopPropagation();deleteAdminMessage(\''+m.id+'\')"><i class="ti ti-trash"></i></button></div></div><div style="font-size:12.5px;color:rgba(255,255,255,.6);white-space:pre-wrap">'+esc(m.body||'')+'</div>'+renderAttachmentChip(m)+'</div>';
         }).join('')
       +'</div>'
     +'</div>';
@@ -8211,13 +8229,40 @@ async function markTakedownCompleted(id){
   }
   toast('Marked as completed','ok');loadNotifications();
 }
+let _adminMsgAttachmentFile=null;
+function onAdminAttachmentSelected(input){
+  if(!input.files[0])return;
+  const file=input.files[0];
+  const err=validateAttachmentFile(file);
+  if(err){toast(err,'err');input.value='';return;}
+  _adminMsgAttachmentFile=file;
+  const nameEl=document.getElementById('msg-attachment-name');if(nameEl)nameEl.textContent=file.name;
+  const clearBtn=document.getElementById('msg-attachment-clear');if(clearBtn)clearBtn.style.display='inline';
+}
+function clearAdminAttachment(){
+  _adminMsgAttachmentFile=null;
+  const input=document.getElementById('msg-attachment-input');if(input)input.value='';
+  const nameEl=document.getElementById('msg-attachment-name');if(nameEl)nameEl.textContent='';
+  const clearBtn=document.getElementById('msg-attachment-clear');if(clearBtn)clearBtn.style.display='none';
+}
 async function sendAdminMessage(){
   const to=document.getElementById('msg-to').value.trim();const body=document.getElementById('msg-body').value.trim();const subject=document.getElementById('msg-subject')?.value.trim()||'Message from Blakkstone';
   if(!to||!body){toast('Fill in email and message','err');return;}
   try{
-    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:null});
+    let attachmentUrl=null,attachmentName=null;
+    if(_adminMsgAttachmentFile){
+      const file=_adminMsgAttachmentFile;
+      const ext=file.name.split('.').pop();
+      const path=user.id+'/support/'+Date.now()+'.'+ext;
+      const {error:upErr}=await sb.storage.from('attachments').upload(path,file);
+      if(upErr)throw new Error('Attachment upload failed: '+upErr.message);
+      const {data}=sb.storage.from('attachments').getPublicUrl(path);
+      attachmentUrl=data.publicUrl;
+      attachmentName=file.name;
+    }
+    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:null,attachment_url:attachmentUrl,attachment_name:attachmentName});
     if(error)throw error;
-    document.getElementById('msg-body').value='';toast('Message sent','ok');loadAdminMessages();
+    document.getElementById('msg-body').value='';clearAdminAttachment();toast('Message sent','ok');loadAdminMessages();
   }catch(e){console.error('Send admin message error:',e);toast('Could not send: '+(e.message||'please try again.'),'err');}
 }
 function toggleBroadcastPlanRows(){
@@ -8297,6 +8342,13 @@ function startSupportRealtime(){
     })
     .subscribe();
 }
+function renderAttachmentChip(m){
+  if(!m.attachment_url)return'';
+  const name=m.attachment_name||'Attachment';
+  const isImage=/\.(png|jpe?g|gif|webp)$/i.test(name);
+  const icon=isImage?'ti-photo':'ti-file-text';
+  return '<a href="'+esc(m.attachment_url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:6px;margin-top:.5rem;padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:12px;color:var(--gold);text-decoration:none"><i class="ti '+icon+'"></i> '+esc(name)+' <i class="ti ti-external-link" style="font-size:11px;opacity:.6"></i></a>';
+}
 function renderSupportThreads(threads){
   const container=document.getElementById('my-messages-list');if(!container)return;
   if(!threads.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet. Send one and we\'ll get back to you.</p></div>';return;}
@@ -8319,12 +8371,35 @@ function renderSupportThreads(threads){
       +'<div id="'+threadId+'-body" style="display:none;padding:0 1.1rem 1rem;border-top:1px solid rgba(255,255,255,.06)">'
         +t.messages.map(m=>{
           const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';const fromMe=m.direction==='in';
-          return '<div style="padding-top:.75rem"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.35rem;gap:8px"><div style="font-size:12px;font-weight:600;color:#fff">'+(fromMe?'<i class="ti ti-arrow-up-right" style="color:rgba(255,255,255,.3)"></i> You':'<i class="ti ti-headset" style="color:var(--gold)"></i> Blakkstone Support')+'</div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><span style="font-size:10px;color:rgba(255,255,255,.25)">'+d+'</span><button class="btn adm-btn-sec btn-sm" title="Delete message" style="padding:2px 6px;font-size:10px;color:#f87171" onclick="event.stopPropagation();deleteSupportMessage(\''+m.id+'\')"><i class="ti ti-trash"></i></button></div></div><div style="font-size:13px;color:rgba(255,255,255,.6);white-space:pre-wrap">'+esc(m.body||'')+'</div></div>';
+          return '<div style="padding-top:.75rem"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.35rem;gap:8px"><div style="font-size:12px;font-weight:600;color:#fff">'+(fromMe?'<i class="ti ti-arrow-up-right" style="color:rgba(255,255,255,.3)"></i> You':'<i class="ti ti-headset" style="color:var(--gold)"></i> Blakkstone Support')+'</div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><span style="font-size:10px;color:rgba(255,255,255,.25)">'+d+'</span><button class="btn adm-btn-sec btn-sm" title="Delete message" style="padding:2px 6px;font-size:10px;color:#f87171" onclick="event.stopPropagation();deleteSupportMessage(\''+m.id+'\')"><i class="ti ti-trash"></i></button></div></div><div style="font-size:13px;color:rgba(255,255,255,.6);white-space:pre-wrap">'+esc(m.body||'')+'</div>'+renderAttachmentChip(m)+'</div>';
         }).join('')
         +'<div style="padding-top:.75rem"><button class="btn adm-btn-sec btn-sm" style="font-size:11px" onclick="event.stopPropagation();continueSupportThread(\''+threadId+'\')"><i class="ti ti-arrow-back-up"></i> Continue this conversation</button></div>'
       +'</div>'
     +'</div>';
   }).join('');
+}
+function validateAttachmentFile(file){
+  const maxBytes=10*1024*1024;
+  if(file.size>maxBytes){
+    return 'That file is too large ('+(file.size/1024/1024).toFixed(1)+'MB) — please choose one under 10MB.';
+  }
+  return null;
+}
+let _supAttachmentFile=null;
+function onSupportAttachmentSelected(input){
+  if(!input.files[0])return;
+  const file=input.files[0];
+  const err=validateAttachmentFile(file);
+  if(err){toast(err,'err');input.value='';return;}
+  _supAttachmentFile=file;
+  const nameEl=document.getElementById('sup-attachment-name');if(nameEl)nameEl.textContent=file.name;
+  const clearBtn=document.getElementById('sup-attachment-clear');if(clearBtn)clearBtn.style.display='inline';
+}
+function clearSupportAttachment(){
+  _supAttachmentFile=null;
+  const input=document.getElementById('sup-attachment-input');if(input)input.value='';
+  const nameEl=document.getElementById('sup-attachment-name');if(nameEl)nameEl.textContent='';
+  const clearBtn=document.getElementById('sup-attachment-clear');if(clearBtn)clearBtn.style.display='none';
 }
 async function sendSupportMessage(){
   const btn=document.getElementById('sup-send-btn');
@@ -8332,9 +8407,21 @@ async function sendSupportMessage(){
   if(!body){toast('Write a message first','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Sending...';
   try{
-    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:ADMIN_EMAIL,subject:subject||'Message from '+(profile?.artist_name||profile?.full_name||user.email),body,direction:'in',read_at:null});
+    let attachmentUrl=null,attachmentName=null;
+    if(_supAttachmentFile){
+      const file=_supAttachmentFile;
+      const ext=file.name.split('.').pop();
+      const path=user.id+'/support/'+Date.now()+'.'+ext;
+      const {error:upErr}=await sb.storage.from('attachments').upload(path,file);
+      if(upErr)throw new Error('Attachment upload failed: '+upErr.message);
+      const {data}=sb.storage.from('attachments').getPublicUrl(path);
+      attachmentUrl=data.publicUrl;
+      attachmentName=file.name;
+    }
+    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:ADMIN_EMAIL,subject:subject||'Message from '+(profile?.artist_name||profile?.full_name||user.email),body,direction:'in',read_at:null,attachment_url:attachmentUrl,attachment_name:attachmentName});
     if(error)throw error;
     document.getElementById('sup-subject').value='';document.getElementById('sup-body').value='';
+    clearSupportAttachment();
     toast("Message sent! We'll get back to you soon.",'ok');
     loadMySupportMessages();
   }catch(e){
