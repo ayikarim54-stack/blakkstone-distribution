@@ -5819,7 +5819,10 @@ function goToArtistReleases(name){
 }
 async function uploadRosterAvatar(id,input){
   if(!input.files[0])return;
-  const file=input.files[0];const ext=file.name.split('.').pop();
+  const file=input.files[0];
+  const validationError=validateImageFile(file);
+  if(validationError){toast(validationError,'err');input.value='';return;}
+  const ext=file.name.split('.').pop();
   const path=user.id+'/roster/'+id+'.'+ext;
   toast('Uploading photo...');
   try{
@@ -6101,8 +6104,21 @@ function showLegalPage(page){
     ].join('');
   }
 }
+function validateImageFile(file){
+  if(!file.type||!file.type.startsWith('image/')){
+    return 'Please choose an image file (JPG, PNG, etc).';
+  }
+  const maxBytes=5*1024*1024;
+  if(file.size>maxBytes){
+    return 'That image is too large ('+(file.size/1024/1024).toFixed(1)+'MB) — please choose one under 5MB.';
+  }
+  return null;
+}
 async function uploadAvatar(input){
-  if(!input.files[0])return;const file=input.files[0];const ext=file.name.split('.').pop();
+  if(!input.files[0])return;const file=input.files[0];
+  const validationError=validateImageFile(file);
+  if(validationError){toast(validationError,'err');input.value='';return;}
+  const ext=file.name.split('.').pop();
   const path=user.id+'/avatar.'+ext;toast('Uploading photo...');
   const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
   if(error){toast('Upload failed: '+error.message,'err');return;}
