@@ -1509,6 +1509,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="tnav-item" id="admin-nav" style="display:none" onclick="goPage('admin',this)"><i class="ti ti-shield-check"></i> Admin <span id="notif-badge" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></div>
     </div>
     <div class="dash-topnav-right">
+      <div style="position:relative">
+        <button class="btn" id="artist-notif-btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:none;padding:7px 12px;position:relative" onclick="toggleNotifBell()" title="Notifications">
+          <i class="ti ti-bell"></i>
+          <span id="artist-notif-badge" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:20px;position:absolute;top:1px;right:1px;line-height:1.3">0</span>
+        </button>
+        <div id="artist-notif-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--dropdown);border:1px solid rgba(255,255,255,.12);border-radius:12px;width:340px;max-height:420px;overflow-y:auto;z-index:200;box-shadow:0 12px 30px rgba(0,0,0,.5)">
+          <div style="padding:.875rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;font-weight:700;color:#fff">Notifications</div>
+          <div id="artist-notif-list"></div>
+        </div>
+      </div>
       <div class="dash-user-chip" onclick="goPage('profile',null)">
         <div class="avatar" id="tnav-avatar"><i class="ti ti-user" style="font-size:13px"></i></div>
         <div>
@@ -3977,6 +3987,7 @@ function enterDashboard(){
       }
     });
     updateWelcomeTime();
+    loadArtistNotifications();
     if(adminNow){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();startRealtimeAdmin();requestNotifPermission();}
   }catch(e){console.error('enterDashboard:',e);showView('dashboard');goPage('overview',null);loadReleases();}
 }
@@ -4429,6 +4440,92 @@ function filterOvSearch(){
   if(!q){grid.innerHTML=base.slice(0,8).map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';return;}
   const filtered=base.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
   grid.innerHTML=filtered.map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-search"></i><p>No matches.</p></div>';
+}
+function getNotifLastSeen(){
+  if(!user)return null;
+  return localStorage.getItem('bs_notif_seen_'+user.id);
+}
+function setNotifLastSeen(){
+  if(!user)return;
+  localStorage.setItem('bs_notif_seen_'+user.id,new Date().toISOString());
+}
+let _artistNotifCache=[];
+async function loadArtistNotifications(){
+  if(!user)return;
+  try{
+    const {data:logs}=await sb.from('admin_audit_log').select('*').eq('target_user_id',user.id).in('field',['release_status','release_deleted','payout_status','payout_deleted','plan']).order('changed_at',{ascending:false}).limit(10);
+    const relIds=[...new Set((logs||[]).filter(l=>l.target_release_id).map(l=>l.target_release_id))];
+    let releaseMap={};
+    if(relIds.length){
+      const {data:rels}=await sb.from('releases').select('*').in('id',relIds);
+      (rels||[]).forEach(r=>{releaseMap[r.id]=r;_releaseMap[r.id]=r;});
+    }
+    const activityItems=(logs||[]).map(l=>({
+      text:describeActivityForArtist(l,releaseMap),
+      when:l.changed_at,
+      kind:'activity',
+      releaseId:l.target_release_id||null
+    })).filter(i=>i.text);
+
+    const {data:msgs}=await sb.from('messages').select('id,subject,created_at,read_at').eq('to_email',user.email).eq('direction','out').order('created_at',{ascending:false}).limit(5);
+    const msgItems=(msgs||[]).map(m=>({
+      text:'💬 Blakkstone Support replied: "'+(m.subject||'your message')+'"',
+      when:m.created_at,
+      kind:'message',
+      unread:!m.read_at
+    }));
+
+    const all=[...activityItems,...msgItems].sort((a,b)=>new Date(b.when)-new Date(a.when)).slice(0,10);
+    _artistNotifCache=all;
+
+    const lastSeen=getNotifLastSeen();
+    const unreadMsgCount=msgItems.filter(m=>m.unread).length;
+    const newActivityCount=lastSeen?activityItems.filter(a=>new Date(a.when)>new Date(lastSeen)).length:activityItems.length;
+    const totalBadge=unreadMsgCount+newActivityCount;
+
+    const badge=document.getElementById('artist-notif-badge');
+    if(badge){
+      if(totalBadge>0){badge.style.display='inline';badge.textContent=totalBadge>9?'9+':totalBadge;}
+      else badge.style.display='none';
+    }
+    renderArtistNotifDropdown();
+  }catch(e){
+    console.error('Artist notifications load error:',e);
+  }
+}
+function renderArtistNotifDropdown(){
+  const list=document.getElementById('artist-notif-list');
+  if(!list)return;
+  if(!_artistNotifCache.length){
+    list.innerHTML='<div style="padding:1.5rem 1rem;text-align:center;color:rgba(255,255,255,.3);font-size:13px">Nothing new yet</div>';
+    return;
+  }
+  list.innerHTML=_artistNotifCache.map(i=>{
+    const action=i.kind==='message'
+      ?"goPage('support',null);toggleNotifBell(false)"
+      :(i.releaseId?"openReleaseFromAnalytics('"+i.releaseId+"');toggleNotifBell(false)":"toggleNotifBell(false)");
+    return '<div onclick="'+action+'" style="padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;display:flex;justify-content:space-between;gap:10px" onmouseover="this.style.background=\'rgba(255,255,255,.03)\'" onmouseout="this.style.background=\'\'"><div style="font-size:13px;color:rgba(255,255,255,.8);flex:1">'+esc(i.text)+'</div><div style="font-size:10px;color:rgba(255,255,255,.3);white-space:nowrap;flex-shrink:0">'+timeSince(new Date(i.when))+'</div></div>';
+  }).join('');
+}
+function toggleNotifBell(forceState){
+  const dd=document.getElementById('artist-notif-dropdown');
+  if(!dd)return;
+  const opening=forceState!==undefined?forceState:dd.style.display==='none';
+  dd.style.display=opening?'block':'none';
+  if(opening){
+    setNotifLastSeen();
+    const badge=document.getElementById('artist-notif-badge');if(badge)badge.style.display='none';
+    document.addEventListener('click',closeNotifBellOnOutsideClick,{capture:true});
+  } else {
+    document.removeEventListener('click',closeNotifBellOnOutsideClick,{capture:true});
+  }
+}
+function closeNotifBellOnOutsideClick(e){
+  const dd=document.getElementById('artist-notif-dropdown');
+  const btn=document.getElementById('artist-notif-btn');
+  if(dd&&!dd.contains(e.target)&&!(btn&&btn.contains(e.target))){
+    toggleNotifBell(false);
+  }
 }
 function describeActivityForArtist(l,releaseMap){
   const rel=l.target_release_id?releaseMap[l.target_release_id]:null;
@@ -9823,9 +9920,13 @@ function renderSplitRows(){
   });
   // Poll every 30s for new payout requests as realtime fallback
   setInterval(async()=>{
-    if(!isAdmin()||!user)return;
-    await loadAdminStats();
-    await loadNotifications();
+    if(!user)return;
+    if(isAdmin()){
+      await loadAdminStats();
+      await loadNotifications();
+    } else {
+      await loadArtistNotifications();
+    }
   },30000);
 })();
 </script>
