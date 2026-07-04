@@ -8260,7 +8260,13 @@ async function sendAdminMessage(){
       attachmentUrl=data.publicUrl;
       attachmentName=file.name;
     }
-    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:null,attachment_url:attachmentUrl,attachment_name:attachmentName});
+    let insertPayload={from_id:user.id,from_email:user.email,to_email:to,subject,body,direction:'out',read_at:null,attachment_url:attachmentUrl,attachment_name:attachmentName};
+    let {error}=await sb.from('messages').insert(insertPayload);
+    if(error&&/attachment_url|attachment_name/i.test(error.message||'')){
+      delete insertPayload.attachment_url;delete insertPayload.attachment_name;
+      ({error}=await sb.from('messages').insert(insertPayload));
+      if(!error&&attachmentUrl)toast('Message sent, but the attachment could not be saved — run the message attachments SQL in Supabase','err');
+    }
     if(error)throw error;
     document.getElementById('msg-body').value='';clearAdminAttachment();toast('Message sent','ok');loadAdminMessages();
   }catch(e){console.error('Send admin message error:',e);toast('Could not send: '+(e.message||'please try again.'),'err');}
@@ -8418,7 +8424,13 @@ async function sendSupportMessage(){
       attachmentUrl=data.publicUrl;
       attachmentName=file.name;
     }
-    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:ADMIN_EMAIL,subject:subject||'Message from '+(profile?.artist_name||profile?.full_name||user.email),body,direction:'in',read_at:null,attachment_url:attachmentUrl,attachment_name:attachmentName});
+    let insertPayload={from_id:user.id,from_email:user.email,to_email:ADMIN_EMAIL,subject:subject||'Message from '+(profile?.artist_name||profile?.full_name||user.email),body,direction:'in',read_at:null,attachment_url:attachmentUrl,attachment_name:attachmentName};
+    let {error}=await sb.from('messages').insert(insertPayload);
+    if(error&&/attachment_url|attachment_name/i.test(error.message||'')){
+      delete insertPayload.attachment_url;delete insertPayload.attachment_name;
+      ({error}=await sb.from('messages').insert(insertPayload));
+      if(!error&&attachmentUrl)toast('Message sent, but the attachment could not be saved — run the message attachments SQL in Supabase','err');
+    }
     if(error)throw error;
     document.getElementById('sup-subject').value='';document.getElementById('sup-body').value='';
     clearSupportAttachment();
