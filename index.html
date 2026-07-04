@@ -3255,9 +3255,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <h3 id="pay-modal-title">Upgrade Plan</h3>
     <p id="pay-modal-desc">Keep 100% of your royalties with Blakkstone.</p>
     <ul id="pay-modal-feats" style="list-style:none;padding:0;margin:0 0 1rem;display:flex;flex-direction:column;gap:6px"></ul>
-    <div class="btog" id="billing-toggle">
-      <div class="bopt sel" id="b-monthly" style="pointer-events:none;opacity:.5">Monthly<strong id="b-monthly-price">$15</strong><small style="font-size:10px;color:var(--muted)">Not available</small></div>
-      <div class="bopt sel" id="b-yearly" onclick="setBilling('yearly')">Annual<strong id="b-yearly-price">$15</strong><small style="font-size:10px;color:var(--success)">Best value</small></div>
+    <div class="btog" id="billing-toggle" style="grid-template-columns:1fr">
+      <div class="bopt sel" id="b-yearly" style="cursor:default">Billed Annually<strong id="b-yearly-price">$15</strong><small style="font-size:10px;color:var(--success)">One payment, no auto-renewal</small></div>
     </div>
     <div class="fg"><label>Email</label><input id="pay-em" type="email" placeholder="you@email.com"></div>
     <div id="upgrade-discount-note" style="display:none;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);border-radius:9px;padding:.75rem 1rem;margin-bottom:.75rem;font-size:12.5px;color:#fff;line-height:1.6"></div>
@@ -3817,8 +3816,8 @@ function paywallPay(plan){
   const descEl=document.getElementById('pay-modal-desc');
   const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5+ artists, 0% commission, priority support.'};
   if(descEl) descEl.textContent=descs[plan]||'';
-  const mp=document.getElementById('b-monthly-price');const yp=document.getElementById('b-yearly-price');
-  if(mp) mp.textContent='$'+p.monthly;if(yp) yp.textContent='$'+p.yearly;
+  const yp=document.getElementById('b-yearly-price');
+  if(yp) yp.textContent='$'+p.yearly;
   updateRateNote();
 }
 async function logout(){
@@ -9375,7 +9374,6 @@ function openPaystack(plan){
   if(featsEl){
     featsEl.innerHTML=(PLAN_FEATURES[selectedPlan]||[]).map(f=>'<li style="display:flex;align-items:center;gap:7px;font-size:13px;color:rgba(255,255,255,.75)"><i class="ti ti-check" style="color:var(--gold);font-size:15px;flex-shrink:0"></i> '+f+'</li>').join('');
   }
-  document.getElementById('b-monthly-price').textContent='$'+p.monthly;
   document.getElementById('b-yearly-price').textContent='$'+p.yearly;
   billing='yearly';
   document.getElementById('b-yearly')?.classList.add('sel');
@@ -9387,7 +9385,6 @@ function openPaystack(plan){
 function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');currentUpgradeDiscount=null;}
 function setBilling(cycle){
   billing=cycle;
-  document.getElementById('b-monthly')?.classList.toggle('sel',cycle==='monthly');
   document.getElementById('b-yearly')?.classList.toggle('sel',cycle==='yearly');
   updateRateNote();
 }
