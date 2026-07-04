@@ -678,14 +678,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .an-mini-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.35);margin-bottom:.4rem}
 .an-mini-val{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px}
 /* Store breakdown bars in analytics */
-.an-store-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
-.an-store-row:last-child{border-bottom:none}
-.an-store-logo{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px}
-.an-store-logo img{width:18px;height:18px;object-fit:contain;display:block}
-.an-store-name{font-size:12px;color:rgba(255,255,255,.7);width:110px;flex-shrink:0;font-weight:500}
-.an-store-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-.an-store-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#D4AF37,#e8c97a)}
-.an-store-count{font-size:12px;color:rgba(255,255,255,.5);width:60px;text-align:right;flex-shrink:0}
+
 /* Top releases in analytics */
 .an-release-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .an-release-row:last-child{border-bottom:none}
@@ -825,6 +818,30 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .an-range-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.12);color:rgba(255,255,255,.45);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
 .an-range-btn:hover{color:#fff;border-color:rgba(255,255,255,.3)}
 .an-range-btn.active{background:var(--gold);border-color:var(--gold);color:#000}
+/* ANALYTICS V2 — sidebar layout matching the reference design */
+.an-v2-layout{display:flex;gap:1.5rem;align-items:flex-start}
+.an-v2-sidebar{width:180px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;position:sticky;top:1rem}
+.an-v2-navitem{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);cursor:pointer;border:none;background:transparent;text-align:left;width:100%;font-family:Inter,sans-serif}
+.an-v2-navitem:hover{color:#fff;background:rgba(255,255,255,.04)}
+.an-v2-navitem.active{background:rgba(212,175,55,.12);color:var(--gold)}
+.an-v2-navitem i{font-size:16px;flex-shrink:0}
+.an-v2-main{flex:1;min-width:0}
+.an-v2-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.an-v2-stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.25rem 1.5rem;box-shadow:inset 0 1px 0 var(--rim);display:flex;align-items:center;gap:1rem}
+.an-v2-stat-icon{width:42px;height:42px;border-radius:50%;background:rgba(212,175,55,.12);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.an-v2-stat-label{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:2px}
+.an-v2-stat-value{font-size:26px;font-weight:800;color:#fff;display:flex;align-items:baseline;gap:8px}
+.an-v2-stat-value small{font-size:12px;font-weight:700}
+.an-v2-legend{display:flex;align-items:center;gap:1.5rem;justify-content:center;margin-top:1rem;font-size:12px;color:rgba(255,255,255,.5)}
+.an-v2-legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+.an-v2-stores-table{width:100%;border-collapse:collapse}
+.an-v2-stores-table th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);padding:0 0 .75rem;border-bottom:1px solid var(--line)}
+.an-v2-stores-table th:not(:first-child){text-align:right}
+.an-v2-stores-table td{padding:.9rem 0;border-bottom:1px solid var(--line);font-size:13px;color:#fff}
+.an-v2-stores-table td:not(:first-child){text-align:right;color:rgba(255,255,255,.6)}
+.an-v2-stores-table tr:last-child td{border-bottom:none}
+.an-v2-store-name{display:flex;align-items:center;gap:10px;font-weight:600}
+@media(max-width:900px){.an-v2-layout{flex-direction:column}.an-v2-sidebar{width:100%;flex-direction:row;overflow-x:auto;position:static}.an-v2-stats{grid-template-columns:1fr}}
 .an-store-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);background:transparent;font-family:Inter,sans-serif;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
 .an-store-pill:hover{border-color:rgba(255,255,255,.3);color:#fff}
 .an-store-pill.active{border-color:var(--gold);color:var(--gold);background:rgba(212,175,55,.1)}
@@ -2378,7 +2395,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- PAGE HEADER -->
       <div class="ph" style="margin-bottom:1.5rem">
         <div>
-          <h1>Analytics</h1>
+          <h1 style="display:flex;align-items:center;gap:10px">Analytics & Trends <i class="ti ti-chart-line" style="color:var(--gold);font-size:26px"></i></h1>
           <p>Real streaming performance across all your releases.</p>
         </div>
         <!-- TIME RANGE FILTER -->
@@ -2398,90 +2415,93 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <button onclick="refreshAnalytics()" id="an-refresh-btn" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 12px;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px"><i class="ti ti-refresh" id="an-refresh-icon"></i> Refresh</button>
       </div>
 
-      <!-- HERO STAT CARDS -->
-      <div class="overview-cards" style="margin-bottom:1.5rem">
-        <div class="ov-card ov-card-1">
-          <div class="ov-card-icon"><i class="ti ti-wavesaw-mono"></i></div>
-          <div style="flex:1">
-            <div class="ov-card-label">Total Streams</div>
-            <div class="ov-card-value" id="a-streams">—</div>
-            <div class="ov-card-sub" id="a-streams-sub">All stores · selected period</div>
-          </div>
+      <div class="an-v2-layout">
+        <!-- SIDEBAR NAV -->
+        <div class="an-v2-sidebar">
+          <button class="an-v2-navitem active" id="an-v2-nav-metrics" onclick="setAnalyticsTab('metrics')"><i class="ti ti-chart-bar"></i> Metrics</button>
+          <button class="an-v2-navitem" id="an-v2-nav-releases" onclick="setAnalyticsTab('releases')"><i class="ti ti-music"></i> Releases</button>
+          <button class="an-v2-navitem" id="an-v2-nav-stores" onclick="setAnalyticsTab('stores')"><i class="ti ti-building-store"></i> Stores</button>
         </div>
-        <div class="ov-card ov-card-2">
-          <div class="ov-card-icon"><i class="ti ti-trending-up"></i></div>
-          <div style="flex:1">
-            <div class="ov-card-label">Daily Average</div>
-            <div class="ov-card-value" id="a-daily-avg">—</div>
-            <div class="ov-card-sub">Streams per day</div>
-          </div>
-        </div>
-        <div class="ov-card ov-card-3">
-          <div class="ov-card-icon"><i class="ti ti-music"></i></div>
-          <div style="flex:1">
-            <div class="ov-card-label">Live Releases</div>
-            <div class="ov-card-value" id="a-live">—</div>
-            <div class="ov-card-sub">On DSPs now</div>
-          </div>
-        </div>
-        <div class="ov-card ov-card-4">
-          <div class="ov-card-icon"><i class="ti ti-star"></i></div>
-          <div style="flex:1">
-            <div class="ov-card-label">Best Store</div>
-            <div class="ov-card-value" id="a-best-store" style="font-size:18px">—</div>
-            <div class="ov-card-sub" id="a-best-store-streams">Most streams</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- STREAM PERFORMANCE CHART -->
-      <div class="chart-card" style="margin-bottom:1.5rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px">
-          <div>
-            <div style="font-size:15px;font-weight:700;color:#fff">Stream Performance</div>
-            <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px" id="an-chart-subtitle">Real daily stream data</div>
+        <div class="an-v2-main">
+          <!-- METRICS TAB -->
+          <div id="an-v2-tab-metrics">
+            <div class="an-v2-stats">
+              <div class="an-v2-stat">
+                <div class="an-v2-stat-icon"><i class="ti ti-wavesaw-mono"></i></div>
+                <div>
+                  <div class="an-v2-stat-label">Total Streams</div>
+                  <div class="an-v2-stat-value" id="a-streams">—</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px" id="a-streams-sub">All stores · selected period</div>
+                </div>
+              </div>
+              <div class="an-v2-stat">
+                <div class="an-v2-stat-icon"><i class="ti ti-clock"></i></div>
+                <div>
+                  <div class="an-v2-stat-label">Daily Average</div>
+                  <div class="an-v2-stat-value" id="a-daily-avg">—</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Streams per day</div>
+                </div>
+              </div>
+              <div class="an-v2-stat">
+                <div class="an-v2-stat-icon"><i class="ti ti-star"></i></div>
+                <div>
+                  <div class="an-v2-stat-label">Best Store</div>
+                  <div class="an-v2-stat-value" id="a-best-store" style="font-size:19px">—</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px" id="a-best-store-streams">Most streams</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PERFORMANCE DATA CHART -->
+            <div class="chart-card">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;flex-wrap:wrap;gap:10px">
+                <div>
+                  <div style="font-size:17px;font-weight:800;color:#fff">Performance Data</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:2px" id="an-chart-subtitle">Real daily stream data</div>
+                </div>
+                <div id="an-store-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+              </div>
+              <div id="analytics-chart-wrap" style="width:100%;min-height:280px">
+                <div id="analytics-chart"></div>
+              </div>
+              <div class="an-v2-legend" id="an-v2-legend"></div>
+            </div>
           </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <!-- Store filter pills -->
-            <div id="an-store-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.4)">
-              <span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span> Streams
+
+          <!-- RELEASES TAB -->
+          <div id="an-v2-tab-releases" style="display:none">
+            <div class="chart-card">
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+                <i class="ti ti-music" style="color:var(--gold)"></i> Top Releases by Streams
+              </div>
+              <div id="an-top-releases"></div>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
+              <i class="ti ti-list" style="color:var(--gold)"></i> All Releases
+            </div>
+            <div class="dark-table-wrap">
+              <table>
+                <thead><tr><th>Release</th><th>Artist</th><th>Genre</th><th>Total Streams</th><th>Share</th><th>Status</th></tr></thead>
+                <tbody id="an-releases-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- STORES TAB -->
+          <div id="an-v2-tab-stores" style="display:none">
+            <div class="chart-card" style="margin-bottom:0">
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
+                <i class="ti ti-building-store" style="color:var(--gold)"></i> Stores
+                <span id="an-store-breakdown-label" style="font-size:11px;font-weight:400;color:rgba(255,255,255,.35);margin-left:4px">Real data</span>
+              </div>
+              <table class="an-v2-stores-table">
+                <thead><tr><th>Platform</th><th>Proportion</th><th>Streams</th></tr></thead>
+                <tbody id="an-stores-breakdown"></tbody>
+              </table>
             </div>
           </div>
         </div>
-        <div id="analytics-chart-wrap" style="width:100%;min-height:280px">
-          <div id="analytics-chart"></div>
-        </div>
-      </div>
-
-      <!-- STORE BREAKDOWN + TOP RELEASES -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
-        <!-- REAL STORE BREAKDOWN -->
-        <div class="chart-card" style="margin-bottom:0">
-          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
-            <i class="ti ti-chart-bar" style="color:var(--gold)"></i> Streams by Store
-            <span id="an-store-breakdown-label" style="font-size:11px;font-weight:400;color:rgba(255,255,255,.35);margin-left:4px">Real data</span>
-          </div>
-          <div id="an-stores-breakdown"></div>
-        </div>
-        <!-- TOP RELEASES -->
-        <div class="chart-card" style="margin-bottom:0">
-          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px">
-            <i class="ti ti-music" style="color:var(--gold)"></i> Top Releases by Streams
-          </div>
-          <div id="an-top-releases"></div>
-        </div>
-      </div>
-
-      <!-- ALL RELEASES TABLE -->
-      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;gap:6px">
-        <i class="ti ti-list" style="color:var(--gold)"></i> All Releases
-      </div>
-      <div class="dark-table-wrap" style="margin-bottom:1.5rem">
-        <table>
-          <thead><tr><th>Release</th><th>Artist</th><th>Genre</th><th>Total Streams</th><th>Share</th><th>Status</th></tr></thead>
-          <tbody id="an-releases-tbody"></tbody>
-        </table>
       </div>
     </div>
 
@@ -4838,6 +4858,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal()
 // ── ANALYTICS ──────────────────────────────────────────
 let anRangeDays=28, anFilterStore='all', anStreamData=[], anReleaseData=[];
 
+function setAnalyticsTab(tab){
+  ['metrics','releases','stores'].forEach(t=>{
+    const panel=document.getElementById('an-v2-tab-'+t);if(panel)panel.style.display=t===tab?'block':'none';
+    const nav=document.getElementById('an-v2-nav-'+t);if(nav)nav.classList.toggle('active',t===tab);
+  });
+}
 function setAnalyticsRange(days,btn){
   anRangeDays=days;
   document.querySelectorAll('.an-range-btn').forEach(b=>b.classList.remove('active'));
@@ -5001,20 +5027,20 @@ function renderAnalyticsChart(){
   const hasSynthetic = anStreamData.some(e=>e._synthetic);
   if(subtitle) subtitle.textContent = (anRangeDays===0?'All time':'Last '+anRangeDays+' days')+' · '+(anFilterStore==='all'?'All stores':anFilterStore)+(hasSynthetic?' · estimated':'');
 
+  const legendEl=document.getElementById('an-v2-legend');
+  if(legendEl)legendEl.innerHTML='';
+
   if(!filtered.length){
     wrap.innerHTML='<div style="height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.3)"><i class="ti ti-chart-line" style="font-size:40px;margin-bottom:.75rem;opacity:.3"></i><div style="font-size:14px;font-weight:600">No stream data yet</div><div style="font-size:12px;margin-top:4px;opacity:.6">Add real data in Admin → Streams</div></div>';
     return;
   }
 
-  // Group by date or month
-  const byDate={};
-  filtered.forEach(e=>{
-    const streams=anFilterStore==='all'?(e.total||0):(e[storeKey(anFilterStore)]||0);
-    byDate[e.date]=(byDate[e.date]||0)+streams;
-  });
+  function seriesValue(e){return anFilterStore==='all'?(e.total||0):(e[storeKey(anFilterStore)]||0);}
 
-  let points=[];
+  let points=[], prevPoints=null;
   if(anRangeDays>0){
+    const byDate={};
+    filtered.forEach(e=>{byDate[e.date]=(byDate[e.date]||0)+seriesValue(e);});
     const cutoff=getFilteredDates();
     const end=new Date();
     const d=new Date(cutoff+'T00:00:00');
@@ -5023,7 +5049,29 @@ function renderAnalyticsChart(){
       points.push({label:fmtDateShort(key,anRangeDays),val:byDate[key]||0});
       d.setDate(d.getDate()+1);
     }
+    // Previous period — same number of days, immediately preceding the current window,
+    // aligned by day-offset (not calendar date) so both lines share the same x-axis.
+    const prevEnd=new Date(cutoff+'T00:00:00');
+    const prevStart=new Date(prevEnd);prevStart.setDate(prevStart.getDate()-points.length);
+    const prevStartStr=prevStart.toISOString().split('T')[0];
+    const prevEndStr=cutoff;
+    const prevEntries=anStreamData.filter(e=>e.date>=prevStartStr&&e.date<prevEndStr);
+    const byDatePrev={};
+    prevEntries.forEach(e=>{byDatePrev[e.date]=(byDatePrev[e.date]||0)+seriesValue(e);});
+    prevPoints=[];
+    const pd=new Date(prevStart);
+    for(let i=0;i<points.length;i++){
+      const key=pd.toISOString().split('T')[0];
+      prevPoints.push(byDatePrev[key]||0);
+      pd.setDate(pd.getDate()+1);
+    }
+    if(legendEl){
+      const curLabel=(anRangeDays)+' day'+(anRangeDays===1?'':'s')+' — '+new Date(cutoff+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' to '+new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+      legendEl.innerHTML='<span><span class="an-v2-legend-dot" style="background:var(--gold)"></span>'+esc(curLabel)+'</span><span><span class="an-v2-legend-dot" style="background:rgba(255,255,255,.35)"></span>Previous '+anRangeDays+' day'+(anRangeDays===1?'':'s')+'</span>';
+    }
   } else {
+    const byDate={};
+    filtered.forEach(e=>{byDate[e.date]=(byDate[e.date]||0)+seriesValue(e);});
     const byMonth={};
     Object.entries(byDate).forEach(([date,v])=>{
       const m=date.slice(0,7);byMonth[m]=(byMonth[m]||0)+v;
@@ -5034,6 +5082,7 @@ function renderAnalyticsChart(){
       const yr=m.split('-')[0].slice(2);
       points.push({label:MONTHS[mo]+"'"+yr,val:v});
     });
+    // No fixed-length window for "all time", so a comparable "previous period" isn't meaningful — skip it.
   }
 
   if(!points.length){wrap.innerHTML='<div style="height:280px"></div>';return;}
@@ -5041,7 +5090,7 @@ function renderAnalyticsChart(){
   // Build SVG chart — always 100% wide, no sizing issues
   const W=800, H=280, padL=52, padR=20, padT=20, padB=36;
   const cW=W-padL-padR, cH=H-padT-padB;
-  const vals=points.map(p=>p.val);
+  const vals=points.map(p=>p.val).concat(prevPoints||[]);
   const maxVal=Math.max(...vals,1);
   const step=Math.max(1,Math.floor(points.length/10));
 
@@ -5067,6 +5116,16 @@ function renderAnalyticsChart(){
   // Fill path
   const fillPath=linePath+` L${coords[coords.length-1].x.toFixed(1)},${(padT+cH).toFixed(1)} L${coords[0].x.toFixed(1)},${(padT+cH).toFixed(1)} Z`;
 
+  // Previous-period comparison line (lighter, no fill, no dots)
+  let prevLinePath='';
+  if(prevPoints){
+    const prevCoords=prevPoints.map((v,i)=>({
+      x:padL+i*(cW/(prevPoints.length-1||1)),
+      y:padT+cH-(v/maxVal)*cH
+    }));
+    prevLinePath=prevCoords.map((c,i)=>(i===0?'M':'L')+c.x.toFixed(1)+','+c.y.toFixed(1)).join(' ');
+  }
+
   // X labels
   let xLabels='';
   points.forEach((p,i)=>{
@@ -5087,7 +5146,9 @@ function renderAnalyticsChart(){
   const bw=Math.max(4,cW/points.length);
   points.forEach((p,i)=>{
     const x=padL+i*(cW/(points.length-1||1));
-    tooltips+=`<rect x="${(x-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${cH}" fill="transparent" class="an-chart-hover" data-label="${p.label}" data-val="${p.val.toLocaleString()}"><title>${p.label}: ${p.val.toLocaleString()} streams</title></rect>`;
+    const prevVal=prevPoints?prevPoints[i]:null;
+    const titleText=prevVal!=null?`${p.label}: ${p.val.toLocaleString()} streams (previous period: ${prevVal.toLocaleString()})`:`${p.label}: ${p.val.toLocaleString()} streams`;
+    tooltips+=`<rect x="${(x-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${cH}" fill="transparent" class="an-chart-hover" data-label="${p.label}" data-val="${p.val.toLocaleString()}"><title>${titleText}</title></rect>`;
   });
 
   wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible">
@@ -5101,6 +5162,7 @@ function renderAnalyticsChart(){
     ${yLabels}
     ${xLabels}
     <path d="${fillPath}" fill="url(#chartGrad)"/>
+    ${prevLinePath?`<path d="${prevLinePath}" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="5,4"/>`:''}
     <path d="${linePath}" fill="none" stroke="#D4AF37" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     ${dots}
     ${tooltips}
@@ -5170,20 +5232,21 @@ function renderStoreBreakdown(){
   ];
   const totals={};
   stores.forEach(s=>{totals[s.key]=filtered.reduce((a,e)=>a+(e[s.key]||0),0);});
-  const maxVal=Math.max(...Object.values(totals),1);
   const totalAll=Object.values(totals).reduce((a,v)=>a+v,0);
 
   if(!totalAll){
-    stEl.innerHTML='<div style="font-size:13px;color:rgba(255,255,255,.3);text-align:center;padding:1.5rem 0">No stream data yet for this period</div>';
+    stEl.innerHTML='<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem 0">No stream data yet for this period</td></tr>';
     return;
   }
-  stEl.innerHTML=stores.map(s=>{
-    const v=totals[s.key];if(!v)return'';
-    const barW=Math.round((v/maxVal)*100);
-    const logo=s.logo?'<img src="'+s.logo+'" alt="'+esc(s.name)+'" width="18" height="18" style="object-fit:contain;display:block" onerror="this.style.display=\'none\'">':'';
-    const pct=totalAll>0?Math.round((v/totalAll)*100):0;
-    return '<div class="an-store-row"><div class="an-store-logo">'+logo+'</div><div class="an-store-name">'+s.name+'</div><div class="an-store-bar-wrap"><div class="an-store-bar-fill" style="width:'+barW+'%"></div></div><div class="an-store-count">'+v.toLocaleString()+'<span style="font-size:10px;color:rgba(255,255,255,.3);margin-left:4px">'+pct+'%</span></div></div>';
-  }).filter(Boolean).join('');
+  stEl.innerHTML=stores
+    .filter(s=>totals[s.key]>0)
+    .sort((a,b)=>totals[b.key]-totals[a.key])
+    .map(s=>{
+      const v=totals[s.key];
+      const logo=s.logo?'<img src="'+s.logo+'" alt="'+esc(s.name)+'" width="20" height="20" style="object-fit:contain;border-radius:4px" onerror="this.style.display=\'none\'">':'<span style="width:20px;height:20px;display:inline-block"></span>';
+      const pct=totalAll>0?((v/totalAll)*100).toFixed(2):'0.00';
+      return '<tr><td><div class="an-v2-store-name">'+logo+' '+esc(s.name)+'</div></td><td>'+pct+'%</td><td>'+v.toLocaleString()+'</td></tr>';
+    }).join('');
 }
 
 function renderTopReleases(){
