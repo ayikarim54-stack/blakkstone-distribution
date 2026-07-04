@@ -579,16 +579,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .dsp-marquee-wrap::before{left:0;background:linear-gradient(90deg,#fff,transparent)}
 .dsp-marquee-wrap::after{right:0;background:linear-gradient(-90deg,#fff,transparent)}
 .dsp-marquee{display:flex;gap:10px;animation:marquee 30s linear infinite;width:max-content}
-.showcase-sec{padding:3rem 1.5rem 3.5rem;background:#fff}
-.showcase-sec-inner{max-width:1200px;margin:0 auto}
-.showcase-track{display:flex;gap:1.1rem;overflow-x:auto;padding:.5rem .25rem 1rem;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
-.showcase-track::-webkit-scrollbar{height:6px}
-.showcase-track::-webkit-scrollbar-thumb{background:#e0e0e0;border-radius:10px}
-.showcase-card{flex:0 0 150px;scroll-snap-align:start;cursor:default}
-.showcase-art{width:150px;height:150px;border-radius:10px;overflow:hidden;background:#f0f0f0;box-shadow:0 6px 18px rgba(0,0,0,.08)}
-.showcase-art img{width:100%;height:100%;object-fit:cover;display:block}
-.showcase-title{font-size:13px;font-weight:700;color:#111;margin-top:.6rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.showcase-artist{font-size:12px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dsp-marquee:hover{animation-play-state:paused}
 @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 /* Feature cards upgrade */
@@ -948,14 +938,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="dsp-chip"><img src="https://cdn.simpleicons.org/snapchat/FFFC00" width="18" height="18" alt="Snapchat" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> Snapchat</div>
         <div class="dsp-chip"><img src="https://cdn.simpleicons.org/jiosaavn/2BC5B4" width="18" height="18" alt="JioSaavn" style="object-fit:contain;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'"> JioSaavn</div>
       </div>
-    </div>
-  </section>
-
-  <!-- NOW DISTRIBUTING SHOWCASE (real live releases, hidden if none load) -->
-  <section class="showcase-sec" id="landing-showcase" style="display:none">
-    <div class="showcase-sec-inner">
-      <p style="text-align:center;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#999;margin-bottom:1rem">Now Distributing</p>
-      <div class="showcase-track" id="landing-showcase-track"></div>
     </div>
   </section>
 
@@ -3611,37 +3593,12 @@ function startCurrencyDetectionOnce(){
   fetchLiveCurrencyRates(); // fire-and-forget, fails safely to fallback rates already in place
   detectCurrencyByIP(); // fire-and-forget, upgrades the locale guess to a real IP-based country match if it succeeds
 }
-let _landingShowcaseLoaded=false;
-async function loadLandingShowcase(){
-  if(_landingShowcaseLoaded)return;
-  _landingShowcaseLoaded=true;
-  const wrap=document.getElementById('landing-showcase');
-  const track=document.getElementById('landing-showcase-track');
-  if(!wrap||!track)return;
-  try{
-    const {data,error}=await sb.from('public_artist_releases').select('*').order('release_date',{ascending:false}).limit(14);
-    if(error)throw error;
-    const rows=(data||[]).filter(r=>r.artwork_url);
-    if(!rows.length){wrap.style.display='none';return;}
-    track.innerHTML=rows.map(r=>{
-      const name=r.artist_name||r.full_name||'';
-      return '<div class="showcase-card"><div class="showcase-art"><img src="'+esc(r.artwork_url)+'" alt="'+esc(r.title||'')+'" loading="lazy"></div><div class="showcase-title">'+esc(r.title||'')+'</div><div class="showcase-artist">'+esc(name)+'</div></div>';
-    }).join('');
-    wrap.style.display='block';
-  }catch(e){
-    console.error('Landing showcase load error:',e);
-    if(wrap)wrap.style.display='none';
-  }
-}
 function showView(id){
   const boot=document.getElementById('boot-loader');if(boot)boot.style.display='none';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   updateSupportBubble();
-  if(id==='landing'){
-    startCurrencyDetectionOnce();
-    loadLandingShowcase();
-  }
+  if(id==='landing')startCurrencyDetectionOnce();
 }
 
 // ── AUTH ──────────────────────────────────────────────
