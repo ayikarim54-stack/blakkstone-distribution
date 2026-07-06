@@ -3484,7 +3484,15 @@ const COMM=0.09;
 function isCommissionExempt(){
   return ['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user?.email===ADMIN_EMAIL;
 }
-const GHS_RATE=15.5;
+// Note: GHS conversion now always reads currentDisplayRates.GHS (live-fetched,
+// falls back to CURRENCY_FALLBACK_RATES.GHS if the fetch hasn't completed) —
+// there used to be a separate, static GHS_RATE constant here that several
+// real payment amounts (subscription checkout, priority distro fee) and
+// display previews (withdrawal GHS estimate) were reading from directly,
+// completely disconnected from the live rate system. That meant actual
+// Paystack charges were being calculated off a frozen snapshot rather than
+// a current rate. Removed entirely so there's only one GHS rate in the
+// codebase, not two silently drifting apart.
 // ── MULTI-CURRENCY DISPLAY ──────────────────────────────
 // Approximate static rates (USD -> currency) as an instant fallback before the live rate loads.
 // These are NOT what Paystack charges — Paystack always charges in GHS regardless of what's shown here.
@@ -4077,6 +4085,13 @@ function updateUpgradePage(plan){
 }
 function enterDashboard(){
   try{
+    // Real money depends on this being current — subscription checkout and
+    // withdrawal previews both read currentDisplayRates.GHS. Landing-page
+    // visitors already trigger this via startCurrencyDetectionOnce(), but a
+    // returning logged-in user often never sees the landing page at all in
+    // a given session, so fetch it here too rather than let their session
+    // run on whatever static fallback rate happens to be baked in.
+    fetchLiveCurrencyRates();
     const name=profile?.full_name||profile?.artist_name||user.email.split('@')[0];
     const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const adminNow=isAdmin();
@@ -5687,7 +5702,7 @@ function updateWithdrawGhsPreview(){
   if(!input||!preview)return;
   const usd=parseFloat(input.value||0);
   if(!usd||usd<=0){preview.textContent='';return;}
-  preview.textContent='≈ GHS '+(usd*GHS_RATE).toFixed(2);
+  preview.textContent='≈ GHS '+(usd*currentDisplayRates.GHS).toFixed(2);
 }
 function showPayoutMethods(){
   const amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
@@ -7167,7 +7182,7 @@ async function payForPriorityDistro(){
     if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your connection.','err');reject(new Error('Paystack not loaded'));return;}
     const email=user?.email;
     if(!email){reject(new Error('Not logged in'));return;}
-    const usd=10;const pesewas=Math.round(usd*GHS_RATE*100);
+    const usd=10;const pesewas=Math.round(usd*currentDisplayRates.GHS*100);
     const ref='BLK_PRIORITY_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
     try{
       const popup=new PaystackPop();
@@ -10200,12 +10215,12 @@ function setBilling(cycle){
 function updateRateNote(){
   const p=PLANS[selectedPlan];if(!p)return;
   let usd=billing==='monthly'?p.monthly:p.yearly;
-  const ghs=(usd*GHS_RATE).toFixed(2);
+  const ghs=(usd*currentDisplayRates.GHS).toFixed(2);
   const rn=document.getElementById('rate-note');
   const discountEl=document.getElementById('upgrade-discount-note');
   if(currentUpgradeDiscount&&billing==='yearly'){
     const discountedUsd=Math.max(0,usd-currentUpgradeDiscount.creditAmount).toFixed(2);
-    const discountedGhs=(discountedUsd*GHS_RATE).toFixed(2);
+    const discountedGhs=(discountedUsd*currentDisplayRates.GHS).toFixed(2);
     if(discountEl){
       discountEl.style.display='block';
       discountEl.innerHTML='<i class="ti ti-discount-2"></i> '+currentUpgradeDiscount.monthsRemaining+' month'+(currentUpgradeDiscount.monthsRemaining===1?'':'s')+' left on your '+currentUpgradeDiscount.currentPlanLabel+' plan — $'+currentUpgradeDiscount.creditAmount.toFixed(2)+' credited. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
@@ -10259,7 +10274,7 @@ function doPaystack(){
   if(currentUpgradeDiscount&&billing==='yearly'){
     usd=Math.max(0,usd-currentUpgradeDiscount.creditAmount);
   }
-  const pesewas=Math.round(usd*GHS_RATE*100);
+  const pesewas=Math.round(usd*currentDisplayRates.GHS*100);
   const btn=document.getElementById('pay-btn');
   if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your connection.','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
