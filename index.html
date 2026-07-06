@@ -2372,6 +2372,18 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
         <!-- ── REPORTS TAB ── -->
         <div class="roy-tab-panel" id="rtpanel-reports">
+          <div style="background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.875rem">
+              <div>
+                <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:.375rem"><i class="ti ti-calendar-stats" style="color:var(--gold)"></i> Annual Summary</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.4)">Payouts requested, fees paid, and net received for a selected year.</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <select id="summary-year-select" class="stsel" style="padding:7px 12px;font-size:13px"></select>
+                <button class="btn adm-btn-sec btn-sm" onclick="exportAnnualSummary()"><i class="ti ti-download"></i> Export Summary</button>
+              </div>
+            </div>
+          </div>
           <div style="background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:2rem;display:flex;align-items:flex-start;gap:1.25rem;margin-bottom:1.5rem">
             <i class="ti ti-file-analytics" style="font-size:28px;color:var(--gold);flex-shrink:0;margin-top:2px"></i>
             <div>
@@ -8198,6 +8210,7 @@ function switchRoyTab(tab,el){
     history.replaceState({page:'royalties',sub:tab},'',pagePath('royalties',tab==='sales'?null:tab));
   }
   if(tab==='payouts') loadPayout();
+  if(tab==='reports') populateSummaryYearSelect();
   finishPageProgress();
 }
 
@@ -9472,6 +9485,80 @@ async function exportPayoneerBatchCSV(){
     toast(data.length+' Payoneer payout(s) exported — upload in Payoneer under Pay → Batch Payment','ok');
   }catch(e){
     console.error('Payoneer CSV export error:',e);
+    toast('Could not export: '+(e.message||'please try again.'),'err');
+  }
+}
+function populateSummaryYearSelect(){
+  const sel=document.getElementById('summary-year-select');if(!sel||sel.options.length)return;
+  const currentYear=new Date().getFullYear();
+  const startYear=profile?.created_at?new Date(profile.created_at).getFullYear():currentYear;
+  let html='';
+  for(let y=currentYear;y>=startYear;y--){html+='<option value="'+y+'">'+y+'</option>';}
+  sel.innerHTML=html||'<option value="'+currentYear+'">'+currentYear+'</option>';
+}
+async function exportAnnualSummary(){
+  if(!user)return;
+  const year=parseInt(document.getElementById('summary-year-select')?.value)||new Date().getFullYear();
+  try{
+    const yearStart=year+'-01-01T00:00:00';
+    const yearEnd=(year+1)+'-01-01T00:00:00';
+    const [{data:releases,error:relErr},{data:payouts,error:payErr}]=await Promise.all([
+      sb.from('releases').select('earnings').eq('user_id',user.id),
+      sb.from('payouts').select('amount,payout_fee_usd,status,created_at,method').eq('user_id',user.id).gte('created_at',yearStart).lt('created_at',yearEnd).order('created_at',{ascending:true})
+    ]);
+    if(relErr)throw relErr;
+    if(payErr)throw payErr;
+
+    const isPaidPlan=isCommissionExempt();
+    const lifetimeGross=(releases||[]).reduce((a,r)=>a+(r.earnings||0),0);
+    const lifetimeNet=isPaidPlan?lifetimeGross:lifetimeGross*(1-COMM);
+
+    const yearPayouts=payouts||[];
+    const paidThisYear=yearPayouts.filter(p=>p.status==='paid');
+    const totalRequested=yearPayouts.reduce((a,p)=>a+parseFloat(p.amount||0),0);
+    const totalFees=yearPayouts.reduce((a,p)=>a+parseFloat(p.payout_fee_usd||0),0);
+    const totalPaidGross=paidThisYear.reduce((a,p)=>a+parseFloat(p.amount||0),0);
+    const totalPaidFees=paidThisYear.reduce((a,p)=>a+parseFloat(p.payout_fee_usd||0),0);
+    const totalPaidNet=totalPaidGross-totalPaidFees;
+
+    const lines=[];
+    lines.push(['Blakkstone Annual Summary — '+year]);
+    lines.push(['Account',profile?.artist_name||profile?.full_name||user.email]);
+    lines.push(['Generated',new Date().toLocaleString('en-GB')]);
+    lines.push([]);
+    lines.push(['Lifetime Earnings (all-time — not limited to '+year+')']);
+    lines.push(['Note: release earnings aren\'t tracked per-year in this system, only as a running lifetime total, so these two figures reflect your entire history on Blakkstone, not just '+year+'.']);
+    lines.push(['Gross Lifetime Earnings (USD)',lifetimeGross.toFixed(2)]);
+    lines.push(['Net Lifetime Earnings after commission (USD)',lifetimeNet.toFixed(2)]);
+    lines.push([]);
+    lines.push(['Payouts in '+year+' (accurately date-filtered)']);
+    lines.push(['All Payout Requests — Gross (USD)',totalRequested.toFixed(2)]);
+    lines.push(['All Payout Requests — Fees (USD)',totalFees.toFixed(2)]);
+    lines.push(['Paid Out — Gross (USD)',totalPaidGross.toFixed(2)]);
+    lines.push(['Paid Out — Fees (USD)',totalPaidFees.toFixed(2)]);
+    lines.push(['Paid Out — Net Received (USD)',totalPaidNet.toFixed(2)]);
+    lines.push([]);
+    lines.push(['Payout Detail for '+year]);
+    lines.push(['Date','Method','Gross (USD)','Fee (USD)','Net (USD)','Status']);
+    yearPayouts.forEach(p=>{
+      const net=parseFloat(p.amount||0)-parseFloat(p.payout_fee_usd||0);
+      lines.push([
+        p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'',
+        p.method||'',
+        parseFloat(p.amount||0).toFixed(2),
+        parseFloat(p.payout_fee_usd||0).toFixed(2),
+        net.toFixed(2),
+        p.status||''
+      ]);
+    });
+    if(!yearPayouts.length)lines.push(['No payouts requested in '+year]);
+
+    const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='blakkstone-annual-summary-'+year+'.csv';a.click();URL.revokeObjectURL(url);
+    toast('Annual summary exported','ok');
+  }catch(e){
+    console.error('Export annual summary error:',e);
     toast('Could not export: '+(e.message||'please try again.'),'err');
   }
 }
