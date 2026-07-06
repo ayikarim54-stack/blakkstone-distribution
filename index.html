@@ -1620,7 +1620,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div style="flex:1">
             <div class="ov-card-label">Available Balance<span id="ov-balance-scope-note" style="display:none;font-weight:400;opacity:.8"> (all artists)</span></div>
             <div class="ov-card-value" id="s-earnings">$0.00</div>
-            <div class="ov-card-sub" id="s-earnings-sub">Ready to withdraw</div>
+            <div class="ov-card-sub" id="s-earnings-sub">Ready to withdraw · 2% fee applies</div>
           </div>
           <i class="ti ti-cash" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
         </div>
@@ -2416,7 +2416,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div>
               <div class="payout-balance-card">
                 <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:.5rem">Your Current Balance</div>
-                <div style="font-size:44px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.875rem" id="payout-balance">$0.00</div>
+                <div style="font-size:44px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.375rem" id="payout-balance">$0.00</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:.875rem">A 2% fee applies when you withdraw</div>
                 <div class="payout-bar-wrap"><div class="payout-bar-fill" id="payout-bar" style="width:100%"></div></div>
                 <div style="display:flex;justify-content:space-between;margin-bottom:1.5rem">
                   <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5)"><span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span> Available: <strong style="color:#fff" id="payout-available-label">$0.00</strong></div>
@@ -4815,7 +4816,7 @@ function renderOverviewStats(){
   set('s-pending',pending);set('s-streams',streams.toLocaleString());set('s-earnings','$'+availableBalance.toFixed(2));
   const balSub=document.getElementById('s-earnings-sub');
   if(balSub){
-    balSub.textContent=pendingOut>0?'$'+pendingOut.toFixed(2)+' pending withdrawal':'Ready to withdraw';
+    balSub.textContent=pendingOut>0?'$'+pendingOut.toFixed(2)+' pending withdrawal':'Ready to withdraw · 2% fee applies';
   }
   const balScopeNote=document.getElementById('ov-balance-scope-note');
   if(balScopeNote)balScopeNote.style.display=ovViewingArtist?'inline':'none';
@@ -6939,7 +6940,7 @@ function renderViewAsArtist(profileData,releases,payoutsData){
   const cards='<div class="overview-cards" style="margin-bottom:1.25rem">'
     +'<div class="ov-card ov-card-1"><div class="ov-card-icon"><i class="ti ti-wavesaw-mono"></i></div><div style="flex:1"><div class="ov-card-label">Total Streams</div><div class="ov-card-value">'+streams.toLocaleString()+'</div><div class="ov-card-sub">All stores · all time</div></div></div>'
     +'<div class="ov-card ov-card-2"><div class="ov-card-icon"><i class="ti ti-music"></i></div><div style="flex:1"><div class="ov-card-label">Total Releases</div><div class="ov-card-value">'+releases.length+'</div><div class="ov-card-sub">'+live+' live on DSPs</div></div></div>'
-    +'<div class="ov-card ov-card-3"><div class="ov-card-icon"><i class="ti ti-coin"></i></div><div style="flex:1"><div class="ov-card-label">Available Balance</div><div class="ov-card-value">$'+availableBalance.toFixed(2)+'</div><div class="ov-card-sub">Ready to withdraw</div></div></div>'
+    +'<div class="ov-card ov-card-3"><div class="ov-card-icon"><i class="ti ti-coin"></i></div><div style="flex:1"><div class="ov-card-label">Available Balance</div><div class="ov-card-value">$'+availableBalance.toFixed(2)+'</div><div class="ov-card-sub">Ready to withdraw · 2% fee applies</div></div></div>'
     +'<div class="ov-card ov-card-4"><div class="ov-card-icon"><i class="ti ti-clock"></i></div><div style="flex:1"><div class="ov-card-label">Pending Review</div><div class="ov-card-value">'+pending+'</div><div class="ov-card-sub">Awaiting distribution</div></div></div>'
   +'</div>';
   const releaseRows=releases.length?releases.map(r=>{
