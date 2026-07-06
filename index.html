@@ -1490,13 +1490,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ══════════════ DASHBOARD ══════════════ -->
 <div class="view" id="dashboard">
+  <!-- TEAM ACCESS BANNER — shown only when this login is managing another account's data -->
+  <div id="team-context-banner" style="display:none;background:linear-gradient(90deg,#7a6ff0,#5b4fd6);padding:.75rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:600"><i class="ti ti-users"></i> Managing <span id="team-context-owner-name" style="font-weight:800"></span>'s account as <span id="team-context-role"></span></div>
+  </div>
   <!-- TOP NAV -->
   <div class="dash-topnav">
     <div class="dash-topnav-logo" style="cursor:default;display:flex;align-items:center;gap:10px"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAkACUDASIAAhEBAxEB/8QAHAAAAQQDAQAAAAAAAAAAAAAAAAIEBQYBAwcI/8QAKhAAAgEDAwQBBAIDAAAAAAAAAQIDAAQRBRIhBgcTMVEiIzJBQmFxgbH/xAAYAQADAQEAAAAAAAAAAAAAAAAAAQIDBP/EABwRAAICAwEBAAAAAAAAAAAAAAABAhEDEhMUMf/aAAwDAQACEQMRAD8A80wincQzTGFxT6zCSOfI6JEm0vuONwz+I/s81sjNmwbXB2ENt945xTeX910PoLQZbu51HWJdPnvBKjW0Mfh2xWwK8NKf45CttXGcD5K5iu4Nl0zZWtsbC9lkvzGkbRog8f0DxsSSeDujY8ZzvHxXN6ovJzRpyeuxRZB9VFJdhmiugg1I+Mc1K6BrS6RdRX0FjHdXcb742nXciEesLnBI95Pr9D91ZbzubFqnS9r09qfTNnNawWkNsWS8eORvH4cHIQ4B8IJHP5NyKnbDulNfPcXUmi9L2coube5k+7JGZTFt8ap7IXbEiOvpgFzjFRKKkqY06dogZ+5mut0++lwvPFASRDbW6JDbwZ/OTagy8retzZ2jPsnIpL3JkblTGP4ruyAPgf7zXWH7g6gojMJ0e1nF1NLm3vnRYy0BiaONFwAmWDKCWC7FVSAKjbHvDe2aRBuntHuwFjWRbp3kU7DFxGMfaXMKsFU8MWbJyRUwxwx3qqscpOX1nM2bn/lFTPcPquXq7VLa/ls47NoLWO22JKXQhBjIBA25+Of80VoSVlSaWCaKKQGaSSaKKANbE5ooopgf/9k=" alt="Blakkstone" style="height:34px;width:auto;object-fit:contain"><span style="font-size:15px;font-weight:900;color:#fff;letter-spacing:-.3px">Blakkstone<span style="color:var(--gold)">.</span></span></div>
     <div class="dash-topnav-links">
       <div class="tnav-item active" onclick="goPage('overview',this)"><i class="ti ti-layout-dashboard"></i> Overview</div>
       <div class="tnav-item" onclick="goPage('releases',this)"><i class="ti ti-music"></i> Music</div>
-      <div class="tnav-item" onclick="goPage('submit',this)"><i class="ti ti-upload"></i> Submit</div>
+      <div class="tnav-item" id="submit-nav" onclick="goPage('submit',this)"><i class="ti ti-upload"></i> Submit</div>
       <div class="tnav-item" id="myartists-nav" style="display:none" onclick="goPage('myartists',this)"><i class="ti ti-users-group"></i> My Artists</div>
       <div class="tnav-sep"></div>
       <div class="tnav-item" onclick="goPage('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
@@ -2795,6 +2799,23 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
         <div class="divhr"></div>
+        <div id="team-access-section" style="display:none">
+          <div class="slabel"><i class="ti ti-users"></i> Team Access</div>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Give a manager or assistant their own login to help run this account. Managers can submit releases and manage your roster; Viewers can only look. Neither can touch billing, payouts, or your own account settings.</p>
+          <div id="team-members-list" style="margin-bottom:1rem"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+            <div class="fg" style="flex:1;min-width:180px;margin-bottom:0"><label>Email to invite</label><input id="team-invite-email" type="email" placeholder="teammate@email.com"></div>
+            <div class="fg" style="min-width:130px;margin-bottom:0">
+              <label>Role</label>
+              <select id="team-invite-role" class="stsel" style="width:100%;padding:9px 12px">
+                <option value="manager">Manager</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+            <button class="btn btn-gold" onclick="inviteTeamMember()" style="flex-shrink:0"><i class="ti ti-user-plus"></i> Invite</button>
+          </div>
+        </div>
+        <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-world"></i> Public Artist Page</div>
         <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">One link, all your music — fans see your live releases and can sign up for notifications on what's coming.</p>
         <div style="display:flex;gap:8px;margin-bottom:1.25rem">
@@ -4015,8 +4036,53 @@ async function loadProfile(u){
       }
     }
   }
-  const hasPlan=adminNow||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
+  // Check if this login is a team member for someone else's Label account —
+  // if so, everything downstream should reflect THAT account's data and
+  // plan, not this login's own (likely empty/free) profile.
+  await checkTeamMembership();
+  const hasPlan=adminNow||teamContext||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
   if(!hasPlan){showPaywall(justLapsedPlan);}else{enterDashboard();}
+}
+let teamContext=null; // {ownerId, role, ownerProfile} when this login is managing someone else's account
+async function checkTeamMembership(){
+  try{
+    // Accept any pending invite matching this login's email — converts a
+    // pending row (member_id still null, since it was created before this
+    // person had an account, or before they logged in with it) into an
+    // active one tied to this real authenticated user.
+    const {error:acceptErr}=await sb.from('team_members')
+      .update({member_id:user.id,status:'active',accepted_at:new Date().toISOString()})
+      .eq('member_email',(user.email||'').toLowerCase())
+      .is('member_id',null)
+      .eq('status','pending');
+    if(acceptErr&&!/relation .* does not exist/i.test(acceptErr.message||''))console.error('Team invite accept error:',acceptErr);
+
+    const {data,error}=await sb.from('team_members').select('owner_id,role,status').eq('member_id',user.id).eq('status','active').limit(1).maybeSingle();
+    if(error){
+      // Table not migrated yet, or some other read issue — team access is opt-in,
+      // its absence should never block a normal login.
+      if(!/relation .* does not exist/i.test(error.message||''))console.error('Team membership check error (continuing with own account):',error);
+      return;
+    }
+    if(data){
+      const {data:ownerProfile,error:ownerErr}=await sb.from('profiles').select('*').eq('id',data.owner_id).single();
+      if(!ownerErr&&ownerProfile){
+        teamContext={ownerId:data.owner_id,role:data.role,ownerProfile};
+        profile=ownerProfile; // every page from here on reflects the OWNER's account, not this login's own
+      }
+    }
+  }catch(e){
+    console.error('Team membership check error (continuing with own account):',e);
+  }
+}
+// The single ID every data query should scope to — the owner's ID when
+// managing someone else's account via team access, otherwise this login's
+// own ID (the normal case, unchanged for every existing user).
+function activeAccountId(){
+  return teamContext?teamContext.ownerId:user.id;
+}
+function isTeamViewerOnly(){
+  return !!(teamContext&&teamContext.role==='viewer');
 }
 function showPaywall(lapsedPlan){
   const name=profile?.artist_name||profile?.full_name||user?.email?.split('@')[0]||'';
@@ -4127,6 +4193,25 @@ function enterDashboard(){
     // a given session, so fetch it here too rather than let their session
     // run on whatever static fallback rate happens to be baked in.
     fetchLiveCurrencyRates();
+    const teamBanner=document.getElementById('team-context-banner');
+    if(teamBanner){
+      if(teamContext){
+        teamBanner.style.display='flex';
+        const ownerNameEl=document.getElementById('team-context-owner-name');
+        if(ownerNameEl)ownerNameEl.textContent=teamContext.ownerProfile?.artist_name||teamContext.ownerProfile?.full_name||'this';
+        const roleEl=document.getElementById('team-context-role');
+        if(roleEl)roleEl.textContent=teamContext.role==='manager'?'Manager':'Viewer';
+      } else {
+        teamBanner.style.display='none';
+      }
+    }
+    // Team Access invite section only makes sense for the actual Label
+    // owner managing their own team — not for a team member who's logged
+    // in managing someone else's account, and not for non-Label plans.
+    const teamSection=document.getElementById('team-access-section');
+    if(teamSection)teamSection.style.display=(!teamContext&&profile?.plan==='label')?'block':'none';
+    const submitNav=document.getElementById('submit-nav');
+    if(submitNav)submitNav.style.display=isTeamViewerOnly()?'none':'';
     const name=profile?.full_name||profile?.artist_name||user.email.split('@')[0];
     const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const adminNow=isAdmin();
@@ -4267,7 +4352,7 @@ function goPage(id,el){
   if(id==='royalties'){loadRoyalties();}
   if(id==='payout')loadPayout();
   if(id==='myartists'){closeMyArtistDetail();loadMyArtistsGrid();}
-  if(id==='profile')loadProfileStats();
+  if(id==='profile'){loadProfileStats();if(!teamContext&&profile?.plan==='label')loadTeamMembers();}
   if(id==='upgrade')refreshProfileAndUpgradePage();
   if(id==='support')loadMySupportMessages();
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
@@ -4771,7 +4856,7 @@ async function loadOverviewActivity(){
 async function loadReleases(){
   if(!user)return;
   const el=document.getElementById('s-total');if(el) el.textContent='…';
-  const {data,error}=await sb.from('releases').select('*').eq('user_id',user.id).order('submitted_at',{ascending:false});
+  const {data,error}=await sb.from('releases').select('*').eq('user_id',activeAccountId()).order('submitted_at',{ascending:false});
   if(error){toast('Error loading releases','err');return;}
   allRelData=data||[];
   const releases=allRelData;
@@ -6212,6 +6297,70 @@ async function sendPayoutNotificationEmail(amount,method,network,account){
 
 
 // ── PROFILE ──────────────────────────────────────────────
+async function loadTeamMembers(){
+  const list=document.getElementById('team-members-list');if(!list)return;
+  list.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div>';
+  try{
+    const {data,error}=await sb.from('team_members').select('*').eq('owner_id',user.id).order('invited_at',{ascending:false});
+    if(error)throw error;
+    if(!data||!data.length){
+      list.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px;padding:.5rem 0">No team members yet.</div>';
+      return;
+    }
+    list.innerHTML=data.map(m=>{
+      const statusLabel={pending:'Invited — not yet accepted',active:'Active',revoked:'Revoked'}[m.status]||m.status;
+      const statusColor={pending:'#fbbf24',active:'#34d399',revoked:'rgba(255,255,255,.3)'}[m.status]||'rgba(255,255,255,.4)';
+      const roleLabel=m.role==='manager'?'Manager':'Viewer';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem .9rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;margin-bottom:6px">'
+        +'<div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(m.member_email)+'</div><div style="font-size:11px;color:'+statusColor+'">'+roleLabel+' · '+statusLabel+'</div></div>'
+        +(m.status!=='revoked'?'<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:#f87171;flex-shrink:0" onclick="revokeTeamMember(\''+m.id+'\')">Revoke</button>':'')
+      +'</div>';
+    }).join('');
+  }catch(e){
+    console.error('Load team members error:',e);
+    if((e.message||'').match(/relation .* does not exist/i)){
+      list.innerHTML='<div style="color:rgba(239,68,68,.6);font-size:12px;padding:.5rem 0">Run the team_access SQL in Supabase to enable this.</div>';
+    } else {
+      list.innerHTML='<div style="color:rgba(239,68,68,.6);font-size:12px;padding:.5rem 0">Could not load team members.</div>';
+    }
+  }
+}
+async function inviteTeamMember(){
+  const emailEl=document.getElementById('team-invite-email');
+  const roleEl=document.getElementById('team-invite-role');
+  const email=emailEl?.value.trim().toLowerCase();
+  const role=roleEl?.value;
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Enter a valid email address','err');return;}
+  if(email===user.email.toLowerCase()){toast('You can\'t invite yourself','err');return;}
+  try{
+    const {error}=await sb.from('team_members').insert({owner_id:user.id,member_email:email,role,status:'pending'});
+    if(error)throw error;
+    toast('Invite sent — '+email+' can now log in (or sign up) with that email to accept it.','ok');
+    if(emailEl)emailEl.value='';
+    loadTeamMembers();
+  }catch(e){
+    console.error('Invite team member error:',e);
+    if((e.message||'').match(/duplicate key|unique constraint/i)){
+      toast('You\'ve already invited this email','err');
+    } else if((e.message||'').match(/relation .* does not exist/i)){
+      toast('Run the team_access SQL in Supabase first','err');
+    } else {
+      toast('Could not send invite: '+(e.message||'please try again.'),'err');
+    }
+  }
+}
+async function revokeTeamMember(id){
+  if(!confirm('Revoke this team member\'s access? They\'ll be signed out of managing this account immediately.'))return;
+  try{
+    const {error}=await sb.from('team_members').update({status:'revoked'}).eq('id',id).eq('owner_id',user.id);
+    if(error)throw error;
+    toast('Access revoked','ok');
+    loadTeamMembers();
+  }catch(e){
+    console.error('Revoke team member error:',e);
+    toast('Could not revoke: '+(e.message||'please try again.'),'err');
+  }
+}
 async function loadProfileStats(){
   try{
     const {data:rels}=await sb.from('releases').select('streams,earnings').eq('user_id',user.id);
@@ -6381,9 +6530,9 @@ async function loadMyArtistsGrid(){
   }
   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2rem"><span class="loader"></span></div>';
   try{
-    const {data,error}=await sb.from('roster_artists').select('*').eq('user_id',user.id).order('created_at',{ascending:true});
+    const {data,error}=await sb.from('roster_artists').select('*').eq('user_id',activeAccountId()).order('created_at',{ascending:true});
     if(error)throw error;
-    const {data:rels}=await sb.from('releases').select('artist,streams,earnings').eq('user_id',user.id);
+    const {data:rels}=await sb.from('releases').select('artist,streams,earnings').eq('user_id',activeAccountId());
     const counts={},streamsMap={},earningsMap={};
     (rels||[]).forEach(r=>{
       const a=(r.artist||'').split(' & ')[0].trim();
@@ -6428,7 +6577,7 @@ function renderMyArtistsGrid(counts){
       +'</div>';
     return '<div onclick="openMyArtistDetail(\''+a.id+'\')" style="background:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;position:relative;cursor:pointer">'+actions+avatar+nameDisplay+'<div style="font-size:12px;color:#7a6ff0;font-weight:600;margin-top:4px">'+n+' Release'+(n===1?'':'s')+'</div><div style="font-size:11px;color:rgba(0,0,0,.4);margin-top:2px">'+stats+'</div>'+lockedNote+'</div>';
   }).join('');
-  const addTile=_rosterCache.length<max?'<div onclick="document.getElementById(\'myartist-add-name\').focus()" style="border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:1.5rem 1rem;text-align:center;cursor:text;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:178px"><div style="width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem"><i class="ti ti-plus" style="font-size:24px;color:rgba(255,255,255,.6)"></i></div><input id="myartist-add-name" type="text" placeholder="Artist name" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')addRosterArtist()" style="background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:13px;width:100%;text-align:center;margin-bottom:8px"><button id="roster-add-btn" onclick="event.stopPropagation();addRosterArtist()" class="btn btn-gold btn-sm" style="width:100%;justify-content:center">Add Artist</button></div>':'';
+  const addTile=(_rosterCache.length<max&&!isTeamViewerOnly())?'<div onclick="document.getElementById(\'myartist-add-name\').focus()" style="border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:1.5rem 1rem;text-align:center;cursor:text;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:178px"><div style="width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem"><i class="ti ti-plus" style="font-size:24px;color:rgba(255,255,255,.6)"></i></div><input id="myartist-add-name" type="text" placeholder="Artist name" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')addRosterArtist()" style="background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:13px;width:100%;text-align:center;margin-bottom:8px"><button id="roster-add-btn" onclick="event.stopPropagation();addRosterArtist()" class="btn btn-gold btn-sm" style="width:100%;justify-content:center">Add Artist</button></div>':'';
   grid.innerHTML=(cards||'')+addTile;
   if(!_rosterCache.length&&!addTile) grid.innerHTML='<p style="color:rgba(255,255,255,.3);font-size:13px;grid-column:1/-1">No artists yet.</p>';
 }
@@ -6441,7 +6590,7 @@ async function addRosterArtist(){
   const btn=document.getElementById('roster-add-btn');
   if(btn){btn.disabled=true;btn.innerHTML='<span class="loader"></span>';}
   try{
-    const {error}=await sb.from('roster_artists').insert({user_id:user.id,name});
+    const {error}=await sb.from('roster_artists').insert({user_id:activeAccountId(),name});
     if(error)throw error;
     toast('Artist added','ok');
     await loadMyArtistsGrid();
@@ -7405,7 +7554,7 @@ async function setupPrimaryArtistField(){
     select.innerHTML='<option value="">Loading roster…</option>';
   }
   try{
-    const {data,error}=await sb.from('roster_artists').select('*').eq('user_id',user.id).order('created_at',{ascending:true});
+    const {data,error}=await sb.from('roster_artists').select('*').eq('user_id',activeAccountId()).order('created_at',{ascending:true});
     if(error)throw error;
     const roster=data||[];
     if(!roster.length){
@@ -8219,7 +8368,7 @@ async function submitRelease(){
       // Already uploaded during draft/preview
       artPublicUrl=wizData.artUrl;
     } else if(wizData.artFile){
-      const artExt=wizData.artFile.name.split('.').pop();const artPath=user.id+'/'+Date.now()+'-artwork.'+artExt;
+      const artExt=wizData.artFile.name.split('.').pop();const artPath=activeAccountId()+'/'+Date.now()+'-artwork.'+artExt;
       const {error:are}=await sb.storage.from('artwork').upload(artPath,wizData.artFile);
       if(are)throw new Error('Artwork upload failed: '+are.message);
       const {data:artUrlData}=sb.storage.from('artwork').getPublicUrl(artPath);
@@ -8238,7 +8387,7 @@ async function submitRelease(){
         audioPaths.push(track.storagePath);
       } else if(track.file){
         // File object still in memory — upload normally
-        const ext=track.file.name.split('.').pop();const ap=user.id+'/'+Date.now()+'-'+track.name.replace(/[^a-z0-9]/gi,'_')+'.'+ext;
+        const ext=track.file.name.split('.').pop();const ap=activeAccountId()+'/'+Date.now()+'-'+track.name.replace(/[^a-z0-9]/gi,'_')+'.'+ext;
         const {error:ae}=await sb.storage.from('audio').upload(ap,track.file);if(ae)throw new Error('Audio upload failed: '+ae.message);
         audioPaths.push(ap);
       } else {
@@ -8272,7 +8421,7 @@ async function submitRelease(){
       ?splitRows.filter(x=>x.name&&x.name.trim()&&x.bp>0).map(x=>({name:x.name.trim(),bp:x.bp}))
       :null;
     const relPayload={
-      user_id:user.id,title,artist,genre,release_date:date,
+      user_id:activeAccountId(),title,artist,genre,release_date:date,
       isrc:wizTracks[0]?.isrc||null,notes:extraInfo||null,
       audio_url:audioPaths[0],artwork_url:artPublicUrl,status:'pending',streams:0,earnings:0,
       is_priority:selectedDistroTier==='priority',priority_ref:priorityPaymentRef,
