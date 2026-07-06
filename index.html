@@ -1718,7 +1718,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
         <!-- HERO -->
         <div style="display:flex;gap:1.75rem;margin-bottom:2rem;flex-wrap:wrap">
-          <div id="rel-modal-art" style="width:180px;height:180px;border-radius:14px;background:#333;flex-shrink:0;overflow:hidden"></div>
+          <div style="position:relative;flex-shrink:0">
+            <div id="rel-modal-art" style="width:180px;height:180px;border-radius:14px;background:#333;overflow:hidden"></div>
+            <button onclick="downloadArtwork(_currentModalReleaseId)" id="rel-modal-artwork-download-btn" title="Download artwork" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.65);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center"><i class="ti ti-download" style="font-size:14px"></i></button>
+          </div>
           <div style="flex:1;min-width:240px">
             <div id="rel-modal-title" style="font-size:28px;font-weight:800;color:#fff;margin-bottom:5px;line-height:1.15"></div>
             <div id="rel-modal-artist" style="font-size:15px;color:rgba(255,255,255,.5);margin-bottom:14px"></div>
@@ -4913,6 +4916,8 @@ function openReleaseModal(r,updateUrl){
   const comm=isPaid?0:(r.earnings||0)*COMM;const payout=(r.earnings||0)-comm;
   const artEl=document.getElementById('rel-modal-art');
   if(artEl) artEl.innerHTML=r.artwork_url?'<img src="'+r.artwork_url+'" alt="'+esc(r.title||'Release')+' cover art" style="width:100%;height:100%;object-fit:cover">':'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="font-size:32px;color:rgba(255,255,255,.2)"></i></div>';
+  const artDlBtn=document.getElementById('rel-modal-artwork-download-btn');
+  if(artDlBtn) artDlBtn.style.display=r.artwork_url?'flex':'none';
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   set('rel-modal-title',r.title||'—');set('rel-modal-artist',r.artist||'—');
   const gp=document.getElementById('rel-modal-genre-pill');if(gp) gp.textContent=r.genre||'';
@@ -5043,6 +5048,33 @@ function renderTracklistRows(){
         +'<div style="font-size:12px;color:rgba(255,255,255,.35);font-family:monospace">'+esc(t.isrc||'—')+'</div>'
       +'</div>';
     }).join('');
+}
+let _downloadingArtwork=false;
+async function downloadArtwork(releaseId){
+  const r=_releaseMap[releaseId];
+  if(!r||!r.artwork_url){toast('No artwork available to download','err');return;}
+  if(_downloadingArtwork)return;
+  _downloadingArtwork=true;
+  const btn=document.getElementById('rel-modal-artwork-download-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="loader" style="width:12px;height:12px"></span>';}
+  try{
+    const res=await fetch(r.artwork_url);
+    if(!res.ok)throw new Error('Could not fetch file (HTTP '+res.status+')');
+    const blob=await res.blob();
+    const extMatch=r.artwork_url.split('?')[0].match(/\.([a-zA-Z0-9]+)$/);
+    const ext=extMatch?extMatch[1]:'jpg';
+    const safeTitle=(r.title||'artwork').replace(/[^\w\- ]/g,'').trim()||'artwork';
+    const filename=safeTitle+' - Cover Art.'+ext;
+    const blobUrl=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=blobUrl;a.download=filename;a.click();
+    URL.revokeObjectURL(blobUrl);
+    toast('Downloading artwork','ok');
+  }catch(e){
+    console.error('Artwork download error:',e);
+    toast('Could not download artwork: '+(e.message||'please try again.'),'err');
+  }
+  _downloadingArtwork=false;
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-download" style="font-size:14px"></i>';}
 }
 let _downloadingRelTrackId=null;
 async function downloadTrack(trackKey){
