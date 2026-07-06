@@ -1997,7 +1997,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
             <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:1.1rem">Choose a <strong style="color:var(--gold)">release date</strong></div>
-            <div class="fg"><input id="r-date" type="date" style="font-size:15px" onchange="checkDistroTierMismatch()"></div>
+            <div class="fg"><input id="r-date" type="date" style="font-size:15px" onchange="checkDistroTierMismatch();checkFridayHint()"></div>
+            <div id="friday-hint" style="display:none;margin-top:-.5rem;margin-bottom:1rem;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:9px;padding:.75rem .9rem;font-size:12px;color:var(--gold);line-height:1.6;gap:8px;align-items:flex-start">
+              <i class="ti ti-bulb" style="flex-shrink:0;margin-top:1px"></i>
+              <span>Most releases go out on <strong>Fridays</strong> — that's when playlists across Spotify, Apple Music, and most other platforms update, giving new releases their best shot at playlist consideration. Worth considering if you don't have a specific reason for this date.</span>
+            </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
               <div id="tier-priority" onclick="selectDistroTier('priority')" style="background:linear-gradient(135deg,var(--gold),#4f46e5);border-radius:10px;padding:1.1rem;position:relative;cursor:pointer;border:2px solid transparent;transition:border-color .15s">
                 <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">Priority Distro</div>
@@ -7133,6 +7137,15 @@ function updateDistroTierUI(){
   }
   checkDistroTierMismatch();
 }
+function checkFridayHint(){
+  const dateEl=document.getElementById('r-date');
+  const hint=document.getElementById('friday-hint');
+  if(!dateEl||!hint)return;
+  if(!dateEl.value){hint.style.display='none';return;}
+  const d=new Date(dateEl.value+'T00:00:00');
+  const isFriday=d.getDay()===5;
+  hint.style.display=isFriday?'none':'flex';
+}
 function checkDistroTierMismatch(){
   const warn=document.getElementById('tier-mismatch-warning');if(!warn)return;
   const dateVal=document.getElementById('r-date')?.value;
@@ -7875,6 +7888,7 @@ function restoreWizardState(state){
   setVal('r-genre2', state.genre2);
   setVal('r-language', state.language);
   setVal('r-date', state.releaseDate);
+  checkFridayHint();
   setVal('r-feat', state.feat);
   setVal('r-remixer', state.remixer);
   setVal('r-notes', state.notes);
