@@ -1722,11 +1722,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div style="flex:1;min-width:240px">
             <div id="rel-modal-title" style="font-size:28px;font-weight:800;color:#fff;margin-bottom:5px;line-height:1.15"></div>
             <div id="rel-modal-artist" style="font-size:15px;color:rgba(255,255,255,.5);margin-bottom:14px"></div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
               <div id="rel-modal-status-badge"></div>
               <span id="rel-modal-genre-pill" style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);background:rgba(255,255,255,.07);padding:3px 9px;border-radius:20px"></span>
               <span id="rel-modal-priority-badge"></span>
             </div>
+            <button class="btn adm-btn-sec btn-sm" id="rel-modal-duplicate-btn" onclick="duplicateReleaseAsNew(_currentModalReleaseId)"><i class="ti ti-copy"></i> Duplicate as New Release</button>
           </div>
         </div>
 
@@ -7036,6 +7037,47 @@ const ALL_STORES=[
   {name:'Amazon MP3',logo:'https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/amazonmusic.svg',type:'download'},
   {name:'Beatport',logo:'https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/beatport.svg',type:'download'},
 ];
+function parseNotesForDuplicate(notes){
+  // The wizard doesn't store label/copyright/stores as their own columns —
+  // they're folded into the release's free-text `notes` field at submit
+  // time (see relPayload construction). Parse them back out by their
+  // distinct prefixes, which stay consistent regardless of which other
+  // optional fields were present or what order they ended up in.
+  const result={label:'',copyright:'',stores:null};
+  if(!notes)return result;
+  notes.split(' | ').forEach(p=>{
+    if(p.startsWith('Label: '))result.label=p.slice(7);
+    else if(p.startsWith('(c) '))result.copyright=p.slice(4);
+    else if(p.startsWith('Stores: '))result.stores=p.slice(8).split(',').map(s=>s.trim()).filter(Boolean);
+  });
+  return result;
+}
+async function duplicateReleaseAsNew(releaseId){
+  const r=_releaseMap[releaseId];
+  if(!r){toast('Could not find that release','err');return;}
+  goPage('submit',null);
+  await initWizard();
+  await setupPrimaryArtistField(); // initWizard fires this without awaiting it — call again, awaited, so the roster dropdown is actually populated before we try to set a value on it
+
+  const genreEl=document.getElementById('r-genre');
+  if(genreEl&&r.genre)genreEl.value=r.genre;
+
+  const artistSelect=document.getElementById('r-artist-select');
+  if(artistSelect&&artistSelect.style.display!=='none'&&r.artist){
+    const hasOption=Array.from(artistSelect.options).some(o=>o.value===r.artist);
+    if(hasOption)artistSelect.value=r.artist;
+  }
+
+  const parsed=parseNotesForDuplicate(r.notes);
+  const labelEl=document.getElementById('r-label');if(labelEl&&parsed.label)labelEl.value=parsed.label;
+  const copyEl=document.getElementById('r-copyright');if(copyEl&&parsed.copyright)copyEl.value=parsed.copyright;
+  if(parsed.stores&&parsed.stores.length){
+    const validStores=parsed.stores.filter(s=>ALL_STORES.some(as=>as.name===s));
+    if(validStores.length){wizStores=validStores;renderStoresGrid();}
+  }
+
+  toast('Started a new release using "'+(r.title||'this release')+'" as a template — add a title, upload new audio, and pick a release date to finish.','ok');
+}
 async function initWizard(){
   const blockedEl=document.getElementById('submit-blocked-deletion');
   const bodyEl=document.getElementById('submit-wizard-body');
