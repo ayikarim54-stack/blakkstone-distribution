@@ -2799,6 +2799,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
         <div class="divhr"></div>
+        <div id="referral-section" style="display:none">
+          <div class="slabel"><i class="ti ti-gift"></i> Refer & Earn</div>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Share your link — when someone you refer sticks around for a full renewal, you get <strong style="color:#fff">20% off</strong> your next plan. They get <strong style="color:#fff">10% off</strong> their first plan right away.</p>
+          <div style="display:flex;gap:8px;margin-bottom:1.25rem">
+            <input id="referral-link-display" type="text" readonly style="flex:1;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px">
+            <button class="btn btn-gold" onclick="copyReferralLink()" style="flex-shrink:0"><i class="ti ti-copy"></i> Copy</button>
+          </div>
+          <div id="referral-list"></div>
+        </div>
+        <div class="divhr"></div>
         <div id="team-access-section" style="display:none">
           <div class="slabel"><i class="ti ti-users"></i> Team Access</div>
           <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Give a manager or assistant their own login to help run this account. Managers can submit releases and manage your roster; Viewers can only look. Neither can touch billing, payouts, or your own account settings.</p>
@@ -4053,6 +4063,7 @@ async function loadProfile(u){
   // if so, everything downstream should reflect THAT account's data and
   // plan, not this login's own (likely empty/free) profile.
   await checkTeamMembership();
+  await claimReferralCodeIfAny();
   const hasPlan=adminNow||teamContext||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
   if(!hasPlan){showPaywall(justLapsedPlan);}else{enterDashboard();}
 }
@@ -4096,6 +4107,30 @@ function activeAccountId(){
 }
 function isTeamViewerOnly(){
   return !!(teamContext&&teamContext.role==='viewer');
+}
+async function claimReferralCodeIfAny(){
+  // Only ever claims once — profile.referred_by_code being set already
+  // means this already happened on an earlier login, nothing to do.
+  if(!profile||profile.referred_by_code)return;
+  let code=null;
+  try{code=localStorage.getItem('blakkstone_referral_code');}catch(e){}
+  if(!code)return;
+  if(code===profile.account_id){try{localStorage.removeItem('blakkstone_referral_code');}catch(e){}return;} // can't refer yourself
+  try{
+    const {data:referrer,error:findErr}=await sb.from('profiles').select('id').eq('account_id',code).maybeSingle();
+    if(findErr||!referrer){try{localStorage.removeItem('blakkstone_referral_code');}catch(e){}return;}
+    const {error:updateErr}=await sb.from('profiles').update({referred_by_code:code}).eq('id',user.id);
+    if(updateErr){
+      if(!/referred_by_code/i.test(updateErr.message||''))console.error('Referral claim error:',updateErr);
+      return; // referral_program SQL not run yet — fail silently, this is opt-in infrastructure
+    }
+    profile.referred_by_code=code;
+    const {error:insertErr}=await sb.from('referrals').insert({referrer_id:referrer.id,referred_id:user.id,referred_email:user.email,referral_code:code,status:'pending'});
+    if(insertErr)console.error('Referral record creation error:',insertErr);
+    try{localStorage.removeItem('blakkstone_referral_code');}catch(e){}
+  }catch(e){
+    console.error('Referral claim error:',e);
+  }
 }
 function showPaywall(lapsedPlan){
   const name=profile?.artist_name||profile?.full_name||user?.email?.split('@')[0]||'';
@@ -4365,7 +4400,7 @@ function goPage(id,el){
   if(id==='royalties'){loadRoyalties();}
   if(id==='payout')loadPayout();
   if(id==='myartists'){closeMyArtistDetail();loadMyArtistsGrid();}
-  if(id==='profile'){loadProfileStats();if(!teamContext&&profile?.plan==='label')loadTeamMembers();}
+  if(id==='profile'){loadProfileStats();if(!teamContext&&profile?.plan==='label')loadTeamMembers();if(!teamContext)loadReferralSection();}
   if(id==='upgrade')refreshProfileAndUpgradePage();
   if(id==='support')loadMySupportMessages();
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
@@ -6310,6 +6345,47 @@ async function sendPayoutNotificationEmail(amount,method,network,account){
 
 
 // ── PROFILE ──────────────────────────────────────────────
+function copyReferralLink(){
+  const input=document.getElementById('referral-link-display');
+  if(!input||!input.value)return;
+  navigator.clipboard.writeText(input.value).then(()=>toast('Referral link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
+}
+async function loadReferralSection(){
+  const section=document.getElementById('referral-section');if(!section)return;
+  if(!profile?.account_id){section.style.display='none';return;}
+  section.style.display='block';
+  const linkInput=document.getElementById('referral-link-display');
+  if(linkInput)linkInput.value=window.location.origin+'/?ref='+profile.account_id;
+  const list=document.getElementById('referral-list');
+  if(!list)return;
+  list.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div>';
+  try{
+    const {data,error}=await sb.from('referrals').select('*').eq('referrer_id',user.id).order('created_at',{ascending:false});
+    if(error)throw error;
+    if(!data||!data.length){
+      list.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px;padding:.5rem 0">No referrals yet — share your link above to get started.</div>';
+      return;
+    }
+    const statusInfo={
+      pending:{label:'Signed up — waiting for their first renewal',color:'#fbbf24'},
+      qualified:{label:'Reward ready — apply it at your next checkout',color:'#34d399'},
+      reward_issued:{label:'Reward used',color:'rgba(255,255,255,.35)'}
+    };
+    list.innerHTML=data.map(r=>{
+      const info=statusInfo[r.status]||{label:r.status,color:'rgba(255,255,255,.4)'};
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.65rem .9rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;margin-bottom:6px">'
+        +'<div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.referred_email||'Pending signup')+'</div><div style="font-size:11px;color:'+info.color+'">'+info.label+'</div></div>'
+      +'</div>';
+    }).join('');
+  }catch(e){
+    console.error('Load referrals error:',e);
+    if((e.message||'').match(/relation .* does not exist/i)){
+      list.innerHTML='<div style="color:rgba(239,68,68,.6);font-size:12px;padding:.5rem 0">Run the referral_program SQL in Supabase to enable this.</div>';
+    } else {
+      list.innerHTML='<div style="color:rgba(239,68,68,.6);font-size:12px;padding:.5rem 0">Could not load referrals.</div>';
+    }
+  }
+}
 async function loadTeamMembers(){
   const list=document.getElementById('team-members-list');if(!list)return;
   list.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div>';
@@ -10630,13 +10706,37 @@ function openPaystack(plan){
   document.getElementById('b-yearly')?.classList.add('sel');
   if(user) document.getElementById('pay-em').value=user.email||'';
   currentUpgradeDiscount=calculateUpgradeDiscount(selectedPlan);
+  currentReferralDiscount=null;
+  checkReferralDiscount(); // async — updates the note itself once resolved
   updateRateNote();
   document.getElementById('pay-overlay').classList.add('open');
 }
-function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');currentUpgradeDiscount=null;}
+function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');currentUpgradeDiscount=null;currentReferralDiscount=null;}
 function setBilling(cycle){
   billing=cycle;
   document.getElementById('b-yearly')?.classList.toggle('sel',cycle==='yearly');
+  updateRateNote();
+}
+let currentReferralDiscount=null;
+async function checkReferralDiscount(){
+  currentReferralDiscount=null;
+  if(!user)return;
+  try{
+    if(profile?.referred_by_code){
+      const {data:referredRow}=await sb.from('referrals').select('id,new_signup_discount_used').eq('referred_id',user.id).eq('referral_code',profile.referred_by_code).maybeSingle();
+      if(referredRow&&!referredRow.new_signup_discount_used){
+        currentReferralDiscount={type:'new_signup',percent:10,referralRowId:referredRow.id};
+        updateRateNote();
+        return;
+      }
+    }
+    const {data:qualifiedRow}=await sb.from('referrals').select('id').eq('referrer_id',user.id).eq('status','qualified').is('reward_issued_at',null).order('qualified_at',{ascending:true}).limit(1).maybeSingle();
+    if(qualifiedRow){
+      currentReferralDiscount={type:'referrer',percent:20,referralRowId:qualifiedRow.id};
+    }
+  }catch(e){
+    console.error('Referral discount check error (not fatal — checkout still works without it):',e);
+  }
   updateRateNote();
 }
 function updateRateNote(){
@@ -10645,7 +10745,33 @@ function updateRateNote(){
   const ghs=(usd*currentDisplayRates.GHS).toFixed(2);
   const rn=document.getElementById('rate-note');
   const discountEl=document.getElementById('upgrade-discount-note');
-  if(currentUpgradeDiscount&&billing==='yearly'){
+  const autoRenew=document.getElementById('pay-auto-renew')?.checked;
+  // Referral discounts take priority over the upgrade-proration discount if
+  // both somehow apply at once — kept simple rather than stacking two
+  // discounts in one purchase. Neither applies when auto-renewal is
+  // checked, same reason as before: a Paystack plan_code charges its own
+  // fixed price regardless of whatever amount we pass alongside it.
+  if(currentReferralDiscount&&billing==='yearly'&&!autoRenew){
+    const pct=currentReferralDiscount.percent;
+    const discountedUsd=(usd*(1-pct/100)).toFixed(2);
+    const discountedGhs=(discountedUsd*currentDisplayRates.GHS).toFixed(2);
+    const label=currentReferralDiscount.type==='new_signup'
+      ?'Welcome discount — you were referred to Blakkstone'
+      :'Referral reward — someone you referred stuck around';
+    if(discountEl){
+      discountEl.style.display='block';
+      discountEl.innerHTML='<i class="ti ti-gift"></i> '+label+': <strong>'+pct+'% off</strong>. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
+    }
+    if(rn){
+      if(currentDisplayCurrency==='GHS'){
+        rn.textContent='GHS '+discountedGhs+' at current rate (referral discount applied). Charged in GHS via Paystack.';
+      } else {
+        rn.textContent='Shown as '+convertPrice(parseFloat(discountedUsd))+' ('+currentDisplayCurrency+') for reference — actual charge is GHS '+discountedGhs+' via Paystack, referral discount applied.';
+      }
+    }
+    return;
+  }
+  if(currentUpgradeDiscount&&billing==='yearly'&&!autoRenew){
     const discountedUsd=Math.max(0,usd-currentUpgradeDiscount.creditAmount).toFixed(2);
     const discountedGhs=(discountedUsd*currentDisplayRates.GHS).toFixed(2);
     if(discountEl){
@@ -10670,8 +10796,16 @@ function updateRateNote(){
     }
   }
 }
-async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew){
+async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,appliedReferral){
   try{
+    // Check BEFORE inserting this payment's own subscriptions row, so we can
+    // tell "is this a renewal" (had at least one prior payment already) from
+    // "is this someone's very first payment" (this would be their only row).
+    let isRenewal=false;
+    if(user){
+      const {count}=await sb.from('subscriptions').select('id',{count:'exact',head:true}).eq('user_id',user.id);
+      isRenewal=(count||0)>0;
+    }
     if(user){
       const dbPlan=planKey==='solo'?'solo_paid':planKey;
       const expiresAt=new Date();
@@ -10695,6 +10829,25 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew)
       if(profile){profile.plan=dbPlan;profile.plan_expires_at=expiresAt.toISOString();if(autoRenew)profile.auto_renew_status='activating';}
       const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
       if(document.getElementById('page-myartists')?.classList.contains('active'))loadMyArtistsGrid();
+
+      // Referral bookkeeping — none of this should ever block the payment
+      // itself if something here fails, so each piece is independently
+      // wrapped and just logged rather than thrown.
+      try{
+        if(appliedReferral?.type==='new_signup'){
+          await sb.from('referrals').update({new_signup_discount_used:true}).eq('id',appliedReferral.referralRowId);
+        } else if(appliedReferral?.type==='referrer'){
+          await sb.from('referrals').update({status:'reward_issued',reward_issued_at:new Date().toISOString()}).eq('id',appliedReferral.referralRowId);
+        }
+      }catch(e){console.error('Referral discount bookkeeping error (payment itself succeeded):',e);}
+      try{
+        if(isRenewal&&profile?.referred_by_code){
+          // This user was referred by someone, and this is their second+
+          // payment — the referrer's reward is now ready to use.
+          await sb.from('referrals').update({status:'qualified',qualified_at:new Date().toISOString()})
+            .eq('referred_id',user.id).eq('referral_code',profile.referred_by_code).eq('status','pending');
+        }
+      }catch(e){console.error('Referral qualification check error (payment itself succeeded):',e);}
     }
     await sb.from('subscriptions').insert({user_id:user?.id,plan:planKey,billing_cycle:billingCycle,amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),paystack_ref:ref,status:'active'}).catch(()=>{});
     const planLabel=PLANS[planKey]?.label||planKey;
@@ -10708,6 +10861,7 @@ function toggleAutoRenewNote(){
   const checked=document.getElementById('pay-auto-renew')?.checked;
   const note=document.getElementById('auto-renew-note');
   if(note)note.style.display=checked?'block':'none';
+  updateRateNote();
 }
 function doPaystack(){
   const email=document.getElementById('pay-em').value.trim();
@@ -10716,7 +10870,11 @@ function doPaystack(){
   const autoRenew=document.getElementById('pay-auto-renew')?.checked;
   const planCode=PAYSTACK_PLAN_CODES[selectedPlan];
   let usd=billing==='monthly'?p.monthly:p.yearly;
-  if(currentUpgradeDiscount&&billing==='yearly'&&!autoRenew){
+  let appliedReferral=null;
+  if(currentReferralDiscount&&billing==='yearly'&&!autoRenew){
+    usd=usd*(1-currentReferralDiscount.percent/100);
+    appliedReferral=currentReferralDiscount;
+  } else if(currentUpgradeDiscount&&billing==='yearly'&&!autoRenew){
     // Upgrade credit only applies to a one-time payment — a real Paystack
     // subscription always charges the plan's own fixed price, since the
     // plan_code overrides whatever amount we pass alongside it.
@@ -10730,13 +10888,13 @@ function doPaystack(){
   }
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
   const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode);
+  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode),_appliedReferral=appliedReferral;
   try{
     const popup=new PaystackPop();
     const txOptions={
       key:PK,email,currency:'GHS',ref,
       channels:['card','mobile_money','apple_pay'],
-      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew);},
+      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew,_appliedReferral);},
       onCancel:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';},
       onError:function(err){toast('Payment error: '+(err?.message||'please try again.'),'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
     };
@@ -10901,6 +11059,14 @@ function renderSplitRows(){
   // never needs an IP lookup or a live exchange-rate fetch for a pricing table
   // they'll never see.
   const linkId=new URLSearchParams(window.location.search).get('link');
+  // Capture a referral code from the URL (e.g. blakkstonemusic.com/?ref=BLK1234)
+  // and remember it for whenever this visitor actually signs up — they might
+  // browse around or come back later before creating an account, so this
+  // can't just be read once and forgotten.
+  const refCode=new URLSearchParams(window.location.search).get('ref');
+  if(refCode){
+    try{localStorage.setItem('blakkstone_referral_code',refCode);}catch(e){}
+  }
   if(linkId){
     showView('smartlink');
     loadSmartLink(linkId);
