@@ -3313,7 +3313,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <div class="adm-card">
             <div class="adm-card-title"><i class="ti ti-send"></i> Send Message</div>
-            <div class="fg"><label>To (email)</label><input id="msg-to" type="email" placeholder="artist@email.com"></div>
+            <div class="fg" style="position:relative">
+              <label>To (email)</label>
+              <input id="msg-to" type="text" placeholder="Search by name or email..." autocomplete="off" oninput="onMsgToInput(this.value)" onfocus="onMsgToInput(this.value)">
+              <div id="msg-to-results" style="display:none;position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--dropdown);border:1px solid rgba(255,255,255,.12);border-radius:10px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.4)"></div>
+            </div>
             <div class="fg"><label>Subject</label><input id="msg-subject" type="text" placeholder="Message subject"></div>
             <div class="fg"><label>Message</label><textarea id="msg-body" placeholder="Type your message..." style="min-height:120px"></textarea></div>
             <div class="fg">
@@ -8846,9 +8850,39 @@ function clearAdminAttachment(){
   const nameEl=document.getElementById('msg-attachment-name');if(nameEl)nameEl.textContent='';
   const clearBtn=document.getElementById('msg-attachment-clear');if(clearBtn)clearBtn.style.display='none';
 }
+function onMsgToInput(query){
+  const results=document.getElementById('msg-to-results');if(!results)return;
+  const q=query.trim().toLowerCase();
+  if(!q){results.style.display='none';results.innerHTML='';return;}
+  const matches=(allUsersCache||[]).filter(p=>{
+    const name=(p.artist_name||p.full_name||'').toLowerCase();
+    const email=(p.email||'').toLowerCase();
+    return name.includes(q)||email.includes(q);
+  }).slice(0,6);
+  if(!matches.length){results.style.display='none';results.innerHTML='';return;}
+  results.innerHTML=matches.map(p=>{
+    const name=p.artist_name||p.full_name||'—';
+    return '<div onclick="selectMsgToArtist(\''+esc(p.email||'').replace(/'/g,"\\'")+'\')" style="padding:.6rem .875rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="min-width:0"><div style="font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.email||'')+'</div></div><span style="font-size:10px;color:var(--gold);font-weight:700;flex-shrink:0">'+esc(p.account_id||'')+'</span></div>';
+  }).join('');
+  results.style.display='block';
+  document.addEventListener('click',closeMsgToResultsOnOutsideClick,{capture:true});
+}
+function selectMsgToArtist(email){
+  const input=document.getElementById('msg-to');if(input)input.value=email;
+  const results=document.getElementById('msg-to-results');if(results){results.style.display='none';results.innerHTML='';}
+}
+function closeMsgToResultsOnOutsideClick(e){
+  const results=document.getElementById('msg-to-results');
+  const input=document.getElementById('msg-to');
+  if(results&&!results.contains(e.target)&&e.target!==input){
+    results.style.display='none';
+    document.removeEventListener('click',closeMsgToResultsOnOutsideClick,{capture:true});
+  }
+}
 async function sendAdminMessage(){
   const to=document.getElementById('msg-to').value.trim();const body=document.getElementById('msg-body').value.trim();const subject=document.getElementById('msg-subject')?.value.trim()||'Message from Blakkstone';
   if(!to||!body){toast('Fill in email and message','err');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){toast('Enter a valid email address','err');return;}
   try{
     let attachmentUrl=null,attachmentName=null;
     if(_adminMsgAttachmentFile){
@@ -8869,7 +8903,7 @@ async function sendAdminMessage(){
       if(!error&&attachmentUrl)toast('Message sent, but the attachment could not be saved — run the message attachments SQL in Supabase','err');
     }
     if(error)throw error;
-    document.getElementById('msg-body').value='';clearAdminAttachment();toast('Message sent','ok');loadAdminMessages();
+    document.getElementById('msg-to').value='';document.getElementById('msg-body').value='';clearAdminAttachment();toast('Message sent','ok');loadAdminMessages();
   }catch(e){console.error('Send admin message error:',e);toast('Could not send: '+(e.message||'please try again.'),'err');}
 }
 function toggleBroadcastPlanRows(){
