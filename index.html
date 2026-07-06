@@ -3357,6 +3357,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <label>Narrow further (optional)</label>
               <input id="bc-custom-filter" type="text" placeholder="Only artists matching name, email, or account ID...">
             </div>
+            <div class="fg">
+              <label>Attachment (optional)</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <button type="button" class="btn adm-btn-sec btn-sm" onclick="document.getElementById('bc-attachment-input').click()"><i class="ti ti-paperclip"></i> Attach File</button>
+                <span id="bc-attachment-name" style="font-size:12px;color:rgba(255,255,255,.4)"></span>
+                <button type="button" id="bc-attachment-clear" onclick="clearBroadcastAttachment()" style="display:none;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:16px;padding:0">×</button>
+              </div>
+              <input type="file" id="bc-attachment-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="onBroadcastAttachmentSelected(this)">
+              <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px">Sent once, attached to every message in this broadcast.</div>
+            </div>
             <button class="btn btn-purple" id="broadcast-send-btn" style="width:100%;justify-content:center;margin-top:.5rem" onclick="sendBroadcast()"><i class="ti ti-speakerphone"></i> Send Broadcast</button>
           </div>
           <div class="adm-card">
@@ -8926,6 +8936,22 @@ function toggleBroadcastPlanRows(){
   const rows=document.getElementById('bc-plan-rows');
   if(rows)rows.style.display=all?'none':'flex';
 }
+let _bcAttachmentFile=null;
+function onBroadcastAttachmentSelected(input){
+  if(!input.files[0])return;
+  const file=input.files[0];
+  const err=validateAttachmentFile(file);
+  if(err){toast(err,'err');input.value='';return;}
+  _bcAttachmentFile=file;
+  const nameEl=document.getElementById('bc-attachment-name');if(nameEl)nameEl.textContent=file.name;
+  const clearBtn=document.getElementById('bc-attachment-clear');if(clearBtn)clearBtn.style.display='inline';
+}
+function clearBroadcastAttachment(){
+  _bcAttachmentFile=null;
+  const input=document.getElementById('bc-attachment-input');if(input)input.value='';
+  const nameEl=document.getElementById('bc-attachment-name');if(nameEl)nameEl.textContent='';
+  const clearBtn=document.getElementById('bc-attachment-clear');if(clearBtn)clearBtn.style.display='none';
+}
 async function sendBroadcast(){
   const subject=document.getElementById('bc-subject')?.value.trim();const body=document.getElementById('bc-body')?.value.trim();
   if(!subject||!body){toast('Fill in subject and message','err');return;}
@@ -8953,14 +8979,40 @@ async function sendBroadcast(){
   if(!confirm('Send to '+targets.length+' artist(s)?'))return;
 
   if(btn){btn.disabled=true;}
+
+  // Upload the attachment once (not per-recipient) if one was selected
+  let attachmentUrl=null,attachmentName=null;
+  if(_bcAttachmentFile){
+    if(btn)btn.innerHTML='<span class="loader"></span> Uploading attachment...';
+    try{
+      const file=_bcAttachmentFile;
+      const ext=file.name.split('.').pop();
+      const path=user.id+'/broadcast/'+Date.now()+'.'+ext;
+      const {error:upErr}=await sb.storage.from('attachments').upload(path,file);
+      if(upErr)throw new Error('Attachment upload failed: '+upErr.message);
+      const {data}=sb.storage.from('attachments').getPublicUrl(path);
+      attachmentUrl=data.publicUrl;
+      attachmentName=file.name;
+    }catch(e){
+      console.error('Broadcast attachment upload error:',e);
+      toast('Could not upload attachment: '+(e.message||'please try again.')+' — sending without it.','err');
+    }
+  }
+
   const batchId=Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  let sent=0,lastError=null,batchIdSupported=true;
+  let sent=0,lastError=null,batchIdSupported=true,attachmentSupported=true;
   for(let i=0;i<targets.length;i++){
     const p=targets[i];
     if(btn)btn.innerHTML='<span class="loader"></span> Sending... ('+(i+1)+'/'+targets.length+')';
     let insertPayload={from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:null};
     if(batchIdSupported)insertPayload.broadcast_batch_id=batchId;
+    if(attachmentSupported&&attachmentUrl){insertPayload.attachment_url=attachmentUrl;insertPayload.attachment_name=attachmentName;}
     let {error}=await sb.from('messages').insert(insertPayload);
+    if(error&&attachmentSupported&&/attachment_url|attachment_name/i.test(error.message||'')){
+      attachmentSupported=false;
+      delete insertPayload.attachment_url;delete insertPayload.attachment_name;
+      ({error}=await sb.from('messages').insert(insertPayload));
+    }
     if(error&&batchIdSupported&&/broadcast_batch_id/i.test(error.message||'')){
       // Column doesn't exist yet (migration not run) — drop it for the rest of this
       // batch and keep sending; history falls back to time-window grouping instead.
@@ -8972,6 +9024,7 @@ async function sendBroadcast(){
   }
   document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
   const cf=document.getElementById('bc-custom-filter');if(cf)cf.value='';
+  clearBroadcastAttachment();
   if(sent>0){toast('Broadcast sent to '+sent+' artist(s)!','ok');logAudit(null,null,'broadcast_sent',null,subject+' — '+sent+' recipient(s)');}
   else{toast('Broadcast failed: '+(lastError?.message||'unknown error'),'err');}
   if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-speakerphone"></i> Send Broadcast';}
