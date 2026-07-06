@@ -2579,6 +2579,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <button class="an-v2-navitem active" id="an-v2-nav-metrics" onclick="setAnalyticsTab('metrics')"><i class="ti ti-chart-bar"></i> Metrics</button>
           <button class="an-v2-navitem" id="an-v2-nav-releases" onclick="setAnalyticsTab('releases')"><i class="ti ti-music"></i> Releases</button>
           <button class="an-v2-navitem" id="an-v2-nav-stores" onclick="setAnalyticsTab('stores')"><i class="ti ti-building-store"></i> Stores</button>
+          <button class="an-v2-navitem" id="an-v2-nav-countries" onclick="setAnalyticsTab('countries')"><i class="ti ti-world"></i> Countries</button>
         </div>
 
         <div class="an-v2-main">
@@ -2656,6 +2657,20 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <table class="an-v2-stores-table">
                 <thead><tr><th>Platform</th><th>Proportion</th><th>Streams</th></tr></thead>
                 <tbody id="an-stores-breakdown"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- COUNTRIES TAB -->
+          <div id="an-v2-tab-countries" style="display:none">
+            <div class="chart-card" style="margin-bottom:0">
+              <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:.375rem;display:flex;align-items:center;gap:6px">
+                <i class="ti ti-world" style="color:var(--gold)"></i> Countries
+              </div>
+              <p style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:1.25rem">From country-level detail captured during royalty CSV imports — only covers periods where a country column was mapped during import.</p>
+              <table class="an-v2-stores-table" id="an-countries-table">
+                <thead><tr><th>Country</th><th>Proportion</th><th>Streams</th><th>Earnings</th></tr></thead>
+                <tbody id="an-countries-breakdown"></tbody>
               </table>
             </div>
           </div>
@@ -5387,10 +5402,11 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReleaseModal()
 let anRangeDays=28, anFilterStore='all', anStreamData=[], anReleaseData=[];
 
 function setAnalyticsTab(tab){
-  ['metrics','releases','stores'].forEach(t=>{
+  ['metrics','releases','stores','countries'].forEach(t=>{
     const panel=document.getElementById('an-v2-tab-'+t);if(panel)panel.style.display=t===tab?'block':'none';
     const nav=document.getElementById('an-v2-nav-'+t);if(nav)nav.classList.toggle('active',t===tab);
   });
+  if(tab==='countries')renderCountryBreakdown();
 }
 function setAnalyticsRange(days,btn){
   anRangeDays=days;
@@ -5399,6 +5415,7 @@ function setAnalyticsRange(days,btn){
   renderAnalyticsChart();
   updateAnalyticsStats();
   renderStoreBreakdown();
+  if(document.getElementById('an-v2-tab-countries')?.style.display==='block')renderCountryBreakdown();
 }
 
 function setAnalyticsStore(store,btn){
@@ -5739,6 +5756,43 @@ function updateAnalyticsStats(){
   set('a-streams-sub',(anRangeDays?'Last '+anRangeDays+' days':'All time')+' · '+(anFilterStore==='all'?'all stores':anFilterStore));
 }
 
+async function renderCountryBreakdown(){
+  const tbody=document.getElementById('an-countries-breakdown');if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem 0"><span class="loader"></span></td></tr>';
+  try{
+    let query=sb.from('royalty_entries_by_country').select('country,streams,amount').eq('user_id',activeAccountId());
+    if(anRangeDays>0){
+      const cutoff=getFilteredDates();
+      query=query.gte('date_end',cutoff);
+    }
+    const {data,error}=await query;
+    if(error)throw error;
+    if(!data||!data.length){
+      tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem 0">No country-level data yet — import a royalty CSV with a country column mapped to start seeing this.</td></tr>';
+      return;
+    }
+    const totals={};
+    data.forEach(row=>{
+      const c=row.country;
+      if(!totals[c])totals[c]={streams:0,amount:0};
+      totals[c].streams+=row.streams||0;
+      totals[c].amount+=parseFloat(row.amount)||0;
+    });
+    const totalStreams=Object.values(totals).reduce((a,t)=>a+t.streams,0);
+    const sorted=Object.entries(totals).sort((a,b)=>b[1].streams-a[1].streams);
+    tbody.innerHTML=sorted.map(([country,t])=>{
+      const pct=totalStreams>0?((t.streams/totalStreams)*100).toFixed(2):'0.00';
+      return '<tr><td><div class="an-v2-store-name">'+esc(country)+'</div></td><td>'+pct+'%</td><td>'+t.streams.toLocaleString()+'</td><td>$'+t.amount.toFixed(2)+'</td></tr>';
+    }).join('');
+  }catch(e){
+    console.error('Country breakdown load error:',e);
+    if((e.message||'').match(/relation .* does not exist/i)){
+      tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(239,68,68,.6);padding:1.5rem 0">Run the royalty_entries_by_country SQL in Supabase to enable this.</td></tr>';
+    } else {
+      tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(239,68,68,.6);padding:1.5rem 0">Could not load country data.</td></tr>';
+    }
+  }
+}
 function renderStoreBreakdown(){
   const stEl=document.getElementById('an-stores-breakdown');
   if(!stEl)return;
@@ -10273,13 +10327,14 @@ const ROYIMP_FIELDS=[
   {key:'title', label:'Release Title', required:true,  guess:/title|release|track|song|album|product/i},
   {key:'isrc',  label:'ISRC',          required:false, guess:/isrc/i},
   {key:'store', label:'Store / Platform', required:true, guess:/store|platform|dsp|retailer|service|channel|partner/i},
+  {key:'country',label:'Country',      required:false, guess:/country|territory|region|market/i},
   {key:'amount',label:'Amount (USD)',  required:true,  guess:/amount|revenue|earning|royalt|payable|income|net/i},
   {key:'streams',label:'Streams / Units', required:false, guess:/stream|quantity|units|plays|count/i},
   {key:'pstart',label:'Period / Month',required:false, guess:/period|month|statement|start|date/i},
   {key:'pend',  label:'Period End',    required:false, guess:/end/i},
 ];
 const ROYIMP_PRESET_KEY='blk_roy_import_presets';
-let royImp={fileName:'',headers:[],rows:[],groups:[],releases:[]};
+let royImp={fileName:'',headers:[],rows:[],groups:[],countryGroups:[],releases:[]};
 let royImpCommitting=false;
 
 function royImpParseCSV(text){
@@ -10437,6 +10492,7 @@ async function royImportBuildPreview(){
   });
 
   const groups={};
+  const countryGroups={};
   let skippedNoPeriod=0,rowsUsed=0;
   royImp.rows.forEach(cells=>{
     const title=(cells[map.title]||'').trim();
@@ -10470,8 +10526,24 @@ async function royImportBuildPreview(){
     g.stores[sk]=parseFloat(((g.stores[sk]||0)+amount).toFixed(2));
     g.total=parseFloat((g.total+amount).toFixed(2));
     g.streams+=streams;g.rows++;rowsUsed++;
+
+    // Country-level detail — only tracked when a country column was
+    // actually mapped, and only for rows we could confidently match to a
+    // real release (an unmatched/ambiguous release has no release_id to
+    // attach country detail to yet, so those rows just don't contribute
+    // here — they still count toward the normal store-level group above).
+    if(map.country!==null&&rel){
+      const country=(cells[map.country]||'').trim();
+      if(country){
+        const ckey=rel.id+'|'+start+'|'+end+'|'+country.toLowerCase();
+        if(!countryGroups[ckey])countryGroups[ckey]={releaseId:rel.id,userId:rel.user_id,country,start,end,streams:0,amount:0};
+        countryGroups[ckey].streams+=streams;
+        countryGroups[ckey].amount=parseFloat((countryGroups[ckey].amount+amount).toFixed(2));
+      }
+    }
   });
   royImp.groups=Object.values(groups).sort((a,b)=>(a.releaseId?0:1)-(b.releaseId?0:1)||b.total-a.total);
+  royImp.countryGroups=Object.values(countryGroups);
   if(!royImp.groups.length){toast('No usable rows found'+(skippedNoPeriod?' — '+skippedNoPeriod+' rows had no readable period (set a fallback period)':''),'err');return;}
   royImp._skippedNoPeriod=skippedNoPeriod;royImp._rowsUsed=rowsUsed;
   royImpRenderPreview();
@@ -10500,7 +10572,8 @@ function royImpRenderPreview(){
     +'<span style="color:#34d399">'+matched.length+' matched</span>'
     +(unmatched?' · <span style="color:#fbbf24">'+unmatched+' need a release assigned (or they\'ll be skipped)</span>':'')
     +(royImp._skippedNoPeriod?' · <span style="color:#f87171">'+royImp._skippedNoPeriod+' rows skipped (no readable period)</span>':'')
-    +' · matched total <strong style="color:var(--gold)">$'+grand.toFixed(2)+'</strong>';
+    +' · matched total <strong style="color:var(--gold)">$'+grand.toFixed(2)+'</strong>'
+    +((royImp.countryGroups&&royImp.countryGroups.length)?' · <span style="color:#60a5fa">'+royImp.countryGroups.length+' country-level entries</span> will also be recorded':'');
   document.getElementById('royimp-commit-label').textContent='Import '+matched.length+' '+(matched.length===1?'Entry':'Entries');
 }
 
@@ -10513,7 +10586,7 @@ function royImportAssign(idx,relId){
 }
 
 function royImportReset(){
-  royImp={fileName:'',headers:[],rows:[],groups:[],releases:[]};
+  royImp={fileName:'',headers:[],rows:[],groups:[],countryGroups:[],releases:[]};
   document.getElementById('royimp-mapping').style.display='none';
   document.getElementById('royimp-preview').style.display='none';
 }
@@ -10549,6 +10622,24 @@ async function royImportCommit(){
     });
     const {error:insErr}=await sb.from('royalty_entries').insert(payload);
     if(insErr)throw insErr;
+
+    // Country-level detail — a parallel, additive insert. Failure here
+    // should never undo the store-level import that already succeeded
+    // above, so it's isolated in its own try/catch with just a toast, not
+    // a thrown error.
+    if(royImp.countryGroups&&royImp.countryGroups.length){
+      try{
+        const countryPayload=royImp.countryGroups.map(cg=>({
+          release_id:cg.releaseId,user_id:cg.userId,country:cg.country,
+          date_start:cg.start,date_end:cg.end,streams:cg.streams||0,amount:cg.amount||0
+        }));
+        const {error:countryErr}=await sb.from('royalty_entries_by_country').insert(countryPayload);
+        if(countryErr){
+          if(/does not exist/i.test(countryErr.message||''))toast('Store-level import succeeded, but run the royalty_entries_by_country SQL in Supabase to also save country-level detail.','err');
+          else console.error('Country-level import error (store-level import already succeeded):',countryErr);
+        }
+      }catch(e){console.error('Country-level import error (store-level import already succeeded):',e);}
+    }
     // Recalculate earnings + streams for every affected release from ALL its entries
     if(progEl)progEl.textContent='Recalculating release totals…';
     for(const rid of relIds){
