@@ -1731,6 +1731,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <span id="rel-modal-priority-badge"></span>
             </div>
             <button class="btn adm-btn-sec btn-sm" id="rel-modal-duplicate-btn" onclick="duplicateReleaseAsNew(_currentModalReleaseId)"><i class="ti ti-copy"></i> Duplicate as New Release</button>
+            <button class="btn btn-sm" id="rel-modal-cancel-btn" onclick="cancelPendingRelease(_currentModalReleaseId)" style="display:none;background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25);margin-left:8px"><i class="ti ti-circle-x"></i> Cancel Submission</button>
           </div>
         </div>
 
@@ -4926,6 +4927,7 @@ function openReleaseModal(r,updateUrl){
   const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
   const sb2=document.getElementById('rel-modal-status-badge');if(sb2) sb2.innerHTML='<span class="badge '+bc+'" style="font-size:12px;padding:4px 12px">'+bl+'</span>';
+  const cancelBtn=document.getElementById('rel-modal-cancel-btn');if(cancelBtn) cancelBtn.style.display=r.status==='pending'?'inline-flex':'none';
   const reasonBanner=document.getElementById('rel-modal-reason-banner');
   if(reasonBanner){
     if((r.status==='rejected'||r.status==='takendown')&&r.status_reason){
@@ -7174,6 +7176,30 @@ function parseNotesForDuplicate(notes){
     else if(p.startsWith('Stores: '))result.stores=p.slice(8).split(',').map(s=>s.trim()).filter(Boolean);
   });
   return result;
+}
+async function cancelPendingRelease(releaseId){
+  const r=_releaseMap[releaseId];
+  if(!r){toast('Could not find that release','err');return;}
+  if(r.status!=='pending'){toast('Only releases still pending review can be cancelled this way — message Support if it\'s already started review.','err');return;}
+  if(!confirm('Cancel this submission? "'+(r.title||'This release')+'" will be removed completely. This can\'t be undone — you can always resubmit using Duplicate as New Release.'))return;
+  try{
+    // Extra guards on the delete itself (not just the earlier status check above):
+    // only ever the artist's own release, and only if it's still genuinely pending
+    // right now — guards against a race where admin started reviewing between
+    // this page loading and the click.
+    const {data,error}=await sb.from('releases').delete().eq('id',releaseId).eq('user_id',user.id).eq('status','pending').select();
+    if(error)throw error;
+    if(!data||!data.length){
+      toast('This release may have already started review — refresh and check its current status.','err');
+      return;
+    }
+    toast('Submission cancelled','ok');
+    closeReleaseModal();
+    await loadReleases();
+  }catch(e){
+    console.error('Cancel pending release error:',e);
+    toast('Could not cancel: '+(e.message||'please try again.'),'err');
+  }
 }
 async function duplicateReleaseAsNew(releaseId){
   const r=_releaseMap[releaseId];
