@@ -2775,6 +2775,23 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="window.open(window.location.origin+'/?artist='+user.id,'_blank')"><i class="ti ti-eye"></i> Preview</button>
         </div>
         <div class="divhr"></div>
+        <div class="slabel"><i class="ti ti-mail"></i> Email Preferences</div>
+        <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Control which emails Blakkstone sends you. You'll always still see everything in the app either way.</p>
+        <label style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer">
+          <div>
+            <div style="font-size:13px;color:#fff;font-weight:600">Direct replies from Blakkstone</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">When support replies to a message you sent</div>
+          </div>
+          <input type="checkbox" id="pref-replies" checked onchange="saveEmailPreferences()" style="accent-color:var(--gold);width:18px;height:18px;flex-shrink:0">
+        </label>
+        <label style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:.75rem 0;cursor:pointer">
+          <div>
+            <div style="font-size:13px;color:#fff;font-weight:600">Announcements & broadcasts</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px">Platform updates and news sent to all artists</div>
+          </div>
+          <input type="checkbox" id="pref-broadcasts" checked onchange="saveEmailPreferences()" style="accent-color:var(--gold);width:18px;height:18px;flex-shrink:0">
+        </label>
+        <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-lock"></i> Change Password</div>
         <div class="fg"><label>New Password</label><input id="p-pw" type="password" placeholder="Min. 6 characters"></div>
         <div class="fg"><label>Confirm Password</label><input id="p-pw2" type="password" placeholder="Repeat password"></div>
@@ -4078,6 +4095,8 @@ function enterDashboard(){
       const pem=document.getElementById('p-em');if(pem) pem.value=profile.email||user.email;
       const pdn=document.getElementById('profile-display-name');if(pdn) pdn.textContent=profile.artist_name||profile.full_name||'';
       const paid=document.getElementById('profile-account-id');if(paid) paid.textContent=profile.account_id||'Assigning...';
+      const prefReplies=document.getElementById('pref-replies');if(prefReplies) prefReplies.checked=profile.email_pref_replies!==false;
+      const prefBroadcasts=document.getElementById('pref-broadcasts');if(prefBroadcasts) prefBroadcasts.checked=profile.email_pref_broadcasts!==false;
     }
     updateCommBar(isPaid,adminNow);updateUpgradePage(profile?.plan);
     const maNav=document.getElementById('myartists-nav');
@@ -5975,14 +5994,30 @@ async function notifyAdminEmail(type,data){
     console.error('Admin email notification failed (the action itself still succeeded):',e);
   }
 }
-async function notifyArtistEmail(type,data,toEmail){
+async function notifyArtistEmail(type,data,toEmail,knownPrefs){
   // Same fire-and-forget pattern as notifyAdminEmail, but sends to a
   // specific artist's email instead of the fixed admin inbox. Requires the
   // send-notification-email Edge Function to accept an optional `to` field
   // in the request body (see that function's file — the admin_reply and
   // broadcast_message cases there use it).
+  //
+  // Respects the artist's own email preferences (profiles.email_pref_replies
+  // / email_pref_broadcasts). For a single-recipient call (admin replying to
+  // one artist) this looks the preference up directly. For broadcasts,
+  // pass the preference in as knownPrefs (already fetched once for the
+  // whole recipient list) instead — doing a separate lookup per recipient
+  // would mean 100+ extra queries for a broadcast to 100+ artists.
   if(!toEmail)return;
   try{
+    let prefs=knownPrefs;
+    if(!prefs){
+      const {data:p}=await sb.from('profiles').select('email_pref_replies,email_pref_broadcasts').eq('email',toEmail).maybeSingle();
+      prefs=p;
+    }
+    if(prefs){
+      if(type==='broadcast_message'&&prefs.email_pref_broadcasts===false)return;
+      if(type==='admin_reply'&&prefs.email_pref_replies===false)return;
+    }
     const {error}=await sb.functions.invoke('send-notification-email',{body:{type,data,to:toEmail}});
     if(error)console.error('Artist email notification failed (the action itself still succeeded):',error);
   }catch(e){
@@ -6467,6 +6502,23 @@ function copyRosterArtistLink(id){
   const artist=_rosterCache.find(a=>a.id===id);if(!artist)return;
   const url=window.location.origin+'/?artist='+user.id+'&name='+encodeURIComponent(artist.name);
   navigator.clipboard.writeText(url).then(()=>toast('Artist page link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
+}
+async function saveEmailPreferences(){
+  const replies=document.getElementById('pref-replies')?.checked;
+  const broadcasts=document.getElementById('pref-broadcasts')?.checked;
+  try{
+    const {error}=await sb.from('profiles').update({email_pref_replies:replies,email_pref_broadcasts:broadcasts}).eq('id',user.id);
+    if(error)throw error;
+    if(profile){profile.email_pref_replies=replies;profile.email_pref_broadcasts=broadcasts;}
+    toast('Email preferences saved','ok');
+  }catch(e){
+    console.error('Save email preferences error:',e);
+    if((e.message||'').match(/email_pref_(replies|broadcasts)/i)){
+      toast('Run the email preferences SQL in Supabase first','err');
+    } else {
+      toast('Could not save: '+(e.message||'please try again.'),'err');
+    }
+  }
 }
 async function saveProfile(){
   const fn=document.getElementById('p-fn').value.trim();const ln=document.getElementById('p-ln').value.trim();
@@ -8957,7 +9009,10 @@ async function sendBroadcast(){
   if(!subject||!body){toast('Fill in subject and message','err');return;}
   const btn=document.getElementById('broadcast-send-btn');
   if(btn&&btn.disabled)return; // already sending — ignore extra clicks
-  const {data:allProfiles}=await sb.from('profiles').select('id,email,artist_name,full_name,account_id,plan');
+  let {data:allProfiles,error:profilesFetchErr}=await sb.from('profiles').select('id,email,artist_name,full_name,account_id,plan,email_pref_broadcasts');
+  if(profilesFetchErr&&/email_pref_broadcasts/i.test(profilesFetchErr.message||'')){
+    ({data:allProfiles}=await sb.from('profiles').select('id,email,artist_name,full_name,account_id,plan'));
+  }
   let targets=allProfiles||[];
   const toAll=document.getElementById('bc-all')?.checked;
   if(!toAll){
@@ -9020,7 +9075,7 @@ async function sendBroadcast(){
       delete insertPayload.broadcast_batch_id;
       ({error}=await sb.from('messages').insert(insertPayload));
     }
-    if(error){lastError=error;console.error('Broadcast send error for',p.email,':',error);}else{sent++;notifyArtistEmail('broadcast_message',{subject,body},p.email);}
+    if(error){lastError=error;console.error('Broadcast send error for',p.email,':',error);}else{sent++;notifyArtistEmail('broadcast_message',{subject,body},p.email,{email_pref_broadcasts:p.email_pref_broadcasts});}
   }
   document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
   const cf=document.getElementById('bc-custom-filter');if(cf)cf.value='';
