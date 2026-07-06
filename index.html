@@ -2456,6 +2456,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                     <div class="fg"><label>Payoneer Email</label><input id="payoneer-email" type="email" placeholder="you@example.com"></div>
                     <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:-.5rem;margin-bottom:.875rem">Use the email address linked to your Payoneer account. Don't have one yet? <a href="https://www.payoneer.com" target="_blank" rel="noopener" style="color:var(--gold)">Sign up free</a> first.</div>
                   </div>
+                  <div id="transfer-fee-breakdown" style="display:none;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:9px;padding:.75rem .9rem;margin-bottom:.75rem;font-size:12px;color:rgba(255,255,255,.6);line-height:1.8"></div>
                   <div id="payout-submit-wrap" style="display:none;margin-top:.5rem">
                     <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Processed within 5–7 business days.</div>
                     <button class="btn btn-purple" id="payout-submit-final" onclick="submitPayout()"><i class="ti ti-send"></i> Submit Payout Request</button>
@@ -5673,7 +5674,15 @@ async function loadPayout(){
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'';
     const stLabel={pending:'⏳ Pending',processing:'🔄 Processing',paid:'✅ Paid',failed:'❌ Failed',cancelled:'🚫 Cancelled'}[p.status]||p.status;
     const methodLabel=p.method==='momo'?'📱 '+(p.network||'')+' MoMo':p.method==='payoneer'?'🌐 Payoneer':'🏦 Bank';
-    const mainRow='<tr><td style="font-weight:700;color:#fff">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td>'+methodLabel+'</td><td style="color:rgba(255,255,255,.35)">'+d+'</td><td><span style="font-size:11px;font-weight:600;'+sc+'">'+stLabel+'</span>'+(p.status==='pending'?' <button class="btn-danger-outline" style="font-size:10px;padding:2px 7px;margin-left:4px" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</td></tr>';
+    const rate=currentDisplayRates.GHS||15.5;
+    const grossGhs=parseFloat(p.amount||0)*rate;
+    let amountCell='$'+parseFloat(p.amount||0).toFixed(2)+'<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.3)">≈ GHS '+grossGhs.toFixed(2)+'</div>';
+    if(p.transfer_fee_ghs){
+      const feeUsd=p.transfer_fee_ghs/rate;
+      const netGhs=Math.max(0,grossGhs-p.transfer_fee_ghs);
+      amountCell+='<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.25)">− GHS '+parseFloat(p.transfer_fee_ghs).toFixed(2)+' fee → GHS '+netGhs.toFixed(2)+' net</div>';
+    }
+    const mainRow='<tr><td style="font-weight:700;color:#fff">'+amountCell+'</td><td>'+methodLabel+'</td><td style="color:rgba(255,255,255,.35)">'+d+'</td><td><span style="font-size:11px;font-weight:600;'+sc+'">'+stLabel+'</span>'+(p.status==='pending'?' <button class="btn-danger-outline" style="font-size:10px;padding:2px 7px;margin-left:4px" onclick="cancelPayout(\''+p.id+'\')">Cancel</button>':'')+'</td></tr>';
     if(p.status==='failed'){
       const reasonText=p.failure_reason?esc(p.failure_reason):'No reason was recorded for this failure.';
       const failRow='<tr><td colspan="4" style="padding:0 0 .75rem"><div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:9px;padding:.75rem 1rem;margin-top:-4px"><div style="font-size:12px;color:#f87171;line-height:1.6"><strong>Why this failed:</strong> '+reasonText+'</div><div style="display:flex;gap:8px;margin-top:.625rem"><button class="btn btn-gold btn-sm" style="padding:5px 12px;font-size:11px" onclick="goPage(\'profile\',null)"><i class="ti ti-edit"></i> Update payout details & retry</button><button class="btn adm-btn-sec btn-sm" style="padding:5px 12px;font-size:11px" onclick="contactSupportAboutPayout(\''+esc((p.amount||0).toFixed(2))+'\')"><i class="ti ti-headset"></i> Message Support</button></div></div></td></tr>';
@@ -5699,16 +5708,40 @@ function fillMaxWithdraw(){
 function updateWithdrawGhsPreview(){
   const input=document.getElementById('withdraw-amount');
   const preview=document.getElementById('withdraw-ghs-preview');
-  if(!input||!preview)return;
-  const usd=parseFloat(input.value||0);
-  if(!usd||usd<=0){preview.textContent='';return;}
-  preview.textContent='≈ GHS '+(usd*currentDisplayRates.GHS).toFixed(2);
+  if(input&&preview){
+    const usd=parseFloat(input.value||0);
+    preview.textContent=(!usd||usd<=0)?'':'≈ GHS '+(usd*currentDisplayRates.GHS).toFixed(2);
+  }
+  updateTransferFeeBreakdown();
 }
 function showPayoutMethods(){
   const amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
   if(!amt||amt<1){toast('Enter a valid amount (min $1.00)','err');return;}
   document.getElementById('payout-method-section').style.display='block';
   document.getElementById('payout-method-section').scrollIntoView({behavior:'smooth'});
+}
+// Paystack's actual per-transfer cost for Ghana (confirmed against their
+// current pricing page, last edited Feb 2026) — passed through to the
+// artist at cost, not marked up. Payoneer isn't included since it's a
+// different rail with its own cost structure we don't have transparent
+// pricing for, so no fee is applied there.
+const TRANSFER_FEES_GHS={momo:1,bank:8};
+function updateTransferFeeBreakdown(){
+  const breakdown=document.getElementById('transfer-fee-breakdown');if(!breakdown)return;
+  const amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
+  const feeGhs=TRANSFER_FEES_GHS[payoutMethod];
+  if(!feeGhs||!amt){breakdown.style.display='none';return;}
+  const rate=currentDisplayRates.GHS||15.5;
+  const feeUsd=feeGhs/rate;
+  const netUsd=Math.max(0,amt-feeUsd);
+  const grossGhs=amt*rate;
+  const netGhs=netUsd*rate;
+  breakdown.innerHTML=
+    '<div style="display:flex;justify-content:space-between"><span>Amount requested</span><span>$'+amt.toFixed(2)+' (≈ GHS '+grossGhs.toFixed(2)+')</span></div>'+
+    '<div style="display:flex;justify-content:space-between"><span>Transfer fee ('+(payoutMethod==='momo'?'Mobile Money':'Bank')+')</span><span>GHS '+feeGhs.toFixed(2)+' (≈ $'+feeUsd.toFixed(2)+')</span></div>'+
+    '<div style="display:flex;justify-content:space-between;font-weight:700;color:#fff;border-top:1px solid rgba(255,255,255,.1);margin-top:4px;padding-top:4px"><span>You\'ll receive</span><span>≈ GHS '+netGhs.toFixed(2)+'</span></div>'+
+    '<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">This covers Paystack\'s actual transfer cost — charged at cost, not marked up.</div>';
+  breakdown.style.display='block';
 }
 function selectPayout(method){
   payoutMethod=method;
@@ -5719,6 +5752,7 @@ function selectPayout(method){
   document.getElementById('bank-fields').style.display=method==='bank'?'block':'none';
   document.getElementById('payoneer-fields').style.display=method==='payoneer'?'block':'none';
   document.getElementById('payout-submit-wrap').style.display='block';
+  updateTransferFeeBreakdown();
 }
 function selNet(net){
   momoNetwork=net;
@@ -5766,7 +5800,13 @@ async function submitPayout(){
       if(!bank||!acc||!accName){toast('Fill in all bank fields','err');return;}
       account=accName+' — '+bank+' ('+acc+')';
     }
-    const {error}=await sb.from('payouts').insert({user_id:user.id,method:payoutMethod,network:network||null,account,amount:amt,status:'pending'});
+    const insertPayload={user_id:user.id,method:payoutMethod,network:network||null,account,amount:amt,status:'pending'};
+    if(TRANSFER_FEES_GHS[payoutMethod])insertPayload.transfer_fee_ghs=TRANSFER_FEES_GHS[payoutMethod];
+    let {error}=await sb.from('payouts').insert(insertPayload);
+    if(error&&/transfer_fee_ghs/i.test(error.message||'')){
+      delete insertPayload.transfer_fee_ghs;
+      ({error}=await sb.from('payouts').insert(insertPayload));
+    }
     if(error)throw error;
     document.getElementById('withdraw-amount').value='';
     updateWithdrawGhsPreview();
@@ -8608,7 +8648,14 @@ function renderAdminPayoutsTable(payouts){
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
     const adminMethodLabel=p.method==='momo'?'📱 Mobile Money':p.method==='payoneer'?'🌐 Payoneer':'🏦 Bank';
-    return '<tr><td><input type="checkbox" class="payout-cb" data-id="'+p.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+adminMethodLabel+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">$'+parseFloat(p.amount||0).toFixed(2)+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    const adminRate=currentDisplayRates.GHS||15.5;
+    const adminGrossGhs=parseFloat(p.amount||0)*adminRate;
+    let adminAmountCell='$'+parseFloat(p.amount||0).toFixed(2)+'<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.35)">≈ GHS '+adminGrossGhs.toFixed(2)+'</div>';
+    if(p.transfer_fee_ghs){
+      const adminNetGhs=Math.max(0,adminGrossGhs-p.transfer_fee_ghs);
+      adminAmountCell+='<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.3)">Send: GHS '+adminNetGhs.toFixed(2)+' (fee GHS '+parseFloat(p.transfer_fee_ghs).toFixed(2)+')</div>';
+    }
+    return '<tr><td><input type="checkbox" class="payout-cb" data-id="'+p.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+adminMethodLabel+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">'+adminAmountCell+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
   }).join('');
 }
 function filterPayouts(){
