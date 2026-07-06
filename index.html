@@ -2927,7 +2927,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- ── DASHBOARD TAB ── -->
       <div class="admin-section active" id="admin-dashboard">
         <div class="adm-card" style="margin-bottom:1.25rem">
-          <div class="adm-card-title"><i class="ti ti-list-check"></i> Needs Attention</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div class="adm-card-title" style="margin-bottom:0"><i class="ti ti-list-check"></i> Needs Attention</div>
+            <button id="test-notif-btn" onclick="sendTestNotificationEmail()" class="btn adm-btn-sec btn-sm" title="Send a harmless test email through the same pipeline used for real notifications"><i class="ti ti-mail"></i> Send Test Notification</button>
+          </div>
           <div id="adm-needs-attention"><div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
@@ -5927,6 +5930,22 @@ async function deleteMethod(id){
   loadSavedMethods();
 }
 
+async function sendTestNotificationEmail(){
+  const btn=document.getElementById('test-notif-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="loader"></span> Sending...';}
+  try{
+    const {error}=await sb.functions.invoke('send-notification-email',{body:{
+      type:'test',
+      data:{triggeredBy:user?.email||'Admin',time:new Date().toLocaleString()}
+    }});
+    if(error)throw error;
+    toast('Test email sent! Check your inbox (and spam folder) — should land within a minute or two.','ok');
+  }catch(e){
+    console.error('Test notification email error:',e);
+    toast('Test email failed: '+(e.message||'check the Edge Function logs for details'),'err');
+  }
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-mail"></i> Send Test Notification';}
+}
 async function notifyAdminEmail(type,data){
   // Fire-and-forget — a failure here must never block the actual action
   // (release submission, payout request, support message) that triggered
