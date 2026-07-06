@@ -3357,7 +3357,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <label>Narrow further (optional)</label>
               <input id="bc-custom-filter" type="text" placeholder="Only artists matching name, email, or account ID...">
             </div>
-            <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:.5rem" onclick="sendBroadcast()"><i class="ti ti-speakerphone"></i> Send Broadcast</button>
+            <button class="btn btn-purple" id="broadcast-send-btn" style="width:100%;justify-content:center;margin-top:.5rem" onclick="sendBroadcast()"><i class="ti ti-speakerphone"></i> Send Broadcast</button>
           </div>
           <div class="adm-card">
             <div class="adm-card-title"><i class="ti ti-history"></i> Broadcast History</div>
@@ -5963,6 +5963,20 @@ async function notifyAdminEmail(type,data){
     if(error)console.error('Admin email notification failed (the action itself still succeeded):',error);
   }catch(e){
     console.error('Admin email notification failed (the action itself still succeeded):',e);
+  }
+}
+async function notifyArtistEmail(type,data,toEmail){
+  // Same fire-and-forget pattern as notifyAdminEmail, but sends to a
+  // specific artist's email instead of the fixed admin inbox. Requires the
+  // send-notification-email Edge Function to accept an optional `to` field
+  // in the request body (see that function's file — the admin_reply and
+  // broadcast_message cases there use it).
+  if(!toEmail)return;
+  try{
+    const {error}=await sb.functions.invoke('send-notification-email',{body:{type,data,to:toEmail}});
+    if(error)console.error('Artist email notification failed (the action itself still succeeded):',error);
+  }catch(e){
+    console.error('Artist email notification failed (the action itself still succeeded):',e);
   }
 }
 async function sendPayoutNotificationEmail(amount,method,network,account){
@@ -8904,6 +8918,7 @@ async function sendAdminMessage(){
     }
     if(error)throw error;
     document.getElementById('msg-to').value='';document.getElementById('msg-body').value='';clearAdminAttachment();toast('Message sent','ok');loadAdminMessages();
+    notifyArtistEmail('admin_reply',{subject,body},to);
   }catch(e){console.error('Send admin message error:',e);toast('Could not send: '+(e.message||'please try again.'),'err');}
 }
 function toggleBroadcastPlanRows(){
@@ -8914,6 +8929,8 @@ function toggleBroadcastPlanRows(){
 async function sendBroadcast(){
   const subject=document.getElementById('bc-subject')?.value.trim();const body=document.getElementById('bc-body')?.value.trim();
   if(!subject||!body){toast('Fill in subject and message','err');return;}
+  const btn=document.getElementById('broadcast-send-btn');
+  if(btn&&btn.disabled)return; // already sending — ignore extra clicks
   const {data:allProfiles}=await sb.from('profiles').select('id,email,artist_name,full_name,account_id,plan');
   let targets=allProfiles||[];
   const toAll=document.getElementById('bc-all')?.checked;
@@ -8934,24 +8951,70 @@ async function sendBroadcast(){
   }
   if(!targets.length){toast('No artists match','err');return;}
   if(!confirm('Send to '+targets.length+' artist(s)?'))return;
-  let sent=0,lastError=null;
-  for(const p of targets){
-    const {error}=await sb.from('messages').insert({from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:null});
-    if(error){lastError=error;console.error('Broadcast send error for',p.email,':',error);}else{sent++;}
+
+  if(btn){btn.disabled=true;}
+  const batchId=Date.now()+'_'+Math.random().toString(36).slice(2,8);
+  let sent=0,lastError=null,batchIdSupported=true;
+  for(let i=0;i<targets.length;i++){
+    const p=targets[i];
+    if(btn)btn.innerHTML='<span class="loader"></span> Sending... ('+(i+1)+'/'+targets.length+')';
+    let insertPayload={from_id:user.id,from_email:user.email,to_email:p.email,subject,body,direction:'out',read_at:null};
+    if(batchIdSupported)insertPayload.broadcast_batch_id=batchId;
+    let {error}=await sb.from('messages').insert(insertPayload);
+    if(error&&batchIdSupported&&/broadcast_batch_id/i.test(error.message||'')){
+      // Column doesn't exist yet (migration not run) — drop it for the rest of this
+      // batch and keep sending; history falls back to time-window grouping instead.
+      batchIdSupported=false;
+      delete insertPayload.broadcast_batch_id;
+      ({error}=await sb.from('messages').insert(insertPayload));
+    }
+    if(error){lastError=error;console.error('Broadcast send error for',p.email,':',error);}else{sent++;notifyArtistEmail('broadcast_message',{subject,body},p.email);}
   }
   document.getElementById('bc-body').value='';document.getElementById('bc-subject').value='';
   const cf=document.getElementById('bc-custom-filter');if(cf)cf.value='';
   if(sent>0){toast('Broadcast sent to '+sent+' artist(s)!','ok');logAudit(null,null,'broadcast_sent',null,subject+' — '+sent+' recipient(s)');}
   else{toast('Broadcast failed: '+(lastError?.message||'unknown error'),'err');}
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-speakerphone"></i> Send Broadcast';}
   loadBroadcastHistory();
 }
 async function loadBroadcastHistory(){
   const el=document.getElementById('broadcast-history');if(!el)return;
   try{
-    const {data,error}=await sb.from('messages').select('*').eq('direction','out').eq('from_id',user.id).order('created_at',{ascending:false}).limit(10);
+    const {data,error}=await sb.from('messages').select('*').eq('direction','out').eq('from_id',user.id).order('created_at',{ascending:false}).limit(300);
     if(error)throw error;
     if(!data||!data.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">No broadcasts yet.</div>';return;}
-    el.innerHTML=data.map(m=>'<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(m.subject||'No subject')+'</div><div style="font-size:11px;color:rgba(255,255,255,.3)">'+esc(m.to_email||'')+' · '+(m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'')+'</div></div>').join('');
+    // Group into campaigns: rows sharing a broadcast_batch_id are one campaign.
+    // Rows without one (sent before this migration, or one-off admin replies)
+    // fall back to grouping by identical subject sent within 10 seconds of
+    // each other — a reasonable proxy for "this was one broadcast click."
+    const groups=[];
+    const byBatchId={};
+    const ungrouped=[];
+    data.forEach(m=>{
+      if(m.broadcast_batch_id){
+        if(!byBatchId[m.broadcast_batch_id])byBatchId[m.broadcast_batch_id]=[];
+        byBatchId[m.broadcast_batch_id].push(m);
+      } else {
+        ungrouped.push(m);
+      }
+    });
+    Object.values(byBatchId).forEach(rows=>groups.push(rows));
+    ungrouped.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    let current=null;
+    ungrouped.forEach(m=>{
+      if(current&&current[0].subject===m.subject&&Math.abs(new Date(current[0].created_at)-new Date(m.created_at))<10000){
+        current.push(m);
+      } else {
+        current=[m];
+        groups.push(current);
+      }
+    });
+    groups.sort((a,b)=>new Date(b[0].created_at)-new Date(a[0].created_at));
+    el.innerHTML=groups.slice(0,10).map(rows=>{
+      const m=rows[0];
+      const count=rows.length;
+      return '<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(m.subject||'No subject')+'</div><div style="font-size:11px;color:rgba(255,255,255,.3)">Sent to '+count+' recipient'+(count!==1?'s':'')+' · '+(m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'')+'</div></div>';
+    }).join('');
   }catch(e){console.error('Broadcast history load error:',e);el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">'+esc('Could not load: '+(e.message||'unknown error'))+'</div>';}
 }
 // ── SUPPORT (ARTIST-FACING) ──────────────────────────────
