@@ -5034,13 +5034,41 @@ function renderTracklistRows(){
       const canPlay=!!t.audio_url;
       const isPlaying=_previewingRelTrackId===trackKey;
       const playBtn=canPlay?'<button onclick="previewReleaseTrack(\''+trackKey+'\')" title="'+(isPlaying?'Pause':'Preview')+'" style="background:'+(isPlaying?'var(--gold)':'rgba(255,255,255,.08)')+';border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:'+(isPlaying?'var(--black)':'rgba(255,255,255,.6)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-'+(isPlaying?'player-pause-filled':'player-play-filled')+'" style="font-size:11px"></i></button>':'<div style="width:26px;height:26px"></div>';
+      const isDownloading=_downloadingRelTrackId===trackKey;
+      const downloadBtn=canPlay?'<button onclick="downloadTrack(\''+trackKey+'\')" title="Download original file" '+(isDownloading?'disabled':'')+' style="background:rgba(255,255,255,.08);border:none;width:26px;height:26px;border-radius:50%;cursor:'+(isDownloading?'default':'pointer')+';color:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(isDownloading?'<span class="loader" style="width:11px;height:11px"></span>':'<i class="ti ti-download" style="font-size:11px"></i>')+'</button>':'';
       return '<div style="display:grid;grid-template-columns:36px 1fr 1fr 140px;gap:12px;padding:.75rem .5rem;align-items:center;border-bottom:1px solid rgba(255,255,255,.04)">'
         +'<div style="font-size:13px;color:rgba(255,255,255,.4);font-weight:600">'+t.track_number+'</div>'
-        +'<div style="display:flex;align-items:center;gap:10px;min-width:0">'+playBtn+'<div style="min-width:0"><div style="font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(t.title||'Untitled')+'</div>'+(dur?'<div style="font-size:11px;color:rgba(255,255,255,.3)">'+dur+'</div>':'')+'</div></div>'
+        +'<div style="display:flex;align-items:center;gap:8px;min-width:0">'+playBtn+downloadBtn+'<div style="min-width:0"><div style="font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(t.title||'Untitled')+'</div>'+(dur?'<div style="font-size:11px;color:rgba(255,255,255,.3)">'+dur+'</div>':'')+'</div></div>'
         +'<div style="font-size:13px;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(artistName)+'</div>'
         +'<div style="font-size:12px;color:rgba(255,255,255,.35);font-family:monospace">'+esc(t.isrc||'—')+'</div>'
       +'</div>';
     }).join('');
+}
+let _downloadingRelTrackId=null;
+async function downloadTrack(trackKey){
+  const track=_relTracklistCache.find(t=>String(t.id||('n'+t.track_number))===trackKey);
+  if(!track||!track.audio_url){toast('No audio file available to download','err');return;}
+  if(_downloadingRelTrackId)return; // one download at a time, avoid double-clicks stacking fetches
+  _downloadingRelTrackId=trackKey;
+  renderTracklistRows();
+  try{
+    const res=await fetch(track.audio_url);
+    if(!res.ok)throw new Error('Could not fetch file (HTTP '+res.status+')');
+    const blob=await res.blob();
+    const extMatch=track.audio_url.split('?')[0].match(/\.([a-zA-Z0-9]+)$/);
+    const ext=extMatch?extMatch[1]:'wav';
+    const safeTitle=(track.title||'track').replace(/[^\w\- ]/g,'').trim()||'track';
+    const filename=safeTitle+'.'+ext;
+    const blobUrl=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=blobUrl;a.download=filename;a.click();
+    URL.revokeObjectURL(blobUrl);
+    toast('Downloading "'+safeTitle+'"','ok');
+  }catch(e){
+    console.error('Track download error:',e);
+    toast('Could not download this file: '+(e.message||'please try again.'),'err');
+  }
+  _downloadingRelTrackId=null;
+  renderTracklistRows();
 }
 function previewReleaseTrack(trackKey){
   const audio=document.getElementById('rel-modal-audio-preview');if(!audio)return;
