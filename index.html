@@ -1260,7 +1260,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
     <div style="width:100%;border-top:1px solid #1a1a1a;padding-top:1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
       <p style="font-size:12px;color:#555">© 2026 Blakkstone Distribution. All rights reserved.</p>
-      <p style="font-size:12px;color:#444">Powered by OneRPM · Payments by Paystack · Emails by Resend</p>
+      <p style="font-size:12px;color:#444">Powered by OneRPM · Payments by Paystack</p>
     </div>
   </footer>
 </div>
@@ -5927,15 +5927,28 @@ async function deleteMethod(id){
   loadSavedMethods();
 }
 
+async function notifyAdminEmail(type,data){
+  // Fire-and-forget — a failure here must never block the actual action
+  // (release submission, payout request, support message) that triggered
+  // it. Requires the send-notification-email Edge Function to be deployed
+  // with RESEND_API_KEY set as a Supabase secret — see that function's file
+  // for deployment steps. Until it's deployed, this fails silently and the
+  // app keeps working exactly as it does today (admin still sees everything
+  // in the in-app Notifications panel regardless).
+  try{
+    const {error}=await sb.functions.invoke('send-notification-email',{body:{type,data}});
+    if(error)console.error('Admin email notification failed (the action itself still succeeded):',error);
+  }catch(e){
+    console.error('Admin email notification failed (the action itself still succeeded):',e);
+  }
+}
 async function sendPayoutNotificationEmail(amount,method,network,account){
-  // DISABLED — this previously called the Resend API directly from client-side JS with a
-  // hardcoded secret key, which is a real, exploitable security exposure (the key ships to
-  // every visitor's browser and is readable via View Source). Sending real email requires a
-  // genuine server-side piece (e.g. a Supabase Edge Function) that holds the real key privately
-  // and the browser only ever calls, never sees. Admin is NOT blind without this: every new
-  // payout request already surfaces in the real-time admin Notifications panel, queried directly
-  // from the payouts table, completely independent of this function.
-  console.warn('[Payout email notification disabled] Needs a server-side Edge Function — see comment above this function. Admin still sees new requests via the in-app Notifications panel.');
+  notifyAdminEmail('payout_requested',{
+    amount:parseFloat(amount||0).toFixed(2),
+    method,network,account,
+    accountId:profile?.account_id,
+    email:user?.email
+  });
 }
 
 
@@ -7940,6 +7953,11 @@ async function submitRelease(){
       }catch(e){console.error('Track list save error (release itself was submitted successfully):',e);}
     }
     toast('Release submitted! We will review it shortly.','ok');
+    notifyAdminEmail('release_submitted',{
+      title,artist,
+      accountId:profile?.account_id,
+      email:user?.email
+    });
     // Clear draft on success
     try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
     sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).catch(()=>{});
@@ -8999,6 +9017,11 @@ async function sendSupportMessage(){
     document.getElementById('sup-subject').value='';document.getElementById('sup-body').value='';
     clearSupportAttachment();
     toast("Message sent! We'll get back to you soon.",'ok');
+    notifyAdminEmail('support_message',{
+      subject:subject||'Message from '+(profile?.artist_name||profile?.full_name||user.email),
+      body,
+      email:user?.email
+    });
     loadMySupportMessages();
   }catch(e){
     console.error('Send support message error:',e);
