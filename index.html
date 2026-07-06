@@ -1915,8 +1915,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
             </div>
             <div class="fg" style="margin-bottom:1.5rem">
   <label style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4)">Release Title *</label>
-  <input id="r-title" type="text" placeholder="e.g. Midnight Stories" oninput="checkTitleFormat(this,'title-warn');updateArtPreviewTitle()" style="font-size:18px;font-weight:600;border:none;border-bottom:2px solid rgba(255,255,255,.15);border-radius:0;background:transparent;padding:10px 0;color:#fff" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.15)'">
+  <input id="r-title" type="text" placeholder="e.g. Midnight Stories" oninput="checkTitleFormat(this,'title-warn');updateArtPreviewTitle();checkDuplicateTitle(this)" style="font-size:18px;font-weight:600;border:none;border-bottom:2px solid rgba(255,255,255,.15);border-radius:0;background:transparent;padding:10px 0;color:#fff" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.15)'">
   <div id="title-warn" class="field-warn" style="display:none"></div>
+  <div id="title-duplicate-warn" style="display:none;margin-top:.5rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:.625rem .875rem;font-size:12px;color:#fbbf24;line-height:1.5"></div>
 </div>
             <div class="frow">
               <div class="fg"><label>© Copyright Holder *</label><input id="r-copyright" type="text" placeholder="Name"></div>
@@ -3709,6 +3710,19 @@ const FORBIDDEN_TITLE_PHRASES=[
   {re:/\bproduced by\b/i, field:'Producer credits', hint:null},
   {re:/\bremix\b/i,   field:'Remixer artists',  hint:'r-has-remix'},
 ];
+function checkDuplicateTitle(input){
+  const warnEl=document.getElementById('title-duplicate-warn');if(!warnEl)return;
+  const title=(input.value||'').trim().toLowerCase();
+  if(!title){warnEl.style.display='none';return;}
+  const match=(allRelData||[]).find(r=>(r.title||'').trim().toLowerCase()===title);
+  if(match){
+    const statusLabel={pending:'pending',review:'in review',live:'live',rejected:'rejected',takendown:'taken down'}[match.status]||match.status;
+    warnEl.innerHTML='<i class="ti ti-alert-triangle"></i> You already have a release titled "'+esc(match.title)+'" ('+esc(statusLabel||'')+'). If this is a remaster or reissue, that\'s fine — just flagging it in case it\'s not intentional.';
+    warnEl.style.display='block';
+  } else {
+    warnEl.style.display='none';
+  }
+}
 function checkTitleFormat(input,warnId){
   const val=input.value;
   const warnEl=document.getElementById(warnId);
@@ -7280,6 +7294,7 @@ async function initWizard(){
   if(blockedEl)blockedEl.style.display='none';
   if(bodyEl)bodyEl.style.display='block';
   wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};
+  const dupWarn=document.getElementById('title-duplicate-warn');if(dupWarn)dupWarn.style.display='none';
   renderStoresGrid();goWizard(1);
   // Check for saved draft
   if(user) loadDraft().then(state=>{
