@@ -3486,8 +3486,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <p id="pay-modal-desc">Keep 100% of your royalties with Blakkstone.</p>
     <ul id="pay-modal-feats" style="list-style:none;padding:0;margin:0 0 1rem;display:flex;flex-direction:column;gap:6px"></ul>
     <div class="btog" id="billing-toggle" style="grid-template-columns:1fr">
-      <div class="bopt sel" id="b-yearly" style="cursor:default">Billed Annually<strong id="b-yearly-price">$15</strong><small style="font-size:10px;color:var(--success)">One payment, no auto-renewal</small></div>
+      <div class="bopt sel" id="b-yearly" style="cursor:default">Billed Annually<strong id="b-yearly-price">$15</strong><small style="font-size:10px;color:var(--success)">One payment per year</small></div>
     </div>
+    <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:.75rem;cursor:pointer;padding:.75rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:9px">
+      <input type="checkbox" id="pay-auto-renew" onchange="toggleAutoRenewNote()" style="accent-color:var(--gold);width:16px;height:16px;margin-top:2px;flex-shrink:0">
+      <span style="font-size:12.5px;color:rgba(255,255,255,.7);line-height:1.5">
+        <strong style="color:#fff">Auto-renew next year</strong> — your card is saved and charged automatically when this plan expires, so you never lose access.
+        <span id="auto-renew-note" style="display:block;margin-top:4px;color:rgba(255,255,255,.4);font-size:11px">Note: any upgrade credit or currency-rate discount shown below only applies to a one-time payment — auto-renewal always charges the standard plan price.</span>
+      </span>
+    </label>
     <div class="fg"><label>Email</label><input id="pay-em" type="email" placeholder="you@email.com"></div>
     <div id="upgrade-discount-note" style="display:none;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);border-radius:9px;padding:.75rem 1rem;margin-bottom:.75rem;font-size:12.5px;color:#fff;line-height:1.6"></div>
     <div class="rate-note" id="rate-note"></div>
@@ -3636,6 +3643,12 @@ function toggleCurrencySwitcher(){
   menu.style.display=menu.style.display==='none'?'block':'none';
 }
 const PLANS={solo:{monthly:15,yearly:15,label:'Solo'},artist_plus:{monthly:25,yearly:25,label:'Artist+'},label:{monthly:45,yearly:45,label:'Label'}};
+// Fill these in after creating the matching plans in Paystack Dashboard →
+// Products → Plans (annual interval, price in GHS). Each plan_code looks
+// like "PLN_xxxxxxxxxxxxxx" — copy it exactly from Paystack, not the plan
+// name. Auto-renewal silently does nothing (falls back to a one-time
+// charge) until these are filled in, so nothing breaks in the meantime.
+const PAYSTACK_PLAN_CODES={solo:'',artist_plus:'',label:''};
 // Real, shared plan feature content — single source of truth for both the checkout modal and the artist's own Profile page.
 const PLAN_FEATURES={
   solo:['1 artist profile','Unlimited releases','150+ DSPs worldwide','Royalty dashboard','Mobile Money + Bank payouts'],
@@ -10657,52 +10670,82 @@ function updateRateNote(){
     }
   }
 }
-async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas){
+async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew){
   try{
     if(user){
       const dbPlan=planKey==='solo'?'solo_paid':planKey;
       const expiresAt=new Date();
       if(billingCycle==='monthly')expiresAt.setMonth(expiresAt.getMonth()+1);
       else expiresAt.setFullYear(expiresAt.getFullYear()+1);
-      const {error:planUpdateError}=await sb.from('profiles').update({plan:dbPlan,plan_expires_at:expiresAt.toISOString()}).eq('id',user.id);
+      const profileUpdate={plan:dbPlan,plan_expires_at:expiresAt.toISOString()};
+      // The actual customer_code/subscription_code get filled in by the
+      // paystack-webhook Edge Function once Paystack confirms the
+      // subscription server-side — this just marks the intent so the
+      // Profile page can show "activating..." in the meantime rather than
+      // nothing at all.
+      if(autoRenew)profileUpdate.auto_renew_status='activating';
+      let {error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id);
+      if(planUpdateError&&/auto_renew_status/i.test(planUpdateError.message||'')){
+        delete profileUpdate.auto_renew_status;
+        ({error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id));
+      }
       if(planUpdateError){
         console.error('[Plan Update Error] Failed to save plan_expires_at — likely the column does not exist yet on the live database. Run: alter table profiles add column if not exists plan_expires_at timestamptz;',planUpdateError);
       }
-      if(profile){profile.plan=dbPlan;profile.plan_expires_at=expiresAt.toISOString();}
+      if(profile){profile.plan=dbPlan;profile.plan_expires_at=expiresAt.toISOString();if(autoRenew)profile.auto_renew_status='activating';}
       const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
       if(document.getElementById('page-myartists')?.classList.contains('active'))loadMyArtistsGrid();
     }
     await sb.from('subscriptions').insert({user_id:user?.id,plan:planKey,billing_cycle:billingCycle,amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),paystack_ref:ref,status:'active'}).catch(()=>{});
     const planLabel=PLANS[planKey]?.label||planKey;
-    toast('Payment confirmed! Welcome to Blakkstone! 🎉','ok');
+    toast(autoRenew?'Payment confirmed! Auto-renewal is being set up now.':'Payment confirmed! Welcome to Blakkstone! 🎉','ok');
     closePaystack();
     const paywallEl=document.getElementById('paywall');
     if(paywallEl&&paywallEl.classList.contains('active')) enterDashboard();
   }catch(e){toast('Plan activated! Refresh if needed.','ok');closePaystack();}
 }
+function toggleAutoRenewNote(){
+  const checked=document.getElementById('pay-auto-renew')?.checked;
+  const note=document.getElementById('auto-renew-note');
+  if(note)note.style.display=checked?'block':'none';
+}
 function doPaystack(){
   const email=document.getElementById('pay-em').value.trim();
   if(!email){toast('Enter your email','err');return;}
   const p=PLANS[selectedPlan];
+  const autoRenew=document.getElementById('pay-auto-renew')?.checked;
+  const planCode=PAYSTACK_PLAN_CODES[selectedPlan];
   let usd=billing==='monthly'?p.monthly:p.yearly;
-  if(currentUpgradeDiscount&&billing==='yearly'){
+  if(currentUpgradeDiscount&&billing==='yearly'&&!autoRenew){
+    // Upgrade credit only applies to a one-time payment — a real Paystack
+    // subscription always charges the plan's own fixed price, since the
+    // plan_code overrides whatever amount we pass alongside it.
     usd=Math.max(0,usd-currentUpgradeDiscount.creditAmount);
   }
   const pesewas=Math.round(usd*currentDisplayRates.GHS*100);
   const btn=document.getElementById('pay-btn');
   if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your connection.','err');return;}
+  if(autoRenew&&!planCode){
+    toast('Auto-renewal isn\'t set up yet for this plan — proceeding with a one-time payment instead.','err');
+  }
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
   const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas;
+  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode);
   try{
     const popup=new PaystackPop();
-    popup.newTransaction({
-      key:PK,email,amount:pesewas,currency:'GHS',ref,
+    const txOptions={
+      key:PK,email,currency:'GHS',ref,
       channels:['card','mobile_money','apple_pay'],
-      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas);},
+      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew);},
       onCancel:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';},
       onError:function(err){toast('Payment error: '+(err?.message||'please try again.'),'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
-    });
+    };
+    if(_autoRenew){
+      txOptions.plan=planCode; // overrides amount entirely — Paystack charges the plan's own fixed price and sets up recurring billing
+    } else {
+      txOptions.amount=pesewas;
+    }
+    popup.newTransaction(txOptions);
   }catch(e){toast('Payment error: '+e.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
 }
 
