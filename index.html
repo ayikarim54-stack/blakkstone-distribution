@@ -330,7 +330,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
    same padding inside so content spacing looks identical to every other
    page. This does not touch .dash-body or .page, which every other
    dashboard page also relies on. */
-#page-upgrade{background:var(--off);margin:-2.5rem;padding:2.5rem;min-height:calc(100% + 5rem);display:flex;flex-direction:column;align-items:center}
+#page-upgrade{background:var(--off);margin:-2.5rem;padding:2.5rem;min-height:calc(100% + 5rem)}
+#page-upgrade.active{display:flex;flex-direction:column;align-items:center}
 .ug-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:900px;width:100%;margin:0 auto 1.5rem;align-items:stretch}
 .ug-card{border-radius:22px;padding:2rem 1.75rem;position:relative;display:flex;flex-direction:column}
 .ug-card.plain{background:#fff;border:1px solid var(--border)}
