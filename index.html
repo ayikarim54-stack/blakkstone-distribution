@@ -11128,7 +11128,8 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
         }
       }catch(e){console.error('Referral qualification check error (payment itself succeeded):',e);}
     }
-    await sb.from('subscriptions').insert({user_id:user?.id,plan:planKey,billing_cycle:billingCycle,amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),paystack_ref:ref,status:'active'}).catch(()=>{});
+    const {error:subsInsertError}=await sb.from('subscriptions').insert({user_id:user?.id,plan:planKey,billing_cycle:billingCycle,amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),paystack_ref:ref,status:'active'});
+    if(subsInsertError)console.error('[Subscriptions Insert Error] Payment succeeded and plan was activated, but the subscriptions history record failed to save — this only affects Admin > Subscriptions reporting, not the artist\'s actual plan access:',subsInsertError);
     const planLabel=PLANS[planKey]?.label||planKey;
     // Notify admin of the actual revenue event, and send the artist a
     // payment confirmation — both were missing entirely despite every
