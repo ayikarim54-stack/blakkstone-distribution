@@ -11095,8 +11095,15 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
         delete profileUpdate.auto_renew_status;
         ({error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id));
       }
+      if(planUpdateError&&/plan_expires_at/i.test(planUpdateError.message||'')){
+        delete profileUpdate.plan_expires_at;
+        ({error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id));
+      }
       if(planUpdateError){
-        console.error('[Plan Update Error] Failed to save plan_expires_at — likely the column does not exist yet on the live database. Run: alter table profiles add column if not exists plan_expires_at timestamptz;',planUpdateError);
+        console.error('[Plan Update Error] Payment succeeded but the profile plan update failed — this needs manual attention:',planUpdateError);
+        toast('Payment went through, but activating your plan hit a snag on our end. Your payment is safe — message Support with reference '+ref+' and we\'ll get this sorted immediately.','err');
+        closePaystack();
+        return;
       }
       if(profile){profile.plan=dbPlan;profile.plan_expires_at=expiresAt.toISOString();if(autoRenew)profile.auto_renew_status='activating';}
       const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
