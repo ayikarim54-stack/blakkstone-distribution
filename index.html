@@ -1928,11 +1928,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
             <div class="frow">
               <div class="fg"><label>© Copyright Holder *</label><input id="r-copyright" type="text" placeholder="Name"></div>
-              <div class="fg"><label>Copyright Year</label><input id="r-copyright-year" type="number" placeholder="2026"></div>
+              <div class="fg"><label>Copyright Year</label><input id="r-copyright-year" type="number" placeholder="2026" autocomplete="off"></div>
             </div>
             <div class="frow">
               <div class="fg"><label>℗ Copyright Holder *</label><input id="r-pcopyright" type="text" placeholder="Name"></div>
-              <div class="fg"><label>Production Year</label><input id="r-prod-year" type="number" placeholder="2026"></div>
+              <div class="fg"><label>Production Year</label><input id="r-prod-year" type="number" placeholder="2026" autocomplete="off"></div>
             </div>
             <div class="fg"><label>Record Label</label><input id="r-label" type="text" placeholder="Independent"></div>
             <div class="frow">
@@ -7626,9 +7626,9 @@ async function initWizard(){
   // number that quietly goes stale every time the calendar turns over.
   const thisYear=new Date().getFullYear();
   const copyYearEl=document.getElementById('r-copyright-year');
-  if(copyYearEl){copyYearEl.placeholder=String(thisYear);if(!copyYearEl.value)copyYearEl.value=thisYear;}
+  if(copyYearEl){copyYearEl.placeholder=String(thisYear);copyYearEl.value=thisYear;}
   const prodYearEl=document.getElementById('r-prod-year');
-  if(prodYearEl){prodYearEl.placeholder=String(thisYear);if(!prodYearEl.value)prodYearEl.value=thisYear;}
+  if(prodYearEl){prodYearEl.placeholder=String(thisYear);prodYearEl.value=thisYear;}
   const dupWarn=document.getElementById('title-duplicate-warn');if(dupWarn)dupWarn.style.display='none';
   renderStoresGrid();goWizard(1);
   // Check for saved draft
