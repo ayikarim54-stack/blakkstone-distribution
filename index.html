@@ -4622,7 +4622,7 @@ async function resumeDraftFromMusic(){
   await initWizard();
   const state=await loadDraft();
   if(state&&(state.title||state.tracks?.length)){
-    restoreWizardState(state);
+    await restoreWizardState(state);
     const banner=document.getElementById('draft-banner');if(banner)banner.style.display='none';
     toast('Draft restored — pick up where you left off','ok');
   }
@@ -8284,8 +8284,12 @@ async function previewArtwork(input){
       wizData.artUrl=urlData.publicUrl;
       wizData.artPath=path;
       saveDraftSilent();
+    } else {
+      toast('Artwork preview looks fine, but it didn\'t save to the cloud ('+(error.message||'connection issue')+') — it\'ll need to be re-added if you leave this device before submitting.','err');
     }
-  }catch(e){}
+  }catch(e){
+    toast('Artwork preview looks fine, but it didn\'t save to the cloud — it\'ll need to be re-added if you leave this device before submitting.','err');
+  }
 }
 function setToggle(key,val){
   wizToggleState[key]=val;
@@ -8342,6 +8346,8 @@ function collectWizardState(){
     artPath: wizData.artPath||null,
     credits: getCreditsData(),
     tracks: wizTracks.map(t=>({id:t.id,name:t.name,isrc:t.isrc||'',size:t.size,url:t.url||null,storagePath:t.storagePath||null,meta:t.meta||{}})),
+    distroTier: selectedDistroTier,
+    priorityPaymentRef: priorityPaymentRef||null,
     notes: document.getElementById('r-notes')?.value||'',
     savedAt: new Date().toISOString(),
   };
@@ -8397,9 +8403,9 @@ function timeSince(date){
 }
 
 function resumeDraft(){
-  loadDraft().then(state=>{
+  loadDraft().then(async state=>{
     if(!state){toast('No draft found','err');return;}
-    restoreWizardState(state);
+    await restoreWizardState(state);
     document.getElementById('draft-banner').style.display='none';
     toast('Draft restored — pick up where you left off','ok');
   });
@@ -8413,10 +8419,27 @@ function discardDraft(){
   toast('Draft discarded','ok');
 }
 
-function restoreWizardState(state){
+async function restoreWizardState(state){
   // Restore text fields
   const setVal=(id,v)=>{const el=document.getElementById(id);if(el&&v) el.value=v;};
   setVal('r-title', state.title);
+  // Restore which artist this release was actually drafted under —
+  // previously this was never restored at all, so an Artist+/Label account
+  // with multiple roster artists would silently fall back to whichever
+  // artist happens to be first in the roster dropdown, regardless of who
+  // the release was really meant for. setupPrimaryArtistField() populates
+  // that dropdown asynchronously, so it's explicitly awaited again here
+  // (safe to call twice) to guarantee the real options exist before trying
+  // to select one — the same race-condition risk already handled for
+  // Duplicate as New Release.
+  if(state.artist&&getRosterMax()>0){
+    await setupPrimaryArtistField();
+    const artistSelect=document.getElementById('r-artist-select');
+    if(artistSelect){
+      const hasOption=Array.from(artistSelect.options).some(o=>o.value===state.artist);
+      if(hasOption)artistSelect.value=state.artist;
+    }
+  }
   setVal('r-copyright', state.copyright);
   setVal('r-copyright-year', state.copyrightYear);
   setVal('r-pcopyright', state.pcopyright);
@@ -8427,6 +8450,11 @@ function restoreWizardState(state){
   setVal('r-language', state.language);
   setVal('r-date', state.releaseDate);
   checkFridayHint();
+  if(state.distroTier==='priority'){
+    selectedDistroTier='priority';
+    priorityPaymentRef=state.priorityPaymentRef||null;
+    updateDistroTierUI();
+  }
   setVal('r-feat', state.feat);
   setVal('r-remixer', state.remixer);
   setVal('r-notes', state.notes);
@@ -8580,11 +8608,11 @@ async function submitRelease(){
     const audioPaths=[];
     for(const track of wizTracks){
       if(track.storagePath){
-        // Already uploaded during draft save — move from drafts/ to final path
-        const ext=track.storagePath.split('.').pop();
-        const finalPath=user.id+'/'+Date.now()+'-'+track.name.replace(/[^a-z0-9]/gi,'_')+'.'+ext;
-        // Copy by downloading and re-uploading (Supabase doesn't have a native copy API)
-        // For now reuse the draft path directly — it's already in storage
+        // Already uploaded during draft save, under a drafts/ path. Supabase
+        // has no native storage copy API, so this intentionally reuses that
+        // same path as the release's permanent audio location rather than
+        // downloading and re-uploading it just to rename the folder — the
+        // file is already in a real, permanent, working location either way.
         audioPaths.push(track.storagePath);
       } else if(track.file){
         // File object still in memory — upload normally
