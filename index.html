@@ -3671,6 +3671,14 @@ function toggleCurrencySwitcher(){
   menu.style.display=menu.style.display==='none'?'block':'none';
 }
 const PLANS={solo:{monthly:11,yearly:11,label:'Solo'},artist_plus:{monthly:20,yearly:20,label:'Artist+'},label:{monthly:35,yearly:35,label:'Label'}};
+// Single source of truth for the priority distro add-on fee — referenced by
+// the actual charge (payForPriorityDistro) AND admin's revenue reporting
+// (loadAdminDashboard), so a future price change only ever needs to happen
+// in this one place. Previously the actual charge used one hardcoded number
+// while two separate admin revenue calculations used a different, stale
+// hardcoded number — a real bug caught during a routine check, not
+// something that was ever supposed to be two different values.
+const PRIORITY_DISTRO_FEE_USD=5;
 // Fill these in after creating the matching plans in Paystack Dashboard →
 // Products → Plans (annual interval, price in GHS). Each plan_code looks
 // like "PLN_xxxxxxxxxxxxxx" — copy it exactly from Paystack, not the plan
@@ -7672,7 +7680,7 @@ async function payForPriorityDistro(){
     if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your connection.','err');reject(new Error('Paystack not loaded'));return;}
     const email=user?.email;
     if(!email){reject(new Error('Not logged in'));return;}
-    const usd=5;const pesewas=Math.round(usd*currentDisplayRates.GHS*100);
+    const usd=PRIORITY_DISTRO_FEE_USD;const pesewas=Math.round(usd*currentDisplayRates.GHS*100);
     const ref='BLK_PRIORITY_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
     try{
       const popup=new PaystackPop();
@@ -8741,7 +8749,7 @@ async function loadAdminStats(){
     const pendingPay=(payouts||[]).filter(p=>p.status==='pending');
     const pendingAmt=pendingPay.reduce((a,p)=>a+parseFloat(p.amount||0),0);
     const subsRev=(subs||[]).reduce((a,s)=>a+parseFloat(s.amount_usd||0),0);
-    const priorityRev=(releases||[]).filter(r=>r.is_priority&&r.priority_ref).length*10;
+    const priorityRev=(releases||[]).filter(r=>r.is_priority&&r.priority_ref).length*PRIORITY_DISTRO_FEE_USD;
     const totalRev=subsRev+priorityRev;
     const totalStreams=(releases||[]).reduce((a,r)=>a+(r.streams||0),0);
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -8808,7 +8816,7 @@ async function loadAdminDashboard(){
     const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const now=new Date();const revByMonth=Array(6).fill(0);
     (subs||[]).forEach(s=>{const d=new Date(s.created_at);const diff=(now.getMonth()-d.getMonth()+12)%12;if(diff<6)revByMonth[5-diff]+=parseFloat(s.amount_usd||0);});
-    (releases||[]).filter(r=>r.is_priority&&r.priority_ref&&r.submitted_at).forEach(r=>{const d=new Date(r.submitted_at);const diff=(now.getMonth()-d.getMonth()+12)%12;if(diff<6)revByMonth[5-diff]+=10;});
+    (releases||[]).filter(r=>r.is_priority&&r.priority_ref&&r.submitted_at).forEach(r=>{const d=new Date(r.submitted_at);const diff=(now.getMonth()-d.getMonth()+12)%12;if(diff<6)revByMonth[5-diff]+=PRIORITY_DISTRO_FEE_USD;});
     const chartLabels=Array.from({length:6},(_,i)=>months[(now.getMonth()-5+i+12)%12]);
     requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('adm-revenue-chart',chartLabels,revByMonth,'#D4AF37')));
   }catch(e){console.warn('loadAdminDashboard:',e);}
@@ -9235,7 +9243,7 @@ async function loadAdminReports(){
     const totalStreams=allRel.reduce((a,r)=>a+(r.streams||0),0);
     const totalComm=totalEarnings*COMM;
     const priorityPaid=allRel.filter(r=>r.is_priority&&r.priority_ref);
-    const priorityRevenue=priorityPaid.length*10;
+    const priorityRevenue=priorityPaid.length*PRIORITY_DISTRO_FEE_USD;
     const revEl=document.getElementById('adm-revenue-summary');
     if(revEl) revEl.innerHTML='<div class="adm-bar-row"><div class="adm-bar-label">Gross Earnings</div><div class="adm-bar-val" style="color:#34d399">$'+totalEarnings.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Commission (9%)</div><div class="adm-bar-val" style="color:var(--gold)">$'+totalComm.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Priority Distro ('+priorityPaid.length+')</div><div class="adm-bar-val" style="color:#fbbf24">$'+priorityRevenue.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Total Streams</div><div class="adm-bar-val" style="color:#60a5fa">'+totalStreams.toLocaleString()+'</div></div>';
     const maxRS=allRel[0]?.streams||1;
@@ -9267,7 +9275,7 @@ async function loadAdminReports(){
     },0);
     const thisMonthSubs=sumInRange(subsData||[],thisMonthStart,nextMonthStart);
     const lastMonthSubs=sumInRange(subsData||[],lastMonthStart,thisMonthStart);
-    const priorityInRange=(start,end)=>allRel.filter(r=>r.is_priority&&r.priority_ref&&r.submitted_at&&new Date(r.submitted_at)>=start&&new Date(r.submitted_at)<end).length*10;
+    const priorityInRange=(start,end)=>allRel.filter(r=>r.is_priority&&r.priority_ref&&r.submitted_at&&new Date(r.submitted_at)>=start&&new Date(r.submitted_at)<end).length*PRIORITY_DISTRO_FEE_USD;
     const thisMonthTotal=thisMonthSubs+priorityInRange(thisMonthStart,nextMonthStart);
     const lastMonthTotal=lastMonthSubs+priorityInRange(lastMonthStart,thisMonthStart);
     const up=thisMonthTotal>=lastMonthTotal;
