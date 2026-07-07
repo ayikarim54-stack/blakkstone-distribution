@@ -5427,26 +5427,39 @@ function renderPlatformLinksEditor(r){
     +'<button class="btn btn-gold btn-sm" style="width:100%;justify-content:center;margin-top:6px" onclick="savePlatformLinks(\''+r.id+'\')">Save Links</button>'
     +'</div>';
 }
-async function saveExternalSmartLink(releaseId){
-  const input=document.getElementById('ext-smart-link-input');
-  const url=input?.value.trim()||'';
-  if(url&&!/^https?:\/\//i.test(url)){toast('Enter a full URL starting with http:// or https://','err');return;}
+async function commitExternalSmartLink(releaseId,url){
+  if(url&&!/^https?:\/\//i.test(url)){toast('Enter a full URL starting with http:// or https://','err');return false;}
   try{
     const {error}=await sb.from('releases').update({external_smart_link_url:url||null}).eq('id',releaseId);
     if(error)throw error;
     if(_releaseMap[releaseId])_releaseMap[releaseId].external_smart_link_url=url||null;
+    const adminRow=(typeof allReleasesCache!=='undefined'?allReleasesCache:null)?.find(r=>r.id===releaseId);
+    if(adminRow)adminRow.external_smart_link_url=url||null;
     toast(url?'Smart link saved — fans will be sent straight there':'Smart link cleared','ok');
-    renderPlatformLinksEditor(_releaseMap[releaseId]);
+    return true;
   }catch(e){
     console.error('Save external smart link error:',e);
     if((e.message||'').match(/does not exist/i))toast('Run the external_smart_link SQL in Supabase first','err');
     else toast('Could not save: '+(e.message||'please try again.'),'err');
+    return false;
   }
+}
+async function saveExternalSmartLink(releaseId){
+  const input=document.getElementById('ext-smart-link-input');
+  const url=input?.value.trim()||'';
+  const ok=await commitExternalSmartLink(releaseId,url);
+  if(ok&&_releaseMap[releaseId])renderPlatformLinksEditor(_releaseMap[releaseId]);
 }
 function clearExternalSmartLink(releaseId){
   const input=document.getElementById('ext-smart-link-input');
   if(input)input.value='';
   saveExternalSmartLink(releaseId);
+}
+async function quickSetSmartLink(releaseId){
+  const existing=(typeof allReleasesCache!=='undefined'?allReleasesCache:[]).find(r=>r.id===releaseId)?.external_smart_link_url||_releaseMap[releaseId]?.external_smart_link_url||'';
+  const url=prompt('Smart link URL (e.g. from ONErpm) — leave blank and confirm to clear it:',existing);
+  if(url===null)return; // cancelled
+  await commitExternalSmartLink(releaseId,url.trim());
 }
 async function savePlatformLinks(releaseId){
   const inputs=document.querySelectorAll('#rel-modal-platform-links input[data-platform]');
@@ -9008,7 +9021,7 @@ function renderAdminReleases(data){
     const sub=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
     const rd=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB'):'—';
     const art=r.artwork_url?'<img src="'+r.artwork_url+'" alt="'+esc(r.title||'Release')+' cover art" style="width:32px;height:32px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:6px">':'';
-    return '<tr><td><input type="checkbox" class="rel-cb" data-id="'+r.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(accId)+'</td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(pName)+'</td><td style="white-space:nowrap">'+art+esc(r.title)+(r.is_priority?' <span style="font-size:9px;font-weight:700;color:var(--black);background:var(--gold);padding:2px 6px;border-radius:20px;vertical-align:middle"><i class="ti ti-bolt"></i> PRIORITY</span>':'')+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'')+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+sub+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+rd+'</td><td><select class="stsel" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></td><td><input type="number" class="num-in" value="'+(r.streams||0)+'" min="0" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></td><td><input type="number" class="num-in" value="'+(r.earnings||0)+'" min="0" step="0.01" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></td><td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((r.notes||'').slice(0,30))+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+r.user_id+'\',\''+esc(pName)+'\')"><i class="ti ti-eye"></i></button><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease(\''+r.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    return '<tr><td><input type="checkbox" class="rel-cb" data-id="'+r.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(accId)+'</td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(pName)+'</td><td style="white-space:nowrap">'+art+esc(r.title)+(r.is_priority?' <span style="font-size:9px;font-weight:700;color:var(--black);background:var(--gold);padding:2px 6px;border-radius:20px;vertical-align:middle"><i class="ti ti-bolt"></i> PRIORITY</span>':'')+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'')+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+sub+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+rd+'</td><td><select class="stsel" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></td><td><input type="number" class="num-in" value="'+(r.streams||0)+'" min="0" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></td><td><input type="number" class="num-in" value="'+(r.earnings||0)+'" min="0" step="0.01" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></td><td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((r.notes||'').slice(0,30))+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+r.user_id+'\',\''+esc(pName)+'\')"><i class="ti ti-eye"></i></button><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" title="Set smart link (e.g. ONErpm)" onclick="quickSetSmartLink(\''+r.id+'\')"><i class="ti ti-link"></i></button><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease(\''+r.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
   }).join('');
 }
 function filterReleases(){
