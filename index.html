@@ -7889,6 +7889,17 @@ async function saveDraftSilent(){
     const state=collectWizardState();
     if(!state.title&&!state.tracks?.length)return;
     localStorage.setItem(DRAFT_KEY+'_'+user.id, JSON.stringify(state));
+    // Also back up to the cloud, not just this browser's local storage —
+    // previously only the explicit "Save Draft" button did this, so anyone
+    // who never clicked it (relying on autosave alone, which most people
+    // reasonably do) had no real backup once they switched devices, used a
+    // different browser, or cleared local site data. Their actual uploaded
+    // tracks were always safe in storage — only the record of where to
+    // find them was at risk. Fire-and-forget: never let a backup hiccup
+    // interrupt someone actively drafting.
+    sb.from('profiles').update({draft_wizard: state}).eq('id',user.id).then(({error})=>{
+      if(error)console.error('Draft cloud backup error (local save still succeeded):',error);
+    }).catch(e=>console.error('Draft cloud backup error (local save still succeeded):',e));
   }catch(e){}
 }
 function handleAudioSelect(input){Array.from(input.files).forEach(f=>addTrack(f));input.value='';}
@@ -7948,10 +7959,12 @@ async function addTrack(file){
     } else {
       const t=wizTracks.find(t=>t.id===id);if(t) t.uploading=false;
       renderTrackList();
+      toast('"'+file.name+'" didn\'t save to the cloud ('+(error.message||'connection issue')+') — it\'ll need to be re-added if you leave this device before submitting. Try removing and re-adding it now.','err');
     }
   }catch(e){
     const t=wizTracks.find(t=>t.id===id);if(t) t.uploading=false;
     renderTrackList();
+    toast('"'+file.name+'" didn\'t save to the cloud — it\'ll need to be re-added if you leave this device before submitting. Try removing and re-adding it now.','err');
   }
 }
 function removeTrack(id){
