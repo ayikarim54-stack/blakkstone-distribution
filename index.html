@@ -1748,6 +1748,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                 <button class="btn adm-btn-sec btn-sm" onclick="shareToFacebook()" style="background:rgba(24,119,242,.12);border-color:rgba(24,119,242,.3);color:#60a5fa"><i class="ti ti-brand-facebook"></i></button>
                 <button class="btn adm-btn-sec btn-sm" id="native-share-btn" onclick="shareNative()" style="display:none"><i class="ti ti-share-2"></i></button>
               </div>
+              <div id="rel-modal-smartlink-status" style="margin-bottom:.75rem"></div>
               <div id="rel-modal-platform-links"></div>
             </div>
           </div>
@@ -5192,6 +5193,7 @@ function openReleaseModal(r,updateUrl){
     requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('rel-modal-chart',trLabels,trVals,'#D4AF37','')));
   })();
   renderPlatformLinksEditor(r);
+  renderSmartLinkStatus(r);
   loadSmartLinkStats(r.id);
   renderSplitSheet(r);
   renderTakedownSection(r);
@@ -5402,6 +5404,21 @@ async function requestReleaseTakedown(releaseId){
     toast('Could not submit request: '+(e.message||'please try again.'),'err');
   }
 }
+function renderSmartLinkStatus(r){
+  const el=document.getElementById('rel-modal-smartlink-status');if(!el)return;
+  if(r.status!=='live'){
+    el.innerHTML='<div style="font-size:11px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:5px"><i class="ti ti-clock"></i> Smart link activates once this release goes live.</div>';
+    return;
+  }
+  const hasPlatformLinks=r.platform_links&&Object.keys(r.platform_links).length>0;
+  if(r.external_smart_link_url){
+    el.innerHTML='<div style="font-size:11px;color:#34d399;display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Connected via your distributor — fans are sent straight to your stores.</div>';
+  } else if(hasPlatformLinks){
+    el.innerHTML='<div style="font-size:11px;color:#60a5fa;display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Using direct platform links.</div>';
+  } else {
+    el.innerHTML='<div style="font-size:11px;color:#fbbf24;display:flex;align-items:center;gap:5px"><i class="ti ti-hourglass"></i> Platform links are still being set up — check back soon.</div>';
+  }
+}
 function renderPlatformLinksEditor(r){
   const wrap=document.getElementById('rel-modal-platform-links');if(!wrap)return;
   const adminNow=isAdmin();
@@ -5446,7 +5463,7 @@ async function saveExternalSmartLink(releaseId){
   const input=document.getElementById('ext-smart-link-input');
   const url=input?.value.trim()||'';
   const ok=await commitExternalSmartLink(releaseId,url);
-  if(ok&&_releaseMap[releaseId])renderPlatformLinksEditor(_releaseMap[releaseId]);
+  if(ok&&_releaseMap[releaseId]){renderPlatformLinksEditor(_releaseMap[releaseId]);renderSmartLinkStatus(_releaseMap[releaseId]);}
 }
 function clearExternalSmartLink(releaseId){
   const input=document.getElementById('ext-smart-link-input');
@@ -5465,7 +5482,7 @@ async function savePlatformLinks(releaseId){
   inputs.forEach(inp=>{const v=inp.value.trim();if(v)links[inp.dataset.platform]=v;});
   const {error}=await sb.from('releases').update({platform_links:links}).eq('id',releaseId);
   if(error){console.error('Save platform links error:',error);toast('Could not save: '+error.message,'err');return;}
-  if(_releaseMap[releaseId])_releaseMap[releaseId].platform_links=links;
+  if(_releaseMap[releaseId]){_releaseMap[releaseId].platform_links=links;renderSmartLinkStatus(_releaseMap[releaseId]);}
   toast('Smart link platforms saved','ok');
 }
 function closeReleaseModal(){
