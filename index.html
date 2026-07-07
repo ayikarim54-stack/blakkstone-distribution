@@ -5412,12 +5412,19 @@ function renderSmartLinkStatus(r){
   }
   const hasPlatformLinks=r.platform_links&&Object.keys(r.platform_links).length>0;
   if(r.external_smart_link_url){
-    el.innerHTML='<div style="font-size:11px;color:#34d399;display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Connected via your distributor — fans are sent straight to your stores.</div>';
+    el.innerHTML='<div style="font-size:11px;color:#34d399;margin-bottom:.5rem;display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Connected via your distributor:</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 10px">'
+      +'<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:rgba(255,255,255,.7)">'+esc(r.external_smart_link_url)+'</span>'
+      +'<button class="btn adm-btn-sec btn-sm" style="flex-shrink:0;padding:4px 10px" data-url="'+esc(r.external_smart_link_url)+'" onclick="copyExternalSmartLink(this.dataset.url)"><i class="ti ti-copy"></i> Copy</button>'
+      +'</div>';
   } else if(hasPlatformLinks){
     el.innerHTML='<div style="font-size:11px;color:#60a5fa;display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Using direct platform links.</div>';
   } else {
     el.innerHTML='<div style="font-size:11px;color:#fbbf24;display:flex;align-items:center;gap:5px"><i class="ti ti-hourglass"></i> Platform links are still being set up — check back soon.</div>';
   }
+}
+function copyExternalSmartLink(url){
+  navigator.clipboard.writeText(url).then(()=>toast('Link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
 }
 function renderPlatformLinksEditor(r){
   const wrap=document.getElementById('rel-modal-platform-links');if(!wrap)return;
