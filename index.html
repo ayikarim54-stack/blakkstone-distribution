@@ -1739,6 +1739,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
             </div>
             <button class="btn adm-btn-sec btn-sm" id="rel-modal-duplicate-btn" onclick="duplicateReleaseAsNew(_currentModalReleaseId)"><i class="ti ti-copy"></i> Duplicate as New Release</button>
             <button class="btn btn-sm" id="rel-modal-cancel-btn" onclick="cancelPendingRelease(_currentModalReleaseId)" style="display:none;background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25);margin-left:8px"><i class="ti ti-circle-x"></i> Cancel Submission</button>
+            <div style="margin-top:1.25rem">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.75rem">Share Your Music</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem">
+                <button class="btn btn-gold btn-sm" onclick="copySmartLink()"><i class="ti ti-link"></i> Get Your SmartLink</button>
+                <button class="btn adm-btn-sec btn-sm" onclick="shareToWhatsApp()" style="background:rgba(37,211,102,.12);border-color:rgba(37,211,102,.3);color:#25D366"><i class="ti ti-brand-whatsapp"></i></button>
+                <button class="btn adm-btn-sec btn-sm" onclick="shareToTwitter()"><i class="ti ti-brand-x"></i></button>
+                <button class="btn adm-btn-sec btn-sm" onclick="shareToFacebook()" style="background:rgba(24,119,242,.12);border-color:rgba(24,119,242,.3);color:#60a5fa"><i class="ti ti-brand-facebook"></i></button>
+                <button class="btn adm-btn-sec btn-sm" id="native-share-btn" onclick="shareNative()" style="display:none"><i class="ti ti-share-2"></i></button>
+              </div>
+              <div id="rel-modal-platform-links"></div>
+            </div>
           </div>
         </div>
 
@@ -1826,19 +1837,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div id="rel-modal-notes-wrap" class="adm-card" style="display:none;margin-bottom:1.25rem">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.5rem">Distribution Notes</div>
           <div id="rel-modal-notes" style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7"></div>
-        </div>
-
-        <!-- SMART LINK -->
-        <div class="adm-card" style="margin-bottom:1.25rem">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Smart Link</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.875rem">
-            <button class="btn adm-btn-sec btn-sm" onclick="copySmartLink()"><i class="ti ti-link"></i> Copy Link</button>
-            <button class="btn adm-btn-sec btn-sm" onclick="shareToWhatsApp()" style="background:rgba(37,211,102,.12);border-color:rgba(37,211,102,.3);color:#25D366"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
-            <button class="btn adm-btn-sec btn-sm" onclick="shareToTwitter()"><i class="ti ti-brand-x"></i> X</button>
-            <button class="btn adm-btn-sec btn-sm" onclick="shareToFacebook()" style="background:rgba(24,119,242,.12);border-color:rgba(24,119,242,.3);color:#60a5fa"><i class="ti ti-brand-facebook"></i> Facebook</button>
-            <button class="btn adm-btn-sec btn-sm" id="native-share-btn" onclick="shareNative()" style="display:none"><i class="ti ti-share-2"></i> Share...</button>
-          </div>
-          <div id="rel-modal-platform-links"></div>
         </div>
 
         <!-- TAKEDOWN REQUEST -->
