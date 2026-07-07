@@ -4521,9 +4521,12 @@ async function deleteAdminThread(ids){
   if(!ids||!ids.length)return;
   if(!confirm('Delete this entire conversation ('+ids.length+' message'+(ids.length===1?'':'s')+')? This cannot be undone.'))return;
   const firstMsg=_messageMap[ids[0]];
-  for(const id of ids){await _softDeleteMessage(id,'deleted_by_admin');}
+  let succeeded=0;
+  for(const id of ids){if(await _softDeleteMessage(id,'deleted_by_admin'))succeeded++;}
   logAudit(null,firstMsg?.from_id||null,'conversation_deleted',ids.length+' message'+(ids.length===1?'':'s'),'deleted');
-  toast('Conversation deleted','ok');
+  if(succeeded===ids.length)toast('Conversation deleted','ok');
+  else if(succeeded>0)toast(succeeded+' of '+ids.length+' messages deleted — some failed, see above','err');
+  else toast('Could not delete this conversation','err');
   loadAdminMessages();
 }
 async function deleteSupportMessage(id){
@@ -4533,8 +4536,11 @@ async function deleteSupportMessage(id){
 async function deleteSupportThread(ids){
   if(!ids||!ids.length)return;
   if(!confirm('Delete this entire conversation? This cannot be undone.'))return;
-  for(const id of ids){await _softDeleteMessage(id,'deleted_by_artist');}
-  toast('Conversation deleted','ok');
+  let succeeded=0;
+  for(const id of ids){if(await _softDeleteMessage(id,'deleted_by_artist'))succeeded++;}
+  if(succeeded===ids.length)toast('Conversation deleted','ok');
+  else if(succeeded>0)toast(succeeded+' of '+ids.length+' messages deleted — some failed, see above','err');
+  else toast('Could not delete this conversation','err');
   loadMySupportMessages();
 }
 function continueSupportThread(threadId){
@@ -8073,7 +8079,9 @@ function removeTrack(id){
   const track=wizTracks.find(t=>t.id===id);
   // Delete from Supabase Storage if it was uploaded
   if(track?.storagePath){
-    sb.storage.from('audio').remove([track.storagePath]).catch(()=>{});
+    sb.storage.from('audio').remove([track.storagePath]).then(({error})=>{
+      if(error)console.error('Track file cleanup error (track was still removed from this release):',error);
+    });
   }
   if(_previewingTrackId===id){
     const audio=document.getElementById('wiz-audio-preview');
@@ -8450,8 +8458,13 @@ async function saveDraft(){
     const key=DRAFT_KEY+'_'+user.id;
     localStorage.setItem(key, JSON.stringify(state));
     // Also save to Supabase profiles metadata as backup
-    await sb.from('profiles').update({draft_wizard: state}).eq('id',user.id).catch(()=>{});
-    toast('Draft saved — you can resume anytime','ok');
+    const {error:cloudBackupError}=await sb.from('profiles').update({draft_wizard: state}).eq('id',user.id);
+    if(cloudBackupError){
+      console.error('Draft cloud backup error (saved locally on this device only):',cloudBackupError);
+      toast('Saved on this device, but the cloud backup failed — it may not carry over if you switch devices or browsers.','err');
+    } else {
+      toast('Draft saved — you can resume anytime','ok');
+    }
     updateDraftBanner(state);
   }catch(e){
     toast('Draft saved locally','ok');
@@ -8785,7 +8798,9 @@ async function submitRelease(){
     });
     // Clear draft on success
     try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
-    sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).catch(()=>{});
+    sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).then(({error})=>{
+      if(error)console.error('Draft cloud cleanup after submission failed (release itself was submitted successfully) — a stale draft banner may reappear:',error);
+    });
     initWizard();await loadReleases();updateOnboarding();goPage('releases',null);
   }catch(e){toast(e.message,'err');}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Release';
@@ -9013,12 +9028,18 @@ async function bulkStatusUpdate(status){
   const checked=Array.from(document.querySelectorAll('.rel-cb:checked')).map(c=>c.dataset.id);
   if(!checked.length){toast('Select releases first','err');return;}
   if(!confirm('Set '+checked.length+' release(s) to "'+status+'"?'))return;
+  let succeeded=0;
   for(const id of checked){
     const rel=allReleasesCache.find(r=>r.id===id);
-    await sb.from('releases').update({status}).eq('id',id);
+    const {error}=await sb.from('releases').update({status}).eq('id',id);
+    if(error){console.error('Bulk release status update error for',id,error);continue;}
+    succeeded++;
     logAudit(id,rel?.user_id||null,'release_status',rel?.status||null,status+' (bulk)');
   }
-  toast(checked.length+' updated','ok');loadAdminReleases();loadAdminStats();
+  if(succeeded===checked.length)toast(succeeded+' updated','ok');
+  else if(succeeded>0)toast(succeeded+' of '+checked.length+' updated — check console for errors on the rest','err');
+  else toast('Update failed for all selected releases — check console for details','err');
+  loadAdminReleases();loadAdminStats();
 }
 async function bulkPayoutStatusUpdate(status){
   const checked=Array.from(document.querySelectorAll('.payout-cb:checked')).map(c=>c.dataset.id);
@@ -9031,15 +9052,19 @@ async function bulkPayoutStatusUpdate(status){
     if(!reason){toast('A reason is required when marking payouts as failed','err');return;}
   }
   if(!confirm('Mark '+checked.length+' payout(s) as "'+status+'"?'))return;
+  let succeeded=0;
   for(const id of checked){
     const p=allPayoutsCache.find(x=>x.id===id);
     const update={status};
     update.failure_reason=status==='failed'?reason:null;
     const {error}=await sb.from('payouts').update(update).eq('id',id);
     if(error){console.error('Bulk payout update error for',id,error);continue;}
+    succeeded++;
     logAudit(null,p?.user_id||null,'payout_status',p?.status||null,status+(reason?' — '+reason:'')+' (bulk)');
   }
-  toast(checked.length+' payout(s) updated','ok');
+  if(succeeded===checked.length)toast(succeeded+' payout(s) updated','ok');
+  else if(succeeded>0)toast(succeeded+' of '+checked.length+' payout(s) updated — check console for errors on the rest','err');
+  else toast('Update failed for all selected payouts — check console for details','err');
   loadAdminPayouts();loadAdminStats();loadNotifications();
 }
 async function updateStatus(id,status,sel){
