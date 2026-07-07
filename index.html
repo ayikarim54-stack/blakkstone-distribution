@@ -4612,8 +4612,20 @@ function releaseRow(r){
   const streamsDisplay='<div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:700;color:#fff">'+(r.streams||0).toLocaleString()+'</div><div style="font-size:10px;color:rgba(255,255,255,.3)">streams</div></div>';
   return '<div class="rr" onclick="openReleaseFromCard(\''+r.id+'\')"><div class="r-art">'+art+'</div><div class="r-info"><div class="r-title">'+esc(r.title)+'</div><div class="r-meta">'+esc(r.artist)+' · '+esc(r.genre||'')+' · '+d+'</div>'+reasonHint+'</div>'+streamsDisplay+'<span class="badge '+bc+'">'+bl+'</span><i class="ti ti-chevron-right" style="color:rgba(255,255,255,.2);font-size:16px;flex-shrink:0"></i></div>';
 }
-function resumeDraftFromMusic(){
+async function resumeDraftFromMusic(){
   goPage('submit',null);
+  // goPage fires initWizard() without awaiting it, and initWizard itself
+  // awaits a Supabase check before resetting wizTracks=[] — so restoring a
+  // draft immediately after goPage() would race that reset and could get
+  // silently wiped out. Awaiting initWizard() again here directly
+  // guarantees the reset has fully finished before we restore on top of it.
+  await initWizard();
+  const state=await loadDraft();
+  if(state&&(state.title||state.tracks?.length)){
+    restoreWizardState(state);
+    const banner=document.getElementById('draft-banner');if(banner)banner.style.display='none';
+    toast('Draft restored — pick up where you left off','ok');
+  }
 }
 function deleteDraftFromMusic(){
   if(!confirm('Delete this draft release? This cannot be undone.'))return;
@@ -8479,6 +8491,15 @@ function restoreWizardState(state){
     const tp=document.getElementById('artwork-title-preview');
     if(tp) tp.textContent=state.title||'Your Release';
   }
+  // Re-check step 1 now that tracks/fields have been restored.
+  // validateStep() clears any existing error display for the step as its
+  // very first action — without this call, a "Please fix before
+  // continuing" error from an earlier failed attempt (e.g. clicking Next
+  // while the wizard was still freshly empty, before these tracks were
+  // actually restored into it) would stay stuck on screen even though the
+  // underlying data is now genuinely fine.
+  const step1Errors=validateStep(1);
+  if(step1Errors.length)wizShowErrors(1,step1Errors);
   // Navigate to saved step
   const targetStep=Math.min(state.step||1,4);
   if(targetStep>1) setTimeout(()=>goWizard(targetStep),100);
