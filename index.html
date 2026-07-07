@@ -514,7 +514,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .wizard-step.done .ws-label{color:#34d399}
 .ws-line{flex:1;height:2px;background:rgba(255,255,255,.08);margin:0 4px;align-self:center}
 .ws-line.done{background:#10b981}
-.wizard-panel{display:none}
+.wizard-panel{display:none;scroll-margin-top:140px}
 .wizard-panel.active{display:block}
 .wiz-drop-zone{border:2px dashed rgba(212,175,55,.2);border-radius:16px;padding:4rem 2rem;cursor:pointer;background:var(--card);transition:all .2s}
 .wiz-drop-zone:hover,.wiz-drop-zone.drag-over{border-color:var(--gold);background:rgba(201,168,76,.08)}
@@ -1928,11 +1928,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
             <div class="frow">
               <div class="fg"><label>© Copyright Holder *</label><input id="r-copyright" type="text" placeholder="Name"></div>
-              <div class="fg"><label>Copyright Year</label><input id="r-copyright-year" type="number" placeholder="2025" value="2025"></div>
+              <div class="fg"><label>Copyright Year</label><input id="r-copyright-year" type="number" placeholder="2026"></div>
             </div>
             <div class="frow">
               <div class="fg"><label>℗ Copyright Holder *</label><input id="r-pcopyright" type="text" placeholder="Name"></div>
-              <div class="fg"><label>Production Year</label><input id="r-prod-year" type="number" placeholder="2025" value="2025"></div>
+              <div class="fg"><label>Production Year</label><input id="r-prod-year" type="number" placeholder="2026"></div>
             </div>
             <div class="fg"><label>Record Label</label><input id="r-label" type="text" placeholder="Independent"></div>
             <div class="frow">
@@ -7622,6 +7622,13 @@ async function initWizard(){
   if(blockedEl)blockedEl.style.display='none';
   if(bodyEl)bodyEl.style.display='block';
   wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};
+  // Default to the real current year, computed live — not a hardcoded
+  // number that quietly goes stale every time the calendar turns over.
+  const thisYear=new Date().getFullYear();
+  const copyYearEl=document.getElementById('r-copyright-year');
+  if(copyYearEl){copyYearEl.placeholder=String(thisYear);if(!copyYearEl.value)copyYearEl.value=thisYear;}
+  const prodYearEl=document.getElementById('r-prod-year');
+  if(prodYearEl){prodYearEl.placeholder=String(thisYear);if(!prodYearEl.value)prodYearEl.value=thisYear;}
   const dupWarn=document.getElementById('title-duplicate-warn');if(dupWarn)dupWarn.style.display='none';
   renderStoresGrid();goWizard(1);
   // Check for saved draft
