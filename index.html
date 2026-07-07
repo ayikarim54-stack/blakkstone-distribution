@@ -4627,13 +4627,18 @@ async function resumeDraftFromMusic(){
     toast('Draft restored — pick up where you left off','ok');
   }
 }
-function deleteDraftFromMusic(){
+async function deleteDraftFromMusic(){
   if(!confirm('Delete this draft release? This cannot be undone.'))return;
   try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
-  sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).catch(()=>{});
+  const {error}=await sb.from('profiles').update({draft_wizard:null}).eq('id',user.id);
   _cachedDraftForMusicTab=null;
   const banner=document.getElementById('draft-banner');if(banner)banner.style.display='none';
-  toast('Draft deleted','ok');
+  if(error){
+    console.error('Draft cloud delete error:',error);
+    toast('Draft removed here, but the cloud backup couldn\'t be cleared — it may reappear later. Try again, or contact Support if this keeps happening.','err');
+  } else {
+    toast('Draft deleted','ok');
+  }
   filterReleasesCombined();
 }
 let relFilterState={status:'all',search:'',genre:'',artist:'',sort:'newest',page:1};
@@ -8418,12 +8423,17 @@ function resumeDraft(){
   });
 }
 
-function discardDraft(){
+async function discardDraft(){
   if(!confirm('Discard your saved draft?'))return;
   try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
-  sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).catch(()=>{});
+  const {error}=await sb.from('profiles').update({draft_wizard:null}).eq('id',user.id);
   document.getElementById('draft-banner').style.display='none';
-  toast('Draft discarded','ok');
+  if(error){
+    console.error('Draft cloud delete error:',error);
+    toast('Draft removed here, but the cloud backup couldn\'t be cleared — it may reappear later. Try again, or contact Support if this keeps happening.','err');
+  } else {
+    toast('Draft discarded','ok');
+  }
 }
 
 async function restoreWizardState(state){
