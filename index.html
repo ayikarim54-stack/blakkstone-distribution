@@ -322,9 +322,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .pp-admin{background:rgba(59,130,246,.15);color:#60a5fa}
 /* UPGRADE */
 .ug-hero{text-align:center;margin-bottom:2.5rem}
-.ug-hero h1{font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:.4rem;color:#fff}
-.ug-hero p{font-size:14px;color:rgba(255,255,255,.4)}
-.ug-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:900px;margin-bottom:1.5rem;align-items:stretch}
+.ug-hero h1{font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:.4rem;color:#111}
+.ug-hero p{font-size:14px;color:rgba(0,0,0,.5)}
+/* Lightened background scoped to this one page's unique ID only — breaks
+   out of the dashboard's own padding (negative margin matching .dash-body's
+   2.5rem) so the light background extends edge-to-edge, then re-adds the
+   same padding inside so content spacing looks identical to every other
+   page. This does not touch .dash-body or .page, which every other
+   dashboard page also relies on. */
+#page-upgrade{background:var(--off);margin:-2.5rem;padding:2.5rem;min-height:calc(100% + 5rem);display:flex;flex-direction:column;align-items:center}
+.ug-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:900px;width:100%;margin:0 auto 1.5rem;align-items:stretch}
 .ug-card{border-radius:22px;padding:2rem 1.75rem;position:relative;display:flex;flex-direction:column}
 .ug-card.plain{background:#fff;border:1px solid var(--border)}
 .ug-card.featured{background:var(--gold);border:1px solid var(--gold)}
@@ -2745,8 +2752,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <button class="ug-btn ug-btn-gold" id="ug-label-btn" onclick="openPaystack('label')">Get Label Plan</button>
         </div>
       </div>
-      <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.1rem;font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;max-width:860px">
-        <strong style="color:rgba(255,255,255,.7)">About the 9% commission:</strong> On the Solo plan, Blakkstone keeps 9% of royalties to cover distribution costs. Upgrade to Artist+ or Label to keep 100%.
+      <div style="background:#fff8e7;border:1px solid var(--gl);border-radius:10px;padding:1.1rem;font-size:13px;color:#a07d10;line-height:1.7;max-width:860px;width:100%;margin:0 auto">
+        <strong>About the 9% commission:</strong> On the Solo plan, Blakkstone keeps 9% of royalties to cover distribution costs. Upgrade to Artist+ or Label to keep 100%.
       </div>
     </div>
 
