@@ -5409,12 +5409,44 @@ function renderPlatformLinksEditor(r){
   const adminNow=isAdmin();
   if(!adminNow){wrap.innerHTML='';return;}
   const links=r.platform_links||{};
-  wrap.innerHTML='<div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Paste platform URLs once this is live elsewhere — these power the buttons fans see on the smart link.</div>'
+  const extLink=esc(r.external_smart_link_url||'');
+  wrap.innerHTML='<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:.5rem">Already have a smart link? (e.g. from ONErpm)</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Paste it once here and fans get sent straight there — no need to enter each platform separately below.</div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:1rem">'
+    +'<input id="ext-smart-link-input" value="'+extLink+'" placeholder="https://onerpm.link/..." style="flex:1;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:12px;min-width:0">'
+    +'<button class="btn btn-gold btn-sm" style="flex-shrink:0" onclick="saveExternalSmartLink(\''+r.id+'\')">Save</button>'
+    +(extLink?'<button class="btn btn-sm" style="flex-shrink:0;background:rgba(239,68,68,.12);color:#f87171" onclick="clearExternalSmartLink(\''+r.id+'\')" title="Remove and use individual platform links instead"><i class="ti ti-x"></i></button>':'')
+    +'</div>'
+    +(extLink?'<div style="font-size:11px;color:#34d399;margin-bottom:1rem;display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Fans are being sent to this link — the individual platform links below are unused while this is set.</div>':'')
+    +'<div style="border-top:1px solid rgba(255,255,255,.07);padding-top:1rem;margin-top:.25rem">'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Or paste platform URLs individually once this is live elsewhere — these power the buttons fans see on the smart link, used only when no external smart link is set above.</div>'
     +DSP_STORES.filter(s=>s.logo).map(s=>{
       const val=esc(links[s.name]||'');
       return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:4px;padding:1px;vertical-align:middle"><img src="'+s.logo+'" alt="'+esc(s.name)+'" width="18" height="18" style="flex-shrink:0;border-radius:4px"></span><input data-platform="'+esc(s.name)+'" value="'+val+'" placeholder="'+s.name+' URL" style="flex:1;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:12px;min-width:0"></div>';
     }).join('')
-    +'<button class="btn btn-gold btn-sm" style="width:100%;justify-content:center;margin-top:6px" onclick="savePlatformLinks(\''+r.id+'\')">Save Links</button>';
+    +'<button class="btn btn-gold btn-sm" style="width:100%;justify-content:center;margin-top:6px" onclick="savePlatformLinks(\''+r.id+'\')">Save Links</button>'
+    +'</div>';
+}
+async function saveExternalSmartLink(releaseId){
+  const input=document.getElementById('ext-smart-link-input');
+  const url=input?.value.trim()||'';
+  if(url&&!/^https?:\/\//i.test(url)){toast('Enter a full URL starting with http:// or https://','err');return;}
+  try{
+    const {error}=await sb.from('releases').update({external_smart_link_url:url||null}).eq('id',releaseId);
+    if(error)throw error;
+    if(_releaseMap[releaseId])_releaseMap[releaseId].external_smart_link_url=url||null;
+    toast(url?'Smart link saved — fans will be sent straight there':'Smart link cleared','ok');
+    renderPlatformLinksEditor(_releaseMap[releaseId]);
+  }catch(e){
+    console.error('Save external smart link error:',e);
+    if((e.message||'').match(/does not exist/i))toast('Run the external_smart_link SQL in Supabase first','err');
+    else toast('Could not save: '+(e.message||'please try again.'),'err');
+  }
+}
+function clearExternalSmartLink(releaseId){
+  const input=document.getElementById('ext-smart-link-input');
+  if(input)input.value='';
+  saveExternalSmartLink(releaseId);
 }
 async function savePlatformLinks(releaseId){
   const inputs=document.querySelectorAll('#rel-modal-platform-links input[data-platform]');
@@ -7161,19 +7193,74 @@ async function loadSmartLink(releaseId){
     smartLinkNotFound();
   }
 }
+// Real smart-link behavior: detect the visitor's device and prioritize the
+// platform most likely to actually be relevant to them, rather than just
+// showing every store in the same fixed order regardless of who's looking.
+function detectVisitorPlatform(){
+  const ua=navigator.userAgent||'';
+  if(/iPhone|iPad|iPod/i.test(ua))return 'ios';
+  if(/Android/i.test(ua))return 'android';
+  return 'desktop';
+}
+const SMARTLINK_PRIORITY_MATCH={ios:'Apple Music',android:'Spotify'};
+let _slRedirectTimer=null;
+function startSmartRedirectCountdown(url,releaseId,storeName){
+  let seconds=3;
+  _slRedirectTimer=setInterval(()=>{
+    seconds--;
+    const el=document.getElementById('sl-redirect-count');
+    if(el)el.textContent=seconds;
+    if(seconds<=0){
+      clearInterval(_slRedirectTimer);_slRedirectTimer=null;
+      trackSL(releaseId,'click',storeName); // count the auto-redirect the same as a manual click, since it's still a real visit to that store
+      window.location.href=url;
+    }
+  },1000);
+}
+function cancelSmartRedirect(){
+  if(_slRedirectTimer){clearInterval(_slRedirectTimer);_slRedirectTimer=null;}
+  const banner=document.getElementById('sl-redirect-banner');
+  if(banner)banner.remove();
+}
 function renderSmartLink(r){
   const content=document.getElementById('smartlink-content');
+  const isLive=r.status==='live';
+  // An external smart link (e.g. from ONErpm) takes priority over the
+  // manual per-platform button list entirely — it's already a complete,
+  // working smart link with real resolved URLs, so there's no reason to
+  // build a second, redundant one on top of it. Show a brief branded
+  // moment before forwarding, both so the redirect doesn't feel like a
+  // jarring instant flash, and so this page still reads as Blakkstone's
+  // own link right up until the handoff.
+  if(isLive&&r.external_smart_link_url){
+    const art=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" alt="'+esc(r.title||'Release')+' cover art" style="width:220px;height:220px;border-radius:16px;object-fit:cover;box-shadow:0 20px 50px rgba(0,0,0,.4)">':'<div style="width:220px;height:220px;border-radius:16px;background:var(--panel);display:flex;align-items:center;justify-content:center;margin:0 auto"><i class="ti ti-music" style="font-size:48px;color:rgba(255,255,255,.2)"></i></div>';
+    content.innerHTML='<div style="margin:0 auto 1.5rem">'+art+'</div><h1 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:4px">'+esc(r.title||'')+'</h1><p style="font-size:15px;color:rgba(255,255,255,.5);margin-bottom:2rem">'+esc(r.artist||'')+'</p><div style="display:flex;align-items:center;justify-content:center;gap:8px;color:rgba(255,255,255,.4);font-size:13px"><span class="loader"></span> Taking you to your stores…</div><p style="font-size:11px;color:rgba(255,255,255,.2);margin-top:2.5rem">Distributed by Blakkstone Music</p>';
+    trackSL(r.id,'click','external_smart_link');
+    setTimeout(()=>{window.location.href=r.external_smart_link_url;},600);
+    return;
+  }
   const art=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" alt="'+esc(r.title||'Release')+' cover art" style="width:220px;height:220px;border-radius:16px;object-fit:cover;box-shadow:0 20px 50px rgba(0,0,0,.4)">':'<div style="width:220px;height:220px;border-radius:16px;background:var(--panel);display:flex;align-items:center;justify-content:center;margin:0 auto"><i class="ti ti-music" style="font-size:48px;color:rgba(255,255,255,.2)"></i></div>';
   const genrePill=r.genre?'<span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);background:rgba(255,255,255,.07);padding:3px 10px;border-radius:20px;margin-top:6px;display:inline-block">'+esc(r.genre)+'</span>':'';
   const header='<div style="margin:0 auto 1.5rem">'+art+'</div><h1 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:4px">'+esc(r.title||'')+'</h1><p style="font-size:15px;color:rgba(255,255,255,.5)">'+esc(r.artist||'')+'</p>'+genrePill;
-  const isLive=r.status==='live';
   const links=r.platform_links||{};
   let body='';
   if(isLive){
-    const buttons=DSP_STORES.filter(s=>links[s.name]).map(s=>
-      '<a href="'+esc(links[s.name])+'" target="_blank" rel="noopener" onclick="trackSL(\''+r.id+'\',\'click\',\''+s.name+'\')" style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin-bottom:8px;text-decoration:none"><span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:4px;padding:1px;vertical-align:middle"><img src="'+s.logo+'" alt="'+esc(s.name)+'" width="24" height="24" style="border-radius:5px"><span style="color:#fff;font-size:14px;font-weight:600;flex:1;text-align:left"></span>Listen on '+s.name+'</span><i class="ti ti-external-link" style="color:rgba(255,255,255,.3)"></i></a>'
-    ).join('');
-    body=buttons||'<p style="color:rgba(255,255,255,.35);font-size:13px">Platform links coming soon.</p>';
+    const visitorPlatform=detectVisitorPlatform();
+    const priorityStoreName=SMARTLINK_PRIORITY_MATCH[visitorPlatform];
+    const priorityUrl=priorityStoreName?links[priorityStoreName]:null;
+    let storeList=DSP_STORES.filter(s=>links[s.name]);
+    if(priorityUrl){
+      // Move the matched store to the front, everything else keeps its
+      // existing relative order behind it.
+      storeList=[...storeList.filter(s=>s.name===priorityStoreName),...storeList.filter(s=>s.name!==priorityStoreName)];
+    }
+    const buttons=storeList.map(s=>{
+      const isRecommended=priorityUrl&&s.name===priorityStoreName;
+      return '<a href="'+esc(links[s.name])+'" target="_blank" rel="noopener" onclick="trackSL(\''+r.id+'\',\'click\',\''+s.name+'\')" style="display:flex;align-items:center;gap:12px;background:'+(isRecommended?'rgba(212,175,55,.08)':'#1a1a1a')+';border:1px solid '+(isRecommended?'rgba(212,175,55,.3)':'rgba(255,255,255,.08)')+';border-radius:12px;padding:14px 16px;margin-bottom:8px;text-decoration:none"><span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:4px;padding:1px;vertical-align:middle"><img src="'+s.logo+'" alt="'+esc(s.name)+'" width="24" height="24" style="border-radius:5px"></span><span style="flex:1;text-align:left"><span style="color:#fff;font-size:14px;font-weight:600;display:block">Listen on '+s.name+'</span>'+(isRecommended?'<span style="color:var(--gold);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Recommended for your device</span>':'')+'</span><i class="ti ti-external-link" style="color:rgba(255,255,255,.3)"></i></a>';
+    }).join('');
+    const redirectBanner=priorityUrl?'<div id="sl-redirect-banner" style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;text-align:center;font-size:12px;color:rgba(255,255,255,.7)">Opening <strong style="color:#fff">'+esc(priorityStoreName)+'</strong> in <span id="sl-redirect-count">3</span>s… <a onclick="cancelSmartRedirect()" style="color:var(--gold);text-decoration:underline;cursor:pointer">Cancel</a></div>':'';
+    body=redirectBanner+(buttons||'<p style="color:rgba(255,255,255,.35);font-size:13px">Platform links coming soon.</p>');
+    if(priorityUrl)setTimeout(()=>startSmartRedirectCountdown(priorityUrl,r.id,priorityStoreName),0);
   } else {
     const dateStr=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'soon';
     body='<p style="color:var(--gold);font-size:13px;font-weight:600;margin-bottom:1.25rem;text-align:center">Releasing '+dateStr+'</p>'
