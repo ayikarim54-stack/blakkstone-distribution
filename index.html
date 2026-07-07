@@ -324,19 +324,35 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .ug-hero{text-align:center;margin-bottom:2.5rem}
 .ug-hero h1{font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:.4rem;color:#fff}
 .ug-hero p{font-size:14px;color:rgba(255,255,255,.4)}
-.ug-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;max-width:860px;margin-bottom:1.5rem}
-.ug-card{background:#1e1e35;border:1.5px solid rgba(255,255,255,.08);border-radius:14px;padding:1.75rem}
-.ug-card.featured{border-color:var(--gold);position:relative}
-.ug-card.featured::before{content:'RECOMMENDED';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 12px;border-radius:0 0 7px 7px}
-.ug-name{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.4rem}
-.ug-price{font-size:34px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.2rem}
-.ug-price small{font-size:13px;font-weight:500;color:rgba(255,255,255,.35);letter-spacing:0}
-.ug-desc{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:1.25rem;line-height:1.5}
-.ug-feats{list-style:none;margin-bottom:1.4rem}
-.ug-feats li{font-size:12px;color:rgba(255,255,255,.7);padding:5px 0;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,.06)}
-.ug-feats li:last-child{border-bottom:none}
-.ug-feats li i.ck{color:#10b981;font-size:14px}
-.ug-feats li i.cx{color:#ef4444;font-size:14px}
+.ug-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:900px;margin-bottom:1.5rem;align-items:stretch}
+.ug-card{border-radius:22px;padding:2rem 1.75rem;position:relative;display:flex;flex-direction:column}
+.ug-card.plain{background:#fff;border:1px solid var(--border)}
+.ug-card.featured{background:var(--gold);border:1px solid var(--gold)}
+.ug-card.dark{background:#08080C;border:1px solid #08080C}
+.ug-badge{position:absolute;top:-16px;left:50%;transform:translateX(-50%);background:#111;color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.5px;padding:7px 16px;border-radius:20px;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.ug-name{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.4);margin-bottom:1.1rem}
+.ug-card.dark .ug-name{color:rgba(255,255,255,.4)}
+.ug-price{font-size:44px;font-weight:900;color:#111;letter-spacing:-1.5px;margin-bottom:.75rem;display:flex;align-items:flex-start}
+.ug-card.dark .ug-price{color:#fff}
+.ug-price small{font-size:13px;font-weight:500;color:rgba(0,0,0,.4);letter-spacing:0;align-self:flex-end;margin-bottom:6px;margin-left:4px}
+.ug-card.dark .ug-price small{color:rgba(255,255,255,.4)}
+.ug-desc{font-size:13px;color:rgba(0,0,0,.55);margin-bottom:1.25rem;line-height:1.6;min-height:40px}
+.ug-card.dark .ug-desc{color:rgba(255,255,255,.55)}
+.ug-btn{width:100%;border:none;border-radius:30px;padding:.9rem;font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;text-align:center;margin-bottom:1.5rem}
+.ug-btn-dark{background:#111;color:#fff}
+.ug-btn-dark:hover{background:#000}
+.ug-btn-gold{background:var(--gold);color:#111}
+.ug-btn-gold:hover{background:#e8c355}
+.ug-btn-disabled{background:rgba(0,0,0,.08);color:rgba(0,0,0,.35);cursor:not-allowed}
+.ug-card.dark .ug-btn-disabled{background:rgba(255,255,255,.1);color:rgba(255,255,255,.4)}
+.ug-feats{list-style:none;margin-bottom:0;flex:1}
+.ug-feats li{font-size:13px;color:rgba(0,0,0,.75);padding:8px 0;display:flex;align-items:center;gap:10px;border-top:1px solid rgba(0,0,0,.08)}
+.ug-feats li:first-child{border-top:none}
+.ug-card.dark .ug-feats li{color:rgba(255,255,255,.75);border-top-color:rgba(255,255,255,.1)}
+.ug-check{width:18px;height:18px;border-radius:50%;background:#111;color:var(--gold);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ug-card.dark .ug-check{background:var(--gold);color:#111}
+.ug-check.cx{background:rgba(0,0,0,.15);color:rgba(0,0,0,.4)}
+@media(max-width:900px){.ug-grid{grid-template-columns:1fr;max-width:100%}}
 /* PROFILE */
 .profcard{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:2rem;max-width:520px}
 .prof-top{display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.07)}
@@ -2677,55 +2693,56 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="page" id="page-upgrade">
       <div class="ug-hero"><h1 id="ug-hero-title">Upgrade your plan</h1><p id="ug-hero-sub">Remove commission, unlock more artists, get priority support.</p></div>
       <div class="ug-grid">
-        <div class="ug-card">
+        <div class="ug-card plain">
           <div class="ug-name">Solo</div>
           <div class="ug-price">$11 <small>/ year</small></div>
           <p class="ug-desc">1 artist profile. 9% commission on royalties.</p>
           <ul class="ug-feats">
-            <li><i class="ti ti-check ck"></i> 1 artist profile</li>
-            <li><i class="ti ti-check ck"></i> Unlimited releases</li>
-            <li><i class="ti ti-check ck"></i> 150+ DSPs worldwide</li>
-            <li><i class="ti ti-check ck"></i> Royalty dashboard</li>
-            <li><i class="ti ti-check ck"></i> Mobile Money + Bank payouts</li>
-            <li><i class="ti ti-x cx"></i> 9% commission</li>
-            <li><i class="ti ti-x cx"></i> Multiple artists</li>
+            <li><span class="ug-check">✓</span> 1 artist profile</li>
+            <li><span class="ug-check">✓</span> Unlimited releases</li>
+            <li><span class="ug-check">✓</span> 150+ DSPs worldwide</li>
+            <li><span class="ug-check">✓</span> Royalty dashboard</li>
+            <li><span class="ug-check">✓</span> Mobile Money + Bank payouts</li>
+            <li><span class="ug-check cx">✕</span> 9% commission</li>
+            <li><span class="ug-check cx">✕</span> Multiple artists</li>
           </ul>
-          <button class="btn btn-purple" id="ug-solo-btn" style="width:100%;justify-content:center" onclick="openPaystack('solo')"><i class="ti ti-rocket"></i> Get Solo</button>
+          <button class="ug-btn ug-btn-dark" id="ug-solo-btn" onclick="openPaystack('solo')">Get Solo</button>
         </div>
         <div class="ug-card featured">
+          <div class="ug-badge">★ MOST POPULAR</div>
           <div class="ug-name">Artist+</div>
           <div class="ug-price">$20 <small>/ year</small></div>
           <p class="ug-desc">Keep 100% of your royalties. 2 artists.</p>
           <ul class="ug-feats">
-            <li><i class="ti ti-check ck"></i> 2 artist profiles</li>
-            <li><i class="ti ti-check ck"></i> Unlimited releases</li>
-            <li><i class="ti ti-check ck"></i> 150+ DSPs worldwide</li>
-            <li><i class="ti ti-check ck"></i> 0% commission</li>
-            <li><i class="ti ti-check ck"></i> ISRC code generation</li>
-            <li><i class="ti ti-check ck"></i> Release scheduling</li>
-            <li><i class="ti ti-check ck"></i> Earnings dashboard</li>
-            <li><i class="ti ti-check ck"></i> Mobile Money + Bank payouts</li>
-            <li><i class="ti ti-check ck"></i> Store analytics</li>
+            <li><span class="ug-check">✓</span> 2 artist profiles</li>
+            <li><span class="ug-check">✓</span> Unlimited releases</li>
+            <li><span class="ug-check">✓</span> 150+ DSPs worldwide</li>
+            <li><span class="ug-check">✓</span> 0% commission</li>
+            <li><span class="ug-check">✓</span> ISRC code generation</li>
+            <li><span class="ug-check">✓</span> Release scheduling</li>
+            <li><span class="ug-check">✓</span> Earnings dashboard</li>
+            <li><span class="ug-check">✓</span> Mobile Money + Bank payouts</li>
+            <li><span class="ug-check">✓</span> Store analytics</li>
           </ul>
-          <button class="btn btn-purple" id="ug-artist-btn" style="width:100%;justify-content:center" onclick="openPaystack('artist_plus')"><i class="ti ti-crown"></i> Upgrade to Artist+</button>
+          <button class="ug-btn ug-btn-dark" id="ug-artist-btn" onclick="openPaystack('artist_plus')">Upgrade to Artist+</button>
         </div>
-        <div class="ug-card">
+        <div class="ug-card dark">
           <div class="ug-name">Label</div>
           <div class="ug-price">$35 <small>/ year</small></div>
           <p class="ug-desc">5+ artists. For labels and collectives.</p>
           <ul class="ug-feats">
-            <li><i class="ti ti-check ck"></i> 5+ artist profiles</li>
-            <li><i class="ti ti-check ck"></i> Unlimited releases</li>
-            <li><i class="ti ti-check ck"></i> 150+ DSPs worldwide</li>
-            <li><i class="ti ti-check ck"></i> 0% commission</li>
-            <li><i class="ti ti-check ck"></i> ISRC code generation</li>
-            <li><i class="ti ti-check ck"></i> Full royalty dashboard</li>
-            <li><i class="ti ti-check ck"></i> Mobile Money + Bank payouts</li>
-            <li><i class="ti ti-check ck"></i> Label analytics overview</li>
-            <li><i class="ti ti-check ck"></i> Priority support</li>
-            <li><i class="ti ti-check ck"></i> Dedicated account manager</li>
+            <li><span class="ug-check">✓</span> 5+ artist profiles</li>
+            <li><span class="ug-check">✓</span> Unlimited releases</li>
+            <li><span class="ug-check">✓</span> 150+ DSPs worldwide</li>
+            <li><span class="ug-check">✓</span> 0% commission</li>
+            <li><span class="ug-check">✓</span> ISRC code generation</li>
+            <li><span class="ug-check">✓</span> Full royalty dashboard</li>
+            <li><span class="ug-check">✓</span> Mobile Money + Bank payouts</li>
+            <li><span class="ug-check">✓</span> Label analytics overview</li>
+            <li><span class="ug-check">✓</span> Priority support</li>
+            <li><span class="ug-check">✓</span> Dedicated account manager</li>
           </ul>
-          <button class="btn" id="ug-label-btn" style="width:100%;justify-content:center;background:#fff;color:#111;font-weight:700" onclick="openPaystack('label')">Get Label Plan</button>
+          <button class="ug-btn ug-btn-gold" id="ug-label-btn" onclick="openPaystack('label')">Get Label Plan</button>
         </div>
       </div>
       <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.1rem;font-size:13px;color:rgba(255,255,255,.35);line-height:1.7;max-width:860px">
@@ -4207,12 +4224,12 @@ function updateUpgradePage(plan){
   const soloBtn=document.getElementById('ug-solo-btn');
   const apBtn=document.getElementById('ug-artist-btn');
   const lBtn=document.getElementById('ug-label-btn');
-  if(soloBtn){soloBtn.textContent='Get Solo';soloBtn.disabled=false;soloBtn.className='btn btn-purple';soloBtn.title='';}
-  if(apBtn){apBtn.innerHTML='<i class="ti ti-crown"></i> Get Artist+';apBtn.disabled=false;apBtn.className='btn btn-gold';apBtn.title='';}
-  if(lBtn){lBtn.textContent='Get Label';lBtn.disabled=false;lBtn.className='btn';lBtn.title='';}
-  if(plan==='solo_paid'&&soloBtn){soloBtn.textContent='Current Plan';soloBtn.disabled=true;soloBtn.className='btn btn-ghost';}
-  if(plan==='artist_plus'&&apBtn){apBtn.textContent='Current Plan';apBtn.disabled=true;apBtn.className='btn btn-ghost';}
-  if(plan==='label'&&lBtn){lBtn.textContent='Current Plan';lBtn.disabled=true;lBtn.className='btn btn-ghost';}
+  if(soloBtn){soloBtn.textContent='Get Solo';soloBtn.disabled=false;soloBtn.className='ug-btn ug-btn-dark';soloBtn.title='';}
+  if(apBtn){apBtn.textContent='Upgrade to Artist+';apBtn.disabled=false;apBtn.className='ug-btn ug-btn-dark';apBtn.title='';}
+  if(lBtn){lBtn.textContent='Get Label Plan';lBtn.disabled=false;lBtn.className='ug-btn ug-btn-gold';lBtn.title='';}
+  if(plan==='solo_paid'&&soloBtn){soloBtn.textContent='Current Plan';soloBtn.disabled=true;soloBtn.className='ug-btn ug-btn-disabled';}
+  if(plan==='artist_plus'&&apBtn){apBtn.textContent='Current Plan';apBtn.disabled=true;apBtn.className='ug-btn ug-btn-disabled';}
+  if(plan==='label'&&lBtn){lBtn.textContent='Current Plan';lBtn.disabled=true;lBtn.className='ug-btn ug-btn-disabled';}
   // Disable any plan ranked below the current one — a paid subscriber shouldn't be able to
   // accidentally purchase a downgrade. It would charge full price (no discount, since
   // calculateUpgradeDiscount already excludes downgrades from the credit calculation) and can
@@ -4228,7 +4245,7 @@ function updateUpgradePage(plan){
       if(t.btn&&t.rank<currentRank){
         t.btn.textContent='Included in your plan';
         t.btn.disabled=true;
-        t.btn.className='btn btn-ghost';
+        t.btn.className='ug-btn ug-btn-disabled';
         t.btn.title='You already have a higher tier — downgrading isn\'t available here.';
       }
     });
