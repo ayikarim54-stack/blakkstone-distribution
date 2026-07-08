@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18307232731"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-18307232731');
+</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="description" content="Blakkstone Distribution — independent music distribution for artists worldwide, built in Ghana. Distribute to Spotify, Apple Music, Boomplay and 150+ platforms. Mobile Money and bank payouts."/>
@@ -9359,7 +9368,7 @@ async function loadAdminSubs(){
       plan:'priority',
       planLabel:'Priority Distro',
       billing:'one-time — "'+(r.title||'Untitled')+'"',
-      usd:10,
+      usd:PRIORITY_DISTRO_FEE_USD,
       ghs:0,
       ref:r.priority_ref||'—',
       date:r.submitted_at||'',
