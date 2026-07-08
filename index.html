@@ -666,6 +666,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .faq-q i{flex-shrink:0;transition:transform .2s;color:var(--muted)}
 .faq-item.open .faq-q i{transform:rotate(180deg);color:var(--gold)}
 .faq-a{display:none;padding:0 1.25rem 1.1rem;font-size:13px;color:var(--muted);line-height:1.7}
+/* Support page reuses the same .faq-item/toggleFaq() mechanism as the
+   landing page, but lives on the dark dashboard — these overrides only
+   apply within #support-faq, so the landing page's own FAQ is untouched. */
+#support-faq .faq-item{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:8px;overflow:hidden}
+#support-faq .faq-q{color:#fff}
+#support-faq .faq-q i{color:rgba(255,255,255,.4)}
+#support-faq .faq-a{color:rgba(255,255,255,.55)}
 .faq-item.open .faq-a{display:block}
 /* CTA glow */
 .cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(201,168,76,.12) 0,transparent 70%);pointer-events:none}
@@ -2930,6 +2937,29 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <!-- SUPPORT -->
     <div class="page" id="page-support">
       <div class="ph"><div><h1>Support</h1><p>Get help from the Blakkstone team.</p></div></div>
+      <div id="support-faq" style="margin-bottom:1.5rem">
+        <div class="slabel" style="margin-bottom:.75rem"><i class="ti ti-help-circle"></i> Quick Answers</div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">How long does it take for my release to go live? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">Typically 3–10 business days depending on the platform. Spotify and Apple Music usually take 3–5 days. You'll see the status update on the release's own page, and get an email once it's live.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">How do withdrawals work? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">Request a payout via Mobile Money or Bank Transfer from the Royalties page — a 2% fee applies, shown clearly before you confirm. Processed within 5–7 business days.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Can I fix a mistake after submitting a release? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">If it's still Pending (not yet in review), open the release and use "Cancel Submission" — then submit a corrected version. Once it's moved into review, message us here instead and we'll help directly.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">What audio formats do you accept? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">WAV, FLAC, or AIFF — lossless masters only. We recommend 16-bit, 44.1kHz stereo. MP3 isn't accepted, since store platforms need the highest quality source file.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">How do I give someone else access to manage my account? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">Label plan accounts can invite a Manager or Viewer from Profile → Team Access. Managers can submit releases and manage your roster; Viewers can only look. Neither can touch billing or payouts.</div>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 360px;gap:1.25rem" id="support-grid">
         <div>
           <div class="slabel"><i class="ti ti-message-circle"></i> Your Messages</div>
