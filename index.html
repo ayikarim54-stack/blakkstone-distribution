@@ -8940,7 +8940,7 @@ async function loadAdminActivityLog(){
     container.innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i><p>'+esc('Could not load: '+(e.message||'unknown error'))+'</p></div>';
   }
 }
-function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();toast('Refreshed','ok');}
+function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();loadAdminActivityLog();loadAdminReports();loadAdminStreamsRecent();loadBroadcastHistory();toast('Refreshed','ok');}
 async function loadAdminStats(){
   try{
     const [{data:profiles},{data:releases},{data:payouts},{data:subs}]=await Promise.all([
@@ -9192,6 +9192,14 @@ async function deletePayout(id){
   loadNotifications();
 }
 async function updateUserPlan(id,plan){
+  if(plan==='admin'){
+    const target=(allUsersCache||[]).find(p=>p.id===id);
+    const targetName=target?.artist_name||target?.full_name||target?.email||'this account';
+    if(!confirm('Grant FULL ADMIN ACCESS to '+targetName+'? They will be able to see and manage every artist\'s releases, payouts, and personal data on the platform. This takes effect immediately.')){
+      loadAdminUsers(); // revert the dropdown's visual selection back to their actual current plan
+      return;
+    }
+  }
   try{
     const {data:before,error:fetchErr}=await sb.from('profiles').select('plan').eq('id',id).single();
     if(fetchErr)throw fetchErr;
