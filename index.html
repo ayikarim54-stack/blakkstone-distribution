@@ -1882,6 +1882,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <p style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.5rem">Your account has a pending deletion request. New releases can't be submitted while this is being processed. If you've changed your mind, reach out to <a onclick="goPage('support',null)" style="color:var(--gold);cursor:pointer">Support</a> and we can help.</p>
         <button class="btn btn-outline" onclick="goPage('profile',null)">Go to Profile</button>
       </div>
+      <!-- BLOCKED: NO ACTIVE PLAN -->
+      <div id="submit-blocked-paywall" style="display:none;max-width:520px;margin:4rem auto;text-align:center;padding:0 1.5rem">
+        <i class="ti ti-rocket" style="font-size:40px;color:var(--gold);display:block;margin-bottom:1rem"></i>
+        <h2 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:.75rem">Ready to release your music?</h2>
+        <p style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.5rem">Distributing to 150+ stores worldwide needs an active plan. Pick one starting at $11/year — unlimited releases, no per-release fees.</p>
+        <button class="btn btn-gold" onclick="goPage('upgrade',null)">View Plans</button>
+      </div>
       <div id="submit-wizard-body">
       <!-- STEP PROGRESS BAR -->
       <div style="background:var(--black);border-bottom:1px solid rgba(255,255,255,.07);padding:0 2.5rem;position:sticky;top:62px;z-index:100">
@@ -4117,8 +4124,17 @@ async function loadProfile(u){
   // plan, not this login's own (likely empty/free) profile.
   await checkTeamMembership();
   await claimReferralCodeIfAny();
-  const hasPlan=adminNow||teamContext||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
-  if(!hasPlan){showPaywall(justLapsedPlan);}else{enterDashboard();}
+  // Everyone gets into the dashboard now, regardless of plan — paying is
+  // only required to actually submit a release (checked at that specific
+  // point, not as a blanket gate on login). This lowers signup friction:
+  // someone can look around, set up their profile, add roster artists to
+  // preview the idea, before ever being asked to pay.
+  enterDashboard();
+  if(justLapsedPlan)showLapsedPlanBanner(justLapsedPlan);
+}
+function showLapsedPlanBanner(oldPlan){
+  const label=PLANS[oldPlan==='solo_paid'?'solo':oldPlan]?.label||'your';
+  toast('Your '+label+' plan has expired — renew anytime from the Upgrade page to keep distributing new releases.','err');
 }
 let teamContext=null; // {ownerId, role, ownerProfile} when this login is managing someone else's account
 async function checkTeamMembership(){
@@ -7733,7 +7749,20 @@ async function duplicateReleaseAsNew(releaseId){
 }
 async function initWizard(){
   const blockedEl=document.getElementById('submit-blocked-deletion');
+  const paywallEl=document.getElementById('submit-blocked-paywall');
   const bodyEl=document.getElementById('submit-wizard-body');
+  // Submitting a release requires an active paid plan — this is now the one
+  // specific gate in the app, replacing the old all-or-nothing login block.
+  // Team members follow the owner's plan (already reflected in the shared
+  // `profile` object via checkTeamMembership()), not their own login's plan.
+  const hasActivePlan=isAdmin()||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
+  if(!hasActivePlan){
+    if(paywallEl)paywallEl.style.display='block';
+    if(blockedEl)blockedEl.style.display='none';
+    if(bodyEl)bodyEl.style.display='none';
+    return;
+  }
+  if(paywallEl)paywallEl.style.display='none';
   if(user){
     try{
       const {data}=await sb.from('account_deletion_requests').select('id').eq('user_id',user.id).eq('status','pending').limit(1);
