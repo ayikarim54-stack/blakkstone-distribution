@@ -4037,6 +4037,7 @@ async function doAuth(){
       }
       if(data.user){
         await sb.from('profiles').upsert({id:data.user.id,email,full_name:fullName,artist_name:artistName,plan:'free'});
+        notifyAdminEmail('new_signup',{email,fullName,artistName});
         toast('Account created! Welcome to Blakkstone.','ok');
         await loadProfile(data.user);
       }
@@ -4085,6 +4086,7 @@ async function loadProfile(u){
     const newProfile={id:u.id,email:u.email,full_name:fullName,artist_name:fullName,plan:'free',avatar_url:avatarUrl};
     const {data:created,error:createErr}=await sb.from('profiles').upsert(newProfile).select().single();
     if(createErr)console.error('Profile auto-create error for new OAuth sign-in:',createErr);
+    else notifyAdminEmail('new_signup',{email:u.email,fullName,artistName:fullName});
     data=created||newProfile;
   }
   profile=data;
