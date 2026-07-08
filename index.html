@@ -1627,9 +1627,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
         <div class="onboard-steps">
           <div class="ob-step done" id="ob-account"><i class="ti ti-check"></i> Account created</div>
-          <div class="ob-step" id="ob-release"><i class="ti ti-music"></i> Submit first release</div>
-          <div class="ob-step" id="ob-profile"><i class="ti ti-user"></i> Complete profile</div>
-          <div class="ob-step" id="ob-payout"><i class="ti ti-wallet"></i> Set up payout</div>
+          <div class="ob-step" id="ob-release" onclick="goPage('submit',null)" style="cursor:pointer"><i class="ti ti-music"></i> Submit first release</div>
+          <div class="ob-step" id="ob-profile" onclick="goPage('profile',null)" style="cursor:pointer"><i class="ti ti-user"></i> Complete profile</div>
+          <div class="ob-step" id="ob-payout" onclick="goPageRoyaltiesTab('payouts')" style="cursor:pointer"><i class="ti ti-wallet"></i> Set up payout</div>
         </div>
       </div>
       <!-- COLOURFUL STAT CARDS -->
@@ -3913,20 +3913,28 @@ function setMobNav(activeId){
   if(el) el.classList.add('active');
 }
 
-function updateOnboarding(){
+async function updateOnboarding(){
   const card=document.getElementById('onboard-card');
   if(!card)return;
   // Check if user has releases
   const hasRelease=allRelData.length>0;
   const hasProfile=!!(profile?.artist_name&&profile?.full_name);
+  let hasPayout=false;
+  try{
+    const {data,error}=await sb.from('payout_methods').select('id').eq('user_id',user.id).limit(1);
+    if(!error)hasPayout=!!(data&&data.length);
+  }catch(e){console.error('Onboarding payout-check error (non-critical):',e);}
   const obRelease=document.getElementById('ob-release');
   const obProfile=document.getElementById('ob-profile');
+  const obPayout=document.getElementById('ob-payout');
   if(obRelease) obRelease.className='ob-step'+(hasRelease?' done':'');
   if(obRelease) obRelease.innerHTML=(hasRelease?'<i class="ti ti-check"></i>':'<i class="ti ti-music"></i>')+' Submit first release';
   if(obProfile) obProfile.className='ob-step'+(hasProfile?' done':'');
   if(obProfile) obProfile.innerHTML=(hasProfile?'<i class="ti ti-check"></i>':'<i class="ti ti-user"></i>')+' Complete profile';
+  if(obPayout) obPayout.className='ob-step'+(hasPayout?' done':'');
+  if(obPayout) obPayout.innerHTML=(hasPayout?'<i class="ti ti-check"></i>':'<i class="ti ti-wallet"></i>')+' Set up payout';
   // Show card if not everything done, hide it once genuinely complete
-  const allDone=hasRelease&&hasProfile;
+  const allDone=hasRelease&&hasProfile&&hasPayout;
   if(allDone){
     card.style.display='none';
   } else {
