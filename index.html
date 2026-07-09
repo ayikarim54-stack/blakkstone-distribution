@@ -312,6 +312,11 @@ td{font-size:13px;color:rgba(255,255,255,.8);padding:12px 16px;border-bottom:1px
 #page-admin #adm-export-menu,#page-admin #adm-search-results{background:#fff;border-color:var(--border);box-shadow:0 12px 30px rgba(0,0,0,.12)}
 #page-admin #adm-export-menu>div{color:#111}
 #page-admin #adm-export-menu>div:hover{background:#f5f5f5}
+#page-admin .fg input,#page-admin .fg select,#page-admin .fg textarea{background:#fff;border-color:var(--border);color:#111}
+#page-admin .fg input::placeholder,#page-admin .fg textarea::placeholder{color:#999}
+#page-admin .empty{color:#999;background:#fafafa;border-color:var(--border)}
+#page-admin .empty i{color:#ddd}
+#page-admin .loader{border-color:rgba(0,0,0,.1);border-top-color:var(--gold)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.02)}
 /* ROYALTIES */
@@ -3505,7 +3510,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="admin-section" id="admin-messages">
         <div style="display:grid;grid-template-columns:1fr 380px;gap:1.25rem">
           <div>
-            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:.875rem">Inbox</div>
+            <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:.875rem">Inbox</div>
             <div id="messages-list"></div>
           </div>
           <div class="adm-card">
@@ -3513,7 +3518,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div class="fg" style="position:relative">
               <label>To (email)</label>
               <input id="msg-to" type="text" placeholder="Search by name or email..." autocomplete="off" oninput="onMsgToInput(this.value)" onfocus="onMsgToInput(this.value)">
-              <div id="msg-to-results" style="display:none;position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--dropdown);border:1px solid rgba(255,255,255,.12);border-radius:10px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.4)"></div>
+              <div id="msg-to-results" style="display:none;position:absolute;left:0;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--border);border-radius:10px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.15)"></div>
             </div>
             <div class="fg"><label>Subject</label><input id="msg-subject" type="text" placeholder="Message subject"></div>
             <div class="fg"><label>Message</label><textarea id="msg-body" placeholder="Type your message..." style="min-height:120px"></textarea></div>
@@ -3521,8 +3526,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <label>Attachment (optional)</label>
               <div style="display:flex;align-items:center;gap:8px">
                 <button type="button" class="btn adm-btn-sec btn-sm" onclick="document.getElementById('msg-attachment-input').click()"><i class="ti ti-paperclip"></i> Attach File</button>
-                <span id="msg-attachment-name" style="font-size:12px;color:rgba(255,255,255,.4)"></span>
-                <button type="button" id="msg-attachment-clear" onclick="clearAdminAttachment()" style="display:none;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:16px;padding:0">×</button>
+                <span id="msg-attachment-name" style="font-size:12px;color:#999"></span>
+                <button type="button" id="msg-attachment-clear" onclick="clearAdminAttachment()" style="display:none;background:none;border:none;cursor:pointer;color:#999;font-size:16px;padding:0">×</button>
               </div>
               <input type="file" id="msg-attachment-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="onAdminAttachmentSelected(this)">
             </div>
@@ -3581,7 +3586,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- ── ACTIVITY LOG TAB ── -->
       <div class="admin-section" id="admin-activitylog">
         <div style="display:flex;gap:8px;margin-bottom:.875rem;align-items:center;flex-wrap:wrap">
-          <p style="font-size:12px;color:rgba(255,255,255,.35);margin:0;flex:1">A running record of admin actions — status changes, deletions, payouts, plan changes, and broadcasts.</p>
+          <p style="font-size:12px;color:#999;margin:0;flex:1">A running record of admin actions — status changes, deletions, payouts, plan changes, and broadcasts.</p>
           <button class="btn adm-btn-sec btn-sm" onclick="loadAdminActivityLog()"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
         <div id="activity-log-list"></div>
@@ -9012,13 +9017,13 @@ async function loadAdminActivityLog(){
       const rel=l.target_release_id?releaseMap[l.target_release_id]:null;
       const targetName=rel?.title||prof?.artist_name||prof?.full_name||prof?.email||null;
       const d=l.changed_at?new Date(l.changed_at).toLocaleString('en-GB'):'—';
-      return '<div style="background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+      return '<div style="background:#fafafa;border:1px solid var(--border);border-radius:11px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
         +'<div style="min-width:0">'
-          +'<div style="font-size:13px;font-weight:600;color:#fff">'+esc(label)+(targetName?' <span style="font-weight:400;color:rgba(255,255,255,.4)">· '+esc(targetName)+'</span>':'')+'</div>'
-          +(l.old_value||l.new_value?'<div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:3px">'+(l.old_value?esc(l.old_value):'—')+' → '+(l.new_value?esc(l.new_value):'—')+'</div>':'')
-          +'<div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:4px">by '+esc(l.changed_by||'Admin')+'</div>'
+          +'<div style="font-size:13px;font-weight:600;color:#111">'+esc(label)+(targetName?' <span style="font-weight:400;color:#999">· '+esc(targetName)+'</span>':'')+'</div>'
+          +(l.old_value||l.new_value?'<div style="font-size:12px;color:#999;margin-top:3px">'+(l.old_value?esc(l.old_value):'—')+' → '+(l.new_value?esc(l.new_value):'—')+'</div>':'')
+          +'<div style="font-size:11px;color:#bbb;margin-top:4px">by '+esc(l.changed_by||'Admin')+'</div>'
         +'</div>'
-        +'<div style="font-size:11px;color:rgba(255,255,255,.25);flex-shrink:0;white-space:nowrap">'+d+'</div>'
+        +'<div style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap">'+d+'</div>'
       +'</div>';
     }).join('');
   }catch(e){
@@ -9078,11 +9083,11 @@ async function loadAdminActionQueue(){
     ];
     const total=items.reduce((a,i)=>a+i.count,0);
     container.innerHTML=total===0
-      ?'<div style="color:rgba(255,255,255,.35);font-size:12px;padding:.25rem 0"><i class="ti ti-check"></i> All caught up — nothing needs attention.</div>'
-      :items.filter(i=>i.count>0).map(i=>'<div onclick="switchAdminTab(\''+i.tab+'\',findAdminTabEl(\''+i.tab+'\'))" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#fff"><i class="ti '+i.icon+'" style="color:'+i.color+'"></i> '+i.label+'</div><span style="font-size:11px;font-weight:700;color:var(--black);background:'+i.color+';padding:2px 9px;border-radius:20px">'+i.count+'</span></div>').join('');
+      ?'<div style="color:#999;font-size:12px;padding:.25rem 0"><i class="ti ti-check"></i> All caught up — nothing needs attention.</div>'
+      :items.filter(i=>i.count>0).map(i=>'<div onclick="switchAdminTab(\''+i.tab+'\',findAdminTabEl(\''+i.tab+'\'))" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;background:#fafafa;border:1px solid var(--border);border-radius:9px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#111"><i class="ti '+i.icon+'" style="color:'+i.color+'"></i> '+i.label+'</div><span style="font-size:11px;font-weight:700;color:#fff;background:'+i.color+';padding:2px 9px;border-radius:20px">'+i.count+'</span></div>').join('');
   }catch(e){
     console.warn('loadAdminActionQueue:',e);
-    container.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Could not load.</div>';
+    container.innerHTML='<div style="color:#999;font-size:12px">Could not load.</div>';
   }
 }
 async function loadAdminDashboard(){
@@ -9656,20 +9661,20 @@ function renderMessageThreads(threads){
     const lastTime=t.lastTime?new Date(t.lastTime).toLocaleString('en-GB'):'—';
     const threadId='thread-'+i;
     _threadIds[threadId]=t.messages.map(m=>m.id);
-    return '<div style="background:var(--surface2);border:1px solid var(--line);border-radius:11px;margin-bottom:8px;overflow:hidden">'
+    return '<div style="background:#fafafa;border:1px solid var(--border);border-radius:11px;margin-bottom:8px;overflow:hidden">'
       +'<div onclick="toggleMessageThread(\''+threadId+'\')" style="padding:1rem 1.1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px'+(t.unreadCount>0?';border-left:3px solid var(--gold)':'')+'">'
-        +'<div style="min-width:0"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:600;color:#fff">'+esc(t.name)+'</span>'+(t.unreadCount>0?'<span style="font-size:10px;font-weight:700;color:var(--black);background:var(--gold);padding:1px 7px;border-radius:20px">'+t.unreadCount+'</span>':'')+'</div>'
-        +'<div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">'+esc(t.email)+'</div>'
-        +'<div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(lastPreview)+'</div></div>'
+        +'<div style="min-width:0"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:600;color:#111">'+esc(t.name)+'</span>'+(t.unreadCount>0?'<span style="font-size:10px;font-weight:700;color:#111;background:var(--gold);padding:1px 7px;border-radius:20px">'+t.unreadCount+'</span>':'')+'</div>'
+        +'<div style="font-size:12px;color:#999;margin-top:2px">'+esc(t.email)+'</div>'
+        +'<div style="font-size:12px;color:#aaa;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(lastPreview)+'</div></div>'
         +'<div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px">'
-          +'<div style="display:flex;align-items:center;gap:8px"><div style="font-size:11px;color:rgba(255,255,255,.25)">'+lastTime+'</div><button class="btn adm-btn-sec btn-sm" title="Delete conversation" style="padding:3px 6px;font-size:10px;color:#f87171" onclick="event.stopPropagation();deleteAdminThread(_threadIds[\''+threadId+'\'])"><i class="ti ti-trash"></i></button></div>'
-          +'<div style="font-size:11px;color:rgba(255,255,255,.3)">'+t.messages.length+' message'+(t.messages.length===1?'':'s')+' <i class="ti ti-chevron-down" id="'+threadId+'-chevron" style="font-size:11px;transition:transform .15s"></i></div>'
+          +'<div style="display:flex;align-items:center;gap:8px"><div style="font-size:11px;color:#bbb">'+lastTime+'</div><button class="btn adm-btn-sec btn-sm" title="Delete conversation" style="padding:3px 6px;font-size:10px;color:#dc2626" onclick="event.stopPropagation();deleteAdminThread(_threadIds[\''+threadId+'\'])"><i class="ti ti-trash"></i></button></div>'
+          +'<div style="font-size:11px;color:#aaa">'+t.messages.length+' message'+(t.messages.length===1?'':'s')+' <i class="ti ti-chevron-down" id="'+threadId+'-chevron" style="font-size:11px;transition:transform .15s"></i></div>'
         +'</div>'
       +'</div>'
-      +'<div id="'+threadId+'-body" style="display:none;padding:0 1.1rem 1rem;border-top:1px solid rgba(255,255,255,.06)">'
+      +'<div id="'+threadId+'-body" style="display:none;padding:0 1.1rem 1rem;border-top:1px solid var(--border)">'
         +t.messages.map(m=>{
           const d=m.created_at?new Date(m.created_at).toLocaleString('en-GB'):'—';const isIn=m.direction==='in';
-          return '<div style="padding-top:.75rem"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.35rem;gap:8px"><div style="font-size:12px;font-weight:600;color:#fff;min-width:0">'+(isIn?'📨 '+esc(t.name):'📤 You')+' <span style="font-weight:400;color:rgba(255,255,255,.3)">· '+esc(m.subject||'')+'</span></div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><span style="font-size:10px;color:rgba(255,255,255,.25)">'+d+'</span>'+(isIn?'<button class="btn btn-purple btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();replyToMessage(\''+m.id+'\')"><i class="ti ti-arrow-back-up"></i> Reply</button>':'')+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();markRead(\''+m.id+'\')">Mark read</button>':'')+'<button class="btn adm-btn-sec btn-sm" title="Delete message" style="padding:2px 6px;font-size:10px;color:#f87171" onclick="event.stopPropagation();deleteAdminMessage(\''+m.id+'\')"><i class="ti ti-trash"></i></button></div></div><div style="font-size:12.5px;color:rgba(255,255,255,.6);white-space:pre-wrap">'+esc(m.body||'')+'</div>'+renderAttachmentChip(m)+'</div>';
+          return '<div style="padding-top:.75rem"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.35rem;gap:8px"><div style="font-size:12px;font-weight:600;color:#111;min-width:0">'+(isIn?'📨 '+esc(t.name):'📤 You')+' <span style="font-weight:400;color:#999">· '+esc(m.subject||'')+'</span></div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><span style="font-size:10px;color:#bbb">'+d+'</span>'+(isIn?'<button class="btn btn-purple btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();replyToMessage(\''+m.id+'\')"><i class="ti ti-arrow-back-up"></i> Reply</button>':'')+(isIn&&!m.read_at?'<button class="btn adm-btn-sec btn-sm" style="padding:2px 7px;font-size:10px" onclick="event.stopPropagation();markRead(\''+m.id+'\')">Mark read</button>':'')+'<button class="btn adm-btn-sec btn-sm" title="Delete message" style="padding:2px 6px;font-size:10px;color:#dc2626" onclick="event.stopPropagation();deleteAdminMessage(\''+m.id+'\')"><i class="ti ti-trash"></i></button></div></div><div style="font-size:12.5px;color:#444;white-space:pre-wrap">'+esc(m.body||'')+'</div>'+renderAttachmentChip(m,true)+'</div>';
         }).join('')
       +'</div>'
     +'</div>';
@@ -9731,48 +9736,48 @@ async function loadNotifications(){
     const badgeAdmin=document.getElementById('notif-badge-admin');if(badgeAdmin){badgeAdmin.style.display=total>0?'inline':'none';badgeAdmin.textContent=total;}
     let html='';
     if(deletions?.length){
-      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#f87171;margin-bottom:.5rem">Account Deletion Requests ('+deletions.length+')</div>';
+      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#dc2626;margin-bottom:.5rem">Account Deletion Requests ('+deletions.length+')</div>';
       html+=deletions.map(d=>{
         const prof=profileMap[d.user_id]||{};const name=prof.artist_name||prof.full_name||d.email||'—';const dt=d.requested_at?new Date(d.requested_at).toLocaleDateString('en-GB'):'—';
-        const reason=d.reason?'<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;font-style:italic">"'+esc(d.reason)+'"</div>':'';
+        const reason=d.reason?'<div style="font-size:11px;color:#999;margin-top:2px;font-style:italic">"'+esc(d.reason)+'"</div>':'';
         const ctx=deletionContext[d.id];
         let ctxRow='';
         if(ctx){
           const hasStakes=ctx.live>0||ctx.roster>0||ctx.balance>0;
-          const chip=(icon,label,warn)=>'<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:'+(warn?'#fbbf24':'rgba(255,255,255,.4)')+'"><i class="ti '+icon+'" style="font-size:12px"></i> '+label+'</span>';
-          ctxRow='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06)">'
+          const chip=(icon,label,warn)=>'<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:'+(warn?'#d97706':'#999')+'"><i class="ti '+icon+'" style="font-size:12px"></i> '+label+'</span>';
+          ctxRow='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">'
             +chip('ti-broadcast',ctx.live+' live release'+(ctx.live===1?'':'s'),ctx.live>0)
             +chip('ti-users-group',ctx.roster+' roster artist'+(ctx.roster===1?'':'s'),ctx.roster>0)
             +chip('ti-wallet',(ctx.balance>0?'$'+ctx.balance.toFixed(2)+' pending payout':'No pending balance'),ctx.balance>0)
             +'</div>'
-            +(hasStakes?'<div style="font-size:11px;color:#fbbf24;margin-top:4px"><i class="ti ti-alert-triangle"></i> This account has active data — confirm before marking done.</div>':'');
+            +(hasStakes?'<div style="font-size:11px;color:#d97706;margin-top:4px"><i class="ti ti-alert-triangle"></i> This account has active data — confirm before marking done.</div>':'');
         } else {
-          ctxRow='<div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:6px">Could not load account context.</div>';
+          ctxRow='<div style="font-size:11px;color:#999;margin-top:6px">Could not load account context.</div>';
         }
-        return '<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(d.email||'')+' · Requested '+dt+'</div>'+reason+'</div><button class="btn btn-sm" style="background:#ef4444;color:#fff;flex-shrink:0" onclick="markDeletionCompleted(\''+d.id+'\')">Mark Done</button></div>'+ctxRow+'</div>';
+        return '<div style="background:#fef2f2;border:1px solid rgba(220,38,38,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#111">'+esc(name)+'</div><div style="font-size:12px;color:#999">'+esc(d.email||'')+' · Requested '+dt+'</div>'+reason+'</div><button class="btn btn-sm" style="background:#dc2626;color:#fff;flex-shrink:0" onclick="markDeletionCompleted(\''+d.id+'\')">Mark Done</button></div>'+ctxRow+'</div>';
       }).join('');
     }
     if(takedowns?.length){
-      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#fbbf24;margin-bottom:.5rem">Takedown Requests ('+takedowns.length+')</div>';
+      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#d97706;margin-bottom:.5rem">Takedown Requests ('+takedowns.length+')</div>';
       html+=takedowns.map(t=>{
         const prof=profileMap[t.user_id]||{};const name=prof.artist_name||prof.full_name||'—';
         const rel=takedownReleaseMap[t.release_id]||{};
         const dt=t.requested_at?new Date(t.requested_at).toLocaleDateString('en-GB'):'—';
-        const reason=t.reason?'<div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;font-style:italic">"'+esc(t.reason)+'"</div>':'';
-        return '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">"'+esc(rel.title||'Unknown release')+'" — '+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">Requested '+dt+'</div>'+reason+'</div><button class="btn btn-sm" style="background:#fbbf24;color:var(--black);font-weight:700;flex-shrink:0" onclick="markTakedownCompleted(\''+t.id+'\')">Mark Done</button></div></div>';
+        const reason=t.reason?'<div style="font-size:11px;color:#999;margin-top:2px;font-style:italic">"'+esc(t.reason)+'"</div>':'';
+        return '<div style="background:#fffbeb;border:1px solid rgba(217,119,6,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#111">"'+esc(rel.title||'Unknown release')+'" — '+esc(name)+'</div><div style="font-size:12px;color:#999">Requested '+dt+'</div>'+reason+'</div><button class="btn btn-sm" style="background:#d97706;color:#fff;font-weight:700;flex-shrink:0" onclick="markTakedownCompleted(\''+t.id+'\')">Mark Done</button></div></div>';
       }).join('');
     }
     if(messages?.length){
-      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem">New Messages ('+messages.length+')</div>';
-      html+=messages.map(m=>{const prof=profileMap[m.from_id]||{};const name=prof.artist_name||prof.full_name||m.from_email||'—';const d=m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'—';return '<div style="background:rgba(13,110,253,.08);border:1px solid rgba(13,110,253,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(m.subject||'No subject')+' · '+d+'</div></div><button class="btn adm-btn-sec btn-sm" onclick="switchAdminTab(\'messages\',document.getElementById(\'atab-messages\'))">View</button></div>';}).join('');
+      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:.5rem">New Messages ('+messages.length+')</div>';
+      html+=messages.map(m=>{const prof=profileMap[m.from_id]||{};const name=prof.artist_name||prof.full_name||m.from_email||'—';const d=m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'—';return '<div style="background:#eff6ff;border:1px solid rgba(37,99,235,.15);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#111">'+esc(name)+'</div><div style="font-size:12px;color:#999">'+esc(m.subject||'No subject')+' · '+d+'</div></div><button class="btn adm-btn-sec btn-sm" onclick="switchAdminTab(\'messages\',document.getElementById(\'atab-messages\'))">View</button></div>';}).join('');
     }
     if(payouts?.length){
-      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem;margin-top:1rem">Pending Payouts ('+payouts.length+')</div>';
-      html+=payouts.map(p=>{const prof=profileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||'—';const accId=prof.account_id||'';const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';return '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#fff">'+(accId?'<span style="color:var(--gold)">'+esc(accId)+'</span> — ':'')+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+p.method+' — $'+parseFloat(p.amount||0).toFixed(2)+' · '+d+'</div></div><button class="btn btn-purple btn-sm" onclick="switchAdminTab(\'payouts\',document.getElementById(\'atab-payouts\'))">Process</button></div>';}).join('');
+      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:.5rem;margin-top:1rem">Pending Payouts ('+payouts.length+')</div>';
+      html+=payouts.map(p=>{const prof=profileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||'—';const accId=prof.account_id||'';const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';return '<div style="background:#fffbeb;border:1px solid rgba(217,119,6,.15);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#111">'+(accId?'<span style="color:var(--gd)">'+esc(accId)+'</span> — ':'')+esc(name)+'</div><div style="font-size:12px;color:#999">'+p.method+' — $'+parseFloat(p.amount||0).toFixed(2)+' · '+d+'</div></div><button class="btn btn-purple btn-sm" onclick="switchAdminTab(\'payouts\',document.getElementById(\'atab-payouts\'))">Process</button></div>';}).join('');
     }
     if(releases?.length){
-      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem;margin-top:1rem">Pending Releases ('+releases.length+')</div>';
-      html+=releases.map(r=>{const name=r.profiles?.artist_name||r.profiles?.full_name||'—';const d=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';return '<div style="background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#fff">"'+esc(r.title)+'" by '+esc(name)+'</div><div style="font-size:12px;color:rgba(255,255,255,.4)">'+esc(r.genre||'')+' · '+d+'</div></div><button class="btn adm-btn-sec btn-sm" onclick="switchAdminTab(\'releases\',document.getElementById(\'atab-releases\'))">Review</button></div>';}).join('');
+      html+='<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:.5rem;margin-top:1rem">Pending Releases ('+releases.length+')</div>';
+      html+=releases.map(r=>{const name=r.profiles?.artist_name||r.profiles?.full_name||'—';const d=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';return '<div style="background:#fff;border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:10px;padding:.875rem 1.1rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:#111">"'+esc(r.title)+'" by '+esc(name)+'</div><div style="font-size:12px;color:#999">'+esc(r.genre||'')+' · '+d+'</div></div><button class="btn adm-btn-sec btn-sm" onclick="switchAdminTab(\'releases\',document.getElementById(\'atab-releases\'))">Review</button></div>';}).join('');
     }
     if(!html) html='<div class="empty"><i class="ti ti-check"></i><p>All caught up!</p></div>';
     container.innerHTML=html;
@@ -9834,7 +9839,7 @@ function onMsgToInput(query){
   if(!matches.length){results.style.display='none';results.innerHTML='';return;}
   results.innerHTML=matches.map(p=>{
     const name=p.artist_name||p.full_name||'—';
-    return '<div onclick="selectMsgToArtist(\''+esc(p.email||'').replace(/'/g,"\\'")+'\')" style="padding:.6rem .875rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="min-width:0"><div style="font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.email||'')+'</div></div><span style="font-size:10px;color:var(--gold);font-weight:700;flex-shrink:0">'+esc(p.account_id||'')+'</span></div>';
+    return '<div onclick="selectMsgToArtist(\''+esc(p.email||'').replace(/'/g,"\\'")+'\')" style="padding:.6rem .875rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="min-width:0"><div style="font-size:13px;color:#111;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(name)+'</div><div style="font-size:11px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.email||'')+'</div></div><span style="font-size:10px;color:var(--gd);font-weight:700;flex-shrink:0">'+esc(p.account_id||'')+'</span></div>';
   }).join('');
   results.style.display='block';
   document.addEventListener('click',closeMsgToResultsOnOutsideClick,{capture:true});
@@ -10067,12 +10072,14 @@ function startSupportRealtime(){
     })
     .subscribe();
 }
-function renderAttachmentChip(m){
+function renderAttachmentChip(m,isLight){
   if(!m.attachment_url)return'';
   const name=m.attachment_name||'Attachment';
   const isImage=/\.(png|jpe?g|gif|webp)$/i.test(name);
   const icon=isImage?'ti-photo':'ti-file-text';
-  return '<a href="'+esc(m.attachment_url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:6px;margin-top:.5rem;padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:12px;color:var(--gold);text-decoration:none"><i class="ti '+icon+'"></i> '+esc(name)+' <i class="ti ti-external-link" style="font-size:11px;opacity:.6"></i></a>';
+  const bg=isLight?'#f5f5f5':'rgba(255,255,255,.05)';
+  const bd=isLight?'var(--border)':'rgba(255,255,255,.1)';
+  return '<a href="'+esc(m.attachment_url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:6px;margin-top:.5rem;padding:5px 10px;background:'+bg+';border:1px solid '+bd+';border-radius:8px;font-size:12px;color:'+(isLight?'var(--gd)':'var(--gold)')+';text-decoration:none"><i class="ti '+icon+'"></i> '+esc(name)+' <i class="ti ti-external-link" style="font-size:11px;opacity:.6"></i></a>';
 }
 function renderSupportThreads(threads){
   const container=document.getElementById('my-messages-list');if(!container)return;
