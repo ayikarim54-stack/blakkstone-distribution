@@ -4399,7 +4399,6 @@ function enterDashboard(){
     const page=validPages.includes(pathPage)?pathPage:'overview';
     history.replaceState({page},'',pagePath(page));
     goPage(page,null);
-    if(pathPage==='support')openSupportChat(); // old bookmarks to the retired Support page open the chat widget instead
     if(page==='royalties'&&['sales','reports','payouts'].includes(pathSub)){
       const target=document.getElementById('rtab-'+pathSub);
       if(target)switchRoyTab(pathSub,target);
