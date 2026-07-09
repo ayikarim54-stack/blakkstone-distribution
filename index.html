@@ -378,10 +378,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .prof-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .divhr{height:1px;background:rgba(255,255,255,.07);margin:1.25rem 0}
 /* ADMIN */
-.admin-tabs{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
-.atab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);background:transparent;transition:all .15s}
-.atab:hover{color:#fff;border-color:rgba(255,255,255,.3)}
-.atab.active{border-color:var(--gold);background:rgba(201,168,76,.12);color:var(--gold)}
+.adm-shell{display:flex;gap:1.75rem;align-items:flex-start}
+.adm-sidebar{width:196px;flex-shrink:0;position:sticky;top:1.5rem}
+.adm-main{flex:1;min-width:0}
+.admin-tabs{display:flex;flex-direction:column;gap:2px}
+.atab{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;color:rgba(255,255,255,.5);transition:all .15s;border-left:3px solid transparent;white-space:nowrap}
+.atab i{font-size:16px;flex-shrink:0;width:16px;text-align:center}
+.atab:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.8)}
+.atab.active{border-left-color:var(--gold);background:rgba(212,175,55,.1);color:var(--gold)}
 .admin-section{display:none}
 .admin-section.active{display:block}
 .tw{background:var(--card);border:1px solid var(--line);border-radius:11px;overflow:hidden;overflow-x:auto}
@@ -582,18 +586,31 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* ── ADVANCED ADMIN ── */
 .adm-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
 .adm-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
-.adm-stat-card{border-radius:14px;padding:1.25rem;position:relative;overflow:hidden}
-.adm-stat-purple{background:linear-gradient(135deg,#D4AF37,#8a6420)}
-.adm-stat-teal{background:linear-gradient(135deg,#0891b2,#0e7490)}
-.adm-stat-orange{background:linear-gradient(135deg,#ea580c,#c2410c)}
-.adm-stat-green{background:linear-gradient(135deg,#059669,#047857)}
-.adm-stat-red{background:linear-gradient(135deg,#dc2626,#b91c1c)}
-.adm-stat-blue{background:linear-gradient(135deg,#2563eb,#1d4ed8)}
-.adm-stat-icon{width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin-bottom:.875rem}
-.adm-stat-icon i{font-size:20px;color:#fff}
-.adm-stat-val{font-size:28px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:2px}
-.adm-stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.8)}
-.adm-stat-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px}
+.adm-stat-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.25rem;position:relative;overflow:hidden}
+.adm-stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.adm-stat-purple::before{background:var(--gold)}
+.adm-stat-teal::before{background:#22d3ee}
+.adm-stat-orange::before{background:#fb923c}
+.adm-stat-green::before{background:#34d399}
+.adm-stat-red::before{background:#f87171}
+.adm-stat-blue::before{background:#60a5fa}
+.adm-stat-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:.875rem}
+.adm-stat-purple .adm-stat-icon{background:rgba(212,175,55,.12)}
+.adm-stat-teal .adm-stat-icon{background:rgba(34,211,238,.12)}
+.adm-stat-orange .adm-stat-icon{background:rgba(251,146,60,.12)}
+.adm-stat-green .adm-stat-icon{background:rgba(52,211,153,.12)}
+.adm-stat-red .adm-stat-icon{background:rgba(248,113,113,.12)}
+.adm-stat-blue .adm-stat-icon{background:rgba(96,165,250,.12)}
+.adm-stat-icon i{font-size:17px}
+.adm-stat-purple .adm-stat-icon i{color:var(--gold)}
+.adm-stat-teal .adm-stat-icon i{color:#22d3ee}
+.adm-stat-orange .adm-stat-icon i{color:#fb923c}
+.adm-stat-green .adm-stat-icon i{color:#34d399}
+.adm-stat-red .adm-stat-icon i{color:#f87171}
+.adm-stat-blue .adm-stat-icon i{color:#60a5fa}
+.adm-stat-val{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:2px}
+.adm-stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.55)}
+.adm-stat-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px}
 .adm-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.25rem;box-shadow:inset 0 1px 0 var(--rim)}
 .adm-card-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
 .adm-card-title i{color:var(--gold);font-size:16px}
@@ -3013,6 +3030,26 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
 
+      <div class="adm-shell">
+        <!-- ADMIN SIDEBAR -->
+        <div class="adm-sidebar">
+          <div class="admin-tabs">
+            <div class="atab active" id="atab-dashboard" onclick="switchAdminTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+            <div class="atab" id="atab-releases" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
+            <div class="atab" id="atab-users" onclick="switchAdminTab('users',this)"><i class="ti ti-users"></i> Artists</div>
+            <div class="atab" id="atab-payouts" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts <span id="payout-alert" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
+            <div class="atab" id="atab-streams" onclick="switchAdminTab('streams',this)"><i class="ti ti-wavesaw-mono"></i> Streams</div>
+            <div class="atab" id="atab-royalties" onclick="switchAdminTab('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
+            <div class="atab" id="atab-subs" onclick="switchAdminTab('subs',this)"><i class="ti ti-crown"></i> Subscriptions</div>
+            <div class="atab" id="atab-reports" onclick="switchAdminTab('reports',this)"><i class="ti ti-file-analytics"></i> Reports</div>
+            <div class="atab" id="atab-messages" onclick="switchAdminTab('messages',this)"><i class="ti ti-message"></i> Messages <span id="msg-alert" style="display:none;background:#3b82f6;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
+            <div class="atab" id="atab-broadcast" onclick="switchAdminTab('broadcast',this)"><i class="ti ti-speakerphone"></i> Broadcast</div>
+            <div class="atab" id="atab-notif" onclick="switchAdminTab('notifications',this)"><i class="ti ti-bell"></i> Notifications</div>
+            <div class="atab" id="atab-activitylog" onclick="switchAdminTab('activitylog',this)"><i class="ti ti-history"></i> Activity Log</div>
+          </div>
+        </div>
+        <!-- ADMIN MAIN CONTENT -->
+        <div class="adm-main">
       <!-- ADMIN GLOBAL SEARCH -->
       <div style="position:relative;margin-bottom:1.5rem">
         <div style="position:relative">
@@ -3060,22 +3097,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div class="adm-stat-label">Total Streams</div>
           <div class="adm-stat-sub" id="adm-msgs">— unread messages</div>
         </div>
-      </div>
-
-      <!-- ADMIN TABS -->
-      <div class="admin-tabs" style="margin-bottom:1.25rem;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">
-        <div class="atab active" id="atab-dashboard" onclick="switchAdminTab('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
-        <div class="atab" id="atab-releases" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
-        <div class="atab" id="atab-users" onclick="switchAdminTab('users',this)"><i class="ti ti-users"></i> Artists</div>
-        <div class="atab" id="atab-payouts" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts <span id="payout-alert" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
-        <div class="atab" id="atab-streams" onclick="switchAdminTab('streams',this)"><i class="ti ti-wavesaw-mono"></i> Streams</div>
-        <div class="atab" id="atab-royalties" onclick="switchAdminTab('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
-        <div class="atab" id="atab-subs" onclick="switchAdminTab('subs',this)"><i class="ti ti-crown"></i> Subscriptions</div>
-        <div class="atab" id="atab-reports" onclick="switchAdminTab('reports',this)"><i class="ti ti-file-analytics"></i> Reports</div>
-        <div class="atab" id="atab-messages" onclick="switchAdminTab('messages',this)"><i class="ti ti-message"></i> Messages <span id="msg-alert" style="display:none;background:#3b82f6;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
-        <div class="atab" id="atab-broadcast" onclick="switchAdminTab('broadcast',this)"><i class="ti ti-speakerphone"></i> Broadcast</div>
-        <div class="atab" id="atab-notif" onclick="switchAdminTab('notifications',this)"><i class="ti ti-bell"></i> Notifications</div>
-        <div class="atab" id="atab-activitylog" onclick="switchAdminTab('activitylog',this)"><i class="ti ti-history"></i> Activity Log</div>
       </div>
 
       <!-- ── DASHBOARD TAB ── -->
@@ -3541,6 +3562,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <button class="btn adm-btn-sec btn-sm" onclick="loadAdminActivityLog()"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
         <div id="activity-log-list"></div>
+      </div>
+        </div>
       </div>
     </div>
   </div>
