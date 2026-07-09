@@ -293,6 +293,25 @@ th{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;c
 td{font-size:13px;color:rgba(255,255,255,.8);padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
 .tw tbody tr{transition:background .1s}
 .tw tbody tr:hover{background:rgba(255,255,255,.025)}
+/* Admin panel uses a light theme, scoped strictly to #page-admin so the
+   global dark table styles above remain correct for every other page
+   (Royalties split sheets, etc.) that reuses the same table/th/td/.tw
+   elements. */
+#page-admin .tw{background:#fff;border-color:var(--border)}
+#page-admin th{color:#666;background:#fafafa;border-bottom-color:var(--border)}
+#page-admin td{color:#222;border-bottom-color:#f0f0f0}
+#page-admin .tw tbody tr:hover{background:#fafafa}
+#page-admin .adm-card{background:#fff;border-color:var(--border);box-shadow:none}
+#page-admin .adm-card-title{color:#111}
+#page-admin .adm-btn-sec{background:#f5f5f5;color:#444;border-color:var(--border)}
+#page-admin .adm-btn-sec:hover{background:#eee}
+#page-admin .adm-search{background:#fff;border-color:var(--border);color:#111}
+#page-admin .adm-search::placeholder{color:#999}
+#page-admin .num-in{background:#f5f5f5;border-color:var(--border);color:#111}
+#page-admin .stsel{border-color:var(--border);background:#fff;color:#111}
+#page-admin #adm-export-menu,#page-admin #adm-search-results{background:#fff;border-color:var(--border);box-shadow:0 12px 30px rgba(0,0,0,.12)}
+#page-admin #adm-export-menu>div{color:#111}
+#page-admin #adm-export-menu>div:hover{background:#f5f5f5}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.02)}
 /* ROYALTIES */
@@ -381,13 +400,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .divhr{height:1px;background:rgba(255,255,255,.07);margin:1.25rem 0}
 /* ADMIN */
 .adm-shell{display:flex;gap:1.75rem;align-items:flex-start}
+#page-admin{background:var(--off);margin:-2.5rem;padding:2.5rem;min-height:calc(100% + 5rem)}
+#page-admin h1,#page-admin p,#page-admin label{color:#111}
 .adm-sidebar{width:196px;flex-shrink:0;position:sticky;top:1.5rem}
 .adm-main{flex:1;min-width:0}
 .admin-tabs{display:flex;flex-direction:column;gap:2px}
-.atab{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;color:rgba(255,255,255,.5);transition:all .15s;border-left:3px solid transparent;white-space:nowrap}
+.atab{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;color:rgba(0,0,0,.5);transition:all .15s;border-left:3px solid transparent;white-space:nowrap}
 .atab i{font-size:16px;flex-shrink:0;width:16px;text-align:center}
-.atab:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.8)}
-.atab.active{border-left-color:var(--gold);background:rgba(212,175,55,.1);color:var(--gold)}
+.atab:hover{background:rgba(0,0,0,.04);color:#111}
+.atab.active{border-left-color:var(--gold);background:var(--gl);color:#a07d10}
 .admin-section{display:none}
 .admin-section.active{display:block}
 .tw{background:var(--card);border:1px solid var(--line);border-radius:11px;overflow:hidden;overflow-x:auto}
@@ -588,31 +609,31 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* ── ADVANCED ADMIN ── */
 .adm-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
 .adm-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
-.adm-stat-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.25rem;position:relative;overflow:hidden}
+.adm-stat-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.25rem;position:relative;overflow:hidden}
 .adm-stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .adm-stat-purple::before{background:var(--gold)}
-.adm-stat-teal::before{background:#22d3ee}
-.adm-stat-orange::before{background:#fb923c}
-.adm-stat-green::before{background:#34d399}
-.adm-stat-red::before{background:#f87171}
-.adm-stat-blue::before{background:#60a5fa}
+.adm-stat-teal::before{background:#06b6d4}
+.adm-stat-orange::before{background:#f97316}
+.adm-stat-green::before{background:#10b981}
+.adm-stat-red::before{background:#ef4444}
+.adm-stat-blue::before{background:#3b82f6}
 .adm-stat-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:.875rem}
-.adm-stat-purple .adm-stat-icon{background:rgba(212,175,55,.12)}
-.adm-stat-teal .adm-stat-icon{background:rgba(34,211,238,.12)}
-.adm-stat-orange .adm-stat-icon{background:rgba(251,146,60,.12)}
-.adm-stat-green .adm-stat-icon{background:rgba(52,211,153,.12)}
-.adm-stat-red .adm-stat-icon{background:rgba(248,113,113,.12)}
-.adm-stat-blue .adm-stat-icon{background:rgba(96,165,250,.12)}
+.adm-stat-purple .adm-stat-icon{background:var(--gl)}
+.adm-stat-teal .adm-stat-icon{background:rgba(6,182,212,.1)}
+.adm-stat-orange .adm-stat-icon{background:rgba(249,115,22,.1)}
+.adm-stat-green .adm-stat-icon{background:rgba(16,185,129,.1)}
+.adm-stat-red .adm-stat-icon{background:rgba(239,68,68,.1)}
+.adm-stat-blue .adm-stat-icon{background:rgba(59,130,246,.1)}
 .adm-stat-icon i{font-size:17px}
-.adm-stat-purple .adm-stat-icon i{color:var(--gold)}
-.adm-stat-teal .adm-stat-icon i{color:#22d3ee}
-.adm-stat-orange .adm-stat-icon i{color:#fb923c}
-.adm-stat-green .adm-stat-icon i{color:#34d399}
-.adm-stat-red .adm-stat-icon i{color:#f87171}
-.adm-stat-blue .adm-stat-icon i{color:#60a5fa}
-.adm-stat-val{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:2px}
-.adm-stat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.55)}
-.adm-stat-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px}
+.adm-stat-purple .adm-stat-icon i{color:var(--gd)}
+.adm-stat-teal .adm-stat-icon i{color:#06b6d4}
+.adm-stat-orange .adm-stat-icon i{color:#f97316}
+.adm-stat-green .adm-stat-icon i{color:#10b981}
+.adm-stat-red .adm-stat-icon i{color:#ef4444}
+.adm-stat-blue .adm-stat-icon i{color:#3b82f6}
+.adm-stat-val{font-size:26px;font-weight:800;color:#111;letter-spacing:-.5px;margin-bottom:2px}
+.adm-stat-label{font-size:12px;font-weight:600;color:#444}
+.adm-stat-sub{font-size:11px;color:#888;margin-top:3px}
 .adm-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.25rem;box-shadow:inset 0 1px 0 var(--rim)}
 .adm-card-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
 .adm-card-title i{color:var(--gold);font-size:16px}
@@ -3440,7 +3461,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <button class="btn adm-btn-sec btn-sm" onclick="exportSubsTabCSV()"><i class="ti ti-download"></i> Export</button>
         </div>
         <div class="tw"><table>
-          <thead><tr><th>Artist</th><th>Account ID</th><th>Plan</th><th>Billing</th><th>USD</th><th>GHS</th><th>Paystack Ref</th><th>Status</th><th>Date</th></tr></thead>
+          <thead><tr><th>Artist</th><th>Account ID</th><th>Plan</th><th>Billing</th><th>USD</th><th>GHS</th><th>Paystack Ref</th><th>Date</th></tr></thead>
           <tbody id="admin-subs-tbody"></tbody>
         </table></div>
       </div>
@@ -9380,7 +9401,7 @@ function viewAdminsOnly(){
 }
 async function loadAdminPayouts(){
   const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
-  tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem"><span class="loader"></span></td></tr>';
+  tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#999;padding:1.5rem"><span class="loader"></span></td></tr>';
   try{
     const [{data:payouts,error},{data:profiles}]=await Promise.all([
       sb.from('payouts').select('*').order('created_at',{ascending:false}),
@@ -9391,28 +9412,28 @@ async function loadAdminPayouts(){
     payoutProfileMap={};(profiles||[]).forEach(p=>{payoutProfileMap[p.id]=p;});
     const pending=(payouts||[]).filter(p=>p.status==='pending').length;
     const notice=document.getElementById('payout-pending-notice');
-    if(notice&&pending>0) notice.innerHTML='<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1rem"><i class="ti ti-alert-circle"></i> <strong>'+pending+' pending payout(s)</strong></div>';
+    if(notice&&pending>0) notice.innerHTML='<div style="background:#fff8e7;border:1px solid var(--gl);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#a07d10;margin-bottom:1rem"><i class="ti ti-alert-circle"></i> <strong>'+pending+' pending payout(s)</strong></div>';
     else if(notice) notice.innerHTML='';
     renderAdminPayoutsTable(payouts||[]);
-  }catch(e){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Error loading payouts.</td></tr>';}
+  }catch(e){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#999;padding:1.5rem">Error loading payouts.</td></tr>';}
 }
 function renderAdminPayoutsTable(payouts){
   const tbody=document.getElementById('admin-payouts-tbody');if(!tbody)return;
-  if(!payouts||!payouts.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payout requests found.</td></tr>';return;}
+  if(!payouts||!payouts.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#999;padding:1.5rem">No payout requests found.</td></tr>';return;}
   tbody.innerHTML=payouts.map(p=>{
     const prof=payoutProfileMap[p.user_id]||{};const name=prof.artist_name||prof.full_name||prof.email||'—';const accId=prof.account_id||'—';
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
-    const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
+    const sc={pending:'color:#d97706',processing:'color:#2563eb',paid:'color:#059669',failed:'color:#dc2626',cancelled:'color:#999'}[p.status]||'';
     const adminMethodLabel=p.method==='momo'?'📱 Mobile Money':'🏦 Bank';
     const adminRate=currentDisplayRates.GHS||15.5;
     const adminGrossGhs=parseFloat(p.amount||0)*adminRate;
-    let adminAmountCell='$'+parseFloat(p.amount||0).toFixed(2)+'<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.35)">≈ GHS '+adminGrossGhs.toFixed(2)+'</div>';
+    let adminAmountCell='$'+parseFloat(p.amount||0).toFixed(2)+'<div style="font-size:10px;font-weight:400;color:#999">≈ GHS '+adminGrossGhs.toFixed(2)+'</div>';
     if(p.payout_fee_usd){
       const adminNetUsd=Math.max(0,parseFloat(p.amount||0)-p.payout_fee_usd);
       const adminNetGhs=adminNetUsd*adminRate;
-      adminAmountCell+='<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.3)">Send: $'+adminNetUsd.toFixed(2)+' / GHS '+adminNetGhs.toFixed(2)+' (fee $'+parseFloat(p.payout_fee_usd).toFixed(2)+')</div>';
+      adminAmountCell+='<div style="font-size:10px;font-weight:400;color:#999">Send: $'+adminNetUsd.toFixed(2)+' / GHS '+adminNetGhs.toFixed(2)+' (fee $'+parseFloat(p.payout_fee_usd).toFixed(2)+')</div>';
     }
-    return '<tr><td><input type="checkbox" class="payout-cb" data-id="'+p.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(prof.email||'')+'</div></td><td>'+adminMethodLabel+'</td><td style="color:rgba(255,255,255,.5)">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:rgba(255,255,255,.4);max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#34d399;font-size:16px">'+adminAmountCell+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    return '<tr><td><input type="checkbox" class="payout-cb" data-id="'+p.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gd);font-size:13px">'+esc(accId)+'</td><td><div style="font-weight:600;color:#111">'+esc(name)+'</div><div style="font-size:11px;color:#999">'+esc(prof.email||'')+'</div></td><td>'+adminMethodLabel+'</td><td style="color:#666">'+esc(p.network||'—')+'</td><td style="font-size:12px;color:#666;max-width:140px">'+esc(p.account||'—')+'</td><td style="font-weight:700;color:#059669;font-size:16px">'+adminAmountCell+'</td><td><select class="stsel" style="'+sc+';font-weight:600" onchange="updatePayoutStatus(\''+p.id+'\',this.value)"><option value="pending" '+(p.status==='pending'?'selected':'')+'>Pending</option><option value="processing" '+(p.status==='processing'?'selected':'')+'>Processing</option><option value="paid" '+(p.status==='paid'?'selected':'')+'>Paid</option><option value="failed" '+(p.status==='failed'?'selected':'')+'>Failed</option><option value="cancelled" '+(p.status==='cancelled'?'selected':'')+'>Cancelled</option></select></td><td style="color:#999;font-size:12px">'+d+'</td><td><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deletePayout(\''+p.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
   }).join('');
 }
 function filterPayouts(){
@@ -9459,16 +9480,16 @@ async function loadAdminSubs(){
     renderAdminSubsTable(allSubsCache);
   }catch(e){
     console.error('Load admin subs error:',e);
-    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">Run subscriptions SQL first.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#999;padding:1.5rem">Run subscriptions SQL first.</td></tr>';
   }
   loadExpiringRenewals();
 }
 function renderAdminSubsTable(rows){
   const tbody=document.getElementById('admin-subs-tbody');if(!tbody)return;
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payments match.</td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:#999;padding:1.5rem">No payments match.</td></tr>';return;}
   tbody.innerHTML=rows.map(r=>{
     const d=r.date?new Date(r.date).toLocaleDateString('en-GB'):'—';
-    return '<tr><td style="font-weight:600;color:#fff">'+esc(r.name)+'</td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(r.accountId)+'</td><td style="color:'+(r.isPriority?'#fbbf24':'var(--gold)')+'">'+esc(r.planLabel)+'</td><td>'+esc(r.billing)+'</td><td style="color:#34d399;font-weight:700">$'+r.usd.toFixed(2)+'</td><td>'+(r.isPriority?'—':'GHS '+r.ghs.toFixed(2))+'</td><td style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace">'+esc(r.ref)+'</td><td style="color:rgba(255,255,255,.35);font-size:12px">'+d+'</td></tr>';
+    return '<tr><td style="font-weight:600;color:#111">'+esc(r.name)+'</td><td style="font-weight:700;color:var(--gd);font-size:12px">'+esc(r.accountId)+'</td><td style="color:'+(r.isPriority?'#d97706':'var(--gd)')+'">'+esc(r.planLabel)+'</td><td>'+esc(r.billing)+'</td><td style="color:#059669;font-weight:700">$'+r.usd.toFixed(2)+'</td><td>'+(r.isPriority?'—':'GHS '+r.ghs.toFixed(2))+'</td><td style="font-size:11px;color:#999;font-family:monospace">'+esc(r.ref)+'</td><td style="color:#999;font-size:12px">'+d+'</td></tr>';
   }).join('');
 }
 function filterSubs(){
@@ -9495,7 +9516,7 @@ function exportSubsTabCSV(){
 }
 async function loadExpiringRenewals(){
   const container=document.getElementById('adm-renewals-list');if(!container)return;
-  container.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div>';
+  container.innerHTML='<div style="color:#999;font-size:12px"><span class="loader"></span></div>';
   try{
     const now=new Date();
     const cutoff=new Date(now.getTime()+14*24*60*60*1000);
@@ -9506,23 +9527,23 @@ async function loadExpiringRenewals(){
       .gte('plan_expires_at',now.toISOString())
       .order('plan_expires_at',{ascending:true});
     if(error)throw error;
-    if(!data||!data.length){container.innerHTML='<div style="color:rgba(255,255,255,.35);font-size:12px"><i class="ti ti-check"></i> No renewals due in the next 14 days.</div>';return;}
+    if(!data||!data.length){container.innerHTML='<div style="color:#999;font-size:12px"><i class="ti ti-check"></i> No renewals due in the next 14 days.</div>';return;}
     const planLabel={solo_paid:'Solo',artist_plus:'Artist+',label:'Label'};
     container.innerHTML=data.map(p=>{
       const name=p.artist_name||p.full_name||p.email||'—';
       const daysLeft=Math.max(0,Math.ceil((new Date(p.plan_expires_at)-now)/(24*60*60*1000)));
       const urgent=daysLeft<=3;
-      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.75rem 1rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-left:3px solid '+(urgent?'#ef4444':'#fbbf24')+';border-radius:9px;margin-bottom:6px">'
-        +'<div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.4)">'+(planLabel[p.plan]||p.plan)+' · expires '+new Date(p.plan_expires_at).toLocaleDateString('en-GB')+'</div></div>'
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.75rem 1rem;background:#fafafa;border:1px solid var(--border);border-left:3px solid '+(urgent?'#dc2626':'#d97706')+';border-radius:9px;margin-bottom:6px">'
+        +'<div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#111">'+esc(name)+'</div><div style="font-size:11px;color:#999">'+(planLabel[p.plan]||p.plan)+' · expires '+new Date(p.plan_expires_at).toLocaleDateString('en-GB')+'</div></div>'
         +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
-          +'<span style="font-size:11px;font-weight:700;color:'+(urgent?'#ef4444':'#fbbf24')+'">'+daysLeft+' day'+(daysLeft===1?'':'s')+'</span>'
+          +'<span style="font-size:11px;font-weight:700;color:'+(urgent?'#dc2626':'#d97706')+'">'+daysLeft+' day'+(daysLeft===1?'':'s')+'</span>'
           +'<button class="btn adm-btn-sec btn-sm" style="padding:4px 10px;font-size:11px" onclick="messageArtistFromRenewal(\''+esc(p.email||'').replace(/'/g,"\\'")+'\',\''+esc(name).replace(/'/g,"\\'")+'\')"><i class="ti ti-message"></i> Message</button>'
         +'</div>'
       +'</div>';
     }).join('');
   }catch(e){
     console.error('Renewals load error:',e);
-    container.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Could not load renewals — run the plan_expires_at SQL in Supabase if this is new.</div>';
+    container.innerHTML='<div style="color:#999;font-size:12px">Could not load renewals — run the plan_expires_at SQL in Supabase if this is new.</div>';
   }
 }
 function messageArtistFromRenewal(email,name){
@@ -10187,21 +10208,21 @@ function adminGlobalSearch(query){
   ).slice(0,5);
   if(!artistMatches.length&&!releaseMatches.length){
     wrap.style.display='block';
-    wrap.innerHTML='<div style="padding:.875rem 1rem;font-size:12px;color:rgba(255,255,255,.35)">No matches for "'+esc(query)+'"</div>';
+    wrap.innerHTML='<div style="padding:.875rem 1rem;font-size:12px;color:#999">No matches for "'+esc(query)+'"</div>';
     return;
   }
   let html='';
   if(artistMatches.length){
-    html+='<div style="padding:.5rem 1rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.3)">Artists</div>';
+    html+='<div style="padding:.5rem 1rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#999">Artists</div>';
     html+=artistMatches.map(p=>{
       const name=p.artist_name||p.full_name||p.email||'—';
-      return '<div onclick="jumpToArtistFromSearch(\''+p.id+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" style="padding:.625rem 1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="min-width:0"><div style="font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.email||'')+'</div></div><span style="font-size:10px;color:var(--gold);font-weight:700;flex-shrink:0">'+esc(p.account_id||'')+'</span></div>';
+      return '<div onclick="jumpToArtistFromSearch(\''+p.id+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" style="padding:.625rem 1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="min-width:0"><div style="font-size:13px;color:#111;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(name)+'</div><div style="font-size:11px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.email||'')+'</div></div><span style="font-size:10px;color:var(--gd);font-weight:700;flex-shrink:0">'+esc(p.account_id||'')+'</span></div>';
     }).join('');
   }
   if(releaseMatches.length){
-    html+='<div style="padding:.5rem 1rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.3);border-top:1px solid rgba(255,255,255,.06)">Releases</div>';
+    html+='<div style="padding:.5rem 1rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#999;border-top:1px solid var(--border)">Releases</div>';
     html+=releaseMatches.map(r=>{
-      return '<div onclick="jumpToReleaseFromSearch(\''+esc(r.title||'').replace(/'/g,"\\'")+'\')" style="padding:.625rem 1rem;cursor:pointer"><div style="font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.title||'Untitled')+'</div><div style="font-size:11px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.artist||'')+(r.isrc?' · '+esc(r.isrc):'')+'</div></div>';
+      return '<div onclick="jumpToReleaseFromSearch(\''+esc(r.title||'').replace(/'/g,"\\'")+'\')" style="padding:.625rem 1rem;cursor:pointer"><div style="font-size:13px;color:#111;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.title||'Untitled')+'</div><div style="font-size:11px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.artist||'')+(r.isrc?' · '+esc(r.isrc):'')+'</div></div>';
     }).join('');
   }
   wrap.style.display='block';
