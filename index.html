@@ -1552,7 +1552,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="tnav-sep"></div>
       <div class="tnav-item" onclick="goPage('upgrade',this)" id="upgrade-nav"><i class="ti ti-crown"></i> Upgrade</div>
       <div class="tnav-item" onclick="goPage('profile',this)"><i class="ti ti-user"></i> Profile</div>
-      <div class="tnav-item" onclick="goPage('support',this)"><i class="ti ti-headset"></i> Support</div>
+      <div class="tnav-item" onclick="openSupportChat()"><i class="ti ti-headset"></i> Support</div>
       <div class="tnav-item" id="admin-nav" style="display:none" onclick="goPage('admin',this)"><i class="ti ti-shield-check"></i> Admin <span id="notif-badge" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></div>
     </div>
     <div class="dash-topnav-right">
@@ -1573,7 +1573,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div style="font-size:10px;font-weight:600;color:var(--gold);cursor:pointer" id="tnav-account-id" onclick="copyAccountId()" title="Click to copy"></div>
         </div>
       </div>
-      <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:none;padding:7px 12px" onclick="goPage('support',null)" title="Support"><i class="ti ti-headset"></i></button>
+      <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:none;padding:7px 12px" onclick="openSupportChat()" title="Support"><i class="ti ti-headset"></i></button>
       <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:none;padding:7px 12px" onclick="logout()"><i class="ti ti-logout"></i></button>
     </div>
   </div>
@@ -1886,7 +1886,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div id="submit-blocked-deletion" style="display:none;max-width:520px;margin:4rem auto;text-align:center;padding:0 1.5rem">
         <i class="ti ti-lock" style="font-size:40px;color:#fbbf24;display:block;margin-bottom:1rem"></i>
         <h2 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:.75rem">Submissions are paused</h2>
-        <p style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.5rem">Your account has a pending deletion request. New releases can't be submitted while this is being processed. If you've changed your mind, reach out to <a onclick="goPage('support',null)" style="color:var(--gold);cursor:pointer">Support</a> and we can help.</p>
+        <p style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.5rem">Your account has a pending deletion request. New releases can't be submitted while this is being processed. If you've changed your mind, reach out to <a onclick="openSupportChat()" style="color:var(--gold);cursor:pointer">Support</a> and we can help.</p>
         <button class="btn btn-outline" onclick="goPage('profile',null)">Go to Profile</button>
       </div>
       <!-- BLOCKED: NO ACTIVE PLAN -->
@@ -2908,7 +2908,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1)" onclick="changePassword()"><i class="ti ti-lock"></i> Update Password</button>
         <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-headset"></i> Need Help?</div>
-        <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="goPage('support',null)"><i class="ti ti-message-circle"></i> Contact Support</button>
+        <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="openSupportChat()"><i class="ti ti-message-circle"></i> Contact Support</button>
         <div class="divhr"></div>
         <div id="danger-zone-normal">
           <div class="slabel" style="color:#ef4444"><i class="ti ti-alert-triangle"></i> Danger Zone</div>
@@ -2929,61 +2929,63 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
         <div id="danger-zone-pending" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:1.25rem">
           <div style="font-size:14px;font-weight:700;color:#fbbf24;margin-bottom:.5rem"><i class="ti ti-clock"></i> Deletion request received</div>
-          <p style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7">Your account is scheduled for deletion. Our team will process this within a few business days. If you change your mind, <a onclick="goPage('support',null)" style="color:var(--gold);cursor:pointer">contact Support</a> before it's completed.</p>
+          <p style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7">Your account is scheduled for deletion. Our team will process this within a few business days. If you change your mind, <a onclick="openSupportChat()" style="color:var(--gold);cursor:pointer">contact Support</a> before it's completed.</p>
         </div>
       </div>
     </div>
 
-    <!-- SUPPORT -->
-    <div class="page" id="page-support">
-      <div class="ph"><div><h1>Support</h1><p>Get help from the Blakkstone team.</p></div></div>
-      <div id="support-faq" style="margin-bottom:1.5rem">
-        <div class="slabel" style="margin-bottom:.75rem"><i class="ti ti-help-circle"></i> Quick Answers</div>
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">How long does it take for my release to go live? <i class="ti ti-chevron-down"></i></div>
-          <div class="faq-a">Typically 3–10 business days depending on the platform. Spotify and Apple Music usually take 3–5 days. You'll see the status update on the release's own page, and get an email once it's live.</div>
-        </div>
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">How do withdrawals work? <i class="ti ti-chevron-down"></i></div>
-          <div class="faq-a">Request a payout via Mobile Money or Bank Transfer from the Royalties page — a 2% fee applies, shown clearly before you confirm. Processed within 5–7 business days.</div>
-        </div>
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">Can I fix a mistake after submitting a release? <i class="ti ti-chevron-down"></i></div>
-          <div class="faq-a">If it's still Pending (not yet in review), open the release and use "Cancel Submission" — then submit a corrected version. Once it's moved into review, message us here instead and we'll help directly.</div>
-        </div>
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">What audio formats do you accept? <i class="ti ti-chevron-down"></i></div>
-          <div class="faq-a">WAV, FLAC, or AIFF — lossless masters only. We recommend 16-bit, 44.1kHz stereo. MP3 isn't accepted, since store platforms need the highest quality source file.</div>
-        </div>
-        <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">How do I give someone else access to manage my account? <i class="ti ti-chevron-down"></i></div>
-          <div class="faq-a">Label plan accounts can invite a Manager or Viewer from Profile → Team Access. Managers can submit releases and manage your roster; Viewers can only look. Neither can touch billing or payouts.</div>
-        </div>
+    <!-- CHAT WITH US WIDGET (replaces the old full Support page) -->
+    <button id="chat-widget-btn" onclick="openSupportChat()" title="Chat with us" style="position:fixed;bottom:24px;right:24px;z-index:500;width:56px;height:56px;border-radius:50%;background:var(--gold);border:none;box-shadow:0 8px 24px rgba(212,175,55,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#111">
+      <i class="ti ti-message-circle" style="font-size:24px"></i>
+      <span id="chat-widget-badge" style="display:none;position:absolute;top:-2px;right:-2px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px">0</span>
+    </button>
+    <div id="chat-widget-popup" style="display:none;position:fixed;bottom:92px;right:24px;z-index:501;width:380px;max-width:calc(100vw - 48px);height:min(620px,calc(100vh - 120px));background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <div><div style="font-size:15px;font-weight:800;color:#fff">Chat with us</div><div style="font-size:11px;color:rgba(255,255,255,.4)">Typically reply within 24 hours</div></div>
+        <button onclick="closeSupportChat()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:20px;line-height:1">×</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 360px;gap:1.25rem" id="support-grid">
-        <div>
-          <div class="slabel"><i class="ti ti-message-circle"></i> Your Messages</div>
-          <p style="font-size:11px;color:rgba(255,255,255,.3);margin:-.25rem 0 .75rem">Replies are matched to <strong id="support-my-email" style="color:rgba(255,255,255,.5)">your account email</strong> exactly.</p>
-          <div id="my-messages-list"></div>
-        </div>
-        <div class="profcard" style="max-width:none;padding:1.5rem">
-          <div class="slabel" style="margin-bottom:1rem"><i class="ti ti-send"></i> New Message</div>
-          <div class="fg"><label>Subject</label><input id="sup-subject" type="text" placeholder="What's this about?"></div>
-          <div class="fg"><label>Message</label><textarea id="sup-body" placeholder="Describe your issue or question..." style="min-height:140px"></textarea></div>
-          <div class="fg">
-            <label>Attachment (optional)</label>
-            <div style="display:flex;align-items:center;gap:8px">
-              <button type="button" class="btn adm-btn-sec btn-sm" onclick="document.getElementById('sup-attachment-input').click()"><i class="ti ti-paperclip"></i> Attach File</button>
-              <span id="sup-attachment-name" style="font-size:12px;color:rgba(255,255,255,.4)"></span>
-              <button type="button" id="sup-attachment-clear" onclick="clearSupportAttachment()" style="display:none;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:16px;padding:0">×</button>
-            </div>
-            <input type="file" id="sup-attachment-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="onSupportAttachmentSelected(this)">
+      <div style="flex:1;overflow-y:auto;padding:1rem 1.25rem;min-height:0">
+        <div id="support-faq" style="margin-bottom:1.25rem">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.625rem">Quick Answers</div>
+          <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-q">How long until my release goes live? <i class="ti ti-chevron-down"></i></div>
+            <div class="faq-a">Typically 3–10 business days depending on the platform. Spotify and Apple Music usually take 3–5 days. You'll see the status update on the release's own page, and get an email once it's live.</div>
           </div>
-          <button class="btn btn-gold" id="sup-send-btn" style="width:100%;justify-content:center" onclick="sendSupportMessage()"><i class="ti ti-send"></i> Send Message</button>
-          <p style="font-size:11px;color:rgba(255,255,255,.3);margin-top:.75rem">We typically reply within 24 hours.</p>
+          <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-q">How do withdrawals work? <i class="ti ti-chevron-down"></i></div>
+            <div class="faq-a">Request a payout via Mobile Money or Bank Transfer from the Royalties page — a 2% fee applies, shown clearly before you confirm. Processed within 5–7 business days.</div>
+          </div>
+          <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-q">Can I fix a mistake after submitting? <i class="ti ti-chevron-down"></i></div>
+            <div class="faq-a">If it's still Pending, open the release and use "Cancel Submission" — then submit a corrected version. Once it's in review, message us below instead.</div>
+          </div>
+          <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-q">What audio formats do you accept? <i class="ti ti-chevron-down"></i></div>
+            <div class="faq-a">WAV, FLAC, or AIFF — lossless masters only. We recommend 16-bit, 44.1kHz stereo. MP3 isn't accepted.</div>
+          </div>
+          <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-q">How do I add a team member? <i class="ti ti-chevron-down"></i></div>
+            <div class="faq-a">Label plan accounts can invite a Manager or Viewer from Profile → Team Access. Neither can touch billing or payouts.</div>
+          </div>
         </div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:.5rem">Your Messages</div>
+        <div id="my-messages-list"></div>
+      </div>
+      <div style="padding:.875rem 1.25rem;border-top:1px solid var(--line);flex-shrink:0">
+        <input id="sup-subject" type="text" placeholder="Subject (optional)" style="width:100%;background:var(--input-bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:12px;margin-bottom:6px">
+        <div style="display:flex;gap:6px;align-items:flex-end">
+          <textarea id="sup-body" placeholder="Type your message..." style="flex:1;min-height:44px;max-height:100px;background:var(--input-bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;resize:vertical"></textarea>
+          <button type="button" onclick="document.getElementById('sup-attachment-input').click()" title="Attach file" style="flex-shrink:0;width:38px;height:38px;border-radius:8px;background:var(--input-bg);border:1px solid var(--line);color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="ti ti-paperclip"></i></button>
+          <button id="sup-send-btn" onclick="sendSupportMessage()" title="Send" style="flex-shrink:0;width:38px;height:38px;border-radius:8px;background:var(--gold);border:none;color:#111;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="ti ti-send"></i></button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+          <span id="sup-attachment-name" style="font-size:11px;color:rgba(255,255,255,.4)"></span>
+          <button type="button" id="sup-attachment-clear" onclick="clearSupportAttachment()" style="display:none;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:14px;padding:0">×</button>
+        </div>
+        <input type="file" id="sup-attachment-input" accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="onSupportAttachmentSelected(this)">
       </div>
     </div>
+
 
     <!-- ADMIN -->
     <div class="page" id="page-admin">
@@ -4393,10 +4395,11 @@ function enterDashboard(){
     if(maNav)maNav.style.display=_rm>0?'':'none';
     showView('dashboard');
     const {page:pathPage,sub:pathSub}=parsePath();
-    const validPages=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
+    const validPages=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','admin'];
     const page=validPages.includes(pathPage)?pathPage:'overview';
     history.replaceState({page},'',pagePath(page));
     goPage(page,null);
+    if(pathPage==='support')openSupportChat(); // old bookmarks to the retired Support page open the chat widget instead
     if(page==='royalties'&&['sales','reports','payouts'].includes(pathSub)){
       const target=document.getElementById('rtab-'+pathSub);
       if(target)switchRoyTab(pathSub,target);
@@ -4503,7 +4506,6 @@ function goPage(id,el){
   if(id==='myartists'){closeMyArtistDetail();loadMyArtistsGrid();}
   if(id==='profile'){loadProfileStats();if(!teamContext&&profile?.plan==='label')loadTeamMembers();if(!teamContext)loadReferralSection();}
   if(id==='upgrade')refreshProfileAndUpgradePage();
-  if(id==='support')loadMySupportMessages();
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
   const mobMap={overview:'mob-overview',releases:'mob-music',submit:'mob-submit',royalties:'mob-royalties',profile:'mob-profile'};
   if(mobMap[id])setMobNav(mobMap[id]);
@@ -4549,7 +4551,6 @@ window.addEventListener('popstate',function(e){
     }
   }
   if(page==='myartists')loadMyArtistsGrid();
-  if(page==='support')loadMySupportMessages();
   if(page==='submit')initWizard();
   if(page==='upgrade')refreshProfileAndUpgradePage();
   if(page==='admin'){
@@ -4954,7 +4955,7 @@ function renderArtistNotifDropdown(){
   }
   list.innerHTML=_artistNotifCache.map(i=>{
     const action=i.kind==='message'
-      ?"goPage('support',null);toggleNotifBell(false)"
+      ?"openSupportChat();toggleNotifBell(false)"
       :(i.releaseId?"openReleaseFromAnalytics('"+i.releaseId+"');toggleNotifBell(false)":"toggleNotifBell(false)");
     return '<div onclick="'+action+'" style="padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;display:flex;justify-content:space-between;gap:10px" onmouseover="this.style.background=\'rgba(255,255,255,.03)\'" onmouseout="this.style.background=\'\'"><div style="font-size:13px;color:rgba(255,255,255,.8);flex:1">'+esc(i.text)+'</div><div style="font-size:10px;color:rgba(255,255,255,.3);white-space:nowrap;flex-shrink:0">'+timeSince(new Date(i.when))+'</div></div>';
   }).join('');
@@ -6156,7 +6157,7 @@ async function loadPayout(){
   }).join('');
 }
 function contactSupportAboutPayout(amount){
-  goPage('support',null);
+  openSupportChat();
   setTimeout(()=>{
     const subjEl=document.getElementById('sup-subject');const bodyEl=document.getElementById('sup-body');
     if(subjEl)subjEl.value='Failed payout — $'+amount;
@@ -9968,6 +9969,17 @@ async function loadBroadcastHistory(){
   }catch(e){console.error('Broadcast history load error:',e);el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">'+esc('Could not load: '+(e.message||'unknown error'))+'</div>';}
 }
 // ── SUPPORT (ARTIST-FACING) ──────────────────────────────
+function openSupportChat(){
+  const popup=document.getElementById('chat-widget-popup');
+  if(!popup)return;
+  popup.style.display='flex';
+  const badge=document.getElementById('chat-widget-badge');if(badge)badge.style.display='none';
+  loadMySupportMessages();
+}
+function closeSupportChat(){
+  const popup=document.getElementById('chat-widget-popup');
+  if(popup)popup.style.display='none';
+}
 async function loadMySupportMessages(){
   const container=document.getElementById('my-messages-list');if(!container||!user)return;
   const emEl=document.getElementById('support-my-email');if(emEl)emEl.textContent=user.email||'your account email';
@@ -10059,7 +10071,8 @@ async function sendSupportMessage(){
   const btn=document.getElementById('sup-send-btn');
   const subject=document.getElementById('sup-subject').value.trim();const body=document.getElementById('sup-body').value.trim();
   if(!body){toast('Write a message first','err');return;}
-  btn.disabled=true;btn.innerHTML='<span class="loader"></span> Sending...';
+  const originalBtnHtml=btn.innerHTML;
+  btn.disabled=true;btn.innerHTML='<span class="loader" style="width:14px;height:14px"></span>';
   try{
     let attachmentUrl=null,attachmentName=null;
     if(_supAttachmentFile){
@@ -10093,7 +10106,7 @@ async function sendSupportMessage(){
     console.error('Send support message error:',e);
     toast('Could not send: '+(e.message||'please try again.'),'err');
   }
-  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Send Message';
+  btn.disabled=false;btn.innerHTML=originalBtnHtml;
 }
 function toggleAdminExportMenu(){
   const menu=document.getElementById('adm-export-menu');if(!menu)return;
