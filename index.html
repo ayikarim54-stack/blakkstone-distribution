@@ -454,7 +454,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .mobile-nav{display:flex}
   .dash-body{padding:1rem 1rem 80px;} /* bottom padding for mobile nav */
   .chat-widget-btn{bottom:96px} /* clear of the 80px mobile nav bar, not overlapping it */
-  .chat-widget-popup{bottom:164px}
+  .chat-widget-popup{bottom:164px;height:min(560px,calc(100vh - 200px))}
 
   /* OVERVIEW */
   .overview-cards{grid-template-columns:1fr 1fr;gap:.625rem;margin-bottom:1.5rem}
@@ -2939,7 +2939,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
 
     <!-- CHAT WITH US WIDGET (replaces the old full Support page) -->
-    <button id="chat-widget-btn" class="chat-widget-btn" onclick="openSupportChat()" title="Chat with us" style="background:var(--gold);border:none;box-shadow:0 8px 24px rgba(212,175,55,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#111">
+    <button id="chat-widget-btn" class="chat-widget-btn" onclick="toggleSupportChat()" title="Chat with us" style="background:var(--gold);border:none;box-shadow:0 8px 24px rgba(212,175,55,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#111">
       <i class="ti ti-message-circle" style="font-size:24px"></i>
       <span id="chat-widget-badge" style="display:none;position:absolute;top:-2px;right:-2px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px">0</span>
     </button>
@@ -9982,6 +9982,12 @@ function openSupportChat(){
 function closeSupportChat(){
   const popup=document.getElementById('chat-widget-popup');
   if(popup)popup.style.display='none';
+}
+function toggleSupportChat(){
+  const popup=document.getElementById('chat-widget-popup');
+  if(!popup)return;
+  if(popup.style.display==='flex')closeSupportChat();
+  else openSupportChat();
 }
 async function loadMySupportMessages(){
   const container=document.getElementById('my-messages-list');if(!container||!user)return;
