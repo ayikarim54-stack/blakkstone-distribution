@@ -2859,6 +2859,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div>
               <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:2px">Your Plan</div>
               <div style="font-size:15px;font-weight:700;color:#fff" id="bp-plan-name">—</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px;display:none" id="bp-plan-price"></div>
             </div>
             <button class="btn adm-btn-sec btn-sm" onclick="goPage('upgrade',null)">Change Plan</button>
           </div>
@@ -3750,6 +3751,7 @@ function refreshAllDisplayedPrices(){
     if(!isNaN(usd))el.textContent=convertPrice(usd);
   });
   updateRateNote();
+  if(document.getElementById('bp-plan-price'))loadProfileStats();
 }
 function toggleCurrencySwitcher(){
   const menu=document.getElementById('currency-switcher-menu');if(!menu)return;
@@ -4371,6 +4373,7 @@ function enterDashboard(){
     // a given session, so fetch it here too rather than let their session
     // run on whatever static fallback rate happens to be baked in.
     fetchLiveCurrencyRates();
+    detectCurrencyByIP(); // same reasoning as above — currentDisplayCurrency previously only got set via the landing page, leaving logged-in users stuck on the USD default regardless of where they actually are
     const teamBanner=document.getElementById('team-context-banner');
     if(teamBanner){
       if(teamContext){
@@ -6677,6 +6680,25 @@ async function loadProfileStats(){
     const bpDateLabel=document.getElementById('bp-date-label');
     const bpDateValue=document.getElementById('bp-date-value');
     if(bpPlanName)bpPlanName.textContent={admin:'Admin',label:'Label 5+',artist_plus:'Artist+',solo_paid:'Solo',free:'Free'}[profile?.plan]||'Free';
+    const bpPlanPrice=document.getElementById('bp-plan-price');
+    if(bpPlanPrice){
+      const priceFeatureKey=profile?.plan==='solo_paid'?'solo':profile?.plan;
+      const planUsd=PLANS[priceFeatureKey]?.yearly;
+      if(planUsd&&profile?.plan!=='free'&&profile?.plan!=='admin'){
+        const ghsAmount=(planUsd*(currentDisplayRates?.GHS||15.5)).toFixed(2);
+        // GHS is what actually gets charged via Paystack, regardless of where
+        // someone's browsing from — the IP-detected currency below is shown
+        // purely as a familiar reference, same as the checkout modal already does.
+        let localizedLine='';
+        if(currentDisplayCurrency&&currentDisplayCurrency!=='GHS'){
+          localizedLine=' <span style="color:rgba(255,255,255,.3)">(≈ '+convertPrice(planUsd,currentDisplayCurrency)+')</span>';
+        }
+        bpPlanPrice.innerHTML='GHS '+ghsAmount+'/year'+localizedLine;
+        bpPlanPrice.style.display='block';
+      } else {
+        bpPlanPrice.style.display='none';
+      }
+    }
     const bpFeatsEl=document.getElementById('bp-plan-features');
     if(bpFeatsEl){
       const featureKey=profile?.plan==='solo_paid'?'solo':profile?.plan;
