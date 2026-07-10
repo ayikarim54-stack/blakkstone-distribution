@@ -2742,7 +2742,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="ug-grid">
         <div class="ug-card plain">
           <div class="ug-name">Solo</div>
-          <div class="ug-price">$11 <small>/ year</small></div>
+          <div class="ug-price"><span data-usd-price="11">$11</span> <small>/ year</small></div>
           <p class="ug-desc">1 artist profile. 9% commission on royalties.</p>
           <ul class="ug-feats">
             <li><span class="ug-check">✓</span> 1 artist profile</li>
@@ -2758,7 +2758,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="ug-card featured">
           <div class="ug-badge">★ MOST POPULAR</div>
           <div class="ug-name">Artist+</div>
-          <div class="ug-price">$20 <small>/ year</small></div>
+          <div class="ug-price"><span data-usd-price="20">$20</span> <small>/ year</small></div>
           <p class="ug-desc">Keep 100% of your royalties. 2 artists.</p>
           <ul class="ug-feats">
             <li><span class="ug-check">✓</span> 2 artist profiles</li>
@@ -2775,7 +2775,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
         <div class="ug-card dark">
           <div class="ug-name">Label</div>
-          <div class="ug-price">$35 <small>/ year</small></div>
+          <div class="ug-price"><span data-usd-price="35">$35</span> <small>/ year</small></div>
           <p class="ug-desc">5+ artists. For labels and collectives.</p>
           <ul class="ug-feats">
             <li><span class="ug-check">✓</span> 5+ artist profiles</li>
@@ -4477,6 +4477,7 @@ async function refreshProfileAndUpgradePage(){
     if(error)throw error;
     if(data){profile=data;updateUpgradePage(profile.plan);}
   }catch(e){console.warn('refreshProfileAndUpgradePage:',e);}
+  refreshAllDisplayedPrices(); // shows the currently-known currency immediately; detectCurrencyByIP() will refresh it again if IP detection is still in flight
 }
 let _tabProgressTimer1=null,_tabProgressTimer2=null,_tabProgressHideTimer=null;
 function startPageProgress(){
