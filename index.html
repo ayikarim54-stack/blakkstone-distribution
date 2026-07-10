@@ -2858,8 +2858,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:.9rem">
             <div>
               <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:2px">Your Plan</div>
-              <div style="font-size:15px;font-weight:700;color:#fff" id="bp-plan-name">—</div>
-              <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px;display:none" id="bp-plan-price"></div>
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <span style="font-size:20px;font-weight:800;color:#fff" id="bp-plan-name">—</span>
+                <span style="font-size:16px;font-weight:700;color:var(--gold);display:none" id="bp-plan-price"></span>
+              </div>
             </div>
             <button class="btn adm-btn-sec btn-sm" onclick="goPage('upgrade',null)">Change Plan</button>
           </div>
@@ -3751,7 +3753,7 @@ function refreshAllDisplayedPrices(){
     if(!isNaN(usd))el.textContent=convertPrice(usd);
   });
   updateRateNote();
-  if(document.getElementById('bp-plan-price'))loadProfileStats();
+  if(document.getElementById('page-profile')?.classList.contains('active'))loadProfileStats();
 }
 function toggleCurrencySwitcher(){
   const menu=document.getElementById('currency-switcher-menu');if(!menu)return;
@@ -6691,10 +6693,10 @@ async function loadProfileStats(){
         // purely as a familiar reference, same as the checkout modal already does.
         let localizedLine='';
         if(currentDisplayCurrency&&currentDisplayCurrency!=='GHS'){
-          localizedLine=' <span style="color:rgba(255,255,255,.3)">(≈ '+convertPrice(planUsd,currentDisplayCurrency)+')</span>';
+          localizedLine=' <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,.35)">(≈ '+convertPrice(planUsd,currentDisplayCurrency)+')</span>';
         }
-        bpPlanPrice.innerHTML='GHS '+ghsAmount+'/year'+localizedLine;
-        bpPlanPrice.style.display='block';
+        bpPlanPrice.innerHTML='GHS '+ghsAmount+'/yr'+localizedLine;
+        bpPlanPrice.style.display='inline';
       } else {
         bpPlanPrice.style.display='none';
       }
