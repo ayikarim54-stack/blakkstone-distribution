@@ -2863,6 +2863,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
                 <span style="font-size:20px;font-weight:800;color:#fff" id="bp-plan-name">—</span>
                 <span style="font-size:16px;font-weight:700;color:var(--gold);display:none" id="bp-plan-price"></span>
+                <span style="font-size:10px;font-weight:700;letter-spacing:.5px;color:#111;background:var(--gold);padding:3px 9px;border-radius:20px;display:none" id="bp-founder-badge"><i class="ti ti-rocket"></i> LAUNCH FOUNDER</span>
               </div>
             </div>
             <button class="btn adm-btn-sec btn-sm" onclick="goPage('upgrade',null)">Change Plan</button>
@@ -3762,6 +3763,21 @@ function toggleCurrencySwitcher(){
   menu.style.display=menu.style.display==='none'?'block':'none';
 }
 const PLANS={solo:{monthly:11,yearly:11,label:'Solo'},artist_plus:{monthly:20,yearly:20,label:'Artist+'},label:{monthly:35,yearly:35,label:'Label'}};
+// Launch offer: first N signups (by account creation, not by payment) get
+// 20% off their first year on any plan. Change this one number to adjust
+// how many spots the offer covers.
+const LAUNCH_FOUNDER_LIMIT=100;
+const LAUNCH_FOUNDER_DISCOUNT_PERCENT=20;
+async function claimLaunchFounderStatusIfEligible(userId){
+  try{
+    const {count,error}=await sb.from('profiles').select('id',{count:'exact',head:true});
+    if(error){console.error('Launch founder count check error (signup itself succeeded):',error);return;}
+    if((count||0)<=LAUNCH_FOUNDER_LIMIT){
+      const {error:updateErr}=await sb.from('profiles').update({is_launch_founder:true}).eq('id',userId);
+      if(updateErr)console.error('Launch founder flag update error (signup itself succeeded):',updateErr);
+    }
+  }catch(e){console.error('Launch founder check error (signup itself succeeded):',e);}
+}
 // Single source of truth for the priority distro add-on fee — referenced by
 // the actual charge (payForPriorityDistro) AND admin's revenue reporting
 // (loadAdminDashboard), so a future price change only ever needs to happen
@@ -4112,6 +4128,7 @@ async function doAuth(){
       if(data.user){
         await sb.from('profiles').upsert({id:data.user.id,email,full_name:fullName,artist_name:artistName,plan:'free'});
         notifyAdminEmail('new_signup',{email,fullName,artistName});
+        claimLaunchFounderStatusIfEligible(data.user.id);
         toast('Account created! Welcome to Blakkstone.','ok');
         await loadProfile(data.user);
       }
@@ -4160,7 +4177,7 @@ async function loadProfile(u){
     const newProfile={id:u.id,email:u.email,full_name:fullName,artist_name:fullName,plan:'free',avatar_url:avatarUrl};
     const {data:created,error:createErr}=await sb.from('profiles').upsert(newProfile).select().single();
     if(createErr)console.error('Profile auto-create error for new OAuth sign-in:',createErr);
-    else notifyAdminEmail('new_signup',{email:u.email,fullName,artistName:fullName});
+    else{notifyAdminEmail('new_signup',{email:u.email,fullName,artistName:fullName});claimLaunchFounderStatusIfEligible(u.id);}
     data=created||newProfile;
   }
   profile=data;
@@ -6704,6 +6721,8 @@ async function loadProfileStats(){
         bpPlanPrice.style.display='none';
       }
     }
+    const bpFounderBadge=document.getElementById('bp-founder-badge');
+    if(bpFounderBadge)bpFounderBadge.style.display=profile?.is_launch_founder?'inline-flex':'none';
     const bpFeatsEl=document.getElementById('bp-plan-features');
     if(bpFeatsEl){
       const featureKey=profile?.plan==='solo_paid'?'solo':profile?.plan;
@@ -11144,16 +11163,26 @@ function openPaystack(plan){
   updateRateNote();
   document.getElementById('pay-overlay').classList.add('open');
 }
-function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');currentUpgradeDiscount=null;currentReferralDiscount=null;}
+function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');currentUpgradeDiscount=null;currentReferralDiscount=null;currentLaunchOfferDiscount=null;}
 function setBilling(cycle){
   billing=cycle;
   document.getElementById('b-yearly')?.classList.toggle('sel',cycle==='yearly');
   updateRateNote();
 }
 let currentReferralDiscount=null;
+let currentLaunchOfferDiscount=null;
 async function checkReferralDiscount(){
   currentReferralDiscount=null;
+  currentLaunchOfferDiscount=null;
   if(!user)return;
+  // Launch offer: first 100 signups get 20% off their first payment ever.
+  // is_launch_founder is a permanent badge set at signup time (never
+  // changes); launch_discount_used tracks redemption separately so the
+  // discount is consumed exactly once, whenever they actually first pay,
+  // without touching their founder status itself.
+  if(profile?.is_launch_founder&&!profile?.launch_discount_used){
+    currentLaunchOfferDiscount={percent:20};
+  }
   try{
     if(profile?.referred_by_code){
       const {data:referredRow}=await sb.from('referrals').select('id,new_signup_discount_used').eq('referred_id',user.id).eq('referral_code',profile.referred_by_code).maybeSingle();
@@ -11179,6 +11208,27 @@ function updateRateNote(){
   const rn=document.getElementById('rate-note');
   const discountEl=document.getElementById('upgrade-discount-note');
   const autoRenew=document.getElementById('pay-auto-renew')?.checked;
+  // Launch offer takes priority over everything else — it's scarce (100
+  // spots, gone forever once used) and one-time, whereas the referral
+  // discount can still be earned again later and upgrade credit is really
+  // just returning the artist's own unused balance, not a promotion.
+  if(currentLaunchOfferDiscount&&billing==='yearly'&&!autoRenew){
+    const pct=currentLaunchOfferDiscount.percent;
+    const discountedUsd=(usd*(1-pct/100)).toFixed(2);
+    const discountedGhs=(discountedUsd*currentDisplayRates.GHS).toFixed(2);
+    if(discountEl){
+      discountEl.style.display='block';
+      discountEl.innerHTML='<i class="ti ti-rocket"></i> Launch founder discount — you were one of our first 100 signups: <strong>'+pct+'% off</strong>. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
+    }
+    if(rn){
+      if(currentDisplayCurrency==='GHS'){
+        rn.textContent='GHS '+discountedGhs+' at current rate (launch founder discount applied). Charged in GHS via Paystack.';
+      } else {
+        rn.textContent='Shown as '+convertPrice(parseFloat(discountedUsd))+' ('+currentDisplayCurrency+') for reference — actual charge is GHS '+discountedGhs+' via Paystack, launch founder discount applied.';
+      }
+    }
+    return;
+  }
   // Referral discounts take priority over the upgrade-proration discount if
   // both somehow apply at once — kept simple rather than stacking two
   // discounts in one purchase. Neither applies when auto-renewal is
@@ -11229,7 +11279,7 @@ function updateRateNote(){
     }
   }
 }
-async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,appliedReferral){
+async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,appliedReferral,appliedLaunchOffer){
   try{
     // Check BEFORE inserting this payment's own subscriptions row, so we can
     // tell "is this a renewal" (had at least one prior payment already) from
@@ -11251,7 +11301,15 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
       // Profile page can show "activating..." in the meantime rather than
       // nothing at all.
       if(autoRenew)profileUpdate.auto_renew_status='activating';
+      // Consume the launch offer exactly once, at the moment it's actually
+      // used — is_launch_founder itself stays true forever as a permanent
+      // badge, this only marks the discount as spent.
+      if(appliedLaunchOffer)profileUpdate.launch_discount_used=true;
       let {error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id);
+      if(planUpdateError&&/launch_discount_used/i.test(planUpdateError.message||'')){
+        delete profileUpdate.launch_discount_used;
+        ({error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id));
+      }
       if(planUpdateError&&/auto_renew_status/i.test(planUpdateError.message||'')){
         delete profileUpdate.auto_renew_status;
         ({error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id));
@@ -11322,7 +11380,11 @@ function doPaystack(){
   const planCode=PAYSTACK_PLAN_CODES[selectedPlan];
   let usd=billing==='monthly'?p.monthly:p.yearly;
   let appliedReferral=null;
-  if(currentReferralDiscount&&billing==='yearly'&&!autoRenew){
+  let appliedLaunchOffer=false;
+  if(currentLaunchOfferDiscount&&billing==='yearly'&&!autoRenew){
+    usd=usd*(1-currentLaunchOfferDiscount.percent/100);
+    appliedLaunchOffer=true;
+  } else if(currentReferralDiscount&&billing==='yearly'&&!autoRenew){
     usd=usd*(1-currentReferralDiscount.percent/100);
     appliedReferral=currentReferralDiscount;
   } else if(currentUpgradeDiscount&&billing==='yearly'&&!autoRenew){
@@ -11339,13 +11401,13 @@ function doPaystack(){
   }
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
   const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode),_appliedReferral=appliedReferral;
+  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode),_appliedReferral=appliedReferral,_appliedLaunchOffer=appliedLaunchOffer;
   try{
     const popup=new PaystackPop();
     const txOptions={
       key:PK,email,currency:'GHS',ref,
       channels:['card','mobile_money','apple_pay'],
-      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew,_appliedReferral);},
+      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew,_appliedReferral,_appliedLaunchOffer);},
       onCancel:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';},
       onError:function(err){toast('Payment error: '+(err?.message||'please try again.'),'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
     };
