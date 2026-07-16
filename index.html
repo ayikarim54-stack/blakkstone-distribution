@@ -9195,14 +9195,31 @@ function filterReleases(){
 async function bulkStatusUpdate(status){
   const checked=Array.from(document.querySelectorAll('.rel-cb:checked')).map(c=>c.dataset.id);
   if(!checked.length){toast('Select releases first','err');return;}
-  if(!confirm('Set '+checked.length+' release(s) to "'+status+'"?'))return;
+  const needsReason=status==='rejected'||status==='takendown';
+  let reason=null;
+  if(needsReason){
+    const label=status==='rejected'?'rejecting':'taking down';
+    reason=prompt('Why are you '+label+' these '+checked.length+' release(s)? This will be shown to each artist.');
+    if(reason===null)return;
+    reason=reason.trim();
+    if(!reason){toast('A reason is required for this status','err');return;}
+  } else if(!confirm('Set '+checked.length+' release(s) to "'+status+'"?')){
+    return;
+  }
   let succeeded=0;
   for(const id of checked){
     const rel=allReleasesCache.find(r=>r.id===id);
-    const {error}=await sb.from('releases').update({status}).eq('id',id);
+    const update={status};
+    update.status_reason=needsReason?reason:null;
+    const {error}=await sb.from('releases').update(update).eq('id',id);
     if(error){console.error('Bulk release status update error for',id,error);continue;}
     succeeded++;
-    logAudit(id,rel?.user_id||null,'release_status',rel?.status||null,status+' (bulk)');
+    logAudit(id,rel?.user_id||null,'release_status',rel?.status||null,status+(needsReason?' — '+reason:'')+' (bulk)');
+    if(['live','rejected','takendown'].includes(status)&&rel?.profiles?.email){
+      notifyArtistEmail('release_status_'+status,{
+        title:rel.title,artist:rel.profiles?.artist_name||rel.profiles?.full_name,reason
+      },rel.profiles.email);
+    }
   }
   if(succeeded===checked.length)toast(succeeded+' updated','ok');
   else if(succeeded>0)toast(succeeded+' of '+checked.length+' updated — check console for errors on the rest','err');
@@ -9270,6 +9287,16 @@ async function updateStatus(id,status,sel){
   if(_releaseMap[id]){_releaseMap[id].status=status;_releaseMap[id].status_reason=update.status_reason;}
   const relForLog=allReleasesCache.find(r=>r.id===id)||priorRelease;
   logAudit(id,relForLog?.user_id||null,'release_status',relForLog?.status||oldStatus,status+(needsReason?' — '+reason:''));
+  // Notify the artist directly for the three status changes that actually
+  // matter to them — going live is the single biggest moment in their
+  // journey on the platform, and a rejection or takedown needs the reason
+  // communicated, not just silently stored in status_reason for them to
+  // maybe discover later if they happen to check back.
+  if(['live','rejected','takendown'].includes(status)&&relForLog?.profiles?.email){
+    notifyArtistEmail('release_status_'+status,{
+      title:relForLog.title,artist:relForLog.profiles?.artist_name||relForLog.profiles?.full_name,reason
+    },relForLog.profiles.email);
+  }
   const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',takendown:'color:#9ca3af'};
   if(sel) sel.style.cssText=sc[status]||'';
   toast('Status updated','ok');loadReleases();loadAdminStats();
