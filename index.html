@@ -3116,6 +3116,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <div id="adm-needs-attention"><div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div></div>
         </div>
+        <div class="adm-card" id="adm-launch-offer-card" style="margin-bottom:1.25rem">
+          <div class="adm-card-title"><i class="ti ti-rocket"></i> Launch Offer Progress</div>
+          <div id="adm-launch-offer-progress"><div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div></div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
           <div class="adm-card">
             <div class="adm-card-title"><i class="ti ti-chart-line"></i> Revenue Overview</div>
@@ -9131,7 +9135,7 @@ async function loadAdminActionQueue(){
 async function loadAdminDashboard(){
   try{
     const [{data:profiles},{data:releases},{data:subs}]=await Promise.all([
-      sb.from('profiles').select('id,plan,created_at'),
+      sb.from('profiles').select('id,plan,created_at,is_launch_founder,launch_discount_used'),
       sb.from('releases').select('id,status,streams,earnings,title,user_id,submitted_at,is_priority,priority_ref'),
       sb.from('subscriptions').select('amount_usd,created_at,plan').catch(()=>({data:[]}))
     ]);
@@ -9140,6 +9144,20 @@ async function loadAdminDashboard(){
     const totalP=(profiles||[]).length||1;
     const planEl=document.getElementById('adm-plan-breakdown');
     if(planEl) planEl.innerHTML=[{k:'Solo',v:plans.solo_paid,c:'#D4AF37'},{k:'Artist+',v:plans.artist_plus,c:'#34d399'},{k:'Label',v:plans.label,c:'#059669'},{k:'Free',v:plans.free,c:'#6b7280'}].map(p=>'<div class="adm-bar-row"><div class="adm-bar-label">'+p.k+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round((p.v/totalP)*100)+'%;background:'+p.c+'"></div></div><div class="adm-bar-val">'+p.v+'</div></div>').join('');
+    const founders=(profiles||[]).filter(p=>p.is_launch_founder);
+    const claimed=founders.length;
+    const redeemed=founders.filter(p=>p.launch_discount_used).length;
+    const loEl=document.getElementById('adm-launch-offer-progress');
+    if(loEl){
+      const pct=Math.min(100,Math.round((claimed/LAUNCH_FOUNDER_LIMIT)*100));
+      const spotsLeft=Math.max(0,LAUNCH_FOUNDER_LIMIT-claimed);
+      loEl.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
+        +'<div style="font-size:22px;font-weight:800;color:#fff">'+claimed+' <span style="font-size:14px;font-weight:600;color:rgba(255,255,255,.4)">/ '+LAUNCH_FOUNDER_LIMIT+' spots claimed</span></div>'
+        +'<div style="font-size:13px;font-weight:700;color:'+(spotsLeft===0?'#34d399':'var(--gold)')+'">'+(spotsLeft===0?'Fully claimed! 🎉':spotsLeft+' left')+'</div>'
+      +'</div>'
+      +'<div style="height:10px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;margin-bottom:10px"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#8A6A1F,var(--gold));border-radius:6px;transition:width .3s"></div></div>'
+      +'<div style="font-size:12px;color:rgba(255,255,255,.4)">'+redeemed+' of '+claimed+' founders have actually redeemed their discount (paid at least once)</div>';
+    }
     const statuses={pending:0,review:0,live:0,rejected:0};
     (releases||[]).forEach(r=>statuses[r.status]=(statuses[r.status]||0)+1);
     const totalR=(releases||[]).length||1;
