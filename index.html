@@ -3646,6 +3646,13 @@ const ADMIN_EMAIL='blakkstonemusic@hotmail.com';
 function isAdmin(){
   return profile?.plan==='admin'||user?.email===ADMIN_EMAIL;
 }
+// Single source of truth for "does this account have a paid plan active" —
+// was duplicated identically in two places (the Submit wizard's paywall
+// gate and the Overview welcome banner), consolidated here so it can't
+// silently drift out of sync if a plan tier is ever added or renamed.
+function hasActivePlan(){
+  return isAdmin()||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
+}
 const COMM=0.09;
 // Single source of truth for "does this account pay Blakkstone's 9% commission or not."
 // Previously duplicated identically across 7 separate functions — consolidated here so a
@@ -5085,7 +5092,16 @@ async function loadReleases(){
   allRelData=data||[];
   const releases=allRelData;
   const banner=document.getElementById('announcement-banner');
-  if(banner&&releases.length===0&&profile) banner.style.display='flex';
+  const bannerText=document.getElementById('announcement-text');
+  if(banner&&releases.length===0&&profile){
+    const hasPlan=hasActivePlan();
+    if(bannerText){
+      bannerText.innerHTML=hasPlan
+        ?'🎉 Welcome to Blakkstone Distribution! Submit your first release and go global.'
+        :'👋 Welcome to Blakkstone! <a onclick="goPage(\'upgrade\',null)" style="color:#fff;text-decoration:underline;cursor:pointer;font-weight:700">Choose a plan</a> to start distributing your music.';
+    }
+    banner.style.display='flex';
+  }
   const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',user.id);
   _ovPayoutsCache=payoutsData||[];
   renderOverviewStats();
@@ -7837,8 +7853,8 @@ async function initWizard(){
   // specific gate in the app, replacing the old all-or-nothing login block.
   // Team members follow the owner's plan (already reflected in the shared
   // `profile` object via checkTeamMembership()), not their own login's plan.
-  const hasActivePlan=isAdmin()||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
-  if(!hasActivePlan){
+  const activePlan=hasActivePlan();
+  if(!activePlan){
     if(paywallEl)paywallEl.style.display='block';
     if(blockedEl)blockedEl.style.display='none';
     if(bodyEl)bodyEl.style.display='none';
@@ -8937,12 +8953,14 @@ async function submitRelease(){
         if(trackErr)console.error('Track list save error (release itself was submitted successfully):',trackErr);
       }catch(e){console.error('Track list save error (release itself was submitted successfully):',e);}
     }
-    toast('Release submitted! We will review it shortly.','ok');
+    const isFirstEverRelease=(allRelData||[]).length===0;
+    toast(isFirstEverRelease?'🎉 Your first release is submitted! Welcome to Blakkstone — we\'ll review it shortly.':'Release submitted! We will review it shortly.','ok');
     notifyAdminEmail('release_submitted',{
       title,artist,
       accountId:profile?.account_id,
       email:user?.email
     });
+    notifyArtistEmail('release_confirmation',{title,artist,isFirstEver:isFirstEverRelease},user?.email);
     // Clear draft on success
     try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
     sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).then(({error})=>{
