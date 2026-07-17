@@ -6577,10 +6577,23 @@ async function notifyArtistEmail(type,data,toEmail,knownPrefs){
   // would mean 100+ extra queries for a broadcast to 100+ artists.
   if(!toEmail)return;
   try{
+    // Only these two types actually consult email preferences - skip the
+    // lookup entirely for everything else (welcome, payment confirmations,
+    // release status, etc.), rather than always querying regardless of
+    // whether the result would even be used. This also avoids running that
+    // query during the narrow window right after signup, before a brand
+    // new session may have fully settled.
+    const needsPrefCheck=type==='broadcast_message'||type==='admin_reply';
     let prefs=knownPrefs;
-    if(!prefs){
-      const {data:p}=await sb.from('profiles').select('email_pref_replies,email_pref_broadcasts').eq('email',toEmail).maybeSingle();
-      prefs=p;
+    if(needsPrefCheck&&!prefs){
+      try{
+        const lookup=sb.from('profiles').select('email_pref_replies,email_pref_broadcasts').eq('email',toEmail).maybeSingle();
+        const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('Preference lookup timed out')),5000));
+        const {data:p}=await Promise.race([Promise.resolve(lookup),timeout]);
+        prefs=p;
+      }catch(e){
+        console.error('Preference lookup failed or timed out — sending without a preference check rather than blocking the email indefinitely:',e);
+      }
     }
     if(prefs){
       if(type==='broadcast_message'&&prefs.email_pref_broadcasts===false)return;
