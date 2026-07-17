@@ -5076,7 +5076,7 @@ async function loadOverviewActivity(){
     const relIds=[...new Set(logs.filter(l=>l.target_release_id).map(l=>l.target_release_id))];
     let releaseMap={};
     if(relIds.length){
-      const {data:rels}=await sb.from('releases').select('id,title').in('id',relIds).catch(()=>({data:[]}));
+      const {data:rels}=await Promise.resolve(sb.from('releases').select('id,title').in('id',relIds)).catch(()=>({data:[]}));
       (rels||[]).forEach(r=>{releaseMap[r.id]=r;});
     }
     const items=logs.map(l=>({text:describeActivityForArtist(l,releaseMap),when:l.changed_at})).filter(i=>i.text);
@@ -7596,7 +7596,7 @@ async function viewAsArtist(userId,name){
     const [{data:profileData},{data:releases},{data:payoutsData}]=await Promise.all([
       sb.from('profiles').select('*').eq('id',userId).single(),
       sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false}),
-      sb.from('payouts').select('amount,status').eq('user_id',userId).catch(()=>({data:[]}))
+      Promise.resolve(sb.from('payouts').select('amount,status').eq('user_id',userId)).catch(()=>({data:[]}))
     ]);
     renderViewAsArtist(profileData,releases||[],payoutsData||[]);
   }catch(e){
@@ -8172,7 +8172,7 @@ async function saveDraftSilent(){
     // tracks were always safe in storage — only the record of where to
     // find them was at risk. Fire-and-forget: never let a backup hiccup
     // interrupt someone actively drafting.
-    sb.from('profiles').update({draft_wizard: state}).eq('id',user.id).then(({error})=>{
+    Promise.resolve(sb.from('profiles').update({draft_wizard: state}).eq('id',user.id)).then(({error})=>{
       if(error)console.error('Draft cloud backup error (local save still succeeded):',error);
     }).catch(e=>console.error('Draft cloud backup error (local save still succeeded):',e));
   }catch(e){}
@@ -9079,8 +9079,8 @@ async function loadAdminStats(){
     const [{data:profiles},{data:releases},{data:payouts},{data:subs}]=await Promise.all([
       sb.from('profiles').select('id,plan,created_at'),
       sb.from('releases').select('id,status,streams,earnings,is_priority,priority_ref'),
-      sb.from('payouts').select('id,status,amount').catch(()=>({data:[]})),
-      sb.from('subscriptions').select('id,amount_usd').catch(()=>({data:[]}))
+      Promise.resolve(sb.from('payouts').select('id,status,amount')).catch(()=>({data:[]})),
+      Promise.resolve(sb.from('subscriptions').select('id,amount_usd')).catch(()=>({data:[]}))
     ]);
     const now=new Date(),m=now.getMonth(),y=now.getFullYear();
     const newM=(profiles||[]).filter(p=>{const d=new Date(p.created_at);return d.getMonth()===m&&d.getFullYear()===y;}).length;
@@ -9109,11 +9109,11 @@ async function loadAdminActionQueue(){
     const renewalCutoff=new Date(Date.now()+14*24*60*60*1000).toISOString();
     const [{data:releases},{data:payouts},{data:messages},{data:deletions},{data:takedowns},{data:renewals}]=await Promise.all([
       sb.from('releases').select('id').in('status',['pending','review']),
-      sb.from('payouts').select('id').eq('status','pending').catch(()=>({data:[]})),
+      Promise.resolve(sb.from('payouts').select('id').eq('status','pending')).catch(()=>({data:[]})),
       sb.from('messages').select('id,deleted_by_admin').eq('direction','in').is('read_at',null),
-      sb.from('account_deletion_requests').select('id').eq('status','pending').catch(()=>({data:[]})),
-      sb.from('release_takedown_requests').select('id').eq('status','pending').catch(()=>({data:[]})),
-      sb.from('profiles').select('id').in('plan',['solo_paid','artist_plus','label']).not('plan_expires_at','is',null).lte('plan_expires_at',renewalCutoff).gte('plan_expires_at',new Date().toISOString()).catch(()=>({data:[]}))
+      Promise.resolve(sb.from('account_deletion_requests').select('id').eq('status','pending')).catch(()=>({data:[]})),
+      Promise.resolve(sb.from('release_takedown_requests').select('id').eq('status','pending')).catch(()=>({data:[]})),
+      Promise.resolve(sb.from('profiles').select('id').in('plan',['solo_paid','artist_plus','label']).not('plan_expires_at','is',null).lte('plan_expires_at',renewalCutoff).gte('plan_expires_at',new Date().toISOString())).catch(()=>({data:[]}))
     ]);
     const items=[
       {label:'Pending Releases',count:(releases||[]).length,tab:'releases',icon:'ti-music',color:'#fbbf24'},
@@ -9137,7 +9137,7 @@ async function loadAdminDashboard(){
     const [{data:profiles},{data:releases},{data:subs}]=await Promise.all([
       sb.from('profiles').select('id,plan,created_at'),
       sb.from('releases').select('id,status,streams,earnings,title,user_id,submitted_at,is_priority,priority_ref'),
-      sb.from('subscriptions').select('amount_usd,created_at,plan').catch(()=>({data:[]}))
+      Promise.resolve(sb.from('subscriptions').select('amount_usd,created_at,plan')).catch(()=>({data:[]}))
     ]);
     const plans={solo_paid:0,artist_plus:0,label:0,admin:0,free:0};
     (profiles||[]).forEach(p=>plans[p.plan]=(plans[p.plan]||0)+1);
@@ -9445,7 +9445,7 @@ async function loadAdminTeam(){
       wrap.innerHTML='<div style="color:rgba(255,255,255,.35);font-size:12px">No accounts currently have the Admin plan. '+esc(ADMIN_EMAIL)+' always has access via the built-in primary admin account.</div>';
       return;
     }
-    const {data:grants}=await sb.from('admin_audit_log').select('target_user_id,changed_at,changed_by').eq('field','plan').eq('new_value','admin').order('changed_at',{ascending:false}).catch(()=>({data:[]}));
+    const {data:grants}=await Promise.resolve(sb.from('admin_audit_log').select('target_user_id,changed_at,changed_by').eq('field','plan').eq('new_value','admin').order('changed_at',{ascending:false})).catch(()=>({data:[]}));
     const grantMap={};
     (grants||[]).forEach(g=>{if(!grantMap[g.target_user_id])grantMap[g.target_user_id]=g;});
     wrap.innerHTML=admins.map(p=>{
@@ -9676,7 +9676,7 @@ async function loadAdminReports(){
 
     // Month-over-month revenue trend (subscriptions + priority distro, since those are real
     // dated transactions — release `earnings` is a running lifetime total with no per-period date)
-    const {data:subsData}=await sb.from('subscriptions').select('amount_usd,created_at').catch(()=>({data:[]}));
+    const {data:subsData}=await Promise.resolve(sb.from('subscriptions').select('amount_usd,created_at')).catch(()=>({data:[]}));
     const now=new Date();
     const thisMonthStart=new Date(now.getFullYear(),now.getMonth(),1);
     const nextMonthStart=new Date(now.getFullYear(),now.getMonth()+1,1);
@@ -9790,9 +9790,9 @@ async function loadNotifications(){
     const [{data:payouts},{data:releases},{data:messages},{data:deletions},{data:takedowns}]=await Promise.all([
       sb.from('payouts').select('*').eq('status','pending').order('created_at',{ascending:false}),
       sb.from('releases').select('*, profiles(artist_name,full_name)').eq('status','pending').order('submitted_at',{ascending:false}),
-      sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications messages query error:',r.error);return {data:(r.data||[]).filter(m=>!m.deleted_by_admin)};}).catch(()=>({data:[]})),
-      sb.from('account_deletion_requests').select('*').eq('status','pending').order('requested_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications deletion query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]})),
-      sb.from('release_takedown_requests').select('*').eq('status','pending').order('requested_at',{ascending:false}).then(r=>{if(r.error)console.error('Notifications takedown query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]}))
+      Promise.resolve(sb.from('messages').select('*').eq('direction','in').is('read_at',null).order('created_at',{ascending:false})).then(r=>{if(r.error)console.error('Notifications messages query error:',r.error);return {data:(r.data||[]).filter(m=>!m.deleted_by_admin)};}).catch(()=>({data:[]})),
+      Promise.resolve(sb.from('account_deletion_requests').select('*').eq('status','pending').order('requested_at',{ascending:false})).then(r=>{if(r.error)console.error('Notifications deletion query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]})),
+      Promise.resolve(sb.from('release_takedown_requests').select('*').eq('status','pending').order('requested_at',{ascending:false})).then(r=>{if(r.error)console.error('Notifications takedown query error:',r.error);return {data:r.data||[]};}).catch(()=>({data:[]}))
     ]);
     const {data:profList}=await sb.from('profiles').select('id,artist_name,full_name,account_id');
     const profileMap={};(profList||[]).forEach(p=>{profileMap[p.id]=p;});
@@ -9803,8 +9803,8 @@ async function loadNotifications(){
         try{
           const [{data:liveRel},{data:rosterRel},{data:pendingPay}]=await Promise.all([
             sb.from('releases').select('id').eq('user_id',d.user_id).eq('status','live'),
-            sb.from('roster_artists').select('id').eq('user_id',d.user_id).catch(()=>({data:[]})),
-            sb.from('payouts').select('amount').eq('user_id',d.user_id).eq('status','pending').catch(()=>({data:[]}))
+            Promise.resolve(sb.from('roster_artists').select('id').eq('user_id',d.user_id)).catch(()=>({data:[]})),
+            Promise.resolve(sb.from('payouts').select('amount').eq('user_id',d.user_id).eq('status','pending')).catch(()=>({data:[]}))
           ]);
           deletionContext[d.id]={
             live:liveRel?.length||0,
@@ -9817,7 +9817,7 @@ async function loadNotifications(){
     const takedownReleaseMap={};
     if(takedowns?.length){
       const ids=[...new Set(takedowns.map(t=>t.release_id))];
-      const {data:relData}=await sb.from('releases').select('id,title,artist').in('id',ids).catch(()=>({data:[]}));
+      const {data:relData}=await Promise.resolve(sb.from('releases').select('id,title,artist').in('id',ids)).catch(()=>({data:[]}));
       (relData||[]).forEach(r=>{takedownReleaseMap[r.id]=r;});
     }
     const total=(payouts?.length||0)+(releases?.length||0)+(messages?.length||0)+(deletions?.length||0)+(takedowns?.length||0);
@@ -9879,7 +9879,7 @@ async function markRead(id){
 }
 async function markDeletionCompleted(id){
   if(!confirm('Confirm you have manually deleted this user from Supabase Authentication → Users. This only updates the request status here.'))return;
-  const {data:reqRow}=await sb.from('account_deletion_requests').select('user_id,email').eq('id',id).single().catch(()=>({data:null}));
+  const {data:reqRow}=await Promise.resolve(sb.from('account_deletion_requests').select('user_id,email').eq('id',id).single()).catch(()=>({data:null}));
   const {error}=await sb.from('account_deletion_requests').update({status:'completed',completed_at:new Date().toISOString()}).eq('id',id);
   if(error){console.error('Mark deletion completed error:',error);toast('Could not update: '+error.message,'err');return;}
   logAudit(null,reqRow?.user_id||null,'account_deletion','pending','completed'+(reqRow?.email?' — '+reqRow.email:''));
@@ -9887,7 +9887,7 @@ async function markDeletionCompleted(id){
 }
 async function markTakedownCompleted(id){
   if(!confirm('Confirm you have removed this release from all DSPs. This will mark the release as Taken Down.'))return;
-  const {data:reqRow}=await sb.from('release_takedown_requests').select('release_id,user_id,reason').eq('id',id).single().catch(()=>({data:null}));
+  const {data:reqRow}=await Promise.resolve(sb.from('release_takedown_requests').select('release_id,user_id,reason').eq('id',id).single()).catch(()=>({data:null}));
   const {error}=await sb.from('release_takedown_requests').update({status:'completed',completed_at:new Date().toISOString()}).eq('id',id);
   if(error){console.error('Mark takedown completed error:',error);toast('Could not update: '+error.message,'err');return;}
   if(reqRow?.release_id){
@@ -10340,9 +10340,9 @@ async function exportCSV(type){
   let data=[],filename='',headers=[];
   if(type==='artists'){const {data:d}=await sb.from('profiles').select('*').order('created_at',{ascending:false});data=d||[];filename='blakkstone-artists.csv';headers=['Account ID','Name','Email','Plan','Created'];data=data.map(p=>[p.account_id||'',p.artist_name||p.full_name||'',p.email||'',p.plan||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);}
   else if(type==='releases'){const {data:d}=await sb.from('releases').select('*, profiles(artist_name,account_id)').order('submitted_at',{ascending:false});data=d||[];filename='blakkstone-releases.csv';headers=['Account ID','Artist','Title','Genre','Release Date','Status','Streams','Earnings'];data=data.map(r=>[r.profiles?.account_id||'',r.profiles?.artist_name||'',r.title||'',r.genre||'',r.release_date||'',r.status||'',r.streams||0,r.earnings||0]);}
-  else if(type==='payouts'){const {data:d}=await sb.from('payouts').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));data=d||[];filename='blakkstone-payouts.csv';headers=['Account ID','Artist','Method','Network','Account Details','Amount','Status','Date'];data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.network||'',p.account||'',p.amount||0,p.status||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);}
-  else if(type==='payouts_pending'){const {data:d}=await sb.from('payouts').select('*, profiles(artist_name,account_id)').eq('status','pending').order('network',{ascending:true}).catch(()=>({data:[]}));data=d||[];filename='blakkstone-payment-run-'+new Date().toISOString().split('T')[0]+'.csv';headers=['Account ID','Artist','Method','Network','Account Details','Amount'];data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.network||'',p.account||'',p.amount||0]);}
-  else if(type==='subscriptions'){const {data:d}=await sb.from('subscriptions').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false}).catch(()=>({data:[]}));data=d||[];filename='blakkstone-subscriptions.csv';headers=['Account ID','Artist','Plan','USD','GHS','Ref','Date'];data=data.map(s=>[s.profiles?.account_id||'',s.profiles?.artist_name||'',s.plan||'',s.amount_usd||0,s.amount_ghs||0,s.paystack_ref||'',s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'']);}
+  else if(type==='payouts'){const {data:d}=await Promise.resolve(sb.from('payouts').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false})).catch(()=>({data:[]}));data=d||[];filename='blakkstone-payouts.csv';headers=['Account ID','Artist','Method','Network','Account Details','Amount','Status','Date'];data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.network||'',p.account||'',p.amount||0,p.status||'',p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'']);}
+  else if(type==='payouts_pending'){const {data:d}=await Promise.resolve(sb.from('payouts').select('*, profiles(artist_name,account_id)').eq('status','pending').order('network',{ascending:true})).catch(()=>({data:[]}));data=d||[];filename='blakkstone-payment-run-'+new Date().toISOString().split('T')[0]+'.csv';headers=['Account ID','Artist','Method','Network','Account Details','Amount'];data=data.map(p=>[p.profiles?.account_id||'',p.profiles?.artist_name||'',p.method||'',p.network||'',p.account||'',p.amount||0]);}
+  else if(type==='subscriptions'){const {data:d}=await Promise.resolve(sb.from('subscriptions').select('*, profiles(artist_name,account_id)').order('created_at',{ascending:false})).catch(()=>({data:[]}));data=d||[];filename='blakkstone-subscriptions.csv';headers=['Account ID','Artist','Plan','USD','GHS','Ref','Date'];data=data.map(s=>[s.profiles?.account_id||'',s.profiles?.artist_name||'',s.plan||'',s.amount_usd||0,s.amount_ghs||0,s.paystack_ref||'',s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'']);}
   if(type==='payouts_pending'&&!data.length){toast('No pending payouts to export','err');return;}
   const csv=[headers,...data].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
