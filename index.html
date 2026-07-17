@@ -6599,8 +6599,10 @@ async function notifyArtistEmail(type,data,toEmail,knownPrefs){
       if(type==='broadcast_message'&&prefs.email_pref_broadcasts===false)return;
       if(type==='admin_reply'&&prefs.email_pref_replies===false)return;
     }
+    console.log('[notifyArtistEmail] Sending request — type:',type,'to:',toEmail);
     const {error}=await sb.functions.invoke('send-notification-email',{body:{type,data,to:toEmail}});
     if(error)console.error('Artist email notification failed (the action itself still succeeded):',error);
+    else console.log('[notifyArtistEmail] Request completed without error for type:',type);
   }catch(e){
     console.error('Artist email notification failed (the action itself still succeeded):',e);
   }
