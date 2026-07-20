@@ -4137,7 +4137,8 @@ async function doAuth(){
         showView('confirm');btn.disabled=false;btn.textContent='Create account';return;
       }
       if(data.user){
-        await sb.from('profiles').upsert({id:data.user.id,email,full_name:fullName,artist_name:artistName,plan:'free'});
+        const {error:profileCreateErr}=await sb.from('profiles').upsert({id:data.user.id,email,full_name:fullName,artist_name:artistName,plan:'free'});
+        if(profileCreateErr)console.error('[signup] Profile creation error — account exists in auth but profile row may be incomplete:',profileCreateErr);
         notifyAdminEmail('new_signup',{email,fullName,artistName});
         notifyArtistEmail('welcome',{fullName,artistName},email);
         claimLaunchFounderStatusIfEligible(data.user.id);
