@@ -3795,16 +3795,10 @@ const PLANS={solo:{monthly:11,yearly:11,label:'Solo'},artist_plus:{monthly:20,ye
 // how many spots the offer covers.
 const LAUNCH_FOUNDER_LIMIT=100;
 const LAUNCH_FOUNDER_DISCOUNT_PERCENT=20;
-async function claimLaunchFounderStatusIfEligible(userId){
-  try{
-    const {count,error}=await sb.from('profiles').select('id',{count:'exact',head:true});
-    if(error){console.error('Launch founder count check error (signup itself succeeded):',error);return;}
-    if((count||0)<=LAUNCH_FOUNDER_LIMIT){
-      const {error:updateErr}=await sb.from('profiles').update({is_launch_founder:true}).eq('id',userId);
-      if(updateErr)console.error('Launch founder flag update error (signup itself succeeded):',updateErr);
-    }
-  }catch(e){console.error('Launch founder check error (signup itself succeeded):',e);}
-}
+// Launch founder eligibility used to be flagged at signup time via this
+// function — removed now that eligibility is checked live at checkout
+// instead (see checkReferralDiscount), based on how many people have
+// actually paid so far, not on signup order.
 // Shows the same "X spots left" progress the admin dashboard already
 // tracks, but publicly on the landing page — this runs from an anonymous,
 // logged-out session, unlike every other launch-offer query in the app
@@ -4182,7 +4176,6 @@ async function doAuth(){
         if(profileCreateErr)console.error('[signup] Profile creation error — account exists in auth but profile row may be incomplete:',profileCreateErr);
         notifyAdminEmail('new_signup',{email,fullName,artistName});
         notifyArtistEmail('welcome',{fullName,artistName},email);
-        claimLaunchFounderStatusIfEligible(data.user.id);
         toast('Account created! Welcome to Blakkstone.','ok');
         await loadProfile(data.user);
       }
@@ -4231,7 +4224,7 @@ async function loadProfile(u){
     const newProfile={id:u.id,email:u.email,full_name:fullName,artist_name:fullName,plan:'free',avatar_url:avatarUrl};
     const {data:created,error:createErr}=await sb.from('profiles').upsert(newProfile).select().single();
     if(createErr)console.error('Profile auto-create error for new OAuth sign-in:',createErr);
-    else{notifyAdminEmail('new_signup',{email:u.email,fullName,artistName:fullName});notifyArtistEmail('welcome',{fullName,artistName:fullName},u.email);claimLaunchFounderStatusIfEligible(u.id);}
+    else{notifyAdminEmail('new_signup',{email:u.email,fullName,artistName:fullName});notifyArtistEmail('welcome',{fullName,artistName:fullName},u.email);}
     data=created||newProfile;
   }
   profile=data;
@@ -6800,7 +6793,7 @@ async function loadProfileStats(){
       }
     }
     const bpFounderBadge=document.getElementById('bp-founder-badge');
-    if(bpFounderBadge)bpFounderBadge.style.display=profile?.is_launch_founder?'inline-flex':'none';
+    if(bpFounderBadge)bpFounderBadge.style.display=profile?.launch_discount_used?'inline-flex':'none';
     const bpFeatsEl=document.getElementById('bp-plan-features');
     if(bpFeatsEl){
       const featureKey=profile?.plan==='solo_paid'?'solo':profile?.plan;
@@ -9205,18 +9198,17 @@ async function loadAdminDashboard(){
     const loEl=document.getElementById('adm-launch-offer-progress');
     if(loEl){
       try{
-        const {data:founderRows,error:founderErr}=await sb.from('profiles').select('is_launch_founder,launch_discount_used').eq('is_launch_founder',true);
+        const {count:claimed,error:founderErr}=await sb.from('profiles').select('id',{count:'exact',head:true}).eq('launch_discount_used',true);
         if(founderErr)throw founderErr;
-        const claimed=(founderRows||[]).length;
-        const redeemed=(founderRows||[]).filter(p=>p.launch_discount_used).length;
-        const pct=Math.min(100,Math.round((claimed/LAUNCH_FOUNDER_LIMIT)*100));
-        const spotsLeft=Math.max(0,LAUNCH_FOUNDER_LIMIT-claimed);
+        const claimedCount=claimed||0;
+        const pct=Math.min(100,Math.round((claimedCount/LAUNCH_FOUNDER_LIMIT)*100));
+        const spotsLeft=Math.max(0,LAUNCH_FOUNDER_LIMIT-claimedCount);
         loEl.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
-          +'<div style="font-size:22px;font-weight:800;color:#fff">'+claimed+' <span style="font-size:14px;font-weight:600;color:rgba(255,255,255,.4)">/ '+LAUNCH_FOUNDER_LIMIT+' spots claimed</span></div>'
+          +'<div style="font-size:22px;font-weight:800;color:#fff">'+claimedCount+' <span style="font-size:14px;font-weight:600;color:rgba(255,255,255,.4)">/ '+LAUNCH_FOUNDER_LIMIT+' spots claimed</span></div>'
           +'<div style="font-size:13px;font-weight:700;color:'+(spotsLeft===0?'#34d399':'var(--gold)')+'">'+(spotsLeft===0?'Fully claimed! 🎉':spotsLeft+' left')+'</div>'
         +'</div>'
         +'<div style="height:10px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;margin-bottom:10px"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#8A6A1F,var(--gold));border-radius:6px;transition:width .3s"></div></div>'
-        +'<div style="font-size:12px;color:rgba(255,255,255,.4)">'+redeemed+' of '+claimed+' founders have actually redeemed their discount (paid at least once)</div>';
+        +'<div style="font-size:12px;color:rgba(255,255,255,.4)">Counts artists who\'ve actually paid with the discount — not just signed up</div>';
       }catch(e){
         console.error('Launch offer widget error — likely means launch_offer.sql hasn\'t been run yet on this database:',e);
         loEl.innerHTML='<div style="color:rgba(255,255,255,.35);font-size:12px">Could not load — run launch_offer.sql in Supabase if you haven\'t yet.</div>';
@@ -11302,13 +11294,19 @@ async function checkReferralDiscount(){
   currentReferralDiscount=null;
   currentLaunchOfferDiscount=null;
   if(!user)return;
-  // Launch offer: first 100 signups get 20% off their first payment ever.
-  // is_launch_founder is a permanent badge set at signup time (never
-  // changes); launch_discount_used tracks redemption separately so the
-  // discount is consumed exactly once, whenever they actually first pay,
-  // without touching their founder status itself.
-  if(profile?.is_launch_founder&&!profile?.launch_discount_used){
-    currentLaunchOfferDiscount={percent:20};
+  // Launch offer: first 100 people to actually PAY (not sign up) get 20%
+  // off that payment. Checked live at checkout, since eligibility now
+  // depends on how many people have already paid so far, not on signup
+  // order — someone who signed up early but hasn't paid yet shouldn't be
+  // guaranteed a spot over someone who signed up later but pays first.
+  if(!profile?.launch_discount_used){
+    try{
+      const {count:paidFoundersSoFar,error:founderCountErr}=await sb.from('profiles').select('id',{count:'exact',head:true}).eq('launch_discount_used',true);
+      if(founderCountErr)console.error('Launch offer eligibility check error (treating as not eligible):',founderCountErr);
+      else if((paidFoundersSoFar||0)<LAUNCH_FOUNDER_LIMIT){
+        currentLaunchOfferDiscount={percent:20};
+      }
+    }catch(e){console.error('Launch offer eligibility check error (treating as not eligible):',e);}
   }
   try{
     if(profile?.referred_by_code){
@@ -11428,9 +11426,8 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
       // Profile page can show "activating..." in the meantime rather than
       // nothing at all.
       if(autoRenew)profileUpdate.auto_renew_status='activating';
-      // Consume the launch offer exactly once, at the moment it's actually
-      // used — is_launch_founder itself stays true forever as a permanent
-      // badge, this only marks the discount as spent.
+      // Marks this as one of the first 100 to actually pay — this is the
+      // moment someone's spot is genuinely secured, not at signup.
       if(appliedLaunchOffer)profileUpdate.launch_discount_used=true;
       let {error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id);
       if(planUpdateError&&/launch_discount_used/i.test(planUpdateError.message||'')){
