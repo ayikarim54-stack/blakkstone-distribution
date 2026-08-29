@@ -10,6 +10,9 @@
 
   gtag('config', 'AW-18307232731');
 </script>
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2271718853246805"
+     crossorigin="anonymous"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="description" content="Blakkstone Distribution — independent music distribution for artists across Africa and beyond. Distribute to Spotify, Apple Music, Boomplay and 150+ platforms. Mobile Money and bank payouts."/>
@@ -1573,6 +1576,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <!-- ══════════════ DASHBOARD ══════════════ -->
 <div class="view" id="dashboard">
   <!-- TEAM ACCESS BANNER — shown only when this login is managing another account's data -->
+  <div id="impersonation-banner" style="display:none;background:linear-gradient(90deg,#8A6A1F,#0A0A0D);padding:.75rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid rgba(212,175,55,.4)">
+    <div style="display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:600"><i class="ti ti-user-shield" style="color:var(--gold)"></i> Viewing as <span id="impersonation-name" style="font-weight:800;color:var(--gold)"></span> — actions you take happen on their account</div>
+    <button onclick="returnToAdminFromImpersonation()" class="btn btn-sm" style="background:var(--gold);color:var(--black);font-weight:700">Return to Admin</button>
+  </div>
   <div id="team-context-banner" style="display:none;background:linear-gradient(90deg,#7a6ff0,#5b4fd6);padding:.75rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
     <div style="display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:600"><i class="ti ti-users"></i> Managing <span id="team-context-owner-name" style="font-weight:800"></span>'s account as <span id="team-context-role"></span></div>
   </div>
@@ -4443,6 +4450,17 @@ function enterDashboard(){
     fetchLiveCurrencyRates();
     detectCurrencyByIP(); // same reasoning as above — currentDisplayCurrency previously only got set via the landing page, leaving logged-in users stuck on the USD default regardless of where they actually are
     const teamBanner=document.getElementById('team-context-banner');
+    const impBanner=document.getElementById('impersonation-banner');
+    if(impBanner){
+      const impersonatingName=sessionStorage.getItem('_impersonatingName');
+      if(impersonatingName&&sessionStorage.getItem('_adminOriginalSession')){
+        impBanner.style.display='flex';
+        const nameEl=document.getElementById('impersonation-name');
+        if(nameEl)nameEl.textContent=impersonatingName;
+      } else {
+        impBanner.style.display='none';
+      }
+    }
     if(teamBanner){
       if(teamContext){
         teamBanner.style.display='flex';
@@ -7624,7 +7642,7 @@ async function uploadAvatar(input){
 async function openArtistModal(userId,name){
   const {data:rl}=await sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false});
   const releases=rl||[];
-  document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button><button onclick="viewAsArtist(\''+userId+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" title="View as this artist (read-only)" style="float:right;background:none;border:none;cursor:pointer;color:#7a6ff0;font-size:16px;margin-right:8px"><i class="ti ti-eye"></i></button>';
+  document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button><button onclick="viewAsArtist(\''+userId+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" title="View as this artist (read-only)" style="float:right;background:none;border:none;cursor:pointer;color:#7a6ff0;font-size:16px;margin-right:8px"><i class="ti ti-eye"></i></button><button onclick="confirmImpersonateUser(\''+userId+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" title="Log in as this artist (can make changes)" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-login-2"></i></button>';
   _currentArtistModalUserId=userId;
   await loadArtistNotes(userId);
   await loadArtistAuditLog(userId,releases.map(r=>r.id));
@@ -7692,6 +7710,66 @@ function exitViewAsArtist(){
   showView('dashboard');
   goPage('admin',null);
   switchAdminTab('users',findAdminTabEl('users'));
+}
+async function confirmImpersonateUser(userId,name){
+  if(!confirm('You\'ll be logged in as '+name+' and can make changes on their account. This is recorded in the activity log. Continue?'))return;
+  closeArtistModal();
+  await impersonateUser(userId,name);
+}
+async function impersonateUser(userId,name){
+  try{
+    // Save the admin's own session before switching, so returning to admin
+    // afterward is a seamless restore rather than a fresh login.
+    const {data:{session:adminSession}}=await sb.auth.getSession();
+    if(!adminSession){toast('Could not read your own session — try refreshing and logging in again','err');return;}
+    sessionStorage.setItem('_adminOriginalSession',JSON.stringify({access_token:adminSession.access_token,refresh_token:adminSession.refresh_token}));
+    sessionStorage.setItem('_impersonatingName',name);
+
+    const {data,error}=await sb.functions.invoke('admin-impersonate-user',{body:{targetUserId:userId}});
+    if(error||data?.error){
+      console.error('Impersonation error:',error||data?.error);
+      toast('Could not log in as this artist: '+(data?.error||error?.message||'unknown error'),'err');
+      sessionStorage.removeItem('_adminOriginalSession');
+      sessionStorage.removeItem('_impersonatingName');
+      return;
+    }
+
+    const {error:verifyError}=await sb.auth.verifyOtp({token_hash:data.hashed_token,type:'email'});
+    if(verifyError){
+      console.error('verifyOtp error:',verifyError);
+      toast('Could not complete login as this artist','err');
+      sessionStorage.removeItem('_adminOriginalSession');
+      sessionStorage.removeItem('_impersonatingName');
+      return;
+    }
+
+    // Session has now switched to the target user — a full reload cleanly
+    // resets every global variable and cache in the app to that user's
+    // context, rather than trying to manually reset dozens of them by hand.
+    location.reload();
+  }catch(e){
+    console.error('Impersonation error:',e);
+    toast('Something went wrong trying to log in as this artist','err');
+    sessionStorage.removeItem('_adminOriginalSession');
+    sessionStorage.removeItem('_impersonatingName');
+  }
+}
+async function returnToAdminFromImpersonation(){
+  try{
+    const saved=sessionStorage.getItem('_adminOriginalSession');
+    if(!saved){toast('No admin session found to return to — please log in again','err');return;}
+    const {access_token,refresh_token}=JSON.parse(saved);
+    const {error}=await sb.auth.setSession({access_token,refresh_token});
+    sessionStorage.removeItem('_adminOriginalSession');
+    sessionStorage.removeItem('_impersonatingName');
+    if(error)console.error('Return to admin error:',error);
+    location.reload();
+  }catch(e){
+    console.error('Return to admin error:',e);
+    sessionStorage.removeItem('_adminOriginalSession');
+    sessionStorage.removeItem('_impersonatingName');
+    location.reload();
+  }
 }
 // ── ADMIN ARTIST NOTES (private, admin-only) ────────────────
 let _currentArtistModalUserId=null;
