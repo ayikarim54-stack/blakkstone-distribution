@@ -1730,7 +1730,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
           <div style="min-width:0">
             <div style="font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px"><i class="ti ti-gift" style="color:var(--gold)"></i> Invite an artist, you both get a discount</div>
-            <div style="font-size:12.5px;color:rgba(255,255,255,.4);margin-top:3px" id="ov-referral-sub">Share your link — they get 10% off their first plan, you get 20% off your next renewal.</div>
+            <div style="font-size:12.5px;color:rgba(255,255,255,.4);margin-top:3px" id="ov-referral-sub">Share your link — when they stick around for a full renewal, you get 20% off your next plan.</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
             <input id="ov-referral-link" type="text" readonly style="background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:12.5px;width:220px" onclick="this.select()">
@@ -1970,18 +1970,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
 
       <div class="wiz-center">
-      <!-- DRAFT RESUME BANNER -->
-      <div id="draft-banner" style="display:none;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:6px"><i class="ti ti-file-time"></i> Draft saved</div>
-          <div id="draft-banner-title" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">You have an unfinished submission.</div>
-        </div>
-        <div style="display:flex;gap:8px;flex-shrink:0">
-          <button class="btn btn-gold btn-sm" onclick="resumeDraft()"><i class="ti ti-player-play"></i> Resume</button>
-          <button class="btn btn-sm" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="discardDraft()">Discard</button>
-        </div>
-      </div>
-
       <!-- STEP 1: UPLOAD -->
       <div class="wizard-panel active" id="wpanel-1">
         <div style="text-align:center;max-width:600px;margin:0 auto">
@@ -2120,7 +2108,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                 <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">Priority Distro</div>
                 <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:.5rem">LESS THAN 3 DAYS</div>
                 <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.5">Skip the queue to get your music out extra fast.</div>
-                <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-top:.5rem">+$5 <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:400">(add-on)</span></div>
+                <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-top:.5rem" id="priority-fee-display">+$5 <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:400">(add-on)</span></div>
                 <i class="ti ti-bolt" style="position:absolute;top:10px;right:10px;font-size:20px;color:rgba(255,255,255,.3)"></i>
                 <i class="ti ti-circle-check-filled" id="tier-priority-check" style="display:none;position:absolute;bottom:10px;right:10px;font-size:18px;color:#fff"></i>
               </div>
@@ -2916,7 +2904,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="divhr"></div>
         <div id="referral-section" style="display:none">
           <div class="slabel"><i class="ti ti-gift"></i> Refer & Earn</div>
-          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Share your link — when someone you refer sticks around for a full renewal, you get <strong style="color:#fff">20% off</strong> your next plan. They get <strong style="color:#fff">10% off</strong> their first plan right away.</p>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Share your link — when someone you refer sticks around for a full renewal, you get <strong style="color:#fff">20% off</strong> your next plan.</p>
           <div style="display:flex;gap:8px;margin-bottom:1.25rem">
             <input id="referral-link-display" type="text" readonly style="flex:1;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px">
             <button class="btn btn-gold" onclick="copyReferralLink()" style="flex-shrink:0"><i class="ti ti-copy"></i> Copy</button>
@@ -3643,6 +3631,20 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="modal" style="max-width:720px">
     <h3>Distribution Package <button onclick="closeDistributionModal()">×</button></h3>
     <div id="distribution-modal-body"><div style="text-align:center;padding:3rem"><span class="loader"></span></div></div>
+  </div>
+</div>
+
+<!-- DRAFT RESUME CHOICE (blocking — deliberately no × close button, since letting
+     someone dismiss this and start typing into a fresh form is exactly what
+     used to cause an existing draft to get silently overwritten within 20
+     seconds by unrelated autosave, with zero warning) -->
+<div class="overlay" id="draft-resume-overlay">
+  <div class="modal" style="max-width:440px;text-align:center">
+    <div style="font-size:32px;margin-bottom:.75rem"><i class="ti ti-file-time" style="color:var(--gold)"></i></div>
+    <h3 style="justify-content:center;border:none;padding:0;margin-bottom:.5rem">You have an unfinished draft</h3>
+    <div id="draft-resume-title" style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:1.5rem">Loading...</div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;margin-bottom:8px" onclick="resumeDraft()"><i class="ti ti-player-play"></i> Resume this draft</button>
+    <button class="btn btn-sm" style="width:100%;justify-content:center;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="discardDraft()">Start a new release instead (deletes this draft)</button>
   </div>
 </div>
 
@@ -4842,7 +4844,7 @@ async function resumeDraftFromMusic(){
   const state=await loadDraft();
   if(state&&(state.title||state.tracks?.length)){
     await restoreWizardState(state);
-    const banner=document.getElementById('draft-banner');if(banner)banner.style.display='none';
+    const overlay=document.getElementById('draft-resume-overlay');if(overlay)overlay.classList.remove('open');
     toast('Draft restored — pick up where you left off','ok');
   }
 }
@@ -4851,7 +4853,7 @@ async function deleteDraftFromMusic(){
   try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
   const {error}=await sb.from('profiles').update({draft_wizard:null}).eq('id',user.id);
   _cachedDraftForMusicTab=null;
-  const banner=document.getElementById('draft-banner');if(banner)banner.style.display='none';
+  const overlay=document.getElementById('draft-resume-overlay');if(overlay)overlay.classList.remove('open');
   if(error){
     console.error('Draft cloud delete error:',error);
     toast('Draft removed here, but the cloud backup couldn\'t be cleared — it may reappear later. Try again, or contact Support if this keeps happening.','err');
@@ -8195,6 +8197,8 @@ async function initWizard(){
   if(copyYearEl){copyYearEl.placeholder=String(thisYear);copyYearEl.value=thisYear;}
   const prodYearEl=document.getElementById('r-prod-year');
   if(prodYearEl){prodYearEl.placeholder=String(thisYear);prodYearEl.value=thisYear;}
+  const feeDisplay=document.getElementById('priority-fee-display');
+  if(feeDisplay)feeDisplay.innerHTML='+$'+PRIORITY_DISTRO_FEE_USD+' <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:400">(add-on)</span>';
   const dupWarn=document.getElementById('title-duplicate-warn');if(dupWarn)dupWarn.style.display='none';
   renderStoresGrid();goWizard(1);
   // Check for saved draft
@@ -8416,6 +8420,20 @@ function validateStep(step){
     if(!copyright) errors.push({fieldId:'r-copyright', label:'© Copyright holder is required'});
     if(!pcopyright) errors.push({fieldId:'r-pcopyright', label:'℗ Copyright holder is required'});
     if(!artwork) errors.push({fieldId:'art-input',   label:'Cover artwork is required (square, 3000px minimum)'});
+
+    // Same check already shown live while typing (checkTitleFormat) — was
+    // only ever a visual hint before, easy to type past and ignore
+    // entirely despite being labeled a "DSP Guideline Violation." Stores
+    // like Apple Music and Spotify genuinely do reject titles with inline
+    // contributor tags, so this now actually blocks submission too.
+    if(title){
+      for(const rule of FORBIDDEN_TITLE_PHRASES){
+        if(rule.re.test(title)){
+          errors.push({fieldId:'r-title', label:'Release title can\'t contain "'+((title.match(rule.re)||[''])[0])+'" — use the '+rule.field+' field instead'});
+          break;
+        }
+      }
+    }
 
     wizTracks.forEach((t,i)=>{
       const m=t.meta||{};
@@ -8692,7 +8710,7 @@ function renderTracklistDetails(){
         </label>
         <div style="margin-bottom:6px">
           <button class="track-inherit-btn" onclick="inheritReleaseCredits('${t.id}')">
-            <i class="ti ti-copy"></i> Copy from release credits
+            <i class="ti ti-copy"></i> Copy from another track
           </button>
         </div>
         <div class="track-meta-grid">
@@ -8806,16 +8824,24 @@ function updateTrackMeta(id,field,val){
 function inheritReleaseCredits(id){
   const t=wizTracks.find(t=>t.id===id);
   if(!t){return;}
+  // Previously tried to read from release-level input fields (r-producer,
+  // r-songwriter, etc.) that never existed anywhere in this app — credits
+  // are only ever entered per-track, so this silently copied nothing while
+  // still telling the artist it succeeded. Now copies from whichever OTHER
+  // track actually has credits filled in, which is both real data and a
+  // genuinely common need on a multi-track release sharing one producer.
+  const source=wizTracks.find(other=>other.id!==id&&other.meta&&(other.meta.producer||other.meta.songwriter));
+  if(!source){
+    toast('No other track has credits filled in yet — fill in one track first, then copy from it.','err');
+    return;
+  }
   if(!t.meta) t.meta={};
-  // Copy from release-level credit fields
   const fields=['producer','songwriter','composer','mixing','mastering','recording','exec','publisher','iswc','sample'];
   fields.forEach(f=>{
-    const val=document.getElementById('r-'+f)?.value?.trim();
-    if(val) t.meta[f]=val;
+    if(source.meta[f]) t.meta[f]=source.meta[f];
   });
-  // Re-render to show inherited values
   renderTracklistDetails();
-  toast('Release credits copied to this track','ok');
+  toast('Credits copied from "'+(source.name||'that track')+'"','ok');
 }
 
 async function previewArtwork(input){
@@ -8967,12 +8993,12 @@ async function loadDraft(){
 }
 
 function updateDraftBanner(state){
-  const banner=document.getElementById('draft-banner');
-  const titleEl=document.getElementById('draft-banner-title');
-  if(!banner||!state)return;
+  const overlay=document.getElementById('draft-resume-overlay');
+  const titleEl=document.getElementById('draft-resume-title');
+  if(!overlay||!state)return;
   const ago=state.savedAt?timeSince(new Date(state.savedAt)):'recently';
-  if(titleEl) titleEl.textContent=(state.title||'Untitled release')+' · saved '+ago;
-  banner.style.display='flex';
+  if(titleEl) titleEl.textContent='"'+(state.title||'Untitled release')+'" · saved '+ago;
+  overlay.classList.add('open');
 }
 
 function timeSince(date){
@@ -8988,7 +9014,7 @@ function resumeDraft(){
   loadDraft().then(async state=>{
     if(!state){toast('No draft found','err');return;}
     await restoreWizardState(state);
-    document.getElementById('draft-banner').style.display='none';
+    document.getElementById('draft-resume-overlay').classList.remove('open');
     toast('Draft restored — pick up where you left off','ok');
   });
 }
@@ -8997,7 +9023,7 @@ async function discardDraft(){
   if(!confirm('Discard your saved draft?'))return;
   try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
   const {error}=await sb.from('profiles').update({draft_wizard:null}).eq('id',user.id);
-  document.getElementById('draft-banner').style.display='none';
+  document.getElementById('draft-resume-overlay').classList.remove('open');
   if(error){
     console.error('Draft cloud delete error:',error);
     toast('Draft removed here, but the cloud backup couldn\'t be cleared — it may reappear later. Try again, or contact Support if this keeps happening.','err');
@@ -9120,7 +9146,7 @@ function buildTracksReview(){
     mixing:'Mix',mastering:'Master',recording:'Rec',exec:'Exec',publisher:'Pub',iswc:'ISWC',sample:'Sample'};
   return wizTracks.map((t,i)=>{
     const m=t.meta||{};
-    const badges=Object.entries(m).filter(([k,v])=>v&&k!=='explicit').map(([k])=>
+    const badges=Object.entries(m).filter(([k,v])=>v&&!['explicit','feat','language','instrumental'].includes(k)).map(([k])=>
       '<span style="font-size:10px;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2);padding:1px 6px;border-radius:4px">'+creditLabels[k]+'</span>'
     ).join(' ');
     const explicit=m.explicit==='yes'?'<span style="font-size:10px;background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);padding:1px 6px;border-radius:4px">E</span>':'';
@@ -9214,12 +9240,17 @@ async function submitRelease(){
     const credits=getCreditsData();
     const creditLabels={producer:'Producer',songwriter:'Songwriter',composer:'Composer',
       mixing:'Mix Engineer',mastering:'Master Engineer',recording:'Recording Engineer',
-      exec:'Exec Producer',publisher:'Publisher',iswc:'ISWC',sample:'Sample'};
+      exec:'Exec Producer',publisher:'Publisher',iswc:'ISWC',sample:'Sample',
+      feat:'Feat',language:'Language'};
     const relCreditLines=Object.entries(credits).map(([k,v])=>(creditLabels[k]||k)+': '+v);
-    // Per-track metadata summary
+    // Per-track metadata summary — isrc is excluded since it's already
+    // saved separately as its own release_tracks.isrc column, and
+    // instrumental is excluded since a boolean flag doesn't read
+    // meaningfully as "instrumental: true" in a text summary.
     const trackMetaLines=wizTracks.map((t,i)=>{
       const m=t.meta||{};
-      const parts=Object.entries(m).filter(([k,v])=>v).map(([k,v])=>(creditLabels[k]||k)+': '+v);
+      const parts=Object.entries(m).filter(([k,v])=>v&&!['isrc','instrumental'].includes(k)).map(([k,v])=>(creditLabels[k]||k)+': '+v);
+      if(m.instrumental)parts.push('Instrumental');
       return parts.length?'Track '+(i+1)+' ('+t.name+'): '+parts.join(', '):'';
     }).filter(Boolean);
     const featArtist=document.getElementById('r-feat')?.value?.trim();
@@ -11589,14 +11620,13 @@ async function checkReferralDiscount(){
     }catch(e){console.error('Launch offer eligibility check error (treating as not eligible):',e);}
   }
   try{
-    if(profile?.referred_by_code){
-      const {data:referredRow}=await sb.from('referrals').select('id,new_signup_discount_used').eq('referred_id',user.id).eq('referral_code',profile.referred_by_code).maybeSingle();
-      if(referredRow&&!referredRow.new_signup_discount_used){
-        currentReferralDiscount={type:'new_signup',percent:10,referralRowId:referredRow.id};
-        updateRateNote();
-        return;
-      }
-    }
+    // The 10% new-signup referral discount was removed - it overlapped
+    // with the 20% launch offer, and once the launch offer is fully
+    // claimed, a smaller discount for referred signups specifically
+    // (rather than everyone) no longer made sense as a standalone
+    // incentive. The referrer's own reward below is untouched - that's a
+    // separate, ongoing incentive for bringing in a paying artist, not
+    // tied to the limited launch period.
     const {data:qualifiedRow}=await sb.from('referrals').select('id').eq('referrer_id',user.id).eq('status','qualified').is('reward_issued_at',null).order('qualified_at',{ascending:true}).limit(1).maybeSingle();
     if(qualifiedRow){
       currentReferralDiscount={type:'referrer',percent:20,referralRowId:qualifiedRow.id};
@@ -11643,9 +11673,8 @@ function updateRateNote(){
     const pct=currentReferralDiscount.percent;
     const discountedUsd=(usd*(1-pct/100)).toFixed(2);
     const discountedGhs=(discountedUsd*currentDisplayRates.GHS).toFixed(2);
-    const label=currentReferralDiscount.type==='new_signup'
-      ?'Welcome discount — you were referred to Blakkstone'
-      :'Referral reward — someone you referred stuck around';
+    // type is now always 'referrer' - the new_signup discount was removed above
+    const label='Referral reward — someone you referred stuck around';
     if(discountEl){
       discountEl.style.display='block';
       discountEl.innerHTML='<i class="ti ti-gift"></i> '+label+': <strong>'+pct+'% off</strong>. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
@@ -11736,9 +11765,7 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
       // itself if something here fails, so each piece is independently
       // wrapped and just logged rather than thrown.
       try{
-        if(appliedReferral?.type==='new_signup'){
-          await sb.from('referrals').update({new_signup_discount_used:true}).eq('id',appliedReferral.referralRowId);
-        } else if(appliedReferral?.type==='referrer'){
+        if(appliedReferral?.type==='referrer'){
           await sb.from('referrals').update({status:'reward_issued',reward_issued_at:new Date().toISOString()}).eq('id',appliedReferral.referralRowId);
         }
       }catch(e){console.error('Referral discount bookkeeping error (payment itself succeeded):',e);}
