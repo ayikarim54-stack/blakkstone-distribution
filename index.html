@@ -3638,6 +3638,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- DISTRIBUTION PACKAGE MODAL (admin) — everything needed to actually send a release to ONErpm or any other DSP aggregator -->
+<div class="overlay" id="distribution-overlay">
+  <div class="modal" style="max-width:720px">
+    <h3>Distribution Package <button onclick="closeDistributionModal()">×</button></h3>
+    <div id="distribution-modal-body"><div style="text-align:center;padding:3rem"><span class="loader"></span></div></div>
+  </div>
+</div>
+
 <!-- PAYSTACK MODAL -->
 <div class="overlay" id="pay-overlay">
   <div class="pay-modal">
@@ -7700,6 +7708,100 @@ async function openArtistModal(userId,name){
   document.getElementById('artist-overlay').classList.add('open');
 }
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
+function closeDistributionModal(){document.getElementById('distribution-overlay').classList.remove('open');}
+// Generic cross-origin file download - fetches as a blob rather than a
+// plain <a download> link, since browsers commonly ignore the download
+// attribute for cross-origin URLs (like Supabase Storage's public URLs)
+// and just navigate to the file instead of actually saving it.
+async function downloadDistributionFile(url,filename,btnEl){
+  if(!url){toast('No file available to download','err');return;}
+  const originalHtml=btnEl?btnEl.innerHTML:null;
+  if(btnEl){btnEl.disabled=true;btnEl.innerHTML='<span class="loader" style="width:12px;height:12px"></span>';}
+  try{
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('Could not fetch file (HTTP '+res.status+')');
+    const blob=await res.blob();
+    const blobUrl=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=blobUrl;a.download=filename;a.click();
+    URL.revokeObjectURL(blobUrl);
+    toast('Downloading "'+filename+'"','ok');
+  }catch(e){
+    console.error('Distribution file download error:',e);
+    toast('Could not download this file: '+(e.message||'please try again.'),'err');
+  }
+  if(btnEl){btnEl.disabled=false;btnEl.innerHTML=originalHtml;}
+}
+async function openDistributionModal(releaseId){
+  const overlay=document.getElementById('distribution-overlay');
+  const body=document.getElementById('distribution-modal-body');
+  overlay.classList.add('open');
+  body.innerHTML='<div style="text-align:center;padding:3rem"><span class="loader"></span></div>';
+  try{
+    const [{data:release,error:relErr},{data:tracks,error:trackErr}]=await Promise.all([
+      sb.from('releases').select('*, profiles(artist_name,full_name,account_id,email)').eq('id',releaseId).single(),
+      sb.from('release_tracks').select('*').eq('release_id',releaseId).order('track_number',{ascending:true})
+    ]);
+    if(relErr)throw relErr;
+    if(trackErr)console.error('Track fetch error (release info still loaded):',trackErr);
+
+    const artistName=release.profiles?.artist_name||release.profiles?.full_name||release.artist||'—';
+    const accId=release.profiles?.account_id||'—';
+    const rd=release.release_date?new Date(release.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—';
+
+    // The submit wizard packs label, copyright, feat/remixer, per-role
+    // credits, per-track metadata, explicit flag, and selected stores into
+    // one pipe-separated notes string — split it back into individual,
+    // readable lines rather than showing the raw blob.
+    const noteLines=(release.notes||'').split(' | ').filter(Boolean);
+
+    let tracksHtml;
+    if(!tracks||!tracks.length){
+      // Releases submitted before release_tracks existed only saved a single audio_url directly on the release row.
+      if(release.audio_url){
+        tracksHtml='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem .9rem;background:var(--surface2);border:1px solid var(--line);border-radius:9px;margin-bottom:6px">'
+          +'<div style="font-size:13px;color:#fff">1. '+esc(release.title)+(release.isrc?' <span style="color:rgba(255,255,255,.35);font-size:11px">· ISRC '+esc(release.isrc)+'</span>':'')+'</div>'
+          +'<button class="btn btn-gold btn-sm" onclick="downloadDistributionFile(\''+esc(release.audio_url)+'\',\''+esc(release.title||'track').replace(/'/g,"\\'")+'.mp3\',this)"><i class="ti ti-download"></i> Download</button>'
+        +'</div>';
+      } else {
+        tracksHtml='<div class="empty"><i class="ti ti-music-off"></i><p>No audio files found for this release.</p></div>';
+      }
+    } else {
+      tracksHtml=tracks.map(t=>{
+        const dur=t.duration_seconds?Math.floor(t.duration_seconds/60)+':'+String(t.duration_seconds%60).padStart(2,'0'):null;
+        const ext=(t.audio_url||'').split('?')[0].match(/\.([a-zA-Z0-9]+)$/);
+        const filename=(t.title||'track '+t.track_number).replace(/[^\w\- ]/g,'').trim()+'.'+(ext?ext[1]:'mp3');
+        return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem .9rem;background:var(--surface2);border:1px solid var(--line);border-radius:9px;margin-bottom:6px">'
+          +'<div style="min-width:0"><div style="font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.track_number+'. '+esc(t.title)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+(t.isrc?'ISRC '+esc(t.isrc):'No ISRC set')+(dur?' · '+dur:'')+'</div></div>'
+          +(t.audio_url?'<button class="btn btn-gold btn-sm" style="flex-shrink:0" onclick="downloadDistributionFile(\''+esc(t.audio_url)+'\',\''+esc(filename).replace(/'/g,"\\'")+'\',this)"><i class="ti ti-download"></i> Download</button>':'<span style="font-size:11px;color:rgba(239,68,68,.6);flex-shrink:0">Missing file</span>')
+        +'</div>';
+      }).join('');
+    }
+
+    let splitsHtml='';
+    if(release.splits&&Array.isArray(release.splits)&&release.splits.length){
+      splitsHtml='<div style="margin-top:1.25rem"><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-users"></i> Royalty Split Sheet</div>'
+        +release.splits.map(s=>'<div style="display:flex;justify-content:space-between;padding:.5rem .75rem;background:var(--surface2);border:1px solid var(--line);border-radius:8px;margin-bottom:5px;font-size:13px"><span style="color:#fff">'+esc(s.name)+'</span><span style="color:var(--gold);font-weight:700">'+(s.bp/100)+'%</span></div>').join('')
+        +'</div>';
+    }
+
+    body.innerHTML=
+      '<div style="display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.25rem">'
+        +(release.artwork_url?'<img src="'+esc(release.artwork_url)+'" alt="Cover art" style="width:80px;height:80px;border-radius:9px;object-fit:cover;flex-shrink:0">':'<div style="width:80px;height:80px;border-radius:9px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-photo-off" style="color:rgba(255,255,255,.2);font-size:24px"></i></div>')
+        +'<div style="min-width:0;flex:1">'
+          +'<div style="font-size:18px;font-weight:800;color:#fff">'+esc(release.title)+'</div>'
+          +'<div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:2px">'+esc(artistName)+' <span style="color:var(--gold)">· '+esc(accId)+'</span></div>'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:4px">'+esc(release.genre||'—')+' · Releasing '+rd+' · '+(release.status||'—')+'</div>'
+        +'</div>'
+        +(release.artwork_url?'<button class="btn adm-btn-sec btn-sm" style="flex-shrink:0" onclick="downloadDistributionFile(\''+esc(release.artwork_url)+'\',\''+esc((release.title||'artwork').replace(/[^\w\- ]/g,'').trim())+'.jpg\',this)"><i class="ti ti-download"></i> Artwork</button>':'')
+      +'</div>'
+      +(noteLines.length?'<div style="margin-bottom:1.25rem"><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-file-description"></i> Credits & Details</div><div style="font-size:12.5px;color:rgba(255,255,255,.6);line-height:2;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:.75rem 1rem">'+noteLines.map(esc).join('<br>')+'</div></div>':'')
+      +'<div><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-music"></i> Tracks ('+(tracks?.length||(release.audio_url?1:0))+')</div>'+tracksHtml+'</div>'
+      +splitsHtml;
+  }catch(e){
+    console.error('Distribution modal load error:',e);
+    body.innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i><p>Could not load this release\'s distribution info.</p></div>';
+  }
+}
 async function viewAsArtist(userId,name){
   closeArtistModal();
   showView('viewasartist');
@@ -9380,7 +9482,7 @@ function renderAdminReleases(data){
     const statusColors={pending:'#fbbf24',review:'#60a5fa',live:'#34d399',rejected:'#f87171',takendown:'#9ca3af'};
     const stColor=statusColors[r.status]||'#9ca3af';
     const stSelectStyle='background:'+stColor+'1a;color:'+stColor+';border-color:'+stColor+'40;font-weight:600';
-    return '<tr><td><input type="checkbox" class="rel-cb" data-id="'+r.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(accId)+'</td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(pName)+'</td><td style="white-space:nowrap">'+art+esc(r.title)+(r.is_priority?' <span style="font-size:9px;font-weight:700;color:var(--black);background:var(--gold);padding:2px 6px;border-radius:20px;vertical-align:middle"><i class="ti ti-bolt"></i> PRIORITY</span>':'')+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'')+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+sub+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+rd+'</td><td><select class="stsel" style="'+stSelectStyle+'" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></td><td><input type="number" class="num-in" value="'+(r.streams||0)+'" min="0" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></td><td><input type="number" class="num-in" value="'+(r.earnings||0)+'" min="0" step="0.01" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></td><td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((r.notes||'').slice(0,30))+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+r.user_id+'\',\''+esc(pName)+'\')"><i class="ti ti-eye"></i></button><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" title="Set smart link (e.g. ONErpm)" onclick="quickSetSmartLink(\''+r.id+'\')"><i class="ti ti-link"></i></button><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease(\''+r.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    return '<tr><td><input type="checkbox" class="rel-cb" data-id="'+r.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(accId)+'</td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(pName)+'</td><td style="white-space:nowrap">'+art+esc(r.title)+(r.is_priority?' <span style="font-size:9px;font-weight:700;color:var(--black);background:var(--gold);padding:2px 6px;border-radius:20px;vertical-align:middle"><i class="ti ti-bolt"></i> PRIORITY</span>':'')+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'')+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+sub+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+rd+'</td><td><select class="stsel" style="'+stSelectStyle+'" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></td><td><input type="number" class="num-in" value="'+(r.streams||0)+'" min="0" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></td><td><input type="number" class="num-in" value="'+(r.earnings||0)+'" min="0" step="0.01" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></td><td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((r.notes||'').slice(0,30))+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+r.user_id+'\',\''+esc(pName)+'\')"><i class="ti ti-eye"></i></button><button class="btn btn-gold btn-sm" style="padding:4px 8px;margin-right:3px" title="Distribution package (tracks, credits, everything needed for ONErpm)" onclick="openDistributionModal(\''+r.id+'\')"><i class="ti ti-package"></i></button><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" title="Set smart link (e.g. ONErpm)" onclick="quickSetSmartLink(\''+r.id+'\')"><i class="ti ti-link"></i></button><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease(\''+r.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
   }).join('');
 }
 function filterReleases(){
