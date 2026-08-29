@@ -9415,7 +9415,7 @@ async function bulkStatusUpdate(status){
     logAudit(id,rel?.user_id||null,'release_status',rel?.status||null,status+(needsReason?' — '+reason:'')+' (bulk)');
     if(['live','rejected','takendown'].includes(status)&&rel?.profiles?.email){
       notifyArtistEmail('release_status_'+status,{
-        title:rel.title,artist:rel.profiles?.artist_name||rel.profiles?.full_name,reason
+        title:rel.title,artist:rel.profiles?.artist_name||rel.profiles?.full_name,reason,releaseId:id
       },rel.profiles.email);
     }
   }
@@ -9492,7 +9492,7 @@ async function updateStatus(id,status,sel){
   // maybe discover later if they happen to check back.
   if(['live','rejected','takendown'].includes(status)&&relForLog?.profiles?.email){
     notifyArtistEmail('release_status_'+status,{
-      title:relForLog.title,artist:relForLog.profiles?.artist_name||relForLog.profiles?.full_name,reason
+      title:relForLog.title,artist:relForLog.profiles?.artist_name||relForLog.profiles?.full_name,reason,releaseId:relForLog.id
     },relForLog.profiles.email);
   }
   const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',takendown:'color:#9ca3af'};
