@@ -9032,13 +9032,7 @@ async function restoreWizardState(state){
       setVal('r-'+k, v);
     });
   }
-  // Toggle states
-  ['explicit','prev-released','country-restrict'].forEach(key=>{
-    if(state[key.replace('-','')]||wizToggleState[key]){
-      const val=state.explicit||state.prevReleased||state.countryRestrict||'no';
-      setToggle(key,val);
-    }
-  });
+  // Toggle states — each restored from its own saved value below.
   if(state.explicit) setToggle('explicit',state.explicit);
   if(state.contentIdOptIn) setToggle('contentid',state.contentIdOptIn);
   if(state.prevReleased) setToggle('prev-released',state.prevReleased);
@@ -9187,11 +9181,28 @@ async function submitRelease(){
     }).filter(Boolean);
     const featArtist=document.getElementById('r-feat')?.value?.trim();
     const remixer=document.getElementById('r-remixer')?.value?.trim();
+    const copyrightYear=document.getElementById('r-copyright-year')?.value?.trim();
+    const prodYear=document.getElementById('r-prod-year')?.value?.trim();
+    const pcopyright=document.getElementById('r-pcopyright')?.value?.trim();
+    const genre2=document.getElementById('r-genre2')?.value;
+    const language=document.getElementById('r-language')?.value;
+    const artistType=document.querySelector('input[name="artist-type"]:checked')?.value;
     const extraInfo=[
       document.getElementById('r-label')?.value?'Label: '+document.getElementById('r-label').value:'',
-      document.getElementById('r-copyright')?.value?'(c) '+document.getElementById('r-copyright').value:'',
+      document.getElementById('r-copyright')?.value?'© '+(copyrightYear?copyrightYear+' ':'')+document.getElementById('r-copyright').value:'',
+      // ℗ (sound recording copyright) is a REQUIRED field per validateStep()
+      // — previously collected and enforced, but never actually saved
+      // anywhere, so admin could never see information the artist was
+      // forced to provide.
+      pcopyright?'℗ '+(prodYear?prodYear+' ':'')+pcopyright:'',
       featArtist?'Feat: '+featArtist:'',
       remixer?'Remixer: '+remixer:'',
+      genre2?'Secondary Genre: '+genre2:'',
+      // Shown to the artist on the Review step as if it were being recorded
+      // — it wasn't. Only worth stating when it differs from the default,
+      // rather than adding "Language: English" noise to every release.
+      (language&&language!=='English')?'Language: '+language:'',
+      artistType==='various'?'Compilation / Various Artists':'',
       ...relCreditLines,
       ...trackMetaLines,
       wizToggleState['explicit']==='yes'?'EXPLICIT CONTENT':'',
