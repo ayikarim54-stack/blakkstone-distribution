@@ -1725,6 +1725,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <i class="ti ti-loader" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
         </div>
       </div>
+      <!-- REFER A FRIEND (compact summary — full detail and history still lives on Profile) -->
+      <div class="adm-card" id="ov-referral-card" style="margin-bottom:1.5rem;display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+          <div style="min-width:0">
+            <div style="font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px"><i class="ti ti-gift" style="color:var(--gold)"></i> Invite an artist, you both get a discount</div>
+            <div style="font-size:12.5px;color:rgba(255,255,255,.4);margin-top:3px" id="ov-referral-sub">Share your link — they get 10% off their first plan, you get 20% off your next renewal.</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+            <input id="ov-referral-link" type="text" readonly style="background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:12.5px;width:220px" onclick="this.select()">
+            <button class="btn btn-gold btn-sm" onclick="copyOverviewReferralLink()"><i class="ti ti-copy"></i> Copy</button>
+          </div>
+        </div>
+      </div>
       <!-- STREAMS TREND (last 14 real days — hidden if there isn't enough daily data yet) -->
       <div class="adm-card" id="ov-trend-card" style="margin-bottom:1.5rem;display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;flex-wrap:wrap;gap:6px">
@@ -5167,6 +5180,7 @@ async function loadReleases(){
   filterReleasesCombined();
   renderUpcomingReleaseBanner();
   loadOverviewTrend();
+  loadOverviewReferralCard();
 }
 let ovViewingArtist='';
 let _ovPayoutsCache=[];
@@ -6711,6 +6725,37 @@ async function loadReferralSection(){
       list.innerHTML='<div style="color:rgba(239,68,68,.6);font-size:12px;padding:.5rem 0">Could not load referrals.</div>';
     }
   }
+}
+async function loadOverviewReferralCard(){
+  const card=document.getElementById('ov-referral-card');if(!card)return;
+  if(!profile?.account_id||teamContext){card.style.display='none';return;} // team members manage the owner's account, not their own referral link
+  card.style.display='block';
+  const linkInput=document.getElementById('ov-referral-link');
+  if(linkInput)linkInput.value=window.location.origin+'/?ref='+profile.account_id;
+  const subEl=document.getElementById('ov-referral-sub');
+  try{
+    const {data,error}=await sb.from('referrals').select('status').eq('referrer_id',user.id);
+    if(error)throw error;
+    const total=(data||[]).length;
+    const qualified=(data||[]).filter(r=>r.status==='qualified').length;
+    if(subEl&&total>0){
+      subEl.textContent=qualified>0
+        ? qualified+' reward'+(qualified===1?'':'s')+' ready — apply at your next checkout ('+total+' total referral'+(total===1?'':'s')+')'
+        : total+' referral'+(total===1?'':'s')+' so far — share your link above to get more';
+    }
+    // total===0 leaves the default static description in place — no need to overwrite it with "0 referrals"
+  }catch(e){
+    // Fails silently here (unlike the Profile page's full section) since
+    // this compact card's whole purpose is just to point people toward
+    // sharing their link — a missing referral_program table shouldn't
+    // block that with a visible error on the page everyone lands on first.
+    console.error('Overview referral card load error:',e);
+  }
+}
+function copyOverviewReferralLink(){
+  const input=document.getElementById('ov-referral-link');
+  input.select();
+  navigator.clipboard.writeText(input.value).then(()=>toast('Referral link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
 }
 async function loadTeamMembers(){
   const list=document.getElementById('team-members-list');if(!list)return;
