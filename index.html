@@ -8176,6 +8176,11 @@ async function initWizard(){
 let selectedDistroTier='standard';
 let priorityPaymentRef=null;
 function selectDistroTier(tier){
+  if(tier==='standard'&&selectedDistroTier==='priority'&&priorityPaymentRef){
+    if(!confirm('You already paid for Priority Distribution on this release. Switching to Standard means you will NOT get priority treatment, and that payment cannot be applied here again. Continue anyway?')){
+      return;
+    }
+  }
   selectedDistroTier=tier;
   if(tier==='standard')priorityPaymentRef=null; // switching away from Priority clears any prior payment for this session
   updateDistroTierUI();
@@ -9125,6 +9130,13 @@ async function submitRelease(){
     if(step4Errors.length){toast('Step 4: '+step4Errors.map(e=>e.label).join(', '),'err');goWizard(4);wizShowErrors(4,step4Errors);return;}
   }
   if(!document.getElementById('r-terms')?.checked){toast('Please agree to the terms and conditions','err');return;}
+  if(splitRows.length>1){
+    const totalBp=splitRows.reduce((a,r)=>a+r.bp,0);
+    if(totalBp!==10000){
+      toast('Royalty split must total exactly 100% before submitting — currently '+(totalBp/100).toFixed(2)+'%. Adjust it in the Split Sheet section.','err');
+      return;
+    }
+  }
   if(selectedDistroTier==='priority'&&!priorityPaymentRef){
     const btn2=document.getElementById('submit-btn');
     try{
@@ -11905,11 +11917,18 @@ function splitClaimRemainder(){
 }
 function splitRecalc(){
   const totalBp=splitRows.reduce((a,r)=>a+r.bp,0);const pct=(totalBp/100).toFixed(2);
-  const fill=document.getElementById('split-bar-fill');const label=document.getElementById('split-ledger-label');const status=document.getElementById('split-ledger-status');const submitBtn=document.getElementById('submit-btn');
+  const fill=document.getElementById('split-bar-fill');const label=document.getElementById('split-ledger-label');const status=document.getElementById('split-ledger-status');
   if(fill){fill.style.width=Math.min(100,totalBp/100)+'%';fill.style.background=totalBp===10000?'#34d399':totalBp>10000?'#f87171':'#fbbf24';}
   if(label){if(totalBp===10000){label.className='split-ledger-ok';label.textContent='Ledger Balanced: 100%';}else if(totalBp>10000){label.className='split-ledger-over';label.textContent='Over-allocated: '+pct+'%';}else{label.className='split-ledger-warn';label.textContent='Allocated: '+pct+'%';}}
   if(status) status.textContent=totalBp.toLocaleString()+' of 10,000 bp';
-  if(submitBtn) submitBtn.disabled=totalBp!==10000;
+  // Deliberately NOT disabling submit-btn here — this function can run
+  // while someone's still actively adjusting splits, and this is the
+  // SAME shared button as the wizard's final "Submit Release" action on a
+  // completely different step. Disabling it here left artists stuck with
+  // no visible explanation if they ever touched the split sheet without
+  // perfectly balancing it to 100% — nothing else in the app ever
+  // re-enabled it. The 100% requirement is now enforced with a clear,
+  // visible error at the actual submission point instead (submitRelease()).
   const lw=document.getElementById('split-legal-wrap');if(lw) lw.style.display=splitRows.length>1?'block':'none';
 }
 function renderSplitRows(){
