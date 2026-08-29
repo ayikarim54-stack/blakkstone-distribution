@@ -9180,7 +9180,8 @@ async function loadAdminActivityLog(){
       payout_status:'Payout status changed',payout_deleted:'Payout deleted',
       plan:'Plan changed',streams:'Streams edited',earnings:'Earnings edited',
       message_deleted:'Message deleted',conversation_deleted:'Conversation deleted',
-      broadcast_sent:'Broadcast sent',account_deletion:'Account deletion processed'
+      broadcast_sent:'Broadcast sent',account_deletion:'Account deletion processed',
+      impersonation:'Admin logged in as artist'
     };
     container.innerHTML=logs.map(l=>{
       const label=fieldLabels[l.field]||l.field;
