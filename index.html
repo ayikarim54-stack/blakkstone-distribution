@@ -2079,7 +2079,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <div id="artwork-preview-inner" style="text-align:center;padding:1.5rem">
                 <i class="ti ti-photo-plus" style="font-size:44px;color:rgba(255,255,255,.15);display:block;margin-bottom:.75rem"></i>
                 <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.3)">Click to add artwork</div>
-                <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:4px">3000×3000px recommended · 1400px min · Square · JPG or PNG</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:4px">3000×3000px minimum · Square · JPG or PNG</div>
               </div>
             </div>
             <input type="file" id="art-input" accept=".jpg,.jpeg,.png,image/*" style="display:none" onchange="previewArtwork(this)">
@@ -8066,11 +8066,24 @@ function parseNotesForDuplicate(notes){
   // time (see relPayload construction). Parse them back out by their
   // distinct prefixes, which stay consistent regardless of which other
   // optional fields were present or what order they ended up in.
-  const result={label:'',copyright:'',stores:null};
+  const result={label:'',copyright:'',copyrightYear:'',pcopyright:'',prodYear:'',feat:'',remixer:'',genre2:'',language:'',artistType:'',stores:null};
   if(!notes)return result;
+  // © / ℗ lines optionally lead with a 4-digit year ("© 2026 John Doe") —
+  // split that off into its own field to match the separate year/holder
+  // inputs in the UI, rather than dumping the year back into the name field.
+  const splitYear=(s)=>{
+    const m=s.match(/^(\d{4})\s+(.*)$/);
+    return m?{year:m[1],rest:m[2]}:{year:'',rest:s};
+  };
   notes.split(' | ').forEach(p=>{
     if(p.startsWith('Label: '))result.label=p.slice(7);
-    else if(p.startsWith('(c) '))result.copyright=p.slice(4);
+    else if(p.startsWith('© ')){const {year,rest}=splitYear(p.slice(2));result.copyright=rest;result.copyrightYear=year;}
+    else if(p.startsWith('℗ ')){const {year,rest}=splitYear(p.slice(2));result.pcopyright=rest;result.prodYear=year;}
+    else if(p.startsWith('Feat: '))result.feat=p.slice(6);
+    else if(p.startsWith('Remixer: '))result.remixer=p.slice(9);
+    else if(p.startsWith('Secondary Genre: '))result.genre2=p.slice(17);
+    else if(p.startsWith('Language: '))result.language=p.slice(10);
+    else if(p==='Compilation / Various Artists')result.artistType='various';
     else if(p.startsWith('Stores: '))result.stores=p.slice(8).split(',').map(s=>s.trim()).filter(Boolean);
   });
   return result;
@@ -8118,6 +8131,27 @@ async function duplicateReleaseAsNew(releaseId){
   const parsed=parseNotesForDuplicate(r.notes);
   const labelEl=document.getElementById('r-label');if(labelEl&&parsed.label)labelEl.value=parsed.label;
   const copyEl=document.getElementById('r-copyright');if(copyEl&&parsed.copyright)copyEl.value=parsed.copyright;
+  const copyYearEl=document.getElementById('r-copyright-year');if(copyYearEl&&parsed.copyrightYear)copyYearEl.value=parsed.copyrightYear;
+  const pcopyEl=document.getElementById('r-pcopyright');if(pcopyEl&&parsed.pcopyright)pcopyEl.value=parsed.pcopyright;
+  const prodYearEl=document.getElementById('r-prod-year');if(prodYearEl&&parsed.prodYear)prodYearEl.value=parsed.prodYear;
+  const genre2El=document.getElementById('r-genre2');if(genre2El&&parsed.genre2)genre2El.value=parsed.genre2;
+  const langEl=document.getElementById('r-language');if(langEl&&parsed.language)langEl.value=parsed.language;
+  if(parsed.artistType==='various'){
+    const radio=document.querySelector('input[name="artist-type"][value="various"]');
+    if(radio)radio.checked=true;
+  }
+  const featEl=document.getElementById('r-feat');
+  if(featEl&&parsed.feat){
+    featEl.value=parsed.feat;
+    const featCb=document.getElementById('r-has-feat');
+    if(featCb){featCb.checked=true;const wrap=document.getElementById('r-feat-wrap');if(wrap)wrap.style.display='block';}
+  }
+  const remixerEl=document.getElementById('r-remixer');
+  if(remixerEl&&parsed.remixer){
+    remixerEl.value=parsed.remixer;
+    const remixCb=document.getElementById('r-has-remix');
+    if(remixCb){remixCb.checked=true;const wrap=document.getElementById('r-remix-wrap');if(wrap)wrap.style.display='block';}
+  }
   if(parsed.stores&&parsed.stores.length){
     const validStores=parsed.stores.filter(s=>ALL_STORES.some(as=>as.name===s));
     if(validStores.length){wizStores=validStores;renderStoresGrid();}
@@ -8381,7 +8415,7 @@ function validateStep(step){
     if(!genre)   errors.push({fieldId:'r-genre',     label:'Primary genre is required'});
     if(!copyright) errors.push({fieldId:'r-copyright', label:'© Copyright holder is required'});
     if(!pcopyright) errors.push({fieldId:'r-pcopyright', label:'℗ Copyright holder is required'});
-    if(!artwork) errors.push({fieldId:'art-input',   label:'Cover artwork is required (square, 1400px minimum)'});
+    if(!artwork) errors.push({fieldId:'art-input',   label:'Cover artwork is required (square, 3000px minimum)'});
 
     wizTracks.forEach((t,i)=>{
       const m=t.meta||{};
@@ -8801,7 +8835,7 @@ async function previewArtwork(input){
     input.value='';
     return;
   }
-  const MIN_DIM=1400;
+  const MIN_DIM=3000;
   if(dims.w!==dims.h){
     toast('Artwork must be perfectly square ('+dims.w+'×'+dims.h+'px uploaded). Crop it to a 1:1 ratio and try again.','err');
     URL.revokeObjectURL(objUrl);
@@ -8809,7 +8843,7 @@ async function previewArtwork(input){
     return;
   }
   if(dims.w<MIN_DIM){
-    toast('Artwork is too small ('+dims.w+'×'+dims.h+'px). Minimum is '+MIN_DIM+'×'+MIN_DIM+'px — 3000×3000px recommended for best quality.','err');
+    toast('Artwork is too small ('+dims.w+'×'+dims.h+'px). Minimum is '+MIN_DIM+'×'+MIN_DIM+'px — required by Apple Music and other stores.','err');
     URL.revokeObjectURL(objUrl);
     input.value='';
     return;
@@ -8817,9 +8851,6 @@ async function previewArtwork(input){
   wizData.artFile=file;
   const wrap=document.getElementById('artwork-preview-wrap');if(wrap) wrap.innerHTML='<img src="'+objUrl+'" alt="Cover artwork preview" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
   const tp=document.getElementById('artwork-title-preview');const t=document.getElementById('r-title');if(tp&&t) tp.textContent=t.value||'Your Release';
-  if(dims.w<3000){
-    toast('Artwork accepted ('+dims.w+'×'+dims.w+'px) — 3000×3000px or larger is recommended for the sharpest quality on TVs and car displays.','ok');
-  }
   // Upload artwork immediately so draft can reference it
   try{
     const ext=file.name.split('.').pop();
