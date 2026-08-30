@@ -9753,6 +9753,9 @@ async function bulkPayoutStatusUpdate(status){
     if(error){console.error('Bulk payout update error for',id,error);continue;}
     succeeded++;
     logAudit(null,p?.user_id||null,'payout_status',p?.status||null,status+(reason?' — '+reason:'')+' (bulk)');
+    if((status==='paid'||status==='failed')&&payoutProfileMap[p?.user_id]?.email){
+      notifyArtistEmail('payout_'+status,{amount:p.amount,method:p.method,reason},payoutProfileMap[p.user_id].email);
+    }
   }
   if(succeeded===checked.length)toast(succeeded+' payout(s) updated','ok');
   else if(succeeded>0)toast(succeeded+' of '+checked.length+' payout(s) updated — check console for errors on the rest','err');
@@ -9899,6 +9902,12 @@ async function updatePayoutStatus(id,status){
   const {error}=await sb.from('payouts').update(update).eq('id',id);
   if(error){toast('Update failed: '+error.message,'err');return;}
   logAudit(null,p?.user_id||null,'payout_status',p?.status||null,status+(reason?' — '+reason:''));
+  // The prompt above tells admin this reason "will be shown to the
+  // artist" — previously nothing actually did that; the artist had no way
+  // to know their payout even changed status short of manually checking.
+  if((status==='paid'||status==='failed')&&payoutProfileMap[p?.user_id]?.email){
+    notifyArtistEmail('payout_'+status,{amount:p.amount,method:p.method,reason},payoutProfileMap[p.user_id].email);
+  }
   toast('Payout marked as '+status,'ok');
   loadAdminPayouts();
   loadAdminStats();
