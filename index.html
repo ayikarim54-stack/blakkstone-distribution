@@ -9027,17 +9027,31 @@ async function saveDraft(){
   const state=collectWizardState();
   if(!state.title&&!state.tracks.length){toast('Add a title or upload a track first','err');return;}
   try{
-    const key=DRAFT_KEY+'_'+user.id;
-    localStorage.setItem(key, JSON.stringify(state));
-    // Also save to Supabase profiles metadata as backup
-    const {error:cloudBackupError}=await sb.from('profiles').update({draft_wizard: state}).eq('id',user.id);
-    if(cloudBackupError){
-      console.error('Draft cloud backup error (saved locally on this device only):',cloudBackupError);
-      toast('Saved on this device, but the cloud backup failed — it may not carry over if you switch devices or browsers.','err');
+    saveLocalDraft(currentDraftId,state);
+    if(!currentDraftId){
+      const {data,error}=await sb.from('release_drafts').insert({user_id:user.id,title:state.title||null,state}).select('id').single();
+      if(error){
+        console.error('Draft cloud backup error (saved locally on this device only):',error);
+        toast('Saved on this device, but the cloud backup failed — it may not carry over if you switch devices or browsers.','err');
+      } else if(data?.id){
+        currentDraftId=data.id;
+        saveLocalDraft(null,null);
+        saveLocalDraft(currentDraftId,state);
+        toast('Draft saved — you can resume anytime','ok');
+      }
     } else {
-      toast('Draft saved — you can resume anytime','ok');
+      const {error}=await sb.from('release_drafts').update({title:state.title||null,state,updated_at:new Date().toISOString()}).eq('id',currentDraftId);
+      if(error){
+        console.error('Draft cloud backup error (saved locally on this device only):',error);
+        toast('Saved on this device, but the cloud backup failed — it may not carry over if you switch devices or browsers.','err');
+      } else {
+        toast('Draft saved — you can resume anytime','ok');
+      }
     }
-    updateDraftBanner(state);
+    // Deliberately not calling updateDraftBanner here — that overlay
+    // blocks the whole wizard, and popping it up immediately after an
+    // explicit save, while the artist is actively working on exactly
+    // this draft, would be pointless and disruptive rather than helpful.
   }catch(e){
     toast('Draft saved locally','ok');
   }
@@ -9428,11 +9442,17 @@ async function submitRelease(){
       email:user?.email
     });
     notifyArtistEmail('release_confirmation',{title,artist,isFirstEver:isFirstEverRelease},user?.email);
-    // Clear draft on success
-    try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
-    sb.from('profiles').update({draft_wizard:null}).eq('id',user.id).then(({error})=>{
-      if(error)console.error('Draft cloud cleanup after submission failed (release itself was submitted successfully) — a stale draft banner may reappear:',error);
-    });
+    // Clear only THIS draft on success — not every draft this artist has
+    // saved. Previously this wiped the entire local storage key outright,
+    // which would silently destroy any other unrelated, still-unfinished
+    // drafts just because a different one happened to get submitted.
+    if(currentDraftId){
+      removeLocalDraft(currentDraftId);
+      sb.from('release_drafts').delete().eq('id',currentDraftId).then(({error})=>{
+        if(error)console.error('Draft cloud cleanup after submission failed (release itself was submitted successfully) — this draft may reappear as a duplicate of the now-submitted release:',error);
+      });
+      currentDraftId=null;
+    }
     initWizard();await loadReleases();updateOnboarding();goPage('releases',null);
   }catch(e){toast(e.message,'err');}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Release';
