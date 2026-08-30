@@ -3639,12 +3639,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
      used to cause an existing draft to get silently overwritten within 20
      seconds by unrelated autosave, with zero warning) -->
 <div class="overlay" id="draft-resume-overlay">
-  <div class="modal" style="max-width:440px;text-align:center">
-    <div style="font-size:32px;margin-bottom:.75rem"><i class="ti ti-file-time" style="color:var(--gold)"></i></div>
-    <h3 style="justify-content:center;border:none;padding:0;margin-bottom:.5rem">You have an unfinished draft</h3>
-    <div id="draft-resume-title" style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:1.5rem">Loading...</div>
-    <button class="btn btn-gold" style="width:100%;justify-content:center;margin-bottom:8px" onclick="resumeDraft()"><i class="ti ti-player-play"></i> Resume this draft</button>
-    <button class="btn btn-sm" style="width:100%;justify-content:center;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="discardDraft()">Start a new release instead (deletes this draft)</button>
+  <div class="modal" style="max-width:460px">
+    <div style="text-align:center;margin-bottom:1rem">
+      <div style="font-size:32px;margin-bottom:.5rem"><i class="ti ti-file-time" style="color:var(--gold)"></i></div>
+      <h3 style="justify-content:center;border:none;padding:0" id="draft-resume-heading">You have an unfinished draft</h3>
+    </div>
+    <div id="draft-resume-list" style="max-height:340px;overflow-y:auto;margin-bottom:12px"></div>
+    <button class="btn btn-sm" id="draft-start-new-btn" style="width:100%;justify-content:center;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="startFreshFromDraftChoice()"><i class="ti ti-plus"></i> Start a new release</button>
   </div>
 </div>
 
@@ -4807,7 +4808,7 @@ function releaseGridCard(r){
   if(r.isDraft){
     const ago=r.savedAt?timeSince(new Date(r.savedAt)):'recently';
     const art=r.artUrl?'<img src="'+r.artUrl+'" alt="art">':'<i class="ti ti-file-music"></i>';
-    return '<div class="rg-card" onclick="resumeDraftFromMusic()"><div class="rg-art">'+art+'<span class="rg-badge" style="background:rgba(212,175,55,.9);color:var(--black)">Draft</span><button onclick="event.stopPropagation();deleteDraftFromMusic()" title="Delete draft" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.65);border:none;border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#f87171;z-index:2"><i class="ti ti-trash" style="font-size:13px"></i></button></div><div class="rg-info"><div class="rg-title">'+esc(r.title||'Untitled release')+'</div><div class="rg-meta">Saved '+ago+'</div></div></div>';
+    return '<div class="rg-card" onclick="resumeDraftFromMusic(\''+r.id+'\')"><div class="rg-art">'+art+'<span class="rg-badge" style="background:rgba(212,175,55,.9);color:var(--black)">Draft</span><button onclick="event.stopPropagation();deleteDraftFromMusic(\''+r.id+'\')" title="Delete draft" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.65);border:none;border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#f87171;z-index:2"><i class="ti ti-trash" style="font-size:13px"></i></button></div><div class="rg-info"><div class="rg-title">'+esc(r.title||'Untitled release')+'</div><div class="rg-meta">Saved '+ago+'</div></div></div>';
   }
   const bc={pending:'rg-badge-pending',review:'rg-badge-review',live:'rg-badge-live',rejected:'rg-badge-rejected',takendown:'rg-badge-takendown'}[r.status]||'rg-badge-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
@@ -4821,7 +4822,7 @@ function releaseRow(r){
   if(r.isDraft){
     const ago=r.savedAt?timeSince(new Date(r.savedAt)):'recently';
     const art=r.artUrl?'<img src="'+r.artUrl+'" alt="art">':'<i class="ti ti-file-music"></i>';
-    return '<div class="rr" onclick="resumeDraftFromMusic()" style="cursor:pointer"><div class="r-art">'+art+'</div><div class="r-info"><div class="r-title">'+esc(r.title||'Untitled release')+'</div><div class="r-meta">Draft · saved '+ago+'</div></div><span class="badge" style="background:rgba(212,175,55,.12);color:var(--gold);border:1px solid rgba(212,175,55,.3)">Draft</span><i class="ti ti-player-play" style="color:var(--gold);font-size:15px;flex-shrink:0" title="Resume"></i></div>';
+    return '<div class="rr" onclick="resumeDraftFromMusic(\''+r.id+'\')" style="cursor:pointer"><div class="r-art">'+art+'</div><div class="r-info"><div class="r-title">'+esc(r.title||'Untitled release')+'</div><div class="r-meta">Draft · saved '+ago+'</div></div><span class="badge" style="background:rgba(212,175,55,.12);color:var(--gold);border:1px solid rgba(212,175,55,.3)">Draft</span><i class="ti ti-player-play" style="color:var(--gold);font-size:15px;flex-shrink:0" title="Resume"></i></div>';
   }
   const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
   const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
@@ -4833,7 +4834,7 @@ function releaseRow(r){
   const streamsDisplay='<div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:700;color:#fff">'+(r.streams||0).toLocaleString()+'</div><div style="font-size:10px;color:rgba(255,255,255,.3)">streams</div></div>';
   return '<div class="rr" onclick="openReleaseFromCard(\''+r.id+'\')"><div class="r-art">'+art+'</div><div class="r-info"><div class="r-title">'+esc(r.title)+'</div><div class="r-meta">'+esc(r.artist)+' · '+esc(r.genre||'')+' · '+d+'</div>'+reasonHint+'</div>'+streamsDisplay+'<span class="badge '+bc+'">'+bl+'</span><i class="ti ti-chevron-right" style="color:rgba(255,255,255,.2);font-size:16px;flex-shrink:0"></i></div>';
 }
-async function resumeDraftFromMusic(){
+async function resumeDraftFromMusic(draftId){
   goPage('submit',null);
   // goPage fires initWizard() without awaiting it, and initWizard itself
   // awaits a Supabase check before resetting wizTracks=[] — so restoring a
@@ -4841,18 +4842,21 @@ async function resumeDraftFromMusic(){
   // silently wiped out. Awaiting initWizard() again here directly
   // guarantees the reset has fully finished before we restore on top of it.
   await initWizard();
-  const state=await loadDraft();
+  const drafts=await loadAllDrafts();
+  const state=draftId?drafts.find(d=>d.id===draftId):drafts[0];
   if(state&&(state.title||state.tracks?.length)){
+    currentDraftId=state.id;
     await restoreWizardState(state);
     const overlay=document.getElementById('draft-resume-overlay');if(overlay)overlay.classList.remove('open');
     toast('Draft restored — pick up where you left off','ok');
   }
 }
-async function deleteDraftFromMusic(){
+async function deleteDraftFromMusic(draftId){
   if(!confirm('Delete this draft release? This cannot be undone.'))return;
-  try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
-  const {error}=await sb.from('profiles').update({draft_wizard:null}).eq('id',user.id);
-  _cachedDraftForMusicTab=null;
+  removeLocalDraft(draftId);
+  const {error}=await sb.from('release_drafts').delete().eq('id',draftId);
+  _cachedDraftsForMusicTab=(_cachedDraftsForMusicTab||[]).filter(d=>d.id!==draftId);
+  if(draftId===currentDraftId)currentDraftId=null;
   const overlay=document.getElementById('draft-resume-overlay');if(overlay)overlay.classList.remove('open');
   if(error){
     console.error('Draft cloud delete error:',error);
@@ -4960,7 +4964,7 @@ function setRelGenreFilter(genre){
   if(btn) btn.innerHTML='<i class="ti ti-adjustments-horizontal"></i> '+(genre?esc(genre):'Filters');
   filterReleasesCombined();
 }
-let _cachedDraftForMusicTab=null;
+let _cachedDraftsForMusicTab=[];
 function filterReleasesCombined(){
   relFilterState.search=(document.getElementById('rel-search-input')?.value||'').toLowerCase();
   const artistList=getRelArtistList();
@@ -4976,14 +4980,15 @@ function filterReleasesCombined(){
   if(relFilterState.artist)filtered=filtered.filter(r=>r.artist===relFilterState.artist);
   if(relFilterState.search)filtered=filtered.filter(r=>(r.title||'').toLowerCase().includes(relFilterState.search)||(r.artist||'').toLowerCase().includes(relFilterState.search));
   filtered=sortReleases(filtered,relFilterState.sort);
-  // Draft is display-only, never added to allRelData, and always pinned to the very top of page 1
-  let draftItem=null;
-  if((s==='all'||s==='pending')&&_cachedDraftForMusicTab){
-    const d=_cachedDraftForMusicTab;
-    const matchesSearch=!relFilterState.search||(d.title||'').toLowerCase().includes(relFilterState.search);
-    const matchesGenre=!relFilterState.genre||d.genre===relFilterState.genre;
-    const matchesArtist=!relFilterState.artist||d.artist===relFilterState.artist;
-    if(matchesSearch&&matchesGenre&&matchesArtist) draftItem={...d,isDraft:true};
+  // Drafts are display-only, never added to allRelData, and always pinned to the very top of page 1
+  let draftItems=[];
+  if(s==='all'||s==='pending'){
+    draftItems=(_cachedDraftsForMusicTab||[]).filter(d=>{
+      const matchesSearch=!relFilterState.search||(d.title||'').toLowerCase().includes(relFilterState.search);
+      const matchesGenre=!relFilterState.genre||d.genre===relFilterState.genre;
+      const matchesArtist=!relFilterState.artist||d.artist===relFilterState.artist;
+      return matchesSearch&&matchesGenre&&matchesArtist;
+    }).map(d=>({...d,isDraft:true}));
   }
   const activeWrap=document.getElementById('rel-active-filters');
   if(activeWrap){
@@ -5001,7 +5006,7 @@ function filterReleasesCombined(){
   if(relFilterState.page>totalPages)relFilterState.page=totalPages;
   if(relFilterState.page<1)relFilterState.page=1;
   const pageItems=filtered.slice((relFilterState.page-1)*REL_PAGE_SIZE,relFilterState.page*REL_PAGE_SIZE);
-  const displayItems=draftItem&&relFilterState.page===1?[draftItem,...pageItems]:pageItems;
+  const displayItems=draftItems.length&&relFilterState.page===1?[...draftItems,...pageItems]:pageItems;
   document.getElementById('all-releases').innerHTML=displayItems.length?'<div class="releases-grid">'+displayItems.map(r=>releaseGridCard(r)).join('')+'</div>':'<div class="empty"><i class="ti ti-music-off"></i><p>No results.</p></div>';
   renderRelPagination(filtered.length,totalPages);
 }
@@ -5186,7 +5191,7 @@ async function loadReleases(){
   const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',user.id);
   _ovPayoutsCache=payoutsData||[];
   renderOverviewStats();
-  _cachedDraftForMusicTab=await loadDraft();
+  _cachedDraftsForMusicTab=await loadAllDrafts();
   filterReleasesCombined();
   renderUpcomingReleaseBanner();
   loadOverviewTrend();
@@ -8189,7 +8194,7 @@ async function initWizard(){
   }
   if(blockedEl)blockedEl.style.display='none';
   if(bodyEl)bodyEl.style.display='block';
-  wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};
+  wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};currentDraftId=null;
   // Default to the real current year, computed live — not a hardcoded
   // number that quietly goes stale every time the calendar turns over.
   const thisYear=new Date().getFullYear();
@@ -8201,9 +8206,10 @@ async function initWizard(){
   if(feeDisplay)feeDisplay.innerHTML='+$'+PRIORITY_DISTRO_FEE_USD+' <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:400">(add-on)</span>';
   const dupWarn=document.getElementById('title-duplicate-warn');if(dupWarn)dupWarn.style.display='none';
   renderStoresGrid();goWizard(1);
-  // Check for saved draft
-  if(user) loadDraft().then(state=>{
-    if(state&&(state.title||state.tracks?.length)) updateDraftBanner(state);
+  // Check for saved drafts
+  if(user) loadAllDrafts().then(drafts=>{
+    const valid=drafts.filter(d=>d.title||d.tracks?.length);
+    if(valid.length) updateDraftBanner(valid);
   });
   setupPrimaryArtistField();
   selectedDistroTier='standard';priorityPaymentRef=null;
@@ -8496,7 +8502,10 @@ async function saveDraftSilent(){
   try{
     const state=collectWizardState();
     if(!state.title&&!state.tracks?.length)return;
-    localStorage.setItem(DRAFT_KEY+'_'+user.id, JSON.stringify(state));
+    // Local drafts are stored as an array (one entry per draft) under a
+    // single key per user, keyed internally by draft id — this local
+    // helper is defined further down (saveLocalDraft).
+    saveLocalDraft(currentDraftId,state);
     // Also back up to the cloud, not just this browser's local storage —
     // previously only the explicit "Save Draft" button did this, so anyone
     // who never clicked it (relying on autosave alone, which most people
@@ -8505,9 +8514,56 @@ async function saveDraftSilent(){
     // tracks were always safe in storage — only the record of where to
     // find them was at risk. Fire-and-forget: never let a backup hiccup
     // interrupt someone actively drafting.
-    Promise.resolve(sb.from('profiles').update({draft_wizard: state}).eq('id',user.id)).then(({error})=>{
-      if(error)console.error('Draft cloud backup error (local save still succeeded):',error);
-    }).catch(e=>console.error('Draft cloud backup error (local save still succeeded):',e));
+    if(!currentDraftId){
+      // First save of a brand new draft — INSERT and capture the real id,
+      // so every save after this one updates the same row instead of
+      // creating a new draft every 20 seconds.
+      const {data,error}=await sb.from('release_drafts').insert({user_id:user.id,title:state.title||null,state}).select('id').single();
+      if(error){
+        console.error('Draft cloud insert error (local save still succeeded, will retry next autosave):',error);
+      } else if(data?.id){
+        currentDraftId=data.id;
+        // The local copy was saved above under a temporary null-keyed
+        // slot — move it to the real id now that we have one.
+        saveLocalDraft(null,null);
+        saveLocalDraft(currentDraftId,state);
+      }
+    } else {
+      Promise.resolve(sb.from('release_drafts').update({title:state.title||null,state,updated_at:new Date().toISOString()}).eq('id',currentDraftId)).then(({error})=>{
+        if(error)console.error('Draft cloud backup error (local save still succeeded):',error);
+      }).catch(e=>console.error('Draft cloud backup error (local save still succeeded):',e));
+    }
+  }catch(e){}
+}
+// ── Local (per-browser) draft storage — an array of {id, state} entries
+// under one key per user, rather than one key per draft, since localStorage
+// has no query capability and a single JSON array is simplest to reason
+// about for a handful of drafts.
+function getLocalDrafts(){
+  try{
+    const raw=localStorage.getItem(DRAFT_KEY+'_'+user.id);
+    return raw?JSON.parse(raw):[];
+  }catch(e){return [];}
+}
+function saveLocalDraft(draftId,state){
+  try{
+    let drafts=getLocalDrafts();
+    if(state===null){
+      // Explicit removal (used when moving a brand new draft from its
+      // temporary null slot to its real id after the first cloud insert).
+      drafts=drafts.filter(d=>d.id!==draftId);
+    } else {
+      const idx=drafts.findIndex(d=>d.id===draftId);
+      const entry={id:draftId,state};
+      if(idx>=0)drafts[idx]=entry;else drafts.push(entry);
+    }
+    localStorage.setItem(DRAFT_KEY+'_'+user.id,JSON.stringify(drafts));
+  }catch(e){console.error('Local draft storage error:',e);}
+}
+function removeLocalDraft(draftId){
+  try{
+    const drafts=getLocalDrafts().filter(d=>d.id!==draftId);
+    localStorage.setItem(DRAFT_KEY+'_'+user.id,JSON.stringify(drafts));
   }catch(e){}
 }
 function handleAudioSelect(input){Array.from(input.files).forEach(f=>addTrack(f));input.value='';}
@@ -8920,6 +8976,17 @@ function filterStores(type,btn){
 }
 // ── DRAFT SAVE / RESUME ──────────────────────────────
 const DRAFT_KEY='blakkstone_wiz_draft';
+// Reasonable ceiling on how many drafts someone can accumulate at once —
+// protects against unbounded growth from abandoned drafts piling up
+// indefinitely, while still comfortably covering anyone genuinely juggling
+// several releases in progress at the same time.
+const MAX_DRAFTS=5;
+// Tracks which specific release_drafts row the wizard is currently editing.
+// null means this is a brand new draft that hasn't been saved yet — the
+// first autosave will INSERT a new row and capture its id here, so every
+// autosave after that UPDATEs the same row instead of creating a new one
+// every 20 seconds.
+let currentDraftId=null;
 
 function collectWizardState(){
   return {
@@ -8976,29 +9043,50 @@ async function saveDraft(){
   }
 }
 
-async function loadDraft(){
+async function loadAllDrafts(){
   try{
-    // Try localStorage first (fastest)
-    const key=DRAFT_KEY+'_'+user.id;
-    const local=localStorage.getItem(key);
-    if(local){
-      const state=JSON.parse(local);
-      if(state.title||state.tracks?.length) return state;
-    }
-    // Fallback: check Supabase profile
-    const {data}=await sb.from('profiles').select('draft_wizard').eq('id',user.id).single();
-    if(data?.draft_wizard?.title||data?.draft_wizard?.tracks?.length) return data.draft_wizard;
-  }catch(e){}
-  return null;
+    const {data,error}=await sb.from('release_drafts').select('id,title,state,updated_at').eq('user_id',user.id).order('updated_at',{ascending:false});
+    if(error)throw error;
+    return (data||[]).map(d=>({id:d.id,...d.state,title:d.state?.title||d.title,savedAt:d.updated_at}));
+  }catch(e){
+    console.error('Draft cloud fetch error, falling back to local drafts:',e);
+    return getLocalDrafts().map(d=>({id:d.id,...d.state}));
+  }
 }
 
-function updateDraftBanner(state){
+function updateDraftBanner(drafts){
   const overlay=document.getElementById('draft-resume-overlay');
-  const titleEl=document.getElementById('draft-resume-title');
-  if(!overlay||!state)return;
-  const ago=state.savedAt?timeSince(new Date(state.savedAt)):'recently';
-  if(titleEl) titleEl.textContent='"'+(state.title||'Untitled release')+'" · saved '+ago;
+  const heading=document.getElementById('draft-resume-heading');
+  const list=document.getElementById('draft-resume-list');
+  const startBtn=document.getElementById('draft-start-new-btn');
+  if(!overlay||!drafts||!drafts.length)return;
+  if(heading)heading.textContent=drafts.length===1?'You have an unfinished draft':'You have '+drafts.length+' unfinished drafts';
+  if(list){
+    list.innerHTML=drafts.map(d=>{
+      const ago=d.savedAt?timeSince(new Date(d.savedAt)):'recently';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:.7rem .9rem;margin-bottom:8px">'
+        +'<div style="min-width:0;text-align:left"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(d.title||'Untitled release')+'</div><div style="font-size:11px;color:rgba(255,255,255,.4)">Saved '+ago+'</div></div>'
+        +'<div style="display:flex;gap:6px;flex-shrink:0">'
+          +'<button class="btn btn-gold btn-sm" onclick="resumeDraft(\''+d.id+'\')"><i class="ti ti-player-play"></i> Resume</button>'
+          +'<button onclick="discardDraft(\''+d.id+'\')" title="Delete draft" style="background:none;border:1px solid rgba(255,255,255,.1);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#f87171"><i class="ti ti-trash" style="font-size:14px"></i></button>'
+        +'</div></div>';
+    }).join('');
+  }
+  if(startBtn){
+    const atLimit=drafts.length>=MAX_DRAFTS;
+    startBtn.disabled=atLimit;
+    startBtn.style.opacity=atLimit?'.4':'1';
+    startBtn.style.cursor=atLimit?'not-allowed':'pointer';
+    startBtn.innerHTML=atLimit
+      ?'<i class="ti ti-lock"></i> Limit of '+MAX_DRAFTS+' drafts reached — finish or delete one first'
+      :'<i class="ti ti-plus"></i> Start a new release';
+  }
   overlay.classList.add('open');
+}
+function startFreshFromDraftChoice(){
+  document.getElementById('draft-resume-overlay').classList.remove('open');
+  // Nothing to discard — multiple drafts can coexist now, so starting a
+  // new one simply leaves every existing draft untouched in the background.
 }
 
 function timeSince(date){
@@ -9010,26 +9098,36 @@ function timeSince(date){
   return Math.floor(hrs/24)+'d ago';
 }
 
-function resumeDraft(){
-  loadDraft().then(async state=>{
+function resumeDraft(draftId){
+  loadAllDrafts().then(async drafts=>{
+    const state=drafts.find(d=>d.id===draftId);
     if(!state){toast('No draft found','err');return;}
+    currentDraftId=state.id;
     await restoreWizardState(state);
     document.getElementById('draft-resume-overlay').classList.remove('open');
     toast('Draft restored — pick up where you left off','ok');
   });
 }
 
-async function discardDraft(){
-  if(!confirm('Discard your saved draft?'))return;
-  try{localStorage.removeItem(DRAFT_KEY+'_'+user.id);}catch(e){}
-  const {error}=await sb.from('profiles').update({draft_wizard:null}).eq('id',user.id);
-  document.getElementById('draft-resume-overlay').classList.remove('open');
+async function discardDraft(draftId){
+  if(!confirm('Discard this draft? This cannot be undone.'))return;
+  removeLocalDraft(draftId);
+  const {error}=await sb.from('release_drafts').delete().eq('id',draftId);
+  if(draftId===currentDraftId)currentDraftId=null;
   if(error){
     console.error('Draft cloud delete error:',error);
     toast('Draft removed here, but the cloud backup couldn\'t be cleared — it may reappear later. Try again, or contact Support if this keeps happening.','err');
   } else {
     toast('Draft discarded','ok');
   }
+  // Re-render the choice with whatever drafts remain — closes itself
+  // naturally once none are left, rather than always closing outright,
+  // since discarding one draft out of several should still let the
+  // artist choose among the rest.
+  const remaining=await loadAllDrafts();
+  const valid=remaining.filter(d=>d.title||d.tracks?.length);
+  if(valid.length) updateDraftBanner(valid);
+  else document.getElementById('draft-resume-overlay').classList.remove('open');
 }
 
 async function restoreWizardState(state){
@@ -9206,6 +9304,10 @@ async function submitRelease(){
   }
   const btn=document.getElementById('submit-btn');btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
   try{
+    const title=document.getElementById('r-title')?.value.trim();
+    const artist=getSelectedPrimaryArtist();
+    const genre=document.getElementById('r-genre')?.value;
+    const date=document.getElementById('r-date')?.value;
     let artPublicUrl='';
     if(wizData.artUrl){
       // Already uploaded during draft/preview
