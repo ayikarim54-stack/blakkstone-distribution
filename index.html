@@ -1899,6 +1899,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <div style="font-size:11px;color:rgba(255,255,255,.35)">ISRC</div>
               <div id="rel-modal-isrc" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;font-family:monospace">—</div>
             </div>
+            <div id="rel-modal-upc-cell" style="display:none">
+              <div style="font-size:11px;color:rgba(255,255,255,.35)">UPC</div>
+              <div id="rel-modal-upc" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;font-family:monospace">—</div>
+            </div>
             <div>
               <div style="font-size:11px;color:rgba(255,255,255,.35)">Status</div>
               <div id="rel-modal-status-text" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
@@ -5345,6 +5349,7 @@ function openReleaseModal(r,updateUrl){
   set('rel-modal-date',r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—');
   set('rel-modal-status-text',bl);set('rel-modal-submitted',r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—');
   const ic=document.getElementById('rel-modal-isrc-cell');if(ic) ic.style.display=r.isrc?'block':'none';set('rel-modal-isrc',r.isrc||'');
+  const uc=document.getElementById('rel-modal-upc-cell');if(uc) uc.style.display=r.upc?'block':'none';set('rel-modal-upc',r.upc||'');
   const nw=document.getElementById('rel-modal-notes-wrap');if(nw) nw.style.display=r.notes?'block':'none';set('rel-modal-notes',r.notes||'');
   const stEl=document.getElementById('rel-modal-stores');
   if(stEl){
@@ -7673,7 +7678,9 @@ async function openDistributionModal(releaseId){
       // Releases submitted before release_tracks existed only saved a single audio_url directly on the release row.
       if(release.audio_url){
         tracksHtml='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem .9rem;background:var(--surface2);border:1px solid var(--line);border-radius:9px;margin-bottom:6px;flex-wrap:wrap">'
-          +'<div style="min-width:0"><div style="font-size:13px;color:#fff">1. '+esc(release.title)+(release.isrc?' <span style="color:rgba(255,255,255,.35);font-size:11px">· ISRC '+esc(release.isrc)+'</span>':'')+'</div></div>'
+          +'<div style="min-width:0;flex:1"><div style="font-size:13px;color:#fff;margin-bottom:5px">1. '+esc(release.title)+'</div>'
+          +'<input id="dist-isrc-legacy" placeholder="ISRC (e.g. USRC17607839)" value="'+esc(release.isrc||'')+'" style="width:100%;max-width:220px;font-size:12px;font-family:monospace;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 8px;color:#fff">'
+          +'</div>'
           +'<div style="display:flex;gap:6px;flex-shrink:0">'
           +'<button class="btn adm-btn-sec btn-sm" onclick="copyTrackUrlForSupport(\''+esc(release.audio_url)+'\')"><i class="ti ti-copy"></i> Copy Link</button>'
           +'<button class="btn btn-gold btn-sm" onclick="downloadDistributionFile(\''+esc(release.audio_url)+'\',\''+esc(release.title||'track').replace(/'/g,"\\'")+'.mp3\',this)"><i class="ti ti-download"></i> Download</button>'
@@ -7688,7 +7695,9 @@ async function openDistributionModal(releaseId){
         const ext=(t.audio_url||'').split('?')[0].match(/\.([a-zA-Z0-9]+)$/);
         const filename=(t.title||'track '+t.track_number).replace(/[^\w\- ]/g,'').trim()+'.'+(ext?ext[1]:'mp3');
         return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem .9rem;background:var(--surface2);border:1px solid var(--line);border-radius:9px;margin-bottom:6px;flex-wrap:wrap">'
-          +'<div style="min-width:0;flex:1"><div style="font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.track_number+'. '+esc(t.title)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+(t.isrc?'ISRC '+esc(t.isrc):'No ISRC set')+(dur?' · '+dur:'')+'</div></div>'
+          +'<div style="min-width:0;flex:1"><div style="font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px">'+t.track_number+'. '+esc(t.title)+(dur?' <span style="color:rgba(255,255,255,.35);font-weight:400">· '+dur+'</span>':'')+'</div>'
+          +'<input class="dist-isrc-track" data-track-id="'+t.id+'" placeholder="ISRC (e.g. USRC17607839)" value="'+esc(t.isrc||'')+'" style="width:100%;max-width:220px;font-size:12px;font-family:monospace;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:5px 8px;color:#fff">'
+          +'</div>'
           +'<div style="display:flex;gap:6px;flex-shrink:0">'
           +(t.audio_url?'<button class="btn adm-btn-sec btn-sm" onclick="copyTrackUrlForSupport(\''+esc(t.audio_url)+'\')"><i class="ti ti-copy"></i> Copy Link</button>':'')
           +(t.audio_url?'<button class="btn btn-gold btn-sm" onclick="downloadDistributionFile(\''+esc(t.audio_url)+'\',\''+esc(filename).replace(/'/g,"\\'")+'\',this)"><i class="ti ti-download"></i> Download</button>':'<span style="font-size:11px;color:rgba(239,68,68,.6)">Missing file</span>')
@@ -7714,13 +7723,48 @@ async function openDistributionModal(releaseId){
         +'</div>'
         +(release.artwork_url?'<button class="btn adm-btn-sec btn-sm" style="flex-shrink:0" onclick="downloadDistributionFile(\''+esc(release.artwork_url)+'\',\''+esc((release.title||'artwork').replace(/[^\w\- ]/g,'').trim())+'.jpg\',this)"><i class="ti ti-download"></i> Artwork</button>':'')
       +'</div>'
+      +'<div style="margin-bottom:1.25rem"><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-barcode"></i> UPC (once assigned by ONErpm)</div>'
+        +'<input id="dist-upc-input" placeholder="UPC (e.g. 197xxxxxxxxx)" value="'+esc(release.upc||'')+'" style="width:100%;max-width:260px;font-size:13px;font-family:monospace;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;color:#fff">'
+      +'</div>'
       +(noteLines.length?'<div style="margin-bottom:1.25rem"><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-file-description"></i> Credits & Details</div><div style="font-size:12.5px;color:rgba(255,255,255,.6);line-height:2;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:.75rem 1rem">'+noteLines.map(esc).join('<br>')+'</div></div>':'')
-      +'<div><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-music"></i> Tracks ('+(tracks?.length||(release.audio_url?1:0))+')</div>'+tracksHtml+'</div>'
+      +'<div><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-music"></i> Tracks ('+(tracks?.length||(release.audio_url?1:0))+')</div>'+tracksHtml
+      +'<button class="btn btn-gold btn-sm" id="dist-save-codes-btn" style="margin-top:6px" onclick="saveDistributionCodes(\''+releaseId+'\',this)"><i class="ti ti-device-floppy"></i> Save Codes</button>'
+      +'</div>'
       +splitsHtml;
   }catch(e){
     console.error('Distribution modal load error:',e);
     body.innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i><p>Could not load this release\'s distribution info.</p></div>';
   }
+}
+async function saveDistributionCodes(releaseId,btnEl){
+  const originalHtml=btnEl.innerHTML;
+  btnEl.disabled=true;btnEl.innerHTML='<span class="loader" style="width:12px;height:12px"></span> Saving...';
+  try{
+    const upcVal=document.getElementById('dist-upc-input')?.value.trim()||null;
+    const {error:upcErr}=await sb.from('releases').update({upc:upcVal}).eq('id',releaseId);
+    if(upcErr)throw upcErr;
+
+    const legacyIsrcEl=document.getElementById('dist-isrc-legacy');
+    if(legacyIsrcEl){
+      // Single-track release with no release_tracks rows — ISRC lives
+      // directly on the release itself.
+      const {error:isrcErr}=await sb.from('releases').update({isrc:legacyIsrcEl.value.trim()||null}).eq('id',releaseId);
+      if(isrcErr)throw isrcErr;
+    } else {
+      // Multi-track release — save each track's ISRC to its own row.
+      const trackInputs=document.querySelectorAll('.dist-isrc-track');
+      for(const input of trackInputs){
+        const trackId=input.dataset.trackId;
+        const {error:trackIsrcErr}=await sb.from('release_tracks').update({isrc:input.value.trim()||null}).eq('id',trackId);
+        if(trackIsrcErr)throw trackIsrcErr;
+      }
+    }
+    toast('Distribution codes saved','ok');
+  }catch(e){
+    console.error('Save distribution codes error:',e);
+    toast('Could not save codes: '+(e.message||'please try again.'),'err');
+  }
+  btnEl.disabled=false;btnEl.innerHTML=originalHtml;
 }
 async function viewAsArtist(userId,name){
   closeArtistModal();
