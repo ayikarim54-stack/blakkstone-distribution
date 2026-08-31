@@ -7642,6 +7642,9 @@ async function downloadDistributionFile(url,filename,btnEl){
   }
   if(btnEl){btnEl.disabled=false;btnEl.innerHTML=originalHtml;}
 }
+function copyTrackUrlForSupport(url){
+  navigator.clipboard.writeText(url).then(()=>toast('Link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
+}
 async function openDistributionModal(releaseId){
   const overlay=document.getElementById('distribution-overlay');
   const body=document.getElementById('distribution-modal-body');
@@ -7670,9 +7673,11 @@ async function openDistributionModal(releaseId){
       // Releases submitted before release_tracks existed only saved a single audio_url directly on the release row.
       if(release.audio_url){
         tracksHtml='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem .9rem;background:var(--surface2);border:1px solid var(--line);border-radius:9px;margin-bottom:6px;flex-wrap:wrap">'
-          +'<div style="min-width:0"><div style="font-size:13px;color:#fff">1. '+esc(release.title)+(release.isrc?' <span style="color:rgba(255,255,255,.35);font-size:11px">· ISRC '+esc(release.isrc)+'</span>':'')+'</div>'
-          +'<input readonly onclick="this.select()" value="'+esc(release.audio_url)+'" style="width:100%;margin-top:4px;font-size:10px;color:rgba(255,255,255,.3);background:transparent;border:none;padding:0;font-family:monospace"></div>'
+          +'<div style="min-width:0"><div style="font-size:13px;color:#fff">1. '+esc(release.title)+(release.isrc?' <span style="color:rgba(255,255,255,.35);font-size:11px">· ISRC '+esc(release.isrc)+'</span>':'')+'</div></div>'
+          +'<div style="display:flex;gap:6px;flex-shrink:0">'
+          +'<button class="btn adm-btn-sec btn-sm" onclick="copyTrackUrlForSupport(\''+esc(release.audio_url)+'\')"><i class="ti ti-copy"></i> Copy Link</button>'
           +'<button class="btn btn-gold btn-sm" onclick="downloadDistributionFile(\''+esc(release.audio_url)+'\',\''+esc(release.title||'track').replace(/'/g,"\\'")+'.mp3\',this)"><i class="ti ti-download"></i> Download</button>'
+          +'</div>'
         +'</div>';
       } else {
         tracksHtml='<div class="empty"><i class="ti ti-music-off"></i><p>No audio files found for this release.</p></div>';
@@ -7683,9 +7688,11 @@ async function openDistributionModal(releaseId){
         const ext=(t.audio_url||'').split('?')[0].match(/\.([a-zA-Z0-9]+)$/);
         const filename=(t.title||'track '+t.track_number).replace(/[^\w\- ]/g,'').trim()+'.'+(ext?ext[1]:'mp3');
         return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.7rem .9rem;background:var(--surface2);border:1px solid var(--line);border-radius:9px;margin-bottom:6px;flex-wrap:wrap">'
-          +'<div style="min-width:0;flex:1"><div style="font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.track_number+'. '+esc(t.title)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+(t.isrc?'ISRC '+esc(t.isrc):'No ISRC set')+(dur?' · '+dur:'')+'</div>'
-          +(t.audio_url?'<input readonly onclick="this.select()" value="'+esc(t.audio_url)+'" style="width:100%;margin-top:4px;font-size:10px;color:rgba(255,255,255,.3);background:transparent;border:none;padding:0;font-family:monospace">':'')+'</div>'
-          +(t.audio_url?'<button class="btn btn-gold btn-sm" style="flex-shrink:0" onclick="downloadDistributionFile(\''+esc(t.audio_url)+'\',\''+esc(filename).replace(/'/g,"\\'")+'\',this)"><i class="ti ti-download"></i> Download</button>':'<span style="font-size:11px;color:rgba(239,68,68,.6);flex-shrink:0">Missing file</span>')
+          +'<div style="min-width:0;flex:1"><div style="font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.track_number+'. '+esc(t.title)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+(t.isrc?'ISRC '+esc(t.isrc):'No ISRC set')+(dur?' · '+dur:'')+'</div></div>'
+          +'<div style="display:flex;gap:6px;flex-shrink:0">'
+          +(t.audio_url?'<button class="btn adm-btn-sec btn-sm" onclick="copyTrackUrlForSupport(\''+esc(t.audio_url)+'\')"><i class="ti ti-copy"></i> Copy Link</button>':'')
+          +(t.audio_url?'<button class="btn btn-gold btn-sm" onclick="downloadDistributionFile(\''+esc(t.audio_url)+'\',\''+esc(filename).replace(/'/g,"\\'")+'\',this)"><i class="ti ti-download"></i> Download</button>':'<span style="font-size:11px;color:rgba(239,68,68,.6)">Missing file</span>')
+          +'</div>'
         +'</div>';
       }).join('');
     }
