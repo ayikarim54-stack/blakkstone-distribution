@@ -1725,19 +1725,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <i class="ti ti-loader" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
         </div>
       </div>
-      <!-- REFER A FRIEND (compact summary — full detail and history still lives on Profile) -->
-      <div class="adm-card" id="ov-referral-card" style="margin-bottom:1.5rem;display:none">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
-          <div style="min-width:0">
-            <div style="font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px"><i class="ti ti-gift" style="color:var(--gold)"></i> Invite an artist, you both get a discount</div>
-            <div style="font-size:12.5px;color:rgba(255,255,255,.4);margin-top:3px" id="ov-referral-sub">Share your link — when they stick around for a full renewal, you get 20% off your next plan.</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
-            <input id="ov-referral-link" type="text" readonly style="background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:12.5px;width:220px" onclick="this.select()">
-            <button class="btn btn-gold btn-sm" onclick="copyOverviewReferralLink()"><i class="ti ti-copy"></i> Copy</button>
-          </div>
-        </div>
-      </div>
       <!-- STREAMS TREND (last 14 real days — hidden if there isn't enough daily data yet) -->
       <div class="adm-card" id="ov-trend-card" style="margin-bottom:1.5rem;display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;flex-wrap:wrap;gap:6px">
@@ -1952,6 +1939,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <h2 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:.75rem">Ready to release your music?</h2>
         <p style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.5rem">Distributing to 150+ stores worldwide needs an active plan. Pick one starting at $11/year — unlimited releases, no per-release fees.</p>
         <button class="btn btn-gold" onclick="goPage('upgrade',null)">View Plans</button>
+      </div>
+      <!-- BLOCKED: TEAM MEMBER (VIEW-ONLY) -->
+      <div id="submit-blocked-team" style="display:none;max-width:520px;margin:4rem auto;text-align:center;padding:0 1.5rem">
+        <i class="ti ti-eye" style="font-size:40px;color:#7a6ff0;display:block;margin-bottom:1rem"></i>
+        <h2 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:.75rem">View-only access</h2>
+        <p style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.5rem">Team members can view this account but can't submit releases. Only the account owner can do that.</p>
+        <button class="btn btn-outline" onclick="goPage('releases',null)">Back to Releases</button>
       </div>
       <div id="submit-wizard-body">
       <!-- STEP PROGRESS BAR -->
@@ -2889,19 +2883,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
         <div class="divhr"></div>
-        <div id="referral-section" style="display:none">
-          <div class="slabel"><i class="ti ti-gift"></i> Refer & Earn</div>
-          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Share your link — when someone you refer sticks around for a full renewal, you get <strong style="color:#fff">20% off</strong> your next plan.</p>
-          <div style="display:flex;gap:8px;margin-bottom:1.25rem">
-            <input id="referral-link-display" type="text" readonly style="flex:1;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px">
-            <button class="btn btn-gold" onclick="copyReferralLink()" style="flex-shrink:0"><i class="ti ti-copy"></i> Copy</button>
-          </div>
-          <div id="referral-list"></div>
-        </div>
-        <div class="divhr"></div>
         <div id="team-access-section" style="display:none">
           <div class="slabel"><i class="ti ti-users"></i> Team Access</div>
-          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Give a manager or assistant their own login to help run this account. Managers can submit releases and manage your roster; Viewers can only look. Neither can touch billing, payouts, or your own account settings.</p>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">Give someone their own login to view this account. Team members — Manager or Viewer — can look at everything but can't submit releases, request payouts, or change anything. Only you can do that.</p>
           <div id="team-members-list" style="margin-bottom:1rem"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
             <div class="fg" style="flex:1;min-width:180px;margin-bottom:0"><label>Email to invite</label><input id="team-invite-email" type="email" placeholder="teammate@email.com"></div>
@@ -2919,8 +2903,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="slabel"><i class="ti ti-world"></i> Public Artist Page</div>
         <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">One link, all your music — fans see your live releases and can sign up for notifications on what's coming.</p>
         <div style="display:flex;gap:8px;margin-bottom:1.25rem">
-          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="copyArtistLink(user.id)"><i class="ti ti-link"></i> Copy My Page Link</button>
-          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="window.open(window.location.origin+'/?artist='+user.id,'_blank')"><i class="ti ti-eye"></i> Preview</button>
+          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="copyArtistLink(activeAccountId())"><i class="ti ti-link"></i> Copy My Page Link</button>
+          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="window.open(window.location.origin+'/?artist='+activeAccountId(),'_blank')"><i class="ti ti-eye"></i> Preview</button>
         </div>
         <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-mail"></i> Email Preferences</div>
@@ -3815,7 +3799,7 @@ const LAUNCH_FOUNDER_LIMIT=100;
 const LAUNCH_FOUNDER_DISCOUNT_PERCENT=20;
 // Launch founder eligibility used to be flagged at signup time via this
 // function — removed now that eligibility is checked live at checkout
-// instead (see checkReferralDiscount), based on how many people have
+// instead (see checkLaunchOfferDiscount), based on how many people have
 // actually paid so far, not on signup order.
 // Shows the same "X spots left" progress the admin dashboard already
 // tracks, but publicly on the landing page — this runs from an anonymous,
@@ -4064,7 +4048,7 @@ async function updateOnboarding(){
   const hasProfile=!!(profile?.artist_name&&profile?.full_name);
   let hasPayout=false;
   try{
-    const {data,error}=await sb.from('payout_methods').select('id').eq('user_id',user.id).limit(1);
+    const {data,error}=await sb.from('payout_methods').select('id').eq('user_id',activeAccountId()).limit(1);
     if(!error)hasPayout=!!(data&&data.length);
   }catch(e){console.error('Onboarding payout-check error (non-critical):',e);}
   const obRelease=document.getElementById('ob-release');
@@ -4271,7 +4255,6 @@ async function loadProfile(u){
   // if so, everything downstream should reflect THAT account's data and
   // plan, not this login's own (likely empty/free) profile.
   await checkTeamMembership();
-  await claimReferralCodeIfAny();
   // Everyone gets into the dashboard now, regardless of plan — paying is
   // only required to actually submit a release (checked at that specific
   // point, not as a blanket gate on login). This lowers signup friction:
@@ -4323,31 +4306,12 @@ function activeAccountId(){
   return teamContext?teamContext.ownerId:user.id;
 }
 function isTeamViewerOnly(){
-  return !!(teamContext&&teamContext.role==='viewer');
-}
-async function claimReferralCodeIfAny(){
-  // Only ever claims once — profile.referred_by_code being set already
-  // means this already happened on an earlier login, nothing to do.
-  if(!profile||profile.referred_by_code)return;
-  let code=null;
-  try{code=localStorage.getItem('blakkstone_referral_code');}catch(e){}
-  if(!code)return;
-  if(code===profile.account_id){try{localStorage.removeItem('blakkstone_referral_code');}catch(e){}return;} // can't refer yourself
-  try{
-    const {data:referrer,error:findErr}=await sb.from('profiles').select('id').eq('account_id',code).maybeSingle();
-    if(findErr||!referrer){try{localStorage.removeItem('blakkstone_referral_code');}catch(e){}return;}
-    const {error:updateErr}=await sb.from('profiles').update({referred_by_code:code}).eq('id',user.id);
-    if(updateErr){
-      if(!/referred_by_code/i.test(updateErr.message||''))console.error('Referral claim error:',updateErr);
-      return; // referral_program SQL not run yet — fail silently, this is opt-in infrastructure
-    }
-    profile.referred_by_code=code;
-    const {error:insertErr}=await sb.from('referrals').insert({referrer_id:referrer.id,referred_id:user.id,referred_email:user.email,referral_code:code,status:'pending'});
-    if(insertErr)console.error('Referral record creation error:',insertErr);
-    try{localStorage.removeItem('blakkstone_referral_code');}catch(e){}
-  }catch(e){
-    console.error('Referral claim error:',e);
-  }
+  // Every team member is strictly view-only now, regardless of their
+  // specific invited role — the owner is the only one who can ever
+  // change or edit anything. Kept as its own named function (rather than
+  // checking !!teamContext inline everywhere) so this policy lives in
+  // exactly one place if it's ever revisited.
+  return !!teamContext;
 }
 function showPaywall(lapsedPlan){
   const name=profile?.artist_name||profile?.full_name||user?.email?.split('@')[0]||'';
@@ -4630,7 +4594,7 @@ function goPage(id,el){
   if(id==='royalties'){loadRoyalties();}
   if(id==='payout')loadPayout();
   if(id==='myartists'){closeMyArtistDetail();loadMyArtistsGrid();}
-  if(id==='profile'){loadProfileStats();if(!teamContext&&profile?.plan==='label')loadTeamMembers();if(!teamContext)loadReferralSection();}
+  if(id==='profile'){loadProfileStats();if(!teamContext&&profile?.plan==='label')loadTeamMembers();}
   if(id==='upgrade')refreshProfileAndUpgradePage();
   if(id==='admin'){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();switchAdminTab('dashboard',document.getElementById('atab-dashboard'));}
   const mobMap={overview:'mob-overview',releases:'mob-music',submit:'mob-submit',royalties:'mob-royalties',profile:'mob-profile'};
@@ -5036,7 +5000,7 @@ let _artistNotifCache=[];
 async function loadArtistNotifications(){
   if(!user)return;
   try{
-    const {data:logs}=await sb.from('admin_audit_log').select('*').eq('target_user_id',user.id).in('field',['release_status','release_deleted','payout_status','payout_deleted','plan']).order('changed_at',{ascending:false}).limit(10);
+    const {data:logs}=await sb.from('admin_audit_log').select('*').eq('target_user_id',activeAccountId()).in('field',['release_status','release_deleted','payout_status','payout_deleted','plan']).order('changed_at',{ascending:false}).limit(10);
     const relIds=[...new Set((logs||[]).filter(l=>l.target_release_id).map(l=>l.target_release_id))];
     let releaseMap={};
     if(relIds.length){
@@ -5138,7 +5102,7 @@ async function loadOverviewActivity(){
   const list=document.getElementById('ov-activity-list');
   if(!card||!list||!user)return;
   try{
-    const {data:logs,error}=await sb.from('admin_audit_log').select('*').eq('target_user_id',user.id).in('field',['release_status','release_deleted','payout_status','payout_deleted','plan']).order('changed_at',{ascending:false}).limit(8);
+    const {data:logs,error}=await sb.from('admin_audit_log').select('*').eq('target_user_id',activeAccountId()).in('field',['release_status','release_deleted','payout_status','payout_deleted','plan']).order('changed_at',{ascending:false}).limit(8);
     if(error)throw error;
     if(!logs||!logs.length){card.style.display='none';return;}
     const relIds=[...new Set(logs.filter(l=>l.target_release_id).map(l=>l.target_release_id))];
@@ -5174,14 +5138,13 @@ async function loadReleases(){
     }
     banner.style.display='flex';
   }
-  const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',user.id);
+  const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',activeAccountId());
   _ovPayoutsCache=payoutsData||[];
   renderOverviewStats();
   _cachedDraftsForMusicTab=await loadAllDrafts();
   filterReleasesCombined();
   renderUpcomingReleaseBanner();
   loadOverviewTrend();
-  loadOverviewReferralCard();
 }
 let ovViewingArtist='';
 let _ovPayoutsCache=[];
@@ -5272,7 +5235,7 @@ async function loadOverviewTrend(){
   try{
     const cutoff=new Date();cutoff.setDate(cutoff.getDate()-14);
     const cutoffStr=cutoff.toISOString().split('T')[0];
-    const {data:entries,error}=await sb.from('stream_entries').select('date,spotify,apple_music,youtube_music,audiomack,boomplay,others').eq('user_id',user.id).gte('date',cutoffStr).order('date',{ascending:true});
+    const {data:entries,error}=await sb.from('stream_entries').select('date,spotify,apple_music,youtube_music,audiomack,boomplay,others').eq('user_id',activeAccountId()).gte('date',cutoffStr).order('date',{ascending:true});
     if(error)throw error;
     const rows=entries||[];
     const distinctDates=new Set(rows.map(r=>r.date));
@@ -5577,11 +5540,12 @@ async function renderTakedownSection(r){
   }
 }
 async function requestReleaseTakedown(releaseId){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not request takedowns','err');return;}
   const reason=prompt('Optional: tell us why you want this release taken down (helps our team process it faster).');
   if(reason===null)return;
   if(!confirm('Are you sure? Requesting a takedown will remove this release from all stores once processed, and cannot be undone.'))return;
   try{
-    const {error}=await sb.from('release_takedown_requests').insert({release_id:releaseId,user_id:user.id,reason:reason.trim()||null,status:'pending'});
+    const {error}=await sb.from('release_takedown_requests').insert({release_id:releaseId,user_id:activeAccountId(),reason:reason.trim()||null,status:'pending'});
     if(error)throw error;
     toast('Takedown request submitted','ok');
     const r=_releaseMap[releaseId];
@@ -5724,13 +5688,13 @@ function setAnalyticsStore(store,btn){
 
 async function loadAnalytics(){
   // Load releases (same source as overview - always works)
-  const {data:rels} = await sb.from('releases').select('*').eq('user_id',user.id);
+  const {data:rels} = await sb.from('releases').select('*').eq('user_id',activeAccountId());
   anReleaseData = rels||[];
 
   // Try to load real stream entries, fall back gracefully
   try{
     const {data:entries} = await sb.from('stream_entries')
-      .select('*').eq('user_id',user.id).order('date',{ascending:true});
+      .select('*').eq('user_id',activeAccountId()).order('date',{ascending:true});
     anStreamData = entries||[];
   }catch(e){ anStreamData=[]; }
 
@@ -6160,8 +6124,8 @@ function renderReleasesTable(){
 // ── ROYALTIES ──────────────────────────────────────────
 async function loadRoyalties(){
   const [{data:relData},{data:payoutData}]=await Promise.all([
-    sb.from('releases').select('*').eq('user_id',user.id),
-    sb.from('payouts').select('amount,status').eq('user_id',user.id)
+    sb.from('releases').select('*').eq('user_id',activeAccountId()),
+    sb.from('payouts').select('amount,status').eq('user_id',activeAccountId())
   ]);
   const rl=(relData||[]).filter(r=>(r.earnings||0)>0);const allRel=relData||[];
   const isPaid=isCommissionExempt();
@@ -6175,7 +6139,7 @@ async function loadRoyalties(){
   set('r-payout','$'+available.toFixed(2));
   try{
     const {data:lastEntry,error:leErr}=await sb.from('royalty_entries')
-      .select('date_start,date_end').eq('user_id',user.id)
+      .select('date_start,date_end').eq('user_id',activeAccountId())
       .order('date_start',{ascending:false}).limit(1).maybeSingle();
     if(leErr)throw leErr;
     if(lastEntry){
@@ -6224,7 +6188,7 @@ async function loadRoyalties(){
     try{
       const {data:storeData,error:stErr}=await sb.from('royalty_entries')
         .select('spotify,apple_music,youtube_music,audiomack,boomplay,amazon_music,tidal,deezer,others')
-        .eq('user_id',user.id);
+        .eq('user_id',activeAccountId());
       if(stErr)throw stErr;
       const stTotals={};
       ROY_STORES.forEach(s=>{stTotals[s.key]=(storeData||[]).reduce((a,e)=>a+(parseFloat(e[s.key])||0),0);});
@@ -6691,78 +6655,6 @@ async function sendPayoutNotificationEmail(amount,method,network,account){
 
 
 // ── PROFILE ──────────────────────────────────────────────
-function copyReferralLink(){
-  const input=document.getElementById('referral-link-display');
-  if(!input||!input.value)return;
-  navigator.clipboard.writeText(input.value).then(()=>toast('Referral link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
-}
-async function loadReferralSection(){
-  const section=document.getElementById('referral-section');if(!section)return;
-  if(!profile?.account_id){section.style.display='none';return;}
-  section.style.display='block';
-  const linkInput=document.getElementById('referral-link-display');
-  if(linkInput)linkInput.value=window.location.origin+'/?ref='+profile.account_id;
-  const list=document.getElementById('referral-list');
-  if(!list)return;
-  list.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div>';
-  try{
-    const {data,error}=await sb.from('referrals').select('*').eq('referrer_id',user.id).order('created_at',{ascending:false});
-    if(error)throw error;
-    if(!data||!data.length){
-      list.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px;padding:.5rem 0">No referrals yet — share your link above to get started.</div>';
-      return;
-    }
-    const statusInfo={
-      pending:{label:'Signed up — waiting for their first renewal',color:'#fbbf24'},
-      qualified:{label:'Reward ready — apply it at your next checkout',color:'#34d399'},
-      reward_issued:{label:'Reward used',color:'rgba(255,255,255,.35)'}
-    };
-    list.innerHTML=data.map(r=>{
-      const info=statusInfo[r.status]||{label:r.status,color:'rgba(255,255,255,.4)'};
-      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:.65rem .9rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:9px;margin-bottom:6px">'
-        +'<div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.referred_email||'Pending signup')+'</div><div style="font-size:11px;color:'+info.color+'">'+info.label+'</div></div>'
-      +'</div>';
-    }).join('');
-  }catch(e){
-    console.error('Load referrals error:',e);
-    if((e.message||'').match(/relation .* does not exist/i)){
-      list.innerHTML='<div style="color:rgba(239,68,68,.6);font-size:12px;padding:.5rem 0">Run the referral_program SQL in Supabase to enable this.</div>';
-    } else {
-      list.innerHTML='<div style="color:rgba(239,68,68,.6);font-size:12px;padding:.5rem 0">Could not load referrals.</div>';
-    }
-  }
-}
-async function loadOverviewReferralCard(){
-  const card=document.getElementById('ov-referral-card');if(!card)return;
-  if(!profile?.account_id||teamContext){card.style.display='none';return;} // team members manage the owner's account, not their own referral link
-  card.style.display='block';
-  const linkInput=document.getElementById('ov-referral-link');
-  if(linkInput)linkInput.value=window.location.origin+'/?ref='+profile.account_id;
-  const subEl=document.getElementById('ov-referral-sub');
-  try{
-    const {data,error}=await sb.from('referrals').select('status').eq('referrer_id',user.id);
-    if(error)throw error;
-    const total=(data||[]).length;
-    const qualified=(data||[]).filter(r=>r.status==='qualified').length;
-    if(subEl&&total>0){
-      subEl.textContent=qualified>0
-        ? qualified+' reward'+(qualified===1?'':'s')+' ready — apply at your next checkout ('+total+' total referral'+(total===1?'':'s')+')'
-        : total+' referral'+(total===1?'':'s')+' so far — share your link above to get more';
-    }
-    // total===0 leaves the default static description in place — no need to overwrite it with "0 referrals"
-  }catch(e){
-    // Fails silently here (unlike the Profile page's full section) since
-    // this compact card's whole purpose is just to point people toward
-    // sharing their link — a missing referral_program table shouldn't
-    // block that with a visible error on the page everyone lands on first.
-    console.error('Overview referral card load error:',e);
-  }
-}
-function copyOverviewReferralLink(){
-  const input=document.getElementById('ov-referral-link');
-  input.select();
-  navigator.clipboard.writeText(input.value).then(()=>toast('Referral link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
-}
 async function loadTeamMembers(){
   const list=document.getElementById('team-members-list');if(!list)return;
   list.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div>';
@@ -6829,7 +6721,7 @@ async function revokeTeamMember(id){
 }
 async function loadProfileStats(){
   try{
-    const {data:rels}=await sb.from('releases').select('streams,earnings').eq('user_id',user.id);
+    const {data:rels}=await sb.from('releases').select('streams,earnings').eq('user_id',activeAccountId());
     const cnt=rels?.length||0;const earn=(rels||[]).reduce((a,r)=>a+(r.earnings||0),0);
     const isPaid=isCommissionExempt();
     const net=isPaid?earn:earn*(1-COMM);
@@ -7069,6 +6961,7 @@ function renderMyArtistsGrid(counts){
   if(!_rosterCache.length&&!addTile) grid.innerHTML='<p style="color:rgba(255,255,255,.3);font-size:13px;grid-column:1/-1">No artists yet.</p>';
 }
 async function addRosterArtist(){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not add artists','err');return;}
   const input=document.getElementById('myartist-add-name');if(!input)return;
   const name=input.value.trim();
   if(!name){toast('Enter an artist name','err');return;}
@@ -7088,6 +6981,7 @@ async function addRosterArtist(){
   }
 }
 async function deleteRosterArtist(id){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not remove artists','err');return;}
   const artist=_rosterCache.find(a=>a.id===id);
   const name=artist?.name||'';
   const count=_rosterReleaseCounts[name]||0;
@@ -7097,7 +6991,7 @@ async function deleteRosterArtist(id){
   }
   if(!confirm('Remove "'+name+'" from your roster?'))return;
   try{
-    const {error}=await sb.from('roster_artists').delete().eq('id',id);
+    const {error}=await sb.from('roster_artists').delete().eq('id',id).eq('user_id',activeAccountId());
     if(error)throw error;
     toast('Artist removed','ok');
     await loadMyArtistsGrid();
@@ -7139,7 +7033,7 @@ async function openMyArtistDetail(id){
   // Falls back gracefully (shows release count instead) if release_tracks
   // isn't set up yet, or if this artist has no releases.
   try{
-    const {data:rels}=await sb.from('releases').select('id').eq('user_id',user.id).eq('artist',a.name);
+    const {data:rels}=await sb.from('releases').select('id').eq('user_id',activeAccountId()).eq('artist',a.name);
     const ids=(rels||[]).map(r=>r.id);
     if(!ids.length){document.getElementById('artdet-stat-tracks').textContent='0';return;}
     const {data:tracks,error}=await sb.from('release_tracks').select('id').in('release_id',ids);
@@ -7206,6 +7100,7 @@ function toggleArtistDetailEdit(show){
   }
 }
 async function saveArtistDetailProfile(){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not edit artist details','err');return;}
   const id=_currentArtistDetailId;if(!id)return;
   const row={
     artist_type:document.getElementById('artdet-in-type').value.trim(),
@@ -7228,7 +7123,7 @@ async function saveArtistDetailProfile(){
   const btn=document.getElementById('artdet-save-btn');
   if(btn){btn.disabled=true;btn.innerHTML='<span class="loader"></span> Saving...';}
   try{
-    const {error}=await sb.from('roster_artists').update(row).eq('id',id);
+    const {error}=await sb.from('roster_artists').update(row).eq('id',id).eq('user_id',activeAccountId());
     if(error)throw error;
     const a=_rosterCache.find(a=>a.id===id);
     if(a)Object.assign(a,row);
@@ -7266,6 +7161,7 @@ function cancelEditRosterArtist(id){
   if(view)view.style.display='block';if(edit)edit.style.display='none';
 }
 async function saveEditRosterArtist(id){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not rename artists','err');return;}
   const artist=_rosterCache.find(a=>a.id===id);if(!artist)return;
   // Re-check at save time, not just at edit-open time, in case a release landed in between
   const count=_rosterReleaseCounts[artist.name]||0;
@@ -7275,7 +7171,7 @@ async function saveEditRosterArtist(id){
   if(!newName){toast('Name cannot be empty','err');return;}
   if(newName===artist.name){cancelEditRosterArtist(id);return;}
   try{
-    const {error}=await sb.from('roster_artists').update({name:newName}).eq('id',id);
+    const {error}=await sb.from('roster_artists').update({name:newName}).eq('id',id).eq('user_id',activeAccountId());
     if(error)throw error;
     toast('Artist name updated','ok');
     await loadMyArtistsGrid();
@@ -7289,18 +7185,19 @@ function goToArtistReleases(name){
   setRelArtistFilter(name);
 }
 async function uploadRosterAvatar(id,input){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not change artist photos','err');input.value='';return;}
   if(!input.files[0])return;
   const file=input.files[0];
   const validationError=validateImageFile(file);
   if(validationError){toast(validationError,'err');input.value='';return;}
   const ext=file.name.split('.').pop();
-  const path=user.id+'/roster/'+id+'.'+ext;
+  const path=activeAccountId()+'/roster/'+id+'.'+ext;
   toast('Uploading photo...');
   try{
     const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
     if(error)throw error;
     const {data}=sb.storage.from('artwork').getPublicUrl(path);
-    const {error:dbError}=await sb.from('roster_artists').update({avatar_url:data.publicUrl}).eq('id',id);
+    const {error:dbError}=await sb.from('roster_artists').update({avatar_url:data.publicUrl}).eq('id',id).eq('user_id',activeAccountId());
     if(dbError)throw dbError;
     const artist=_rosterCache.find(a=>a.id===id);
     if(artist)artist.avatar_url=data.publicUrl;
@@ -7313,14 +7210,15 @@ async function uploadRosterAvatar(id,input){
 }
 function copyRosterArtistLink(id){
   const artist=_rosterCache.find(a=>a.id===id);if(!artist)return;
-  const url=window.location.origin+'/?artist='+user.id+'&name='+encodeURIComponent(artist.name);
+  const url=window.location.origin+'/?artist='+activeAccountId()+'&name='+encodeURIComponent(artist.name);
   navigator.clipboard.writeText(url).then(()=>toast('Artist page link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
 }
 async function saveEmailPreferences(){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not change preferences','err');return;}
   const replies=document.getElementById('pref-replies')?.checked;
   const broadcasts=document.getElementById('pref-broadcasts')?.checked;
   try{
-    const {error}=await sb.from('profiles').update({email_pref_replies:replies,email_pref_broadcasts:broadcasts}).eq('id',user.id);
+    const {error}=await sb.from('profiles').update({email_pref_replies:replies,email_pref_broadcasts:broadcasts}).eq('id',activeAccountId());
     if(error)throw error;
     if(profile){profile.email_pref_replies=replies;profile.email_pref_broadcasts=broadcasts;}
     toast('Email preferences saved','ok');
@@ -7334,11 +7232,12 @@ async function saveEmailPreferences(){
   }
 }
 async function saveProfile(){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not edit the profile','err');return;}
   const fn=document.getElementById('p-fn').value.trim();const ln=document.getElementById('p-ln').value.trim();
   const fullName=(fn+' '+ln).trim();const artistName=document.getElementById('p-an').value.trim();
   // Re-check at save time, not just at render time — the DOM's readonly state alone isn't a real guarantee
   if(artistName!==profile?.artist_name){
-    const {data:rels}=await sb.from('releases').select('id').eq('user_id',user.id).limit(1);
+    const {data:rels}=await sb.from('releases').select('id').eq('user_id',activeAccountId()).limit(1);
     if(rels?.length){
       toast('Your artist name is locked — you have releases already submitted under it.','err');
       document.getElementById('p-an').value=profile?.artist_name||'';
@@ -7346,7 +7245,7 @@ async function saveProfile(){
     }
   }
   const btn=document.getElementById('save-profile-btn');btn.disabled=true;btn.innerHTML='<span class="loader"></span>';
-  const {error}=await sb.from('profiles').update({full_name:fullName,artist_name:artistName}).eq('id',user.id);
+  const {error}=await sb.from('profiles').update({full_name:fullName,artist_name:artistName}).eq('id',activeAccountId());
   if(error){toast('Save failed: '+error.message,'err');}
   else{
     profile={...profile,full_name:fullName,artist_name:artistName};
@@ -7676,15 +7575,16 @@ function validateImageFile(file){
   return null;
 }
 async function uploadAvatar(input){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not change the photo','err');input.value='';return;}
   if(!input.files[0])return;const file=input.files[0];
   const validationError=validateImageFile(file);
   if(validationError){toast(validationError,'err');input.value='';return;}
   const ext=file.name.split('.').pop();
-  const path=user.id+'/avatar.'+ext;toast('Uploading photo...');
+  const path=activeAccountId()+'/avatar.'+ext;toast('Uploading photo...');
   const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
   if(error){toast('Upload failed: '+error.message,'err');return;}
   const {data}=sb.storage.from('artwork').getPublicUrl(path);
-  const {error:dbError}=await sb.from('profiles').update({avatar_url:data.publicUrl}).eq('id',user.id);
+  const {error:dbError}=await sb.from('profiles').update({avatar_url:data.publicUrl}).eq('id',activeAccountId());
   if(dbError){toast('Photo uploaded but could not be saved: '+dbError.message,'err');return;}
   profile.avatar_url=data.publicUrl;setAvatarDisplay('',data.publicUrl);toast('Photo updated!','ok');
 }
@@ -8087,6 +7987,7 @@ function parseNotesForDuplicate(notes){
   return result;
 }
 async function cancelPendingRelease(releaseId){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not cancel releases','err');return;}
   const r=_releaseMap[releaseId];
   if(!r){toast('Could not find that release','err');return;}
   if(r.status!=='pending'){toast('Only releases still pending review can be cancelled this way — message Support if it\'s already started review.','err');return;}
@@ -8096,7 +7997,7 @@ async function cancelPendingRelease(releaseId){
     // only ever the artist's own release, and only if it's still genuinely pending
     // right now — guards against a race where admin started reviewing between
     // this page loading and the click.
-    const {data,error}=await sb.from('releases').delete().eq('id',releaseId).eq('user_id',user.id).eq('status','pending').select();
+    const {data,error}=await sb.from('releases').delete().eq('id',releaseId).eq('user_id',activeAccountId()).eq('status','pending').select();
     if(error)throw error;
     if(!data||!data.length){
       toast('This release may have already started review — refresh and check its current status.','err');
@@ -8160,7 +8061,23 @@ async function duplicateReleaseAsNew(releaseId){
 async function initWizard(){
   const blockedEl=document.getElementById('submit-blocked-deletion');
   const paywallEl=document.getElementById('submit-blocked-paywall');
+  const teamBlockEl=document.getElementById('submit-blocked-team');
   const bodyEl=document.getElementById('submit-wizard-body');
+  // Team members are strictly view-only — checked first, before even the
+  // paywall, so they see a message that actually explains their situation
+  // rather than being told to upgrade a plan they can't change anyway.
+  // This also stops the wizard body itself from ever rendering for them,
+  // which matters beyond just blocking the final submit button: without
+  // this, autosave would still silently create a draft under their own
+  // login id every 20 seconds the moment they typed anything.
+  if(isTeamViewerOnly()){
+    if(teamBlockEl)teamBlockEl.style.display='block';
+    if(paywallEl)paywallEl.style.display='none';
+    if(blockedEl)blockedEl.style.display='none';
+    if(bodyEl)bodyEl.style.display='none';
+    return;
+  }
+  if(teamBlockEl)teamBlockEl.style.display='none';
   // Submitting a release requires an active paid plan — this is now the one
   // specific gate in the app, replacing the old all-or-nothing login block.
   // Team members follow the owner's plan (already reflected in the shared
@@ -8175,7 +8092,7 @@ async function initWizard(){
   if(paywallEl)paywallEl.style.display='none';
   if(user){
     try{
-      const {data}=await sb.from('account_deletion_requests').select('id').eq('user_id',user.id).eq('status','pending').limit(1);
+      const {data}=await sb.from('account_deletion_requests').select('id').eq('user_id',activeAccountId()).eq('status','pending').limit(1);
       if(data?.length){
         if(blockedEl)blockedEl.style.display='block';
         if(bodyEl)bodyEl.style.display='none';
@@ -8464,7 +8381,7 @@ async function saveDraftSilent(){
       // First save of a brand new draft — INSERT and capture the real id,
       // so every save after this one updates the same row instead of
       // creating a new draft every 20 seconds.
-      const {data,error}=await sb.from('release_drafts').insert({user_id:user.id,title:state.title||null,state}).select('id').single();
+      const {data,error}=await sb.from('release_drafts').insert({user_id:activeAccountId(),title:state.title||null,state}).select('id').single();
       if(error){
         console.error('Draft cloud insert error (local save still succeeded, will retry next autosave):',error);
       } else if(data?.id){
@@ -8487,7 +8404,7 @@ async function saveDraftSilent(){
 // about for a handful of drafts.
 function getLocalDrafts(){
   try{
-    const raw=localStorage.getItem(DRAFT_KEY+'_'+user.id);
+    const raw=localStorage.getItem(DRAFT_KEY+'_'+activeAccountId());
     return raw?JSON.parse(raw):[];
   }catch(e){return [];}
 }
@@ -8503,13 +8420,13 @@ function saveLocalDraft(draftId,state){
       const entry={id:draftId,state};
       if(idx>=0)drafts[idx]=entry;else drafts.push(entry);
     }
-    localStorage.setItem(DRAFT_KEY+'_'+user.id,JSON.stringify(drafts));
+    localStorage.setItem(DRAFT_KEY+'_'+activeAccountId(),JSON.stringify(drafts));
   }catch(e){console.error('Local draft storage error:',e);}
 }
 function removeLocalDraft(draftId){
   try{
     const drafts=getLocalDrafts().filter(d=>d.id!==draftId);
-    localStorage.setItem(DRAFT_KEY+'_'+user.id,JSON.stringify(drafts));
+    localStorage.setItem(DRAFT_KEY+'_'+activeAccountId(),JSON.stringify(drafts));
   }catch(e){}
 }
 function handleAudioSelect(input){Array.from(input.files).forEach(f=>addTrack(f));input.value='';}
@@ -8557,7 +8474,7 @@ async function addTrack(file){
   // Upload to Supabase Storage immediately so draft can reference it
   try{
     const ext=file.name.split('.').pop();
-    const path=user.id+'/drafts/'+id+'.'+ext;
+    const path=activeAccountId()+'/drafts/'+id+'.'+ext;
     const {error}=await sb.storage.from('audio').upload(path,file,{upsert:true});
     if(!error){
       const {data:urlData}=sb.storage.from('audio').getPublicUrl(path);
@@ -8882,7 +8799,7 @@ async function previewArtwork(input){
   // Upload artwork immediately so draft can reference it
   try{
     const ext=file.name.split('.').pop();
-    const path=user.id+'/drafts/artwork_draft.'+ext;
+    const path=activeAccountId()+'/drafts/artwork_draft.'+ext;
     const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
     if(!error){
       const {data:urlData}=sb.storage.from('artwork').getPublicUrl(path);
@@ -8975,7 +8892,7 @@ async function saveDraft(){
   try{
     saveLocalDraft(currentDraftId,state);
     if(!currentDraftId){
-      const {data,error}=await sb.from('release_drafts').insert({user_id:user.id,title:state.title||null,state}).select('id').single();
+      const {data,error}=await sb.from('release_drafts').insert({user_id:activeAccountId(),title:state.title||null,state}).select('id').single();
       if(error){
         console.error('Draft cloud backup error (saved locally on this device only):',error);
         toast('Saved on this device, but the cloud backup failed — it may not carry over if you switch devices or browsers.','err');
@@ -9005,7 +8922,7 @@ async function saveDraft(){
 
 async function loadAllDrafts(){
   try{
-    const {data,error}=await sb.from('release_drafts').select('id,title,state,updated_at').eq('user_id',user.id).order('updated_at',{ascending:false});
+    const {data,error}=await sb.from('release_drafts').select('id,title,state,updated_at').eq('user_id',activeAccountId()).order('updated_at',{ascending:false});
     if(error)throw error;
     return (data||[]).map(d=>({id:d.id,...d.state,title:d.state?.title||d.title,savedAt:d.updated_at}));
   }catch(e){
@@ -9230,6 +9147,7 @@ function buildReview(){
   el.innerHTML='<div style="display:flex;gap:1.5rem;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,.07)"><div style="width:80px;height:80px;border-radius:10px;background:#1a1a22;overflow:hidden;flex-shrink:0">'+(wizData.artFile?'<img src="'+URL.createObjectURL(wizData.artFile)+'" alt="'+esc(title)+' cover art" style="width:100%;height:100%;object-fit:cover">':'')+'</div><div><div style="font-size:18px;font-weight:700;color:#fff">'+esc(title)+'</div><div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:4px">'+esc(artist)+'</div><div style="font-size:12px;color:var(--gold);margin-top:4px">'+wizTracks.length+' track'+(wizTracks.length!==1?'s':'')+'</div></div></div><div class="review-row"><span class="review-label">Genre</span><span class="review-val">'+esc(genre)+'</span></div><div class="review-row"><span class="review-label">Release Date</span><span class="review-val">'+date+'</span></div><div class="review-row"><span class="review-label">Label</span><span class="review-val">'+esc(label)+'</span></div><div class="review-row"><span class="review-label">Language</span><span class="review-val">'+lang+'</span></div><div class="review-row"><span class="review-label">Stores</span><span class="review-val">'+wizStores.length+' selected</span></div><div class="review-row"><span class="review-label">Tracks</span><span class="review-val">'+wizTracks.map(t=>esc(t.name)).join(', ')+'</span></div>';
 }
 async function submitRelease(){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not submit releases','err');return;}
   // Re-validate all steps before final submit
   const step1Errors=validateStep(1);
   const step2Errors=validateStep(2);
@@ -10795,8 +10713,8 @@ async function exportAnnualSummary(){
     const yearStart=year+'-01-01T00:00:00';
     const yearEnd=(year+1)+'-01-01T00:00:00';
     const [{data:releases,error:relErr},{data:payouts,error:payErr}]=await Promise.all([
-      sb.from('releases').select('earnings').eq('user_id',user.id),
-      sb.from('payouts').select('amount,payout_fee_usd,status,created_at,method').eq('user_id',user.id).gte('created_at',yearStart).lt('created_at',yearEnd).order('created_at',{ascending:true})
+      sb.from('releases').select('earnings').eq('user_id',activeAccountId()),
+      sb.from('payouts').select('amount,payout_fee_usd,status,created_at,method').eq('user_id',activeAccountId()).gte('created_at',yearStart).lt('created_at',yearEnd).order('created_at',{ascending:true})
     ]);
     if(relErr)throw relErr;
     if(payErr)throw payErr;
@@ -10857,7 +10775,7 @@ async function exportAnnualSummary(){
 async function exportMyEarningsCSV(){
   if(!user)return;
   try{
-    const {data,error}=await sb.from('releases').select('title,artist,genre,release_date,status,streams,earnings').eq('user_id',user.id).order('release_date',{ascending:false});
+    const {data,error}=await sb.from('releases').select('title,artist,genre,release_date,status,streams,earnings').eq('user_id',activeAccountId()).order('release_date',{ascending:false});
     if(error)throw error;
     if(!data||!data.length){toast('No releases to export yet','err');return;}
     const isPaid=isCommissionExempt();
@@ -11659,7 +11577,7 @@ function openPaystack(plan){
   if(user) document.getElementById('pay-em').value=user.email||'';
   currentUpgradeDiscount=calculateUpgradeDiscount(selectedPlan);
   currentReferralDiscount=null;
-  checkReferralDiscount(); // async — updates the note itself once resolved
+  checkLaunchOfferDiscount(); // async — updates the note itself once resolved
   updateRateNote();
   document.getElementById('pay-overlay').classList.add('open');
 }
@@ -11671,7 +11589,7 @@ function setBilling(cycle){
 }
 let currentReferralDiscount=null;
 let currentLaunchOfferDiscount=null;
-async function checkReferralDiscount(){
+async function checkLaunchOfferDiscount(){
   currentReferralDiscount=null;
   currentLaunchOfferDiscount=null;
   if(!user)return;
@@ -11689,21 +11607,12 @@ async function checkReferralDiscount(){
       }
     }catch(e){console.error('Launch offer eligibility check error (treating as not eligible):',e);}
   }
-  try{
-    // The 10% new-signup referral discount was removed - it overlapped
-    // with the 20% launch offer, and once the launch offer is fully
-    // claimed, a smaller discount for referred signups specifically
-    // (rather than everyone) no longer made sense as a standalone
-    // incentive. The referrer's own reward below is untouched - that's a
-    // separate, ongoing incentive for bringing in a paying artist, not
-    // tied to the limited launch period.
-    const {data:qualifiedRow}=await sb.from('referrals').select('id').eq('referrer_id',user.id).eq('status','qualified').is('reward_issued_at',null).order('qualified_at',{ascending:true}).limit(1).maybeSingle();
-    if(qualifiedRow){
-      currentReferralDiscount={type:'referrer',percent:20,referralRowId:qualifiedRow.id};
-    }
-  }catch(e){
-    console.error('Referral discount check error (not fatal — checkout still works without it):',e);
-  }
+  // The referral reward discount was removed here (previously checked a
+  // qualified `referrals` row and offered 20% off) — referral rewards are
+  // discontinued entirely, not just the 10% new-signup version removed
+  // earlier. currentReferralDiscount stays declared elsewhere and always
+  // null now, so the discount-stacking logic in doPaystack() safely never
+  // triggers it, without needing to touch that logic directly.
   updateRateNote();
 }
 function updateRateNote(){
@@ -11830,23 +11739,6 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
       if(profile){profile.plan=dbPlan;profile.plan_expires_at=expiresAt.toISOString();if(autoRenew)profile.auto_renew_status='activating';}
       const maNav=document.getElementById('myartists-nav');if(maNav)maNav.style.display=getRosterMax()>0?'':'none';
       if(document.getElementById('page-myartists')?.classList.contains('active'))loadMyArtistsGrid();
-
-      // Referral bookkeeping — none of this should ever block the payment
-      // itself if something here fails, so each piece is independently
-      // wrapped and just logged rather than thrown.
-      try{
-        if(appliedReferral?.type==='referrer'){
-          await sb.from('referrals').update({status:'reward_issued',reward_issued_at:new Date().toISOString()}).eq('id',appliedReferral.referralRowId);
-        }
-      }catch(e){console.error('Referral discount bookkeeping error (payment itself succeeded):',e);}
-      try{
-        if(isRenewal&&profile?.referred_by_code){
-          // This user was referred by someone, and this is their second+
-          // payment — the referrer's reward is now ready to use.
-          await sb.from('referrals').update({status:'qualified',qualified_at:new Date().toISOString()})
-            .eq('referred_id',user.id).eq('referral_code',profile.referred_by_code).eq('status','pending');
-        }
-      }catch(e){console.error('Referral qualification check error (payment itself succeeded):',e);}
     }
     const {error:subsInsertError}=await sb.from('subscriptions').insert({user_id:user?.id,plan:planKey,billing_cycle:billingCycle,amount_usd:usd,amount_ghs:(pesewas/100).toFixed(2),paystack_ref:ref,status:'active'});
     if(subsInsertError)console.error('[Subscriptions Insert Error] Payment succeeded and plan was activated, but the subscriptions history record failed to save — this only affects Admin > Subscriptions reporting, not the artist\'s actual plan access:',subsInsertError);
@@ -11874,6 +11766,7 @@ function toggleAutoRenewNote(){
   updateRateNote();
 }
 function doPaystack(){
+  if(isTeamViewerOnly()){toast('Team members can only view this account — only the owner can upgrade or renew the plan','err');return;}
   const email=document.getElementById('pay-em').value.trim();
   if(!email){toast('Enter your email','err');return;}
   const p=PLANS[selectedPlan];
@@ -12080,14 +11973,6 @@ function renderSplitRows(){
   // never needs an IP lookup or a live exchange-rate fetch for a pricing table
   // they'll never see.
   const linkId=new URLSearchParams(window.location.search).get('link');
-  // Capture a referral code from the URL (e.g. blakkstonemusic.com/?ref=BLK1234)
-  // and remember it for whenever this visitor actually signs up — they might
-  // browse around or come back later before creating an account, so this
-  // can't just be read once and forgotten.
-  const refCode=new URLSearchParams(window.location.search).get('ref');
-  if(refCode){
-    try{localStorage.setItem('blakkstone_referral_code',refCode);}catch(e){}
-  }
   if(linkId){
     showView('smartlink');
     loadSmartLink(linkId);
