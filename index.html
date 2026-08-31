@@ -2103,22 +2103,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <i class="ti ti-bulb" style="flex-shrink:0;margin-top:1px"></i>
               <span>Most releases go out on <strong>Fridays</strong> — that's when playlists across Spotify, Apple Music, and most other platforms update, giving new releases their best shot at playlist consideration. Worth considering if you don't have a specific reason for this date.</span>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
-              <div id="tier-priority" onclick="selectDistroTier('priority')" style="background:linear-gradient(135deg,var(--gold),#4f46e5);border-radius:10px;padding:1.1rem;position:relative;cursor:pointer;border:2px solid transparent;transition:border-color .15s">
-                <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">Priority Distro</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:.5rem">LESS THAN 3 DAYS</div>
-                <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.5">Skip the queue to get your music out extra fast.</div>
-                <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-top:.5rem" id="priority-fee-display">+$5 <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:400">(add-on)</span></div>
-                <i class="ti ti-bolt" style="position:absolute;top:10px;right:10px;font-size:20px;color:rgba(255,255,255,.3)"></i>
-                <i class="ti ti-circle-check-filled" id="tier-priority-check" style="display:none;position:absolute;bottom:10px;right:10px;font-size:18px;color:#fff"></i>
-              </div>
-              <div id="tier-standard" onclick="selectDistroTier('standard')" style="background:#2a2a45;border:2px solid rgba(255,255,255,.08);border-radius:10px;padding:1.1rem;cursor:pointer;transition:border-color .15s;position:relative">
-                <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">Standard Distro</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:.5rem">10 DAYS+</div>
-                <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.5">We'll notify you when processed and sent to stores.</div>
-                <div style="font-size:12px;font-weight:600;color:#34d399;margin-top:.5rem">Included ✓</div>
-                <i class="ti ti-circle-check-filled" id="tier-standard-check" style="display:none;position:absolute;bottom:10px;right:10px;font-size:18px;color:#34d399"></i>
-              </div>
+            <div style="background:#2a2a45;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-top:1rem;display:flex;align-items:flex-start;gap:10px">
+              <i class="ti ti-info-circle" style="color:var(--gold);font-size:16px;flex-shrink:0;margin-top:1px"></i>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.6);line-height:1.6">Release date must be at least <strong style="color:#fff">10 days</strong> from today, giving us time to process and send your music to stores.</div>
             </div>
             <div id="tier-mismatch-warning" style="display:none;margin-top:.875rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.75rem .9rem;font-size:12px;color:#fbbf24;line-height:1.6"></div>
           </div>
@@ -3854,13 +3841,12 @@ async function loadLaunchOfferBanner(){
     console.error('Launch offer banner error (public landing page):',e);
   }
 }
-// Single source of truth for the priority distro add-on fee — referenced by
-// the actual charge (payForPriorityDistro) AND admin's revenue reporting
-// (loadAdminDashboard), so a future price change only ever needs to happen
-// in this one place. Previously the actual charge used one hardcoded number
-// while two separate admin revenue calculations used a different, stale
-// hardcoded number — a real bug caught during a routine check, not
-// something that was ever supposed to be two different values.
+// Priority Distribution was discontinued as a paid add-on (ONErpm couldn't
+// guarantee the faster turnaround, so charging for it was a real risk) —
+// no UI or payment path can set this anymore. This constant remains
+// solely so admin's historical revenue reporting (loadAdminDashboard,
+// loadAdminSubscriptions) can still correctly calculate revenue already
+// collected from releases marked priority before the removal.
 const PRIORITY_DISTRO_FEE_USD=5;
 // Fill these in after creating the matching plans in Paystack Dashboard →
 // Products → Plans (annual interval, price in GHS). Each plan_code looks
@@ -8202,8 +8188,6 @@ async function initWizard(){
   if(copyYearEl){copyYearEl.placeholder=String(thisYear);copyYearEl.value=thisYear;}
   const prodYearEl=document.getElementById('r-prod-year');
   if(prodYearEl){prodYearEl.placeholder=String(thisYear);prodYearEl.value=thisYear;}
-  const feeDisplay=document.getElementById('priority-fee-display');
-  if(feeDisplay)feeDisplay.innerHTML='+$'+PRIORITY_DISTRO_FEE_USD+' <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:400">(add-on)</span>';
   const dupWarn=document.getElementById('title-duplicate-warn');if(dupWarn)dupWarn.style.display='none';
   renderStoresGrid();goWizard(1);
   // Check for saved drafts
@@ -8213,39 +8197,21 @@ async function initWizard(){
   });
   setupPrimaryArtistField();
   selectedDistroTier='standard';priorityPaymentRef=null;
-  updateDistroTierUI();
+  setMinReleaseDate();
   if(_wizardAutosaveTimer)clearInterval(_wizardAutosaveTimer);
   _wizardAutosaveTimer=setInterval(()=>{if(user)saveDraftSilent();},20000);
 }
 let selectedDistroTier='standard';
 let priorityPaymentRef=null;
-function selectDistroTier(tier){
-  if(tier==='standard'&&selectedDistroTier==='priority'&&priorityPaymentRef){
-    if(!confirm('You already paid for Priority Distribution on this release. Switching to Standard means you will NOT get priority treatment, and that payment cannot be applied here again. Continue anyway?')){
-      return;
-    }
-  }
-  selectedDistroTier=tier;
-  if(tier==='standard')priorityPaymentRef=null; // switching away from Priority clears any prior payment for this session
-  updateDistroTierUI();
-}
-function updateDistroTierUI(){
-  const pCard=document.getElementById('tier-priority');const sCard=document.getElementById('tier-standard');
-  const pCheck=document.getElementById('tier-priority-check');const sCheck=document.getElementById('tier-standard-check');
-  if(pCard)pCard.style.borderColor=selectedDistroTier==='priority'?'#fff':'transparent';
-  if(sCard)sCard.style.borderColor=selectedDistroTier==='standard'?'var(--gold)':'rgba(255,255,255,.08)';
-  if(pCheck)pCheck.style.display=selectedDistroTier==='priority'?'block':'none';
-  if(sCheck)sCheck.style.display=selectedDistroTier==='standard'?'block':'none';
+function setMinReleaseDate(){
   const dateInput=document.getElementById('r-date');
   if(dateInput){
-    const minDaysOut=selectedDistroTier==='priority'?3:10;
-    const minDate=new Date();minDate.setHours(0,0,0,0);minDate.setDate(minDate.getDate()+minDaysOut);
+    const minDate=new Date();minDate.setHours(0,0,0,0);minDate.setDate(minDate.getDate()+10);
     const minStr=minDate.toISOString().split('T')[0];
     dateInput.min=minStr;
-    // If the currently-picked date no longer meets the new floor (e.g. switched Priority -> Standard), clear it rather than leave an invalid date sitting silently
     if(dateInput.value&&dateInput.value<minStr){
       dateInput.value='';
-      toast('Release date cleared — Standard Distro requires at least 10 days','err');
+      toast('Release date cleared — releases require at least 10 days notice','err');
     }
   }
   checkDistroTierMismatch();
@@ -8264,35 +8230,13 @@ function checkDistroTierMismatch(){
   const dateVal=document.getElementById('r-date')?.value;
   if(!dateVal){warn.style.display='none';warn.innerHTML='';return;}
   const picked=new Date(dateVal+'T00:00:00');
-  const minDaysOut=selectedDistroTier==='priority'?3:10;
-  const floor=new Date();floor.setHours(0,0,0,0);floor.setDate(floor.getDate()+minDaysOut);
+  const floor=new Date();floor.setHours(0,0,0,0);floor.setDate(floor.getDate()+10);
   if(picked<floor){
     warn.style.display='block';
-    warn.innerHTML=selectedDistroTier==='priority'
-      ?'<i class="ti ti-alert-triangle"></i> Priority Distro requires at least 3 days from today. Please choose a later date.'
-      :'<i class="ti ti-alert-triangle"></i> Standard Distro requires at least 10 days from today. Choose <strong>Priority Distro</strong> ($5) to release sooner, or pick a later date.';
+    warn.innerHTML='<i class="ti ti-alert-triangle"></i> Release date must be at least 10 days from today. Please choose a later date.';
   } else {
     warn.style.display='none';warn.innerHTML='';
   }
-}
-async function payForPriorityDistro(){
-  return new Promise((resolve,reject)=>{
-    if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your connection.','err');reject(new Error('Paystack not loaded'));return;}
-    const email=user?.email;
-    if(!email){reject(new Error('Not logged in'));return;}
-    const usd=PRIORITY_DISTRO_FEE_USD;const pesewas=Math.round(usd*currentDisplayRates.GHS*100);
-    const ref='BLK_PRIORITY_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-    try{
-      const popup=new PaystackPop();
-      popup.newTransaction({
-        key:PK,email,amount:pesewas,currency:'GHS',ref,
-        channels:['card','mobile_money','apple_pay'],
-        onSuccess:function(response){resolve(response.reference||ref);},
-        onCancel:function(){reject(new Error('Payment cancelled'));},
-        onError:function(err){reject(new Error(err?.message||'Payment failed'));}
-      });
-    }catch(e){reject(e);}
-  });
 }
 // ── PRIMARY ARTIST FIELD (roster-aware) ────────────────────
 async function setupPrimaryArtistField(){
@@ -8457,12 +8401,9 @@ function validateStep(step){
       errors.push({fieldId:'r-date', label:'Release date is required'});
     } else {
       const picked=new Date(date+'T00:00:00');
-      const minDaysOut=selectedDistroTier==='priority'?3:10;
-      const minAllowed=new Date();minAllowed.setHours(0,0,0,0);minAllowed.setDate(minAllowed.getDate()+minDaysOut);
+      const minAllowed=new Date();minAllowed.setHours(0,0,0,0);minAllowed.setDate(minAllowed.getDate()+10);
       if(picked<minAllowed){
-        errors.push({fieldId:'r-date', label:selectedDistroTier==='priority'
-          ?'Release date must be at least 3 days from today for Priority Distro'
-          :'Release date must be at least 10 days from today for Standard Distro — or choose Priority Distro'});
+        errors.push({fieldId:'r-date', label:'Release date must be at least 10 days from today'});
       }
     }
   }
@@ -9175,11 +9116,10 @@ async function restoreWizardState(state){
   setVal('r-language', state.language);
   setVal('r-date', state.releaseDate);
   checkFridayHint();
-  if(state.distroTier==='priority'){
-    selectedDistroTier='priority';
-    priorityPaymentRef=state.priorityPaymentRef||null;
-    updateDistroTierUI();
-  }
+  // Older drafts saved before Priority Distribution was removed may still
+  // have state.distroTier==='priority' stored — deliberately not restored
+  // here; falling back to the standard default already set in initWizard()
+  // is correct, since there's no longer any UI or payment path for it.
   setVal('r-feat', state.feat);
   setVal('r-remixer', state.remixer);
   setVal('r-notes', state.notes);
@@ -9306,16 +9246,6 @@ async function submitRelease(){
       return;
     }
   }
-  if(selectedDistroTier==='priority'&&!priorityPaymentRef){
-    const btn2=document.getElementById('submit-btn');
-    try{
-      priorityPaymentRef=await payForPriorityDistro();
-      toast('Priority Distro payment confirmed','ok');
-    }catch(e){
-      toast(e.message==='Payment cancelled'?'Payment cancelled — release not submitted':'Payment failed: '+(e.message||'please try again.'),'err');
-      return;
-    }
-  }
   const btn=document.getElementById('submit-btn');btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
   try{
     const title=document.getElementById('r-title')?.value.trim();
@@ -9405,7 +9335,11 @@ async function submitRelease(){
       user_id:activeAccountId(),title,artist,genre,release_date:date,
       isrc:wizTracks[0]?.isrc||null,notes:extraInfo||null,
       audio_url:audioPaths[0],artwork_url:artPublicUrl,status:'pending',streams:0,earnings:0,
-      is_priority:selectedDistroTier==='priority',priority_ref:priorityPaymentRef,
+      // Priority Distribution was removed as a paid add-on (ONErpm couldn't
+      // guarantee the faster turnaround) — is_priority/priority_ref stay as
+      // real columns for historical releases and revenue reporting, but no
+      // new release is ever marked priority again.
+      is_priority:false,priority_ref:null,
       content_id_opt_in:wizToggleState['contentid']==='yes'
     };
     if(splitsData&&splitsData.length>1)relPayload.splits=splitsData;
