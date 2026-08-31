@@ -8447,6 +8447,17 @@ function handleAudioDrop(e){
   e.preventDefault();document.getElementById('audio-drop-zone').classList.remove('drag-over');
   Array.from(e.dataTransfer.files).forEach(f=>{if(f.type.startsWith('audio/')||f.name.match(/\.(mp3|wav|flac|aiff|m4a)$/i))addTrack(f);});
 }
+// Browsers usually set file.type correctly from a picked or dropped file,
+// but this isn't guaranteed for every OS/browser combination — falling
+// back to an extension-based map means Supabase Storage always serves
+// the file with a real audio content-type, rather than something generic
+// that a browser's native player might refuse to decode.
+function audioContentType(file){
+  if(file.type&&file.type.startsWith('audio/'))return file.type;
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  const map={wav:'audio/wav',flac:'audio/flac',aiff:'audio/aiff',aif:'audio/aiff',mp3:'audio/mpeg'};
+  return map[ext]||'application/octet-stream';
+}
 async function addTrack(file){
   const ext=(file.name.split('.').pop()||'').toLowerCase();
   const lossyExts=['m4a','aac','ogg','wma'];
@@ -8491,11 +8502,29 @@ async function addTrack(file){
   try{
     const ext=file.name.split('.').pop();
     const path=activeAccountId()+'/drafts/'+id+'.'+ext;
-    const {error}=await sb.storage.from('audio').upload(path,file,{upsert:true});
+    const {error}=await sb.storage.from('audio').upload(path,file,{upsert:true,contentType:audioContentType(file)});
     if(!error){
       const {data:urlData}=sb.storage.from('audio').getPublicUrl(path);
-      // Update the track with its permanent URL
+      // Confirm what actually landed in storage matches what was sent,
+      // rather than trusting a success response alone — a network hiccup
+      // or storage-side issue could report success while the file is
+      // truncated or empty, which would otherwise only surface much later
+      // as an unplayable track with no clear cause. A HEAD request checks
+      // the real stored size without re-downloading the whole file.
+      let verifiedSize=null;
+      try{
+        const headRes=await fetch(urlData.publicUrl,{method:'HEAD',cache:'no-store'});
+        const lenHeader=headRes.headers.get('content-length');
+        verifiedSize=lenHeader?parseInt(lenHeader,10):null;
+      }catch(verifyErr){console.error('Upload verification check failed (non-fatal):',verifyErr);}
       const t=wizTracks.find(t=>t.id===id);
+      if(verifiedSize!==null&&verifiedSize!==file.size){
+        if(t){t.uploading=false;}
+        renderTrackList();
+        toast('"'+file.name+'" uploaded but appears incomplete ('+(verifiedSize/1024).toFixed(0)+'KB stored vs '+(file.size/1024).toFixed(0)+'KB original) — please remove and re-upload it.','err');
+        return;
+      }
+      // Update the track with its permanent URL
       if(t){t.url=urlData.publicUrl;t.storagePath=path;t.uploading=false;}
       renderTrackList();
       saveDraftSilent();
@@ -9216,7 +9245,22 @@ async function submitRelease(){
       } else if(track.file){
         // File object still in memory — upload normally
         const ext=track.file.name.split('.').pop();const ap=activeAccountId()+'/'+Date.now()+'-'+track.name.replace(/[^a-z0-9]/gi,'_')+'.'+ext;
-        const {error:ae}=await sb.storage.from('audio').upload(ap,track.file);if(ae)throw new Error('Audio upload failed: '+ae.message);
+        const {error:ae}=await sb.storage.from('audio').upload(ap,track.file,{contentType:audioContentType(track.file)});if(ae)throw new Error('Audio upload failed: '+ae.message);
+        // Same verification as the draft-time upload — confirm the stored
+        // file's real size matches what was sent, rather than trusting a
+        // success response alone.
+        try{
+          const {data:checkUrlData}=sb.storage.from('audio').getPublicUrl(ap);
+          const headRes=await fetch(checkUrlData.publicUrl,{method:'HEAD',cache:'no-store'});
+          const lenHeader=headRes.headers.get('content-length');
+          const verifiedSize=lenHeader?parseInt(lenHeader,10):null;
+          if(verifiedSize!==null&&verifiedSize!==track.file.size){
+            throw new Error('"'+track.name+'" uploaded but appears incomplete ('+(verifiedSize/1024).toFixed(0)+'KB stored vs '+(track.file.size/1024).toFixed(0)+'KB original) — please remove and re-upload it.');
+          }
+        }catch(verifyErr){
+          if(verifyErr.message&&verifyErr.message.includes('appears incomplete'))throw verifyErr;
+          console.error('Upload verification check failed (non-fatal):',verifyErr);
+        }
         audioPaths.push(ap);
       } else {
         throw new Error('Track "'+track.name+'" has no audio file. Please re-upload it.');
