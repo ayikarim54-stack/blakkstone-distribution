@@ -4453,6 +4453,11 @@ function enterDashboard(){
     if(teamSection)teamSection.style.display=(!teamContext&&profile?.plan==='label')?'block':'none';
     const submitNav=document.getElementById('submit-nav');
     if(submitNav)submitNav.style.display=isTeamViewerOnly()?'none':'';
+    // Populates the unread support badge on login, not just when a new
+    // reply arrives via realtime while already logged in — otherwise
+    // unread replies from a previous session would show no indication
+    // until something new happened to arrive during this one.
+    if(user)loadMySupportMessages();
     const name=profile?.full_name||profile?.artist_name||user.email.split('@')[0];
     const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const adminNow=isAdmin();
@@ -4705,10 +4710,12 @@ async function deleteAdminThread(ids){
   loadAdminMessages();
 }
 async function deleteSupportMessage(id){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not delete messages','err');return;}
   if(!confirm('Delete this message? This cannot be undone.'))return;
   if(await _softDeleteMessage(id,'deleted_by_artist')){toast('Message deleted','ok');loadMySupportMessages();}
 }
 async function deleteSupportThread(ids){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not delete messages','err');return;}
   if(!ids||!ids.length)return;
   if(!confirm('Delete this entire conversation? This cannot be undone.'))return;
   let succeeded=0;
@@ -10051,7 +10058,7 @@ async function loadAdminMessages(){
     const {data,error}=await sb.from('messages').select('*').order('created_at',{ascending:false}).limit(50);
     if(error)throw error;
     (data||[]).forEach(m=>{_messageMap[m.id]=m;});
-    const visible=(data||[]).filter(m=>!m.deleted_by_admin);
+    const visible=(data||[]).filter(m=>!m.deleted_by_admin&&!m.broadcast_batch_id);
     const unread=visible.filter(m=>!m.read_at&&m.direction==='in').length;
     const msgAlert=document.getElementById('msg-alert');if(msgAlert){msgAlert.style.display=unread>0?'inline':'none';msgAlert.textContent=unread;}
     if(!visible.length){container.innerHTML='<div class="empty"><i class="ti ti-message-off"></i><p>No messages yet.</p></div>';return;}
@@ -10427,7 +10434,7 @@ async function sendBroadcast(){
 async function loadBroadcastHistory(){
   const el=document.getElementById('broadcast-history');if(!el)return;
   try{
-    const {data,error}=await sb.from('messages').select('*').eq('direction','out').eq('from_id',user.id).order('created_at',{ascending:false}).limit(300);
+    const {data,error}=await sb.from('messages').select('*').eq('direction','out').order('created_at',{ascending:false}).limit(300);
     if(error)throw error;
     if(!data||!data.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">No broadcasts yet.</div>';return;}
     // Group into campaigns: rows sharing a broadcast_batch_id are one campaign.
@@ -10457,7 +10464,15 @@ async function loadBroadcastHistory(){
       }
     });
     groups.sort((a,b)=>new Date(b[0].created_at)-new Date(a[0].created_at));
-    el.innerHTML=groups.slice(0,10).map(rows=>{
+    // A genuine broadcast always goes to more than one recipient; an
+    // individual one-on-one reply — from any admin, not just the one
+    // currently logged in — always forms a group of exactly one. This
+    // naturally separates the two without needing to filter by which
+    // specific admin sent it, so broadcast history correctly reflects
+    // everyone's broadcasts, not just this login's own.
+    const broadcastGroups=groups.filter(rows=>rows.length>1);
+    if(!broadcastGroups.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">No broadcasts yet.</div>';return;}
+    el.innerHTML=broadcastGroups.slice(0,10).map(rows=>{
       const m=rows[0];
       const count=rows.length;
       return '<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:600;color:#fff">'+esc(m.subject||'No subject')+'</div><div style="font-size:11px;color:rgba(255,255,255,.3)">Sent to '+count+' recipient'+(count!==1?'s':'')+' · '+(m.created_at?new Date(m.created_at).toLocaleDateString('en-GB'):'')+'</div></div>';
@@ -10484,14 +10499,33 @@ function toggleSupportChat(){
 }
 async function loadMySupportMessages(){
   const container=document.getElementById('my-messages-list');if(!container||!user)return;
-  const emEl=document.getElementById('support-my-email');if(emEl)emEl.textContent=user.email||'your account email';
+  // Team members see the OWNER's support conversation, not their own
+  // separate one — this is account history, part of "viewing the
+  // account," the same way releases or payouts are.
+  const contextEmail=profile?.email||user.email;
+  const emEl=document.getElementById('support-my-email');if(emEl)emEl.textContent=contextEmail||'your account email';
   try{
-    const {data,error}=await sb.from('messages').select('*').or('to_email.eq.'+user.email+',from_id.eq.'+user.id).order('created_at',{ascending:false}).limit(50);
+    const {data,error}=await sb.from('messages').select('*').or('to_email.eq.'+contextEmail+',from_email.eq.'+contextEmail).order('created_at',{ascending:false}).limit(50);
     if(error)throw error;
     (data||[]).forEach(m=>{_messageMap[m.id]=m;});
     const visible=(data||[]).filter(m=>!m.deleted_by_artist);
     renderSupportThreads(groupSupportMessagesBySubject(visible));
-    (data||[]).filter(m=>m.direction==='out'&&!m.read_at).forEach(m=>{sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',m.id).then(({error})=>{if(error)console.error('Mark read error:',error);});});
+    const unread=(data||[]).filter(m=>m.direction==='out'&&!m.read_at);
+    // Only mark as read while the widget is actually open and visible —
+    // this function also runs from the realtime handler below the instant
+    // a new reply arrives, regardless of whether anyone has the widget
+    // open to see it. Marking read unconditionally meant messages were
+    // being marked seen before they were ever actually seen, which in
+    // turn meant the unread badge below could never have anything to show.
+    const widgetOpen=document.getElementById('chat-widget-popup')?.style.display==='flex';
+    if(widgetOpen){
+      unread.forEach(m=>{sb.from('messages').update({read_at:new Date().toISOString()}).eq('id',m.id).then(({error})=>{if(error)console.error('Mark read error:',error);});});
+    }
+    const badge=document.getElementById('chat-widget-badge');
+    if(badge){
+      if(!widgetOpen&&unread.length>0){badge.textContent=unread.length>9?'9+':String(unread.length);badge.style.display='inline-block';}
+      else{badge.style.display='none';}
+    }
     startSupportRealtime();
   }catch(e){
     console.error('My support messages load error:',e);
@@ -10500,9 +10534,10 @@ async function loadMySupportMessages(){
 }
 function startSupportRealtime(){
   if(!user)return;
+  const contextEmail=profile?.email||user.email;
   if(_supportRealtimeChannel){try{sb.removeChannel(_supportRealtimeChannel);}catch(e){}}
-  _supportRealtimeChannel=sb.channel('support-rt-'+user.id)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'to_email=eq.'+user.email},payload=>{
+  _supportRealtimeChannel=sb.channel('support-rt-'+activeAccountId())
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'to_email=eq.'+contextEmail},payload=>{
       if(payload.new?.direction==='out'){
         toast('New reply from Blakkstone Support','ok');
         loadMySupportMessages();
@@ -10570,6 +10605,7 @@ function clearSupportAttachment(){
   const clearBtn=document.getElementById('sup-attachment-clear');if(clearBtn)clearBtn.style.display='none';
 }
 async function sendSupportMessage(){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not send messages','err');return;}
   const btn=document.getElementById('sup-send-btn');
   const subject=document.getElementById('sup-subject').value.trim();const body=document.getElementById('sup-body').value.trim();
   if(!body){toast('Write a message first','err');return;}
@@ -10580,7 +10616,7 @@ async function sendSupportMessage(){
     if(_supAttachmentFile){
       const file=_supAttachmentFile;
       const ext=file.name.split('.').pop();
-      const path=user.id+'/support/'+Date.now()+'.'+ext;
+      const path=activeAccountId()+'/support/'+Date.now()+'.'+ext;
       const {error:upErr}=await sb.storage.from('attachments').upload(path,file);
       if(upErr)throw new Error('Attachment upload failed: '+upErr.message);
       const {data}=sb.storage.from('attachments').getPublicUrl(path);
