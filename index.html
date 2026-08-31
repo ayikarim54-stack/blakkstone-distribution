@@ -3611,6 +3611,23 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- ADMIN: DELETE USER ACCOUNT — permanent, irreversible. Requires typing
+     the target's own email to confirm, matching the same safety bar the
+     artist-facing "Delete My Account" flow already uses. -->
+<div class="overlay" id="admin-delete-user-overlay">
+  <div class="modal" style="max-width:460px">
+    <h3 style="color:#f87171"><i class="ti ti-alert-triangle"></i> Delete This Account <button onclick="closeAdminDeleteUserModal()">×</button></h3>
+    <div id="admin-delete-user-body">
+      <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:1rem">This permanently deletes <strong id="admin-delete-user-name" style="color:#fff"></strong>'s account — every release, all audio and artwork files, royalty history, payout info, team access, and their login itself. <strong style="color:#f87171">This cannot be undone.</strong></p>
+      <div class="fg"><label>Type their email (<span id="admin-delete-user-email-hint" style="color:rgba(255,255,255,.4)"></span>) to confirm</label><input id="admin-delete-user-email-input" type="email" placeholder="their@email.com" oninput="validateAdminDeleteUser()"></div>
+      <div style="display:flex;gap:8px;margin-top:1rem">
+        <button class="btn" style="flex:1;justify-content:center;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.1)" onclick="closeAdminDeleteUserModal()">Cancel</button>
+        <button class="btn" id="admin-delete-user-confirm-btn" disabled style="flex:1;justify-content:center;background:#ef4444;color:#fff;opacity:.4;cursor:not-allowed" onclick="executeAdminDeleteUser()"><i class="ti ti-trash"></i> Permanently Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- DRAFT RESUME CHOICE (blocking — deliberately no × close button, since letting
      someone dismiss this and start typing into a fresh form is exactly what
      used to cause an existing draft to get silently overwritten within 20
@@ -9770,10 +9787,43 @@ async function updateField(id,field,value){
   }
 }
 async function deleteRelease(id){
-  if(!confirm('Remove this release?'))return;
   const rel=allReleasesCache.find(r=>r.id===id);
-  const {error}=await sb.from('releases').delete().eq('id',id);
-  if(error){
+  if(!confirm('Permanently delete "'+(rel?.title||'this release')+'"? This removes its audio, artwork, tracklist, and royalty history too. This cannot be undone.'))return;
+  try{
+    // Fetch every audio URL this release actually has, before deleting the
+    // rows that hold them — storage files are found by extracting their
+    // real path from these URLs, not by guessing a filename pattern,
+    // since tracks are uploaded and named before this release row (and
+    // its id) even exists.
+    const {data:trackRows}=await sb.from('release_tracks').select('audio_url').eq('release_id',id);
+    const audioUrls=[...(trackRows||[]).map(t=>t.audio_url),rel?.audio_url].filter(Boolean);
+
+    // Related tables first, so nothing is left orphaned once the release
+    // row itself is gone — the same set of tables cleaned up per-release
+    // inside the full account deletion flow.
+    await sb.from('release_tracks').delete().eq('release_id',id);
+    await sb.from('release_status_history').delete().eq('release_id',id);
+    await sb.from('release_takedown_requests').delete().eq('release_id',id);
+    await sb.from('royalty_entries').delete().eq('release_id',id);
+    await sb.from('smartlink_events').delete().eq('release_id',id);
+    await sb.from('presave_signups').delete().eq('release_id',id);
+    await sb.from('public_release_links').delete().eq('release_id',id);
+
+    // Best-effort storage cleanup — a failure here (e.g. an RLS policy
+    // blocking client-side deletes) shouldn't block removing the database
+    // records themselves, so this runs detached from the main error path.
+    audioUrls.forEach(url=>{
+      const match=url.match(/\/audio\/(.+)$/);
+      if(match)sb.storage.from('audio').remove([decodeURIComponent(match[1])]).catch(()=>{});
+    });
+    if(rel?.artwork_url){
+      const artMatch=rel.artwork_url.match(/\/artwork\/(.+)$/);
+      if(artMatch)sb.storage.from('artwork').remove([decodeURIComponent(artMatch[1])]).catch(()=>{});
+    }
+
+    const {error}=await sb.from('releases').delete().eq('id',id);
+    if(error)throw error;
+  }catch(error){
     toast('Delete failed — run the admin RLS fix SQL in Supabase','err');
     console.error('deleteRelease error:',error);
     return;
@@ -9899,6 +9949,51 @@ async function revokeAdmin(id,name){
   await updateUserPlan(id,'free');
   await loadAdminUsers();
 }
+let _adminDeleteTarget=null;
+function openAdminDeleteUserModal(userId,name,email){
+  _adminDeleteTarget={id:userId,name,email};
+  document.getElementById('admin-delete-user-name').textContent=name||email||'this user';
+  document.getElementById('admin-delete-user-email-hint').textContent=email||'';
+  const input=document.getElementById('admin-delete-user-email-input');input.value='';
+  validateAdminDeleteUser();
+  document.getElementById('admin-delete-user-overlay').classList.add('open');
+}
+function closeAdminDeleteUserModal(){
+  document.getElementById('admin-delete-user-overlay').classList.remove('open');
+  _adminDeleteTarget=null;
+}
+function validateAdminDeleteUser(){
+  const typed=(document.getElementById('admin-delete-user-email-input').value||'').trim().toLowerCase();
+  const real=(_adminDeleteTarget?.email||'').trim().toLowerCase();
+  const btn=document.getElementById('admin-delete-user-confirm-btn');
+  const match=typed.length>0&&typed===real;
+  btn.disabled=!match;
+  btn.style.opacity=match?'1':'.4';
+  btn.style.cursor=match?'pointer':'not-allowed';
+}
+async function executeAdminDeleteUser(){
+  if(!_adminDeleteTarget)return;
+  const btn=document.getElementById('admin-delete-user-confirm-btn');
+  const originalHtml=btn.innerHTML;
+  btn.disabled=true;btn.innerHTML='<span class="loader" style="width:14px;height:14px"></span> Deleting...';
+  try{
+    const {data,error}=await sb.functions.invoke('admin-delete-user',{body:{targetUserId:_adminDeleteTarget.id}});
+    if(error||data?.error){
+      console.error('Delete user error:',error||data?.error);
+      toast('Could not delete this account: '+(data?.error||error?.message||'unknown error'),'err');
+      btn.disabled=false;btn.innerHTML=originalHtml;
+      return;
+    }
+    toast(data.deletedName+' has been permanently deleted','ok');
+    closeAdminDeleteUserModal();
+    loadAdminUsers();
+    loadAdminStats();
+  }catch(e){
+    console.error('Delete user exception:',e);
+    toast('Something went wrong deleting this account','err');
+    btn.disabled=false;btn.innerHTML=originalHtml;
+  }
+}
 function renderAdminUsersTable(data){
   const tbody=document.getElementById('admin-users-tbody');if(!tbody)return;
   if(!data.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No artists match.</td></tr>';return;}
@@ -9908,7 +10003,7 @@ function renderAdminUsersTable(data){
     const planColors={free:'#9ca3af',solo_paid:'#60a5fa',artist_plus:'#c084fc',label:'#fbbf24',admin:'#f87171'};
     const plColor=planColors[p.plan]||'#9ca3af';
     const plSelectStyle='background:'+plColor+'1a;color:'+plColor+';border-color:'+plColor+'40;font-weight:600';
-    return '<tr><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(p.account_id||'—')+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(p.email||'')+'</div></td><td><select class="stsel" style="'+plSelectStyle+'" onchange="updateUserPlan(\''+p.id+'\',this.value)"><option value="free" '+(p.plan==='free'?'selected':'')+'>Free</option><option value="solo_paid" '+(p.plan==='solo_paid'?'selected':'')+'>Solo</option><option value="artist_plus" '+(p.plan==='artist_plus'?'selected':'')+'>Artist+</option><option value="label" '+(p.plan==='label'?'selected':'')+'>Label</option><option value="admin" '+(p.plan==='admin'?'selected':'')+'>Admin</option></select></td><td style="text-align:center;font-weight:600;color:#fff">'+(relCount[p.id]||0)+'</td><td style="color:rgba(255,255,255,.6)">'+(relStreams[p.id]||0).toLocaleString()+'</td><td style="color:#34d399;font-weight:600">$'+(relEarn[p.id]||0).toFixed(2)+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+joined+'</td><td><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px" onclick="openArtistModal(\''+p.id+'\',\''+esc(name)+'\')"><i class="ti ti-eye"></i></button></td></tr>';
+    return '<tr><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(p.account_id||'—')+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(p.email||'')+'</div></td><td><select class="stsel" style="'+plSelectStyle+'" onchange="updateUserPlan(\''+p.id+'\',this.value)"><option value="free" '+(p.plan==='free'?'selected':'')+'>Free</option><option value="solo_paid" '+(p.plan==='solo_paid'?'selected':'')+'>Solo</option><option value="artist_plus" '+(p.plan==='artist_plus'?'selected':'')+'>Artist+</option><option value="label" '+(p.plan==='label'?'selected':'')+'>Label</option><option value="admin" '+(p.plan==='admin'?'selected':'')+'>Admin</option></select></td><td style="text-align:center;font-weight:600;color:#fff">'+(relCount[p.id]||0)+'</td><td style="color:rgba(255,255,255,.6)">'+(relStreams[p.id]||0).toLocaleString()+'</td><td style="color:#34d399;font-weight:600">$'+(relEarn[p.id]||0).toFixed(2)+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+joined+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+p.id+'\',\''+esc(name)+'\')"><i class="ti ti-eye"></i></button>'+(p.plan==='admin'?'':'<button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" title="Permanently delete this account" onclick="openAdminDeleteUserModal(\''+p.id+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+esc(p.email||'').replace(/'/g,"\\'")+'\')"><i class="ti ti-trash"></i></button>')+'</td></tr>';
   }).join('');
 }
 function filterUsers(){
