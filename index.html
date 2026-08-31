@@ -5466,7 +5466,7 @@ async function downloadArtwork(releaseId){
     const filename=safeTitle+' - Cover Art.'+ext;
     const blobUrl=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=blobUrl;a.download=filename;a.click();
-    URL.revokeObjectURL(blobUrl);
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),1000);
     toast('Downloading artwork','ok');
   }catch(e){
     console.error('Artwork download error:',e);
@@ -5492,7 +5492,7 @@ async function downloadTrack(trackKey){
     const filename=safeTitle+'.'+ext;
     const blobUrl=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=blobUrl;a.download=filename;a.click();
-    URL.revokeObjectURL(blobUrl);
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),1000);
     toast('Downloading "'+safeTitle+'"','ok');
   }catch(e){
     console.error('Track download error:',e);
@@ -5808,7 +5808,7 @@ function exportAnalyticsCSV(){
     });
     const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
     const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='blakkstone-analytics-'+(anRangeDays===0?'all-time':anRangeDays+'days')+(isSynthetic?'-estimated':'')+'.csv';a.click();URL.revokeObjectURL(url);
+    const a=document.createElement('a');a.href=url;a.download='blakkstone-analytics-'+(anRangeDays===0?'all-time':anRangeDays+'days')+(isSynthetic?'-estimated':'')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     toast(isSynthetic?'Analytics exported (marked as estimated data)':'Analytics exported','ok');
   }catch(e){
     console.error('Export analytics error:',e);
@@ -7628,7 +7628,13 @@ async function downloadDistributionFile(url,filename,btnEl){
     const blob=await res.blob();
     const blobUrl=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=blobUrl;a.download=filename;a.click();
-    URL.revokeObjectURL(blobUrl);
+    // Revoking immediately after .click() is a well-known race condition —
+    // triggering a download starts the browser reading the blob's data,
+    // but doesn't finish doing so synchronously. Revoking right away could
+    // invalidate that reference before a larger audio file was fully read,
+    // producing a truncated or empty download. A short delay gives the
+    // browser room to actually finish before the reference is destroyed.
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),1000);
     toast('Downloading "'+filename+'"','ok');
   }catch(e){
     console.error('Distribution file download error:',e);
@@ -9964,7 +9970,7 @@ function exportSubsTabCSV(){
   const rows=data.map(r=>[r.name,r.email,r.accountId,r.planLabel||r.plan,r.billing,(r.usd||0).toFixed(2),(r.ghs||0).toFixed(2),r.ref,r.date?new Date(r.date).toLocaleDateString('en-GB'):'']);
   const csv=[headers,...rows].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='blakkstone-subscriptions.csv';a.click();URL.revokeObjectURL(url);
+  const a=document.createElement('a');a.href=url;a.download='blakkstone-subscriptions.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   toast('Exported '+data.length+' row(s)','ok');
 }
 async function loadExpiringRenewals(){
@@ -10734,7 +10740,7 @@ async function exportCSV(type){
   if(type==='payouts_pending'&&!data.length){toast('No pending payouts to export','err');return;}
   const csv=[headers,...data].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);toast('Exported '+filename,'ok');
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Exported '+filename,'ok');
 }
 function exportArtistsCSV(){exportCSV('artists');}function exportReleasesCSV(){exportCSV('releases');}function exportPayoutsCSV(){exportCSV('payouts');}function exportSubsCSV(){exportCSV('subscriptions');}function exportPendingPayoutsCSV(){exportCSV('payouts_pending');}
 function populateSummaryYearSelect(){
@@ -10804,7 +10810,7 @@ async function exportAnnualSummary(){
 
     const csv=lines.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
     const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='blakkstone-annual-summary-'+year+'.csv';a.click();URL.revokeObjectURL(url);
+    const a=document.createElement('a');a.href=url;a.download='blakkstone-annual-summary-'+year+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     toast('Annual summary exported','ok');
   }catch(e){
     console.error('Export annual summary error:',e);
@@ -10828,7 +10834,7 @@ async function exportMyEarningsCSV(){
     rows.push(['','','','','','','Total',totalNet.toFixed(2)]);
     const csv=[headers,...rows].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
     const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='blakkstone-my-earnings.csv';a.click();URL.revokeObjectURL(url);
+    const a=document.createElement('a');a.href=url;a.download='blakkstone-my-earnings.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
     toast('Earnings exported','ok');
   }catch(e){
     console.error('Export earnings error:',e);
@@ -11933,7 +11939,7 @@ function exportSplitStatement(){
   const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
   a.download='blakkstone-split-statement-'+(r.title||'release').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.csv';
-  a.click();URL.revokeObjectURL(url);
+  a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   toast('Split statement exported','ok');
 }
 
