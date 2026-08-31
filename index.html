@@ -1828,6 +1828,33 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <div id="rel-modal-platform-links"></div>
             </div>
           </div>
+          <!-- RELEASE INFO — moved up alongside the title so it's visible
+               without scrolling, rather than far down the page -->
+          <div class="adm-card" style="flex-shrink:0;min-width:200px;align-self:flex-start">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Release Info</div>
+            <div style="display:flex;flex-direction:column;gap:.75rem">
+              <div>
+                <div style="font-size:11px;color:rgba(255,255,255,.35)">Release Date</div>
+                <div id="rel-modal-date" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
+              </div>
+              <div id="rel-modal-isrc-cell" style="display:none">
+                <div style="font-size:11px;color:rgba(255,255,255,.35)">ISRC</div>
+                <div id="rel-modal-isrc" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;font-family:monospace">—</div>
+              </div>
+              <div id="rel-modal-upc-cell" style="display:none">
+                <div style="font-size:11px;color:rgba(255,255,255,.35)">UPC</div>
+                <div id="rel-modal-upc" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;font-family:monospace">—</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:rgba(255,255,255,.35)">Status</div>
+                <div id="rel-modal-status-text" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:rgba(255,255,255,.35)">Submitted</div>
+                <div id="rel-modal-submitted" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- TRACKLIST -->
@@ -1885,33 +1912,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="adm-card" style="margin-bottom:1.25rem">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Smart Link Performance</div>
           <div id="rel-modal-slstats"></div>
-        </div>
-
-        <!-- RELEASE INFO -->
-        <div class="adm-card" style="margin-bottom:1.25rem">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Release Info</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem">
-            <div>
-              <div style="font-size:11px;color:rgba(255,255,255,.35)">Release Date</div>
-              <div id="rel-modal-date" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
-            </div>
-            <div id="rel-modal-isrc-cell" style="display:none">
-              <div style="font-size:11px;color:rgba(255,255,255,.35)">ISRC</div>
-              <div id="rel-modal-isrc" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;font-family:monospace">—</div>
-            </div>
-            <div id="rel-modal-upc-cell" style="display:none">
-              <div style="font-size:11px;color:rgba(255,255,255,.35)">UPC</div>
-              <div id="rel-modal-upc" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px;font-family:monospace">—</div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:rgba(255,255,255,.35)">Status</div>
-              <div id="rel-modal-status-text" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:rgba(255,255,255,.35)">Submitted</div>
-              <div id="rel-modal-submitted" style="font-size:13px;font-weight:600;color:#fff;margin-top:2px">—</div>
-            </div>
-          </div>
         </div>
 
         <!-- NOTES -->
