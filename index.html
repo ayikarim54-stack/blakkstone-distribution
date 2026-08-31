@@ -6258,8 +6258,8 @@ async function loadPayout(){
   // Load saved methods first
   await loadSavedMethods();
   const [{data:relData},{data:payoutData}]=await Promise.all([
-    sb.from('releases').select('earnings').eq('user_id',user.id),
-    sb.from('payouts').select('amount,status,id,method,network,account,created_at,failure_reason').eq('user_id',user.id).order('created_at',{ascending:false})
+    sb.from('releases').select('earnings').eq('user_id',activeAccountId()),
+    sb.from('payouts').select('amount,status,id,method,network,account,created_at,failure_reason').eq('user_id',activeAccountId()).order('created_at',{ascending:false})
   ]);
   const isPaid=isCommissionExempt();
   const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
@@ -6355,6 +6355,7 @@ function selNet(net){
 let payoutSubmitting=false;
 async function submitPayout(){
   if(payoutSubmitting)return;
+  if(isTeamViewerOnly()){toast('Viewers cannot request payouts','err');return;}
   if(!payoutMethod){toast('Select a payout method','err');return;}
   let amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
   if(!amt||isNaN(amt)||amt<1){toast('Enter a valid amount (min $1.00)','err');return;}
@@ -6364,8 +6365,8 @@ async function submitPayout(){
   if(sbtn){sbtn.disabled=true;sbtn.style.opacity='.5';}
   try{
     const [{data:relData},{data:existing}]=await Promise.all([
-      sb.from('releases').select('earnings').eq('user_id',user.id),
-      sb.from('payouts').select('amount,status').eq('user_id',user.id)
+      sb.from('releases').select('earnings').eq('user_id',activeAccountId()),
+      sb.from('payouts').select('amount,status').eq('user_id',activeAccountId())
     ]);
     const isPaid=isCommissionExempt();
     const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
@@ -6391,7 +6392,7 @@ async function submitPayout(){
       if(!swift){toast('SWIFT / BIC code is required for bank transfers','err');return;}
       account=accName+' — '+bank+' ('+acc+') · SWIFT: '+swift+(sortCode?' · Sort: '+sortCode:'');
     }
-    const insertPayload={user_id:user.id,method:payoutMethod,network:network||null,account,amount:amt,status:'pending',payout_fee_usd:Math.round(amt*(PAYOUT_FEE_PERCENT/100)*100)/100};
+    const insertPayload={user_id:activeAccountId(),method:payoutMethod,network:network||null,account,amount:amt,status:'pending',payout_fee_usd:Math.round(amt*(PAYOUT_FEE_PERCENT/100)*100)/100};
     let {error}=await sb.from('payouts').insert(insertPayload);
     if(error&&/payout_fee_usd/i.test(error.message||'')){
       delete insertPayload.payout_fee_usd;
@@ -6410,11 +6411,12 @@ async function submitPayout(){
   }
 }
 async function cancelPayout(id){
+  if(isTeamViewerOnly()){toast('Viewers cannot cancel payouts','err');return;}
   if(!confirm('Cancel this payout?'))return;
   // Status guard: only a still-pending payout can be cancelled, and we verify a row was actually changed.
   const {data:updated,error}=await sb.from('payouts')
     .update({status:'cancelled'})
-    .eq('id',id).eq('user_id',user.id).eq('status','pending')
+    .eq('id',id).eq('user_id',activeAccountId()).eq('status','pending')
     .select('id');
   if(error){toast('Could not cancel: '+error.message,'err');return;}
   if(!updated||!updated.length){
@@ -6427,7 +6429,7 @@ async function cancelPayout(id){
 // ── SAVED PAYOUT METHODS ───────────────────────────────
 async function loadSavedMethods(){
   try{
-    const {data}=await sb.from('payout_methods').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    const {data}=await sb.from('payout_methods').select('*').eq('user_id',activeAccountId()).order('created_at',{ascending:false});
     savedMethods=data||[];
     renderSavedMethods();
     renderQuickPick();
@@ -6550,8 +6552,9 @@ function selNewNet(net){
 }
 
 async function savePayoutMethod(){
+  if(isTeamViewerOnly()){toast('Viewers cannot add payout methods','err');return;}
   if(!newMethodType){toast('Select a method type','err');return;}
-  let row={user_id:user.id,method:newMethodType,is_default:savedMethods.length===0};
+  let row={user_id:activeAccountId(),method:newMethodType,is_default:savedMethods.length===0};
   if(newMethodType==='momo'){
     if(!newMethodNetwork){toast('Select a network','err');return;}
     const num=document.getElementById('new-momo-number')?.value.trim();
@@ -6586,15 +6589,17 @@ async function savePayoutMethod(){
 }
 
 async function setDefaultMethod(id){
-  await sb.from('payout_methods').update({is_default:false}).eq('user_id',user.id);
-  await sb.from('payout_methods').update({is_default:true}).eq('id',id);
+  if(isTeamViewerOnly()){toast('Viewers cannot change payout methods','err');return;}
+  await sb.from('payout_methods').update({is_default:false}).eq('user_id',activeAccountId());
+  await sb.from('payout_methods').update({is_default:true}).eq('id',id).eq('user_id',activeAccountId());
   toast('Default method updated','ok');
   loadSavedMethods();
 }
 
 async function deleteMethod(id){
+  if(isTeamViewerOnly()){toast('Viewers cannot remove payout methods','err');return;}
   if(!confirm('Remove this saved method?'))return;
-  await sb.from('payout_methods').delete().eq('id',id);
+  await sb.from('payout_methods').delete().eq('id',id).eq('user_id',activeAccountId());
   toast('Method removed','ok');
   loadSavedMethods();
 }
