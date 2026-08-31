@@ -9293,7 +9293,7 @@ async function submitRelease(){
     const relPayload={
       user_id:activeAccountId(),title,artist,genre,release_date:date,
       isrc:wizTracks[0]?.isrc||null,notes:extraInfo||null,
-      audio_url:audioPaths[0],artwork_url:artPublicUrl,status:'pending',streams:0,earnings:0,
+      audio_url:audioPaths[0]?sb.storage.from('audio').getPublicUrl(audioPaths[0]).data.publicUrl:null,artwork_url:artPublicUrl,status:'pending',streams:0,earnings:0,
       // Priority Distribution was removed as a paid add-on (ONErpm couldn't
       // guarantee the faster turnaround) — is_priority/priority_ref stay as
       // real columns for historical releases and revenue reporting, but no
