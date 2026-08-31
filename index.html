@@ -220,6 +220,7 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .rg-badge-live{background:#10b981;color:#fff;font-weight:700;font-size:11px}
 .rg-badge-pending{background:#f59e0b;color:#000}
 .rg-badge-review{background:#3b82f6;color:#fff}
+.rg-badge-approved{background:#14b8a6;color:#fff}
 .rg-badge-rejected{background:#ef4444;color:#fff}
 .rg-new{background:#1e1e35;border:2px dashed rgba(255,255,255,.15);border-radius:12px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;gap:8px}
 .rg-new:hover{border-color:rgba(201,168,76,.5);background:#252540}
@@ -241,6 +242,7 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .b-pending{background:rgba(245,158,11,.2);color:#fbbf24}
 .b-review{background:rgba(59,130,246,.2);color:#60a5fa}
+.b-approved{background:rgba(20,184,166,.2);color:#2dd4bf}
 .b-live{background:#10b981;color:#fff;font-weight:700}
 .b-rejected{background:rgba(239,68,68,.2);color:#f87171}
 .b-takendown{background:rgba(107,114,128,.2);color:#9ca3af}
@@ -3150,9 +3152,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="display:flex;gap:8px;margin-bottom:.875rem;flex-wrap:wrap">
           <input id="rel-search" type="text" placeholder="Search title, artist..." class="adm-search" oninput="filterReleases()"/>
           <select id="rel-status-filter" class="stsel" style="padding:7px 12px;font-size:13px" onchange="filterReleases()">
-            <option value="">All statuses</option><option value="pending">Pending</option><option value="review">In Review</option><option value="live">Live</option><option value="rejected">Rejected</option>
+            <option value="">All statuses</option><option value="pending">Pending</option><option value="review">In Review</option><option value="approved">Approved</option><option value="live">Live</option><option value="rejected">Rejected</option><option value="takendown">Taken Down</option>
           </select>
-          <button class="btn adm-btn-sec btn-sm" onclick="bulkStatusUpdate('live')"><i class="ti ti-check"></i> Bulk Approve</button>
+          <button class="btn adm-btn-sec btn-sm" onclick="bulkStatusUpdate('approved')"><i class="ti ti-check"></i> Bulk Approve</button>
           <button class="btn adm-btn-sec btn-sm" onclick="bulkStatusUpdate('rejected')" style="color:#f87171;border-color:#f87171"><i class="ti ti-x"></i> Bulk Reject</button>
         </div>
         <div class="tw"><table>
@@ -3943,7 +3945,7 @@ function checkDuplicateTitle(input){
   if(!title){warnEl.style.display='none';return;}
   const match=(allRelData||[]).find(r=>(r.title||'').trim().toLowerCase()===title);
   if(match){
-    const statusLabel={pending:'pending',review:'in review',live:'live',rejected:'rejected',takendown:'taken down'}[match.status]||match.status;
+    const statusLabel={pending:'pending',review:'in review',approved:'approved',live:'live',rejected:'rejected',takendown:'taken down'}[match.status]||match.status;
     warnEl.innerHTML='<i class="ti ti-alert-triangle"></i> You already have a release titled "'+esc(match.title)+'" ('+esc(statusLabel||'')+'). If this is a remaster or reissue, that\'s fine — just flagging it in case it\'s not intentional.';
     warnEl.style.display='block';
   } else {
@@ -4771,8 +4773,8 @@ function releaseGridCard(r){
     const art=r.artUrl?'<img src="'+r.artUrl+'" alt="art">':'<i class="ti ti-file-music"></i>';
     return '<div class="rg-card" onclick="resumeDraftFromMusic(\''+r.id+'\')"><div class="rg-art">'+art+'<span class="rg-badge" style="background:rgba(212,175,55,.9);color:var(--black)">Draft</span><button onclick="event.stopPropagation();deleteDraftFromMusic(\''+r.id+'\')" title="Delete draft" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.65);border:none;border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#f87171;z-index:2"><i class="ti ti-trash" style="font-size:13px"></i></button></div><div class="rg-info"><div class="rg-title">'+esc(r.title||'Untitled release')+'</div><div class="rg-meta">Saved '+ago+'</div></div></div>';
   }
-  const bc={pending:'rg-badge-pending',review:'rg-badge-review',live:'rg-badge-live',rejected:'rg-badge-rejected',takendown:'rg-badge-takendown'}[r.status]||'rg-badge-pending';
-  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+  const bc={pending:'rg-badge-pending',review:'rg-badge-review',approved:'rg-badge-approved',live:'rg-badge-live',rejected:'rg-badge-rejected',takendown:'rg-badge-takendown'}[r.status]||'rg-badge-pending';
+  const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
   const art=r.artwork_url?'<img src="'+r.artwork_url+'" alt="'+esc(r.title||'Release')+' cover art">':'<i class="ti ti-music"></i>';
   _releaseMap[r.id]=r;
   const needsAttention=(r.status==='rejected'||r.status==='takendown')&&r.status_reason;
@@ -4785,8 +4787,8 @@ function releaseRow(r){
     const art=r.artUrl?'<img src="'+r.artUrl+'" alt="art">':'<i class="ti ti-file-music"></i>';
     return '<div class="rr" onclick="resumeDraftFromMusic(\''+r.id+'\')" style="cursor:pointer"><div class="r-art">'+art+'</div><div class="r-info"><div class="r-title">'+esc(r.title||'Untitled release')+'</div><div class="r-meta">Draft · saved '+ago+'</div></div><span class="badge" style="background:rgba(212,175,55,.12);color:var(--gold);border:1px solid rgba(212,175,55,.3)">Draft</span><i class="ti ti-player-play" style="color:var(--gold);font-size:15px;flex-shrink:0" title="Resume"></i></div>';
   }
-  const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
-  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+  const bc={pending:'b-pending',review:'b-review',approved:'b-approved',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+  const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
   const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
   const art=r.artwork_url?'<img src="'+r.artwork_url+'" alt="'+esc(r.title||'Release')+' cover art">':'<i class="ti ti-music"></i>';
   _releaseMap[r.id]=r;
@@ -4846,7 +4848,7 @@ function renderReleasesList(releases,filter){
   const list=document.getElementById('all-releases');if(!list)return;
   let filtered=releases;
   if(filter==='live')filtered=releases.filter(r=>r.status==='live');
-  else if(filter==='pending')filtered=releases.filter(r=>r.status==='pending'||r.status==='review');
+  else if(filter==='pending')filtered=releases.filter(r=>r.status==='pending'||r.status==='review'||r.status==='approved');
   else if(filter==='rejected')filtered=releases.filter(r=>r.status==='rejected');
   else if(filter==='takendown')filtered=releases.filter(r=>r.status==='takendown');
   list.innerHTML=filtered.length?'<div class="rl">'+filtered.map(r=>releaseRow(r)).join('')+'</div>':'<div class="empty"><i class="ti ti-music-off"></i><p>No releases found.</p></div>';
@@ -4934,7 +4936,7 @@ function filterReleasesCombined(){
   let filtered=allRelData;
   const s=relFilterState.status;
   if(s==='live')filtered=filtered.filter(r=>r.status==='live');
-  else if(s==='pending')filtered=filtered.filter(r=>r.status==='pending'||r.status==='review');
+  else if(s==='pending')filtered=filtered.filter(r=>r.status==='pending'||r.status==='review'||r.status==='approved');
   else if(s==='rejected')filtered=filtered.filter(r=>r.status==='rejected');
   else if(s==='takendown')filtered=filtered.filter(r=>r.status==='takendown');
   if(relFilterState.genre)filtered=filtered.filter(r=>r.genre===relFilterState.genre);
@@ -5090,7 +5092,7 @@ function describeActivityForArtist(l,releaseMap){
   const relName=rel?.title?(' "'+rel.title+'"'):'';
   if(l.field==='release_status'){
     const nv=(l.new_value||'').split(' —')[0].trim();
-    const statusLabel={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'};
+    const statusLabel={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'};
     const icon={live:'🎉',rejected:'⚠️',takendown:'🚫',review:'👀',pending:'⏳'}[nv]||'📀';
     return icon+' Your release'+relName+' is now '+(statusLabel[nv]||l.new_value);
   }
@@ -5329,8 +5331,8 @@ function openReleaseModal(r,updateUrl){
   const gp=document.getElementById('rel-modal-genre-pill');if(gp) gp.textContent=r.genre||'';
   const pb=document.getElementById('rel-modal-priority-badge');
   if(pb) pb.innerHTML=r.is_priority?'<span style="font-size:10px;font-weight:700;color:var(--black);background:var(--gold);padding:3px 9px;border-radius:20px"><i class="ti ti-bolt"></i> PRIORITY</span>':'';
-  const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
-  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+  const bc={pending:'b-pending',review:'b-review',approved:'b-approved',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+  const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
   const sb2=document.getElementById('rel-modal-status-badge');if(sb2) sb2.innerHTML='<span class="badge '+bc+'" style="font-size:12px;padding:4px 12px">'+bl+'</span>';
   const cancelBtn=document.getElementById('rel-modal-cancel-btn');if(cancelBtn) cancelBtn.style.display=r.status==='pending'?'inline-flex':'none';
   const reasonBanner=document.getElementById('rel-modal-reason-banner');
@@ -6126,8 +6128,8 @@ function renderReleasesTable(){
   tbody.innerHTML=all.map(r=>{
     _releaseMap[r.id]=r;
     const pct=total>0?Math.round(((r.streams||0)/total)*100):0;
-    const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
-    const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+    const bc={pending:'b-pending',review:'b-review',approved:'b-approved',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+    const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
     const art=r.artwork_url?'<img src="'+r.artwork_url+'" alt="'+esc(r.title||'Release')+' cover art" style="width:32px;height:32px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:8px">':'';
     return '<tr onclick="openReleaseFromAnalytics(\''+r.id+'\')" style="cursor:pointer"><td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong></td><td style="color:rgba(255,255,255,.5)">'+esc(r.artist)+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'—')+'</td><td style="font-weight:700;color:#fff">'+(r.streams||0).toLocaleString()+'</td><td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#D4AF37"></div></div><span style="font-size:11px;color:rgba(255,255,255,.35);width:28px">'+pct+'%</span></div></td><td><span class="badge '+bc+'">'+bl+'</span></td></tr>';
   }).join('');
@@ -6182,7 +6184,7 @@ async function loadRoyalties(){
   }
   const byStatus={};
   allRel.forEach(r=>{const s=r.status||'pending';byStatus[s]=(byStatus[s]||0)+(r.earnings||0);});
-  const statusLabels={live:'Live',pending:'Pending',review:'In Review',rejected:'Rejected',takendown:'Taken Down'};
+  const statusLabels={live:'Live',pending:'Pending',review:'In Review',approved:'Approved',rejected:'Rejected',takendown:'Taken Down'};
   const statusColors={live:'#34d399',pending:'#fbbf24',review:'#60a5fa',rejected:'#f87171',takendown:'#9ca3af'};
   const breakdownEl=document.getElementById('earnings-breakdown');
   if(breakdownEl){
@@ -6218,8 +6220,8 @@ async function loadRoyalties(){
     if(!allRel.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
     tbody.innerHTML=allRel.map(r=>{
       const rc=isPaid?0:(r.earnings||0)*COMM;const rp=(r.earnings||0)-rc;
-      const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
-      const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+      const bc={pending:'b-pending',review:'b-review',approved:'b-approved',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+      const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
       const art=r.artwork_url?'<img src="'+r.artwork_url+'" alt="'+esc(r.title||'Release')+' cover art" style="width:30px;height:30px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:7px">':'';
       return '<tr><td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;margin-left:37px">'+esc(r.artist)+'</div></td><td style="color:rgba(255,255,255,.6)">'+(r.streams||0).toLocaleString()+'</td><td>$'+(r.earnings||0).toFixed(2)+'</td><td style="color:#f87171">-$'+rc.toFixed(2)+'</td><td style="color:#34d399;font-weight:700">$'+rp.toFixed(2)+'</td><td><span class="badge '+bc+'">'+bl+'</span></td></tr>';
     }).join('');
@@ -7516,8 +7518,8 @@ function renderArtistPage(rows,overrideName){
   }).filter(Boolean).join('');
   const socialsRow=socialIcons?'<div style="display:flex;gap:10px;justify-content:center;margin-bottom:1.5rem">'+socialIcons+'</div>':'';
   const header='<div style="text-align:center;margin-bottom:2rem"><div style="margin:0 auto 1rem;width:96px">'+av+'</div><h1 style="font-size:22px;font-weight:800;color:#fff;margin-bottom:'+(bio?'.5rem':'0')+'">'+esc(name)+'</h1>'+bio+socialsRow+'</div>';
-  const bl={pending:'Coming Soon',review:'Coming Soon',live:'Live'};
-  const bc={pending:'b-pending',review:'b-pending',live:'b-live'};
+  const bl={pending:'Coming Soon',review:'Coming Soon',approved:'Coming Soon',live:'Live'};
+  const bc={pending:'b-pending',review:'b-pending',approved:'b-pending',live:'b-live'};
   const tiles=rows.map(r=>{
     const art=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" alt="'+esc(r.title||'Release')+' cover art" style="width:56px;height:56px;border-radius:8px;object-fit:cover;flex-shrink:0">':'<div style="width:56px;height:56px;border-radius:8px;background:var(--panel);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-music" style="font-size:20px;color:rgba(255,255,255,.2)"></i></div>';
     const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'';
@@ -7611,9 +7613,9 @@ async function openArtistModal(userId,name){
   await loadArtistAuditLog(userId,releases.map(r=>r.id));
   if(!releases.length){document.getElementById('artist-modal-body').innerHTML='<p style="color:var(--muted);font-size:13px">No releases yet.</p>';document.getElementById('artist-overlay').classList.add('open');return;}
   document.getElementById('artist-modal-body').innerHTML=releases.map(r=>{
-    const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
-    const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
-    return '<div class="release-detail"><div class="rd-header"><div class="r-art" style="width:40px;height:40px">'+(r.artwork_url?'<img src="'+r.artwork_url+'" alt="'+esc(r.title||'Release')+' cover art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">':'<i class="ti ti-music" style="font-size:18px;color:var(--muted)"></i>')+'</div><div class="r-info"><div class="r-title">'+esc(r.title)+'</div><div class="r-meta">'+esc(r.artist)+'</div></div><span class="badge '+bc+'">'+bl+'</span></div><div class="rd-fields"><div class="fg"><label>Status</label><select class="stsel" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></div><div class="fg"><label>Streams</label><input type="number" value="'+(r.streams||0)+'" class="num-in" style="width:100%" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></div><div class="fg"><label>Earnings ($)</label><input type="number" value="'+(r.earnings||0)+'" min="0" step="0.01" class="num-in" style="width:100%" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></div></div></div>';
+    const bc={pending:'b-pending',review:'b-review',approved:'b-approved',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+    const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+    return '<div class="release-detail"><div class="rd-header"><div class="r-art" style="width:40px;height:40px">'+(r.artwork_url?'<img src="'+r.artwork_url+'" alt="'+esc(r.title||'Release')+' cover art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">':'<i class="ti ti-music" style="font-size:18px;color:var(--muted)"></i>')+'</div><div class="r-info"><div class="r-title">'+esc(r.title)+'</div><div class="r-meta">'+esc(r.artist)+'</div></div><span class="badge '+bc+'">'+bl+'</span></div><div class="rd-fields"><div class="fg"><label>Status</label><select class="stsel" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="approved" '+(r.status==='approved'?'selected':'')+'>Approved</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></div><div class="fg"><label>Streams</label><input type="number" value="'+(r.streams||0)+'" class="num-in" style="width:100%" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></div><div class="fg"><label>Earnings ($)</label><input type="number" value="'+(r.earnings||0)+'" min="0" step="0.01" class="num-in" style="width:100%" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></div></div></div>';
   }).join('');
   document.getElementById('artist-overlay').classList.add('open');
 }
@@ -7808,8 +7810,8 @@ function renderViewAsArtist(profileData,releases,payoutsData){
     +'<div class="ov-card ov-card-4"><div class="ov-card-icon"><i class="ti ti-clock"></i></div><div style="flex:1"><div class="ov-card-label">Pending Review</div><div class="ov-card-value">'+pending+'</div><div class="ov-card-sub">Awaiting distribution</div></div></div>'
   +'</div>';
   const releaseRows=releases.length?releases.map(r=>{
-    const bc={pending:'b-pending',review:'b-review',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
-    const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
+    const bc={pending:'b-pending',review:'b-review',approved:'b-approved',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
+    const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
     const art=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" alt="'+esc(r.title||'Release')+' cover art" style="width:40px;height:40px;border-radius:7px;object-fit:cover">':'<div style="width:40px;height:40px;border-radius:7px;background:var(--panel);display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="font-size:16px;color:rgba(255,255,255,.2)"></i></div>';
     const d=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—';
     return '<div style="display:flex;align-items:center;gap:.875rem;padding:.75rem 1rem;background:var(--surface2);border:1px solid var(--line);border-radius:10px;margin-bottom:6px">'+art+'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.title)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(r.artist||'')+' · '+esc(r.genre||'')+' · '+d+'</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:13px;font-weight:700;color:#fff">'+(r.streams||0).toLocaleString()+'</div><div style="font-size:10px;color:rgba(255,255,255,.3)">streams</div></div><span class="badge '+bc+'" style="flex-shrink:0">'+bl+'</span></div>';
@@ -7983,8 +7985,8 @@ async function loadReleaseStatusHistory(releaseId){
 function renderReleaseStatusHistory(entries){
   const container=document.getElementById('rel-modal-history-section');if(!container)return;
   if(!entries.length){container.innerHTML='';return;}
-  const bl={pending:'Pending',review:'In Review',live:'Live',rejected:'Rejected',takendown:'Taken Down'};
-  const dotColor={pending:'#fbbf24',review:'#60a5fa',live:'#34d399',rejected:'#f87171',takendown:'#9ca3af'};
+  const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'};
+  const dotColor={pending:'#fbbf24',review:'#60a5fa',approved:'#2dd4bf',live:'#34d399',rejected:'#f87171',takendown:'#9ca3af'};
   const rows=entries.map((e,i)=>{
     const d=e.changed_at?new Date(e.changed_at).toLocaleString('en-GB'):'—';
     const label=bl[e.new_status]||e.new_status;
@@ -9584,11 +9586,11 @@ async function loadAdminDashboard(){
         loEl.innerHTML='<div style="color:rgba(255,255,255,.35);font-size:12px">Could not load — run launch_offer.sql in Supabase if you haven\'t yet.</div>';
       }
     }
-    const statuses={pending:0,review:0,live:0,rejected:0};
+    const statuses={pending:0,review:0,approved:0,live:0,rejected:0,takendown:0};
     (releases||[]).forEach(r=>statuses[r.status]=(statuses[r.status]||0)+1);
     const totalR=(releases||[]).length||1;
     const relEl=document.getElementById('adm-release-breakdown');
-    if(relEl) relEl.innerHTML=[{k:'Live',v:statuses.live,c:'#10b981'},{k:'Pending',v:statuses.pending,c:'#f59e0b'},{k:'In Review',v:statuses.review,c:'#3b82f6'},{k:'Rejected',v:statuses.rejected,c:'#ef4444'}].map(p=>'<div class="adm-bar-row"><div class="adm-bar-label">'+p.k+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round((p.v/totalR)*100)+'%;background:'+p.c+'"></div></div><div class="adm-bar-val">'+p.v+'</div></div>').join('');
+    if(relEl) relEl.innerHTML=[{k:'Live',v:statuses.live,c:'#10b981'},{k:'Pending',v:statuses.pending,c:'#f59e0b'},{k:'In Review',v:statuses.review,c:'#3b82f6'},{k:'Approved',v:statuses.approved,c:'#14b8a6'},{k:'Rejected',v:statuses.rejected,c:'#ef4444'},{k:'Taken Down',v:statuses.takendown,c:'#9ca3af'}].map(p=>'<div class="adm-bar-row"><div class="adm-bar-label">'+p.k+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round((p.v/totalR)*100)+'%;background:'+p.c+'"></div></div><div class="adm-bar-val">'+p.v+'</div></div>').join('');
     const actEl=document.getElementById('adm-recent-activity');
     if(actEl){
       const recent=[...(profiles||[]).slice(-3).map(p=>({text:'New artist joined',time:p.created_at,color:'#D4AF37'})),...(releases||[]).filter(r=>r.status==='pending').slice(-3).map(r=>({text:'"'+(r.title||'Unknown')+'" submitted',time:r.submitted_at||new Date().toISOString(),color:'#fbbf24'}))].sort((a,b)=>new Date(b.time)-new Date(a.time)).slice(0,8);
@@ -9623,10 +9625,10 @@ function renderAdminReleases(data){
     const sub=r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB'):'—';
     const rd=r.release_date?new Date(r.release_date).toLocaleDateString('en-GB'):'—';
     const art=r.artwork_url?'<img src="'+r.artwork_url+'" alt="'+esc(r.title||'Release')+' cover art" style="width:32px;height:32px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:6px">':'';
-    const statusColors={pending:'#fbbf24',review:'#60a5fa',live:'#34d399',rejected:'#f87171',takendown:'#9ca3af'};
+    const statusColors={pending:'#fbbf24',review:'#60a5fa',approved:'#2dd4bf',live:'#34d399',rejected:'#f87171',takendown:'#9ca3af'};
     const stColor=statusColors[r.status]||'#9ca3af';
     const stSelectStyle='background:'+stColor+'1a;color:'+stColor+';border-color:'+stColor+'40;font-weight:600';
-    return '<tr><td><input type="checkbox" class="rel-cb" data-id="'+r.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(accId)+'</td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(pName)+'</td><td style="white-space:nowrap">'+art+esc(r.title)+(r.is_priority?' <span style="font-size:9px;font-weight:700;color:var(--black);background:var(--gold);padding:2px 6px;border-radius:20px;vertical-align:middle"><i class="ti ti-bolt"></i> PRIORITY</span>':'')+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'')+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+sub+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+rd+'</td><td><select class="stsel" style="'+stSelectStyle+'" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></td><td><input type="number" class="num-in" value="'+(r.streams||0)+'" min="0" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></td><td><input type="number" class="num-in" value="'+(r.earnings||0)+'" min="0" step="0.01" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></td><td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((r.notes||'').slice(0,30))+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+r.user_id+'\',\''+esc(pName)+'\')"><i class="ti ti-eye"></i></button><button class="btn btn-gold btn-sm" style="padding:4px 8px;margin-right:3px" title="Distribution package (tracks, credits, everything needed for ONErpm)" onclick="openDistributionModal(\''+r.id+'\')"><i class="ti ti-package"></i></button><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" title="Set smart link (e.g. ONErpm)" onclick="quickSetSmartLink(\''+r.id+'\')"><i class="ti ti-link"></i></button><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease(\''+r.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
+    return '<tr><td><input type="checkbox" class="rel-cb" data-id="'+r.id+'" style="accent-color:var(--gold)"></td><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(accId)+'</td><td style="font-size:12px;color:rgba(255,255,255,.6)">'+esc(pName)+'</td><td style="white-space:nowrap">'+art+esc(r.title)+(r.is_priority?' <span style="font-size:9px;font-weight:700;color:var(--black);background:var(--gold);padding:2px 6px;border-radius:20px;vertical-align:middle"><i class="ti ti-bolt"></i> PRIORITY</span>':'')+'</td><td style="color:rgba(255,255,255,.4);font-size:12px">'+esc(r.genre||'')+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+sub+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+rd+'</td><td><select class="stsel" style="'+stSelectStyle+'" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="approved" '+(r.status==='approved'?'selected':'')+'>Approved</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></td><td><input type="number" class="num-in" value="'+(r.streams||0)+'" min="0" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></td><td><input type="number" class="num-in" value="'+(r.earnings||0)+'" min="0" step="0.01" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></td><td style="font-size:11px;color:rgba(255,255,255,.3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((r.notes||'').slice(0,30))+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+r.user_id+'\',\''+esc(pName)+'\')"><i class="ti ti-eye"></i></button><button class="btn btn-gold btn-sm" style="padding:4px 8px;margin-right:3px" title="Distribution package (tracks, credits, everything needed for ONErpm)" onclick="openDistributionModal(\''+r.id+'\')"><i class="ti ti-package"></i></button><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" title="Set smart link (e.g. ONErpm)" onclick="quickSetSmartLink(\''+r.id+'\')"><i class="ti ti-link"></i></button><button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" onclick="deleteRelease(\''+r.id+'\')"><i class="ti ti-trash"></i></button></td></tr>';
   }).join('');
 }
 function filterReleases(){
@@ -9744,7 +9746,7 @@ async function updateStatus(id,status,sel){
       title:relForLog.title,artist:relForLog.profiles?.artist_name||relForLog.profiles?.full_name,reason,releaseId:relForLog.id
     },relForLog.profiles.email);
   }
-  const sc={pending:'color:#fbbf24',review:'color:#60a5fa',live:'color:#34d399',rejected:'color:#f87171',takendown:'color:#9ca3af'};
+  const sc={pending:'color:#fbbf24',review:'color:#60a5fa',approved:'color:#2dd4bf',live:'color:#34d399',rejected:'color:#f87171',takendown:'color:#9ca3af'};
   if(sel) sel.style.cssText=sc[status]||'';
   toast('Status updated','ok');loadReleases();loadAdminStats();
 }
