@@ -137,20 +137,23 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 
 /* ── AUTH ── */
 #auth{background:var(--off);align-items:center;justify-content:center;padding:2rem 1rem}
-.auth-wrap{display:flex;max-width:820px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.1)}
-.auth-l{background:var(--black);padding:2.75rem;flex:1;display:flex;flex-direction:column;justify-content:center}
-.auth-l h2{font-size:28px;font-weight:900;color:#fff;letter-spacing:-.5px;margin-bottom:.6rem}
-.auth-l p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.7;margin-bottom:1.75rem}
-.auth-perks{list-style:none;display:flex;flex-direction:column;gap:9px}
-.auth-perks li{display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.55)}
-.auth-perks li i{font-size:15px;color:var(--gold)}
-.auth-r{background:#fff;padding:2.25rem;flex:1}
-.auth-r h3{font-size:20px;font-weight:800;margin-bottom:.2rem}
-.auth-r>p{font-size:13px;color:var(--muted);margin-bottom:1.4rem}
-.auth-r .fg input,.auth-r .fg select,.auth-r .fg textarea{background:var(--off);border:1.5px solid var(--border);color:var(--text)}
-.auth-r .fg input:focus,.auth-r .fg select:focus{border-color:var(--gold);background:#fff}
-.auth-r .fg input::placeholder{color:var(--subtle)}
-.auth-r .fg select option{background:#fff;color:var(--text)}
+.auth-wrap{display:flex;max-width:960px;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.06)}
+.auth-l{background:var(--black);padding:3.5rem 3rem;flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.auth-l::before{content:'';position:absolute;top:-40%;right:-30%;width:70%;height:70%;background:radial-gradient(circle,rgba(212,175,55,.1),transparent 70%);pointer-events:none}
+.auth-l h2{font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1.12;margin-bottom:.75rem;position:relative}
+.auth-l p{font-size:14px;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:2.25rem;max-width:34ch;position:relative}
+.auth-credits{list-style:none;position:relative;border-top:1px solid rgba(255,255,255,.1)}
+.auth-credits li{display:flex;justify-content:space-between;align-items:baseline;gap:1.5rem;padding:.8rem 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:13px}
+.auth-credits li span:first-child{color:rgba(255,255,255,.4)}
+.auth-credits li span:last-child{color:#fff;font-weight:600;text-align:right}
+.auth-r{background:var(--card);padding:3rem 3.25rem;flex:1;display:flex;flex-direction:column;justify-content:center}
+.auth-r h3{font-size:22px;font-weight:800;color:#fff;margin-bottom:.2rem}
+.auth-r>p{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1.5rem}
+.auth-r .fg label{color:rgba(255,255,255,.5)}
+.auth-r .fg input,.auth-r .fg select,.auth-r .fg textarea{background:var(--input-bg);border:1.5px solid rgba(255,255,255,.1);color:#fff}
+.auth-r .fg input:focus,.auth-r .fg select:focus{border-color:var(--gold);background:#181826}
+.auth-r .fg input::placeholder{color:rgba(255,255,255,.25)}
+.auth-r .fg select option{background:var(--card);color:#fff}
 .fg{margin-bottom:.875rem}
 .fg label{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 .fg input,.fg select,.fg textarea{width:100%;background:var(--surface2);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 11px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
@@ -525,7 +528,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
   /* AUTH */
   .auth-wrap{flex-direction:column}
-  .auth-l{padding:1.5rem;display:none}/* hide left panel on mobile */
+  .auth-l{padding:1.75rem 1.5rem 1.25rem}
+  .auth-l h2{font-size:26px}
+  .auth-l p{display:none}
   .auth-r{padding:1.75rem}
 
   /* UPGRADE */
@@ -1352,17 +1357,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </footer>
 </div>
 <!-- ══════════════ AUTH ══════════════ -->
-<div class="view" id="auth" style="background:var(--off);align-items:center;justify-content:center;padding:2rem 1rem">
+<div class="view" id="auth" style="background:var(--black);align-items:center;justify-content:center;padding:2rem 1rem">
   <div class="auth-wrap">
     <div class="auth-l">
-      <div style="margin-bottom:2rem;display:flex;align-items:center;gap:10px"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAkACUDASIAAhEBAxEB/8QAHAAAAQQDAQAAAAAAAAAAAAAAAAIEBQYBAwcI/8QAKhAAAgEDAwQBBAIDAAAAAAAAAQIDAAQRBRIhBgcTMVEiIzJBQmFxgbH/xAAYAQADAQEAAAAAAAAAAAAAAAAAAQIDBP/EABwRAAICAwEBAAAAAAAAAAAAAAABAhEDEhMUMf/aAAwDAQACEQMRAD8A80wincQzTGFxT6zCSOfI6JEm0vuONwz+I/s81sjNmwbXB2ENt945xTeX910PoLQZbu51HWJdPnvBKjW0Mfh2xWwK8NKf45CttXGcD5K5iu4Nl0zZWtsbC9lkvzGkbRog8f0DxsSSeDujY8ZzvHxXN6ovJzRpyeuxRZB9VFJdhmiugg1I+Mc1K6BrS6RdRX0FjHdXcb742nXciEesLnBI95Pr9D91ZbzubFqnS9r09qfTNnNawWkNsWS8eORvH4cHIQ4B8IJHP5NyKnbDulNfPcXUmi9L2coube5k+7JGZTFt8ap7IXbEiOvpgFzjFRKKkqY06dogZ+5mut0++lwvPFASRDbW6JDbwZ/OTagy8retzZ2jPsnIpL3JkblTGP4ruyAPgf7zXWH7g6gojMJ0e1nF1NLm3vnRYy0BiaONFwAmWDKCWC7FVSAKjbHvDe2aRBuntHuwFjWRbp3kU7DFxGMfaXMKsFU8MWbJyRUwxwx3qqscpOX1nM2bn/lFTPcPquXq7VLa/ls47NoLWO22JKXQhBjIBA25+Of80VoSVlSaWCaKKQGaSSaKKANbE5ooopgf/9k=" alt="Blakkstone" style="height:36px;width:auto;object-fit:contain"><span style="font-size:17px;font-weight:900;color:#fff">Blakkstone<span style="color:var(--gold)">.</span></span></div>
-      <h2 id="auth-l-title">Distribute your music globally.</h2>
-      <p id="auth-l-sub">Join independent African artists releasing music on every major platform.</p>
-      <ul class="auth-perks">
-        <li><i class="ti ti-check"></i> 150+ streaming platforms</li>
-        <li><i class="ti ti-check"></i> Mobile Money payouts</li>
-        <li><i class="ti ti-check"></i> Real-time analytics</li>
-        
+      <div style="margin-bottom:2.25rem;display:flex;align-items:center;gap:10px;position:relative"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAkACUDASIAAhEBAxEB/8QAHAAAAQQDAQAAAAAAAAAAAAAAAAIEBQYBAwcI/8QAKhAAAgEDAwQBBAIDAAAAAAAAAQIDAAQRBRIhBgcTMVEiIzJBQmFxgbH/xAAYAQADAQEAAAAAAAAAAAAAAAAAAQIDBP/EABwRAAICAwEBAAAAAAAAAAAAAAABAhEDEhMUMf/aAAwDAQACEQMRAD8A80wincQzTGFxT6zCSOfI6JEm0vuONwz+I/s81sjNmwbXB2ENt945xTeX910PoLQZbu51HWJdPnvBKjW0Mfh2xWwK8NKf45CttXGcD5K5iu4Nl0zZWtsbC9lkvzGkbRog8f0DxsSSeDujY8ZzvHxXN6ovJzRpyeuxRZB9VFJdhmiugg1I+Mc1K6BrS6RdRX0FjHdXcb742nXciEesLnBI95Pr9D91ZbzubFqnS9r09qfTNnNawWkNsWS8eORvH4cHIQ4B8IJHP5NyKnbDulNfPcXUmi9L2coube5k+7JGZTFt8ap7IXbEiOvpgFzjFRKKkqY06dogZ+5mut0++lwvPFASRDbW6JDbwZ/OTagy8retzZ2jPsnIpL3JkblTGP4ruyAPgf7zXWH7g6gojMJ0e1nF1NLm3vnRYy0BiaONFwAmWDKCWC7FVSAKjbHvDe2aRBuntHuwFjWRbp3kU7DFxGMfaXMKsFU8MWbJyRUwxwx3qqscpOX1nM2bn/lFTPcPquXq7VLa/ls47NoLWO22JKXQhBjIBA25+Of80VoSVlSaWCaKKQGaSSaKKANbE5ooopgf/9k=" alt="Blakkstone" style="height:36px;width:auto;object-fit:contain"><span style="font-size:17px;font-weight:900;color:#fff">Blakkstone<span style="color:var(--gold)">.</span></span></div>
+      <h2 id="auth-l-title">From Africa. To everywhere.</h2>
+      <p id="auth-l-sub">Get your music onto every major platform — Spotify, Apple Music, Boomplay, and more — from a distributor built for independent African artists.</p>
+      <ul class="auth-credits">
+        <li><span>Platforms</span><span>150+ stores</span></li>
+        <li><span>Your cut</span><span>91% of royalties</span></li>
+        <li><span>Payouts</span><span>Mobile Money, bank transfer</span></li>
+        <li><span>Turnaround</span><span>10 business days</span></li>
       </ul>
     </div>
     <div class="auth-r">
@@ -1374,9 +1379,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
           Continue with Google
         </button>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
-          <div style="flex:1;height:1px;background:var(--border)"></div>
-          <span style="font-size:12px;color:var(--muted)">or</span>
-          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div>
+          <span style="font-size:12px;color:rgba(255,255,255,.3)">or</span>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div>
         </div>
       </div>
       <div id="signup-fields">
@@ -1391,14 +1396,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="fg"><label>Password</label>
           <div style="position:relative">
             <input id="pw" type="password" placeholder="Min. 6 characters" style="padding-right:44px" onkeydown="if(event.key==='Enter')doAuth()">
-            <button type="button" onclick="togglePwVis()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px"><i class="ti ti-eye" id="pw-eye"></i></button>
+            <button type="button" onclick="togglePwVis()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:16px"><i class="ti ti-eye" id="pw-eye"></i></button>
           </div>
         </div>
         <p id="forgot-pw-link" style="display:none;text-align:right;font-size:12px;margin:-.5rem 0 .875rem"><a onclick="showAuth('forgot')" style="color:var(--gold);font-weight:600;cursor:pointer">Forgot password?</a></p>
       </div>
       <button class="btn btn-gold" id="auth-btn" style="width:100%;justify-content:center" onclick="doAuth()">Create account</button>
-      <p class="auth-foot" id="auth-foot">Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a></p>
-      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:.6rem"><a onclick="showView('landing')" style="color:var(--muted)">← Back to home</a></p>
+      <p class="auth-foot" id="auth-foot" style="color:rgba(255,255,255,.4)">Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a></p>
+      <p style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:.6rem"><a onclick="showView('landing')" style="color:rgba(255,255,255,.3)">← Back to home</a></p>
     </div>
   </div>
 </div>
@@ -12212,7 +12217,16 @@ function renderSplitRows(){
     } else if(session?.user){
       await loadProfile(session.user);
     } else {
-      showView('landing');
+      // A direct /signup visit (e.g. from a Google Ads campaign) goes
+      // straight to the signup form instead of the plain landing page —
+      // ad platforms need one specific address to send clicks to, not
+      // "click Get Started once you land on the homepage."
+      const path=window.location.pathname.replace(/^\/|\/$/g,'');
+      if(path==='signup'){
+        showAuth('signup');
+      } else {
+        showView('landing');
+      }
     }
   }catch(e){
     console.error('Session check failed, falling back to landing:',e);
