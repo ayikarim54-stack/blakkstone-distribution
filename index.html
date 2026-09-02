@@ -1161,7 +1161,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <span style="font-size:26px">🚀</span>
             <div>
               <div style="font-size:15px;font-weight:800;color:#fff">Launch Offer — <span id="launch-offer-spots" style="color:var(--gold)">— spots</span> left</div>
-              <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:2px">Be one of our first 100 founding artists — get 20% off your first year, automatically.</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:2px">Be one of our first 30 founding artists — get 20% off your first year, automatically.</div>
             </div>
           </div>
           <div style="flex:1;min-width:180px;max-width:260px">
@@ -3729,8 +3729,9 @@ const COMM=0.09;
 // Single source of truth for "does this account pay Blakkstone's 9% commission or not."
 // Previously duplicated identically across 7 separate functions — consolidated here so a
 // future plan-tier change only ever needs to happen in one place, not seven.
-function isCommissionExempt(){
-  return ['label','artist_plus','admin','solo_paid'].includes(profile?.plan)||user?.email===ADMIN_EMAIL;
+function isCommissionExempt(planOverride){
+  if(planOverride!==undefined)return ['label','artist_plus','admin'].includes(planOverride);
+  return ['label','artist_plus','admin'].includes(profile?.plan)||user?.email===ADMIN_EMAIL;
 }
 // Note: GHS conversion now always reads currentDisplayRates.GHS (live-fetched,
 // falls back to CURRENCY_FALLBACK_RATES.GHS if the fetch hasn't completed) —
@@ -3845,7 +3846,7 @@ const PLANS={solo:{monthly:11,yearly:11,label:'Solo'},artist_plus:{monthly:20,ye
 // Launch offer: first N signups (by account creation, not by payment) get
 // 20% off their first year on any plan. Change this one number to adjust
 // how many spots the offer covers.
-const LAUNCH_FOUNDER_LIMIT=100;
+const LAUNCH_FOUNDER_LIMIT=30;
 const LAUNCH_FOUNDER_DISCOUNT_PERCENT=20;
 // Launch founder eligibility used to be flagged at signup time via this
 // function — removed now that eligibility is checked live at checkout
@@ -4511,7 +4512,7 @@ function enterDashboard(){
     const name=profile?.full_name||profile?.artist_name||user.email.split('@')[0];
     const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const adminNow=isAdmin();
-    const isPaid=['label','artist_plus','solo_paid'].includes(profile?.plan||'');
+    const isPaid=isCommissionExempt();
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     set('tnav-name',name.split(' ')[0]);
     set('tnav-account-id',profile?.account_id||'');
@@ -7836,7 +7837,7 @@ function renderViewAsArtist(profileData,releases,payoutsData){
   const pending=releases.filter(r=>r.status==='pending'||r.status==='review').length;
   const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
   const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
-  const isPaidPlan=['label','artist_plus','admin','solo_paid'].includes(profileData?.plan);
+  const isPaidPlan=isCommissionExempt(profileData?.plan);
   const grossEarnings=isPaidPlan?earnings:earnings*(1-COMM);
   const paidOut=(payoutsData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingOut=(payoutsData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
@@ -11826,7 +11827,7 @@ async function checkLaunchOfferDiscount(){
   currentReferralDiscount=null;
   currentLaunchOfferDiscount=null;
   if(!user)return;
-  // Launch offer: first 100 people to actually PAY (not sign up) get 20%
+  // Launch offer: first 30 people to actually PAY (not sign up) get 20%
   // off that payment. Checked live at checkout, since eligibility now
   // depends on how many people have already paid so far, not on signup
   // order — someone who signed up early but hasn't paid yet shouldn't be
@@ -11855,7 +11856,7 @@ function updateRateNote(){
   const rn=document.getElementById('rate-note');
   const discountEl=document.getElementById('upgrade-discount-note');
   const autoRenew=document.getElementById('pay-auto-renew')?.checked;
-  // Launch offer takes priority over everything else — it's scarce (100
+  // Launch offer takes priority over everything else — it's scarce (30
   // spots, gone forever once used) and one-time, whereas the referral
   // discount can still be earned again later and upgrade credit is really
   // just returning the artist's own unused balance, not a promotion.
@@ -11865,7 +11866,7 @@ function updateRateNote(){
     const discountedGhs=(discountedUsd*currentDisplayRates.GHS).toFixed(2);
     if(discountEl){
       discountEl.style.display='block';
-      discountEl.innerHTML='<i class="ti ti-rocket"></i> Launch founder discount — you\'re one of our first 100 founding artists to subscribe: <strong>'+pct+'% off</strong>. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
+      discountEl.innerHTML='<i class="ti ti-rocket"></i> Launch founder discount — you\'re one of our first 30 founding artists to subscribe: <strong>'+pct+'% off</strong>. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
     }
     if(rn){
       if(currentDisplayCurrency==='GHS'){
@@ -11959,7 +11960,7 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
       // Profile page can show "activating..." in the meantime rather than
       // nothing at all.
       if(autoRenew)profileUpdate.auto_renew_status='activating';
-      // Marks this as one of the first 100 to actually pay — this is the
+      // Marks this as one of the first 30 to actually pay — this is the
       // moment someone's spot is genuinely secured, not at signup.
       if(appliedLaunchOffer)profileUpdate.launch_discount_used=true;
       let {error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id);
