@@ -11865,7 +11865,7 @@ function updateRateNote(){
     const discountedGhs=(discountedUsd*currentDisplayRates.GHS).toFixed(2);
     if(discountEl){
       discountEl.style.display='block';
-      discountEl.innerHTML='<i class="ti ti-rocket"></i> Launch founder discount — you were one of our first 100 signups: <strong>'+pct+'% off</strong>. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
+      discountEl.innerHTML='<i class="ti ti-rocket"></i> Launch founder discount — you\'re one of our first 100 founding artists to subscribe: <strong>'+pct+'% off</strong>. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
     }
     if(rn){
       if(currentDisplayCurrency==='GHS'){
@@ -11925,7 +11925,7 @@ function updateRateNote(){
     }
   }
 }
-async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,appliedReferral,appliedLaunchOffer){
+async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,appliedReferral,appliedLaunchOffer,appliedUpgradeCredit){
   try{
     // Check BEFORE inserting this payment's own subscriptions row, so we can
     // tell "is this a renewal" (had at least one prior payment already) from
@@ -11937,7 +11937,19 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
     }
     if(user){
       const dbPlan=planKey==='solo'?'solo_paid':planKey;
-      const expiresAt=new Date();
+      // Extend from the existing expiry if there's still time left on it,
+      // rather than always resetting from right now — otherwise renewing
+      // before the current period actually runs out would discard
+      // whatever time was already paid for and not yet used. Skipped when
+      // an upgrade credit was applied, since that already turned the same
+      // remaining time into a price discount on this purchase — extending
+      // the expiry too would credit it a second time.
+      let expiresAt=new Date();
+      if(!appliedUpgradeCredit){
+        const {data:currentProfile}=await sb.from('profiles').select('plan_expires_at').eq('id',user.id).single();
+        const existingExpiry=currentProfile?.plan_expires_at?new Date(currentProfile.plan_expires_at):null;
+        if(existingExpiry&&existingExpiry.getTime()>Date.now())expiresAt=existingExpiry;
+      }
       if(billingCycle==='monthly')expiresAt.setMonth(expiresAt.getMonth()+1);
       else expiresAt.setFullYear(expiresAt.getFullYear()+1);
       const profileUpdate={plan:dbPlan,plan_expires_at:expiresAt.toISOString()};
@@ -12008,6 +12020,7 @@ function doPaystack(){
   let usd=billing==='monthly'?p.monthly:p.yearly;
   let appliedReferral=null;
   let appliedLaunchOffer=false;
+  let appliedUpgradeCredit=false;
   if(currentLaunchOfferDiscount&&billing==='yearly'&&!autoRenew){
     usd=usd*(1-currentLaunchOfferDiscount.percent/100);
     appliedLaunchOffer=true;
@@ -12019,6 +12032,7 @@ function doPaystack(){
     // subscription always charges the plan's own fixed price, since the
     // plan_code overrides whatever amount we pass alongside it.
     usd=Math.max(0,usd-currentUpgradeDiscount.creditAmount);
+    appliedUpgradeCredit=true;
   }
   const pesewas=Math.round(usd*currentDisplayRates.GHS*100);
   const btn=document.getElementById('pay-btn');
@@ -12028,13 +12042,13 @@ function doPaystack(){
   }
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
   const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode),_appliedReferral=appliedReferral,_appliedLaunchOffer=appliedLaunchOffer;
+  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode),_appliedReferral=appliedReferral,_appliedLaunchOffer=appliedLaunchOffer,_appliedUpgradeCredit=appliedUpgradeCredit;
   try{
     const popup=new PaystackPop();
     const txOptions={
       key:PK,email,currency:'GHS',ref,
       channels:['card','mobile_money','apple_pay'],
-      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew,_appliedReferral,_appliedLaunchOffer);},
+      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew,_appliedReferral,_appliedLaunchOffer,_appliedUpgradeCredit);},
       onCancel:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';},
       onError:function(err){toast('Payment error: '+(err?.message||'please try again.'),'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
     };
