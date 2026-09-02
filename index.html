@@ -9886,19 +9886,45 @@ async function updateUserPlan(id,plan){
       return;
     }
   }
+  // Manually setting someone to a paid plan never had a way to say how long
+  // it should last, so it silently never expired — fine for a deliberate,
+  // permanent comp, but a real gap if this is being used to correct a
+  // failed payment for someone who only actually paid for one term. Ask
+  // explicitly rather than guessing either way.
+  let newExpiresAt=undefined; // undefined = don't touch plan_expires_at at all
+  if(['solo_paid','artist_plus','label'].includes(plan)){
+    const days=prompt('How many days should this plan last? Leave blank for no expiry (permanent — e.g. a comp account).\n\nExamples: 365 for one year, 30 for one month.','365');
+    if(days===null){
+      loadAdminUsers(); // Cancelled — revert the dropdown
+      return;
+    }
+    const trimmed=days.trim();
+    if(trimmed===''){
+      newExpiresAt=null; // explicit choice: no expiry
+    } else {
+      const n=parseInt(trimmed,10);
+      if(!n||n<=0){toast('Enter a positive number of days, or leave blank for no expiry','err');loadAdminUsers();return;}
+      const d=new Date();d.setDate(d.getDate()+n);
+      newExpiresAt=d.toISOString();
+    }
+  } else if(plan==='free'){
+    newExpiresAt=null; // clear any stale expiry — it no longer means anything off a paid tier
+  }
   try{
     const {data:before,error:fetchErr}=await sb.from('profiles').select('plan').eq('id',id).single();
     if(fetchErr)throw fetchErr;
     const oldPlan=before?.plan||'free';
-    const {error:updErr}=await sb.from('profiles').update({plan}).eq('id',id);
+    const profileUpdate={plan};
+    if(newExpiresAt!==undefined)profileUpdate.plan_expires_at=newExpiresAt;
+    const {error:updErr}=await sb.from('profiles').update(profileUpdate).eq('id',id);
     if(updErr)throw updErr;
     sb.from('admin_audit_log').insert({
       target_user_id:id,field:'plan',
-      old_value:oldPlan,new_value:plan,
+      old_value:oldPlan,new_value:plan+(newExpiresAt!==undefined?(newExpiresAt?' (expires '+new Date(newExpiresAt).toLocaleDateString('en-GB')+')':' (no expiry)'):''),
       changed_by:user?.email||'Admin'
     }).then(({error})=>{if(error)console.error('Audit log insert error (plan change itself succeeded):',error);});
     const cached=(allUsersCache||[]).find(p=>p.id===id);
-    if(cached)cached.plan=plan;
+    if(cached){cached.plan=plan;if(newExpiresAt!==undefined)cached.plan_expires_at=newExpiresAt;}
     toast('Plan updated','ok');loadAdminStats();loadAdminTeam();
   }catch(e){
     console.error('Update user plan error:',e);
@@ -11944,10 +11970,19 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
       // whatever time was already paid for and not yet used. Skipped when
       // an upgrade credit was applied, since that already turned the same
       // remaining time into a price discount on this purchase — extending
-      // the expiry too would credit it a second time.
+      // the expiry too would credit it a second time. Also skipped for a
+      // genuine downgrade (e.g. Label with time left, paying for Solo) —
+      // otherwise the new, lower tier's expiry would stack the old, higher
+      // tier's unused time on top, even though the old tier's actual
+      // benefits (more roster room, no commission) are lost immediately
+      // once profiles.plan changes below, well before that stacked time
+      // would suggest.
+      const {data:currentProfile}=await sb.from('profiles').select('plan,plan_expires_at').eq('id',user.id).single();
+      const currentRank=PLAN_TIER_RANK[currentProfile?.plan]||0;
+      const newRank=PLAN_TIER_RANK[dbPlan]||0;
+      const isDowngrade=currentRank>newRank;
       let expiresAt=new Date();
-      if(!appliedUpgradeCredit){
-        const {data:currentProfile}=await sb.from('profiles').select('plan_expires_at').eq('id',user.id).single();
+      if(!appliedUpgradeCredit&&!isDowngrade){
         const existingExpiry=currentProfile?.plan_expires_at?new Date(currentProfile.plan_expires_at):null;
         if(existingExpiry&&existingExpiry.getTime()>Date.now())expiresAt=existingExpiry;
       }
