@@ -2936,8 +2936,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="slabel"><i class="ti ti-world"></i> Public Artist Page</div>
         <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.875rem">One link, all your music — fans see your live releases and can sign up for notifications on what's coming.</p>
         <div style="display:flex;gap:8px;margin-bottom:1.25rem">
-          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="copyArtistLink(activeAccountId(),profile?.artist_name)"><i class="ti ti-link"></i> Copy My Page Link</button>
-          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="window.open(window.location.origin+'/?artist='+activeAccountId()+(profile?.artist_name?'&name='+encodeURIComponent(profile.artist_name):''),'_blank')"><i class="ti ti-eye"></i> Preview</button>
+          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="copyArtistLink(activeAccountId())"><i class="ti ti-link"></i> Copy My Page Link</button>
+          <button class="btn adm-btn-sec" style="flex:1;justify-content:center" onclick="window.open(window.location.origin+'/?artist='+activeAccountId(),'_blank')"><i class="ti ti-eye"></i> Preview</button>
         </div>
         <div class="divhr"></div>
         <div class="slabel"><i class="ti ti-mail"></i> Email Preferences</div>
@@ -7527,9 +7527,9 @@ async function submitNotifyMe(releaseId){
   }
 }
 // ── PUBLIC ARTIST PAGE ────────────────────────────────────
-function copyArtistLink(id,name){
+function copyArtistLink(id){
   if(!id)return;
-  const url=window.location.origin+'/?artist='+id+(name?'&name='+encodeURIComponent(name):'');
+  const url=window.location.origin+'/?artist='+id;
   navigator.clipboard.writeText(url).then(()=>toast('Artist page link copied!','ok')).catch(()=>toast('Could not copy — your browser may be blocking clipboard access','err'));
 }
 function artistPageNotFound(){
@@ -7540,12 +7540,7 @@ async function loadArtistPage(artistId,nameFilter){
   try{
     const {data,error}=await sb.from('public_artist_releases').select('*').eq('artist_id',artistId).order('release_date',{ascending:false});
     if(error)throw error;
-    // Defensive filter, regardless of what the underlying view already
-    // excludes — a rejected or taken-down release should never be visible
-    // to the public, and neither status has a friendly label below, so one
-    // slipping through would show the raw word "rejected" with a
-    // misleading gold, pending-style badge on a page anyone can see.
-    let rows=(data||[]).filter(r=>r.status!=='rejected'&&r.status!=='takendown');
+    let rows=data||[];
     if(nameFilter){
       const target=nameFilter.trim().toLowerCase();
       rows=rows.filter(r=>(r.artist||'').trim().toLowerCase()===target);
@@ -7566,13 +7561,6 @@ function renderArtistPage(rows,overrideName){
   function socialUrl(handle,platform){
     if(!handle)return null;
     if(/^https?:\/\//i.test(handle))return handle;
-    // Someone may have pasted this platform's own domain without the
-    // protocol — plausible since browsers often hide "https://" in their
-    // own address bar by default. Checks each platform's specific, known
-    // domain rather than any generic "contains a dot" pattern, since a
-    // handle could legitimately contain a period (e.g. "john.doe.music").
-    const domainPatterns={instagram:/^(www\.)?instagram\.com\//i,twitter:/^(www\.)?(x|twitter)\.com\//i,tiktok:/^(www\.)?tiktok\.com\//i};
-    if(domainPatterns[platform]?.test(handle))return 'https://'+handle.replace(/^www\./i,'');
     const clean=handle.replace(/^@/,'');
     const bases={instagram:'https://instagram.com/',twitter:'https://x.com/',tiktok:'https://tiktok.com/@'};
     return bases[platform]+clean;
@@ -7677,7 +7665,7 @@ async function uploadAvatar(input){
 async function openArtistModal(userId,name){
   const {data:rl}=await sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false});
   const releases=rl||[];
-  document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button><button onclick="viewAsArtist(\''+userId+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" title="View as this artist (read-only)" style="float:right;background:none;border:none;cursor:pointer;color:#7a6ff0;font-size:16px;margin-right:8px"><i class="ti ti-eye"></i></button><button onclick="confirmImpersonateUser(\''+userId+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" title="Log in as this artist (can make changes)" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-login-2"></i></button>';
+  document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button><button onclick="viewAsArtist(\''+userId+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" title="View as this artist (read-only)" style="float:right;background:none;border:none;cursor:pointer;color:#7a6ff0;font-size:16px;margin-right:8px"><i class="ti ti-eye"></i></button><button onclick="confirmImpersonateUser(\''+userId+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" title="Log in as this artist (can make changes)" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-login-2"></i></button>';
   _currentArtistModalUserId=userId;
   await loadArtistNotes(userId);
   await loadArtistAuditLog(userId,releases.map(r=>r.id));
