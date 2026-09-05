@@ -6315,7 +6315,7 @@ async function loadPayout(){
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'';
     const stLabel={pending:'⏳ Pending',processing:'🔄 Processing',paid:'✅ Paid',failed:'❌ Failed',cancelled:'🚫 Cancelled'}[p.status]||p.status;
     const methodLabel=p.method==='momo'?'📱 '+(p.network||'')+' MoMo':'🏦 Bank';
-    const rate=currentDisplayRates.GHS||15.5;
+    const rate=currentDisplayRates.GHS||CURRENCY_FALLBACK_RATES.GHS;
     const grossGhs=parseFloat(p.amount||0)*rate;
     let amountCell='$'+parseFloat(p.amount||0).toFixed(2)+'<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.3)">≈ GHS '+grossGhs.toFixed(2)+'</div>';
     if(p.payout_fee_usd){
@@ -6362,7 +6362,7 @@ function updateTransferFeeBreakdown(){
   const breakdown=document.getElementById('transfer-fee-breakdown');if(!breakdown)return;
   const amt=parseFloat(document.getElementById('withdraw-amount')?.value||0);
   if(!amt){breakdown.style.display='none';return;}
-  const rate=currentDisplayRates.GHS||15.5;
+  const rate=currentDisplayRates.GHS||CURRENCY_FALLBACK_RATES.GHS;
   const feeUsd=amt*(PAYOUT_FEE_PERCENT/100);
   const netUsd=Math.max(0,amt-feeUsd);
   const grossGhs=amt*rate;
@@ -6811,7 +6811,7 @@ async function loadProfileStats(){
       const priceFeatureKey=profile?.plan==='solo_paid'?'solo':profile?.plan;
       const planUsd=PLANS[priceFeatureKey]?.yearly;
       if(planUsd&&profile?.plan!=='free'&&profile?.plan!=='admin'){
-        const ghsAmount=(planUsd*(currentDisplayRates?.GHS||15.5)).toFixed(2);
+        const ghsAmount=(planUsd*(currentDisplayRates?.GHS||CURRENCY_FALLBACK_RATES.GHS)).toFixed(2);
         // GHS is what actually gets charged via Paystack, regardless of where
         // someone's browsing from — the IP-detected currency below is shown
         // purely as a familiar reference, same as the checkout modal already does.
@@ -9579,7 +9579,7 @@ function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();
 async function loadAdminStats(){
   try{
     const [{data:profiles},{data:releases},{data:payouts},{data:subs}]=await Promise.all([
-      sb.from('profiles').select('id,plan,created_at'),
+      sb.from('profiles').select('id,plan,plan_expires_at,created_at'),
       sb.from('releases').select('id,status,streams,earnings,is_priority,priority_ref'),
       Promise.resolve(sb.from('payouts').select('id,status,amount')).catch(()=>({data:[]})),
       Promise.resolve(sb.from('subscriptions').select('id,amount_usd')).catch(()=>({data:[]}))
@@ -9588,7 +9588,13 @@ async function loadAdminStats(){
     const newM=(profiles||[]).filter(p=>{const d=new Date(p.created_at);return d.getMonth()===m&&d.getFullYear()===y;}).length;
     const liveRel=(releases||[]).filter(r=>r.status==='live').length;
     const pendingRel=(releases||[]).filter(r=>r.status==='pending'||r.status==='review').length;
-    const paidPlans=(profiles||[]).filter(p=>['artist_plus','label','solo_paid'].includes(p.plan)).length;
+    // A stale profiles.plan value only gets corrected once that specific
+    // person logs back in and the client-side expiry check runs — someone
+    // whose subscription has already lapsed but hasn't logged in since
+    // would otherwise still be counted here as paid. Checking the actual
+    // expiry date directly (same approach the Renewals Due widget already
+    // uses) avoids that gap rather than trusting the plan column alone.
+    const paidPlans=(profiles||[]).filter(p=>['artist_plus','label','solo_paid'].includes(p.plan)&&(!p.plan_expires_at||new Date(p.plan_expires_at)>=now)).length;
     const pendingPay=(payouts||[]).filter(p=>p.status==='pending');
     const pendingAmt=pendingPay.reduce((a,p)=>a+parseFloat(p.amount||0),0);
     const subsRev=(subs||[]).reduce((a,s)=>a+parseFloat(s.amount_usd||0),0);
@@ -10133,7 +10139,7 @@ function renderAdminPayoutsTable(payouts){
     const d=p.created_at?new Date(p.created_at).toLocaleDateString('en-GB'):'—';
     const sc={pending:'color:#fbbf24',processing:'color:#60a5fa',paid:'color:#34d399',failed:'color:#f87171',cancelled:'color:rgba(255,255,255,.3)'}[p.status]||'';
     const adminMethodLabel=p.method==='momo'?'📱 Mobile Money':'🏦 Bank';
-    const adminRate=currentDisplayRates.GHS||15.5;
+    const adminRate=currentDisplayRates.GHS||CURRENCY_FALLBACK_RATES.GHS;
     const adminGrossGhs=parseFloat(p.amount||0)*adminRate;
     let adminAmountCell='$'+parseFloat(p.amount||0).toFixed(2)+'<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.35)">≈ GHS '+adminGrossGhs.toFixed(2)+'</div>';
     if(p.payout_fee_usd){
