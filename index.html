@@ -3790,6 +3790,10 @@ const COUNTRY_TO_CURRENCY={
   AT:'EUR',BE:'EUR',FI:'EUR',GR:'EUR',LU:'EUR',
 };
 let currentDisplayCurrency='USD';
+// null = detection hasn't completed yet or failed — treated as "unknown",
+// never as "confirmed not Ghana", so a failed/uncertain lookup never ends up
+// hiding Mobile Money from someone who may genuinely be in Ghana.
+let detectedCountryCode=null;
 let currentDisplayRates={...CURRENCY_FALLBACK_RATES};
 function detectDisplayCurrency(){
   try{
@@ -3806,15 +3810,30 @@ function detectDisplayCurrency(){
 // not a replacement for it. Runs after the page has already shown a reasonable price,
 // and only overrides that guess if a manual choice hasn't already been made and the
 // lookup itself genuinely succeeds. Fails silently to the locale guess on any error.
+function updatePayoutMethodVisibility(){
+  // Hidden only on a confirmed "not Ghana" — an unknown/undetected country
+  // (null) always shows both, the safe default when detection hasn't
+  // completed or failed, rather than risk hiding Mobile Money from someone
+  // who may genuinely be in Ghana.
+  const hideMomo=detectedCountryCode&&detectedCountryCode!=='GH';
+  const momoOpt=document.getElementById('opt-momo');if(momoOpt)momoOpt.style.display=hideMomo?'none':'';
+  const newMomoOpt=document.getElementById('new-opt-momo');if(newMomoOpt)newMomoOpt.style.display=hideMomo?'none':'';
+}
 async function detectCurrencyByIP(){
   try{
     const stored=localStorage.getItem('blakkstone_currency');
-    if(stored&&CURRENCY_SYMBOLS[stored])return; // user already made an explicit choice — never override it
     const res=await fetch('https://ipwho.is/');
     if(!res.ok)throw new Error('IP lookup failed: HTTP '+res.status);
     const data=await res.json();
     if(!data?.success)throw new Error('IP lookup returned unsuccessful: '+(data?.message||'unknown'));
     const cc=data.country_code;
+    // Captured regardless of any explicit currency preference below — this
+    // answers a different question (what country is this person actually
+    // in, for payout-method purposes), which a currency display choice
+    // shouldn't be able to silently block.
+    if(cc)detectedCountryCode=cc;
+    updatePayoutMethodVisibility();
+    if(stored&&CURRENCY_SYMBOLS[stored])return; // user already made an explicit currency choice — never override it
     if(cc&&COUNTRY_TO_CURRENCY[cc]){
       currentDisplayCurrency=COUNTRY_TO_CURRENCY[cc];
       refreshAllDisplayedPrices();
@@ -6346,6 +6365,10 @@ async function loadRoyalties(){
 let savedMethods=[], newMethodType=null, newMethodNetwork=null;
 
 async function loadPayout(){
+  // Detection may have already completed before this page was ever
+  // visited (it runs early, at app init) — re-apply visibility here so a
+  // late-loading payout page still reflects it correctly.
+  updatePayoutMethodVisibility();
   // Load saved methods first
   await loadSavedMethods();
   const [{data:relData},{data:payoutData}]=await Promise.all([
