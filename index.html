@@ -2577,7 +2577,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                   </div>
                   <div id="new-method-toggle">
                     <div class="pmethods">
-                      <div class="popt" id="opt-momo" onclick="selectPayout('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div><div class="popt-sub">MTN, Vodafone, AirtelTigo · Ghana only</div></div>
+                      <div class="popt" id="opt-momo" onclick="selectPayout('momo')"><i class="ti ti-device-mobile"></i><div class="popt-title">Mobile Money</div><div class="popt-sub">Ghana or Nigeria</div></div>
                       <div class="popt" id="opt-bank" onclick="selectPayout('bank')"><i class="ti ti-building-bank"></i><div class="popt-title">Bank Transfer</div><div class="popt-sub">Ghana or international (SWIFT)</div></div>
                     </div>
                     <div style="font-size:11.5px;color:rgba(255,255,255,.4);margin-top:.625rem;line-height:1.6"><i class="ti ti-info-circle" style="color:var(--gold)"></i> Outside Ghana? Mobile Money above only covers Ghanaian networks — choose <strong style="color:rgba(255,255,255,.6)">Bank Transfer</strong> and enter your SWIFT/BIC code to get paid anywhere.</div>
@@ -3811,11 +3811,14 @@ function detectDisplayCurrency(){
 // and only overrides that guess if a manual choice hasn't already been made and the
 // lookup itself genuinely succeeds. Fails silently to the locale guess on any error.
 function updatePayoutMethodVisibility(){
-  // Hidden only on a confirmed "not Ghana" — an unknown/undetected country
-  // (null) always shows both, the safe default when detection hasn't
-  // completed or failed, rather than risk hiding Mobile Money from someone
-  // who may genuinely be in Ghana.
-  const hideMomo=detectedCountryCode&&detectedCountryCode!=='GH';
+  // Hidden only on a confirmed country outside this set — an unknown/
+  // undetected country (null) always shows both, the safe default when
+  // detection hasn't completed or failed, rather than risk hiding Mobile
+  // Money from someone who may genuinely be in Ghana or Nigeria.
+  // Nigeria is included because MTN Ghana can route payouts there via
+  // Brij/Onafriq's cross-border mobile money infrastructure.
+  const momoCountries=['GH','NG'];
+  const hideMomo=detectedCountryCode&&!momoCountries.includes(detectedCountryCode);
   const momoOpt=document.getElementById('opt-momo');if(momoOpt)momoOpt.style.display=hideMomo?'none':'';
   const newMomoOpt=document.getElementById('new-opt-momo');if(newMomoOpt)newMomoOpt.style.display=hideMomo?'none':'';
 }
@@ -6495,7 +6498,7 @@ async function submitPayout(){
       const num=document.getElementById('momo-number').value.trim();
       const name=document.getElementById('momo-name').value.trim();
       if(!num||!name){toast('Fill in all Mobile Money fields','err');return;}
-      const numErr=validateGhanaMobileNumber(num);
+      const numErr=validateMobileMoneyNumber(num);
       if(numErr){toast(numErr,'err');return;}
       account=name+' — '+num;network=momoNetwork;
     } else {
@@ -6676,7 +6679,7 @@ async function savePayoutMethod(){
     const num=document.getElementById('new-momo-number')?.value.trim();
     const name=document.getElementById('new-momo-name')?.value.trim();
     if(!num||!name){toast('Fill in all MoMo fields','err');return;}
-    const numErr=validateGhanaMobileNumber(num);
+    const numErr=validateMobileMoneyNumber(num);
     if(numErr){toast(numErr,'err');return;}
     row.network=newMethodNetwork;row.number=num;row.account_name=name;
     row.nickname=newMethodNetwork+' MoMo · '+num;
@@ -7749,6 +7752,27 @@ function validateGhanaMobileNumber(num){
     return 'That doesn\'t look like a valid Ghanaian mobile number.';
   }
   return null;
+}
+function validateNigeriaMobileNumber(num){
+  const digits=String(num||'').replace(/[\s-]/g,'');
+  if(!/^0\d{10}$/.test(digits)){
+    return 'Enter a valid 11-digit Nigerian mobile number starting with 0 (e.g. 08031234567).';
+  }
+  // Nigeria has had mandatory mobile number portability since 2013, so —
+  // same reasoning as Ghana above — this checks against every network's
+  // known prefixes together rather than requiring a specific one, since a
+  // ported number can legitimately no longer match its original network.
+  const validPrefixes=['0703','0706','0803','0806','0810','0813','0814','0816','0903','0906','0913','0916','0701','0708','0802','0808','0812','0901','0902','0904','0907','0911','0912','0705','0805','0807','0811','0815','0905','0915','0809','0817','0818','0908','0909'];
+  if(!validPrefixes.includes(digits.slice(0,4))){
+    return 'That doesn\'t look like a valid Nigerian mobile number.';
+  }
+  return null;
+}
+function validateMobileMoneyNumber(num){
+  // Defaults to Ghana when the country is unknown or undetected — this was
+  // the original, established assumption, and matches Blakkstone's own
+  // home market.
+  return detectedCountryCode==='NG'?validateNigeriaMobileNumber(num):validateGhanaMobileNumber(num);
 }
 function validateImageFile(file){
   if(!file.type||!file.type.startsWith('image/')){
