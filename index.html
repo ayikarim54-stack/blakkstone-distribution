@@ -3426,6 +3426,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
 
+        <!-- CONTENT ID OPT-INS -->
+        <div class="adm-card" style="margin-bottom:1.25rem">
+          <div class="adm-card-title"><i class="ti ti-copyright"></i> Content ID Opt-Ins</div>
+          <p style="font-size:12px;color:rgba(255,255,255,.4);margin:.25rem 0 .875rem">Releases whose artists have opted in — reference this list once Content ID is actually set up on your end.</p>
+          <div id="cid-optins-list">Loading...</div>
+        </div>
+
         <!-- ALL ROYALTY ENTRIES TABLE -->
         <div class="adm-card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
@@ -11367,6 +11374,32 @@ async function initAdminRoyalties(){
   loadRoyaltyEntries();
   loadRoyStoreTotals();
   loadRoyRecentEntries();
+  loadContentIdOptins();
+}
+async function loadContentIdOptins(){
+  const el=document.getElementById('cid-optins-list');if(!el)return;
+  el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div>';
+  try{
+    const [{data:releases,error},{data:profiles}]=await Promise.all([
+      sb.from('releases').select('id,title,artist,status,user_id').eq('content_id_opt_in',true).order('submitted_at',{ascending:false}),
+      sb.from('profiles').select('id,artist_name,full_name,email,account_id')
+    ]);
+    if(error)throw error;
+    if(!releases||!releases.length){el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">No releases have opted in yet.</div>';return;}
+    const profileMap={};(profiles||[]).forEach(p=>{profileMap[p.id]=p;});
+    const bc={pending:'b-pending',review:'b-review',approved:'b-approved',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'};
+    const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'};
+    el.innerHTML='<table style="width:100%;border-collapse:collapse"><thead><tr style="text-align:left;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.4px"><th style="padding:0 0 8px">Release</th><th style="padding:0 0 8px">Artist</th><th style="padding:0 0 8px">Status</th></tr></thead><tbody>'
+      +releases.map(r=>{
+        const p=profileMap[r.user_id]||{};
+        const name=p.artist_name||p.full_name||p.email||'—';
+        return '<tr style="border-top:1px solid rgba(255,255,255,.06)"><td style="padding:8px 0;font-size:13px;color:#fff;font-weight:600">'+esc(r.title)+'<div style="font-size:11px;color:rgba(255,255,255,.35);font-weight:400">'+esc(r.artist)+'</div></td><td style="padding:8px 0;font-size:12px;color:rgba(255,255,255,.6)">'+esc(name)+'<div style="font-size:11px;color:rgba(255,255,255,.3)">'+esc(p.email||'')+'</div></td><td style="padding:8px 0"><span class="badge '+(bc[r.status]||'b-pending')+'" style="font-size:10px">'+(bl[r.status]||r.status)+'</span></td></tr>';
+      }).join('')
+      +'</tbody></table>';
+  }catch(e){
+    console.error('Content ID opt-ins load error:',e);
+    el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Could not load.</div>';
+  }
 }
 
 function buildRoyStoreInputs(){
