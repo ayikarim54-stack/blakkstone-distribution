@@ -5838,6 +5838,38 @@ async function refreshAnalytics(){
   if(btn)btn.disabled=false;
   if(icon)icon.style.animation='';
 }
+async function exportPresaveEmails(releaseId){
+  try{
+    // Confirm this release actually belongs to the current account before
+    // exporting anyone's email address — this is fans' personal data, not
+    // the artist's own, so this check matters even more than usual.
+    const {data:rel,error:relErr}=await sb.from('releases').select('id,title').eq('id',releaseId).eq('user_id',activeAccountId()).single();
+    if(relErr||!rel){toast('Could not verify this release','err');return;}
+    const {data:signups,error}=await sb.from('presave_signups').select('email,created_at').eq('release_id',releaseId).order('created_at',{ascending:true});
+    if(error){toast('Could not load signups: '+error.message,'err');return;}
+    if(!signups||!signups.length){toast('No signups to export yet','err');return;}
+    const rows=[['Email','Signed up'].join(',')];
+    signups.forEach(s=>{
+      const signedUp=s.created_at?new Date(s.created_at).toLocaleDateString('en-GB'):'';
+      rows.push([
+        '"'+(s.email||'').replace(/"/g,'""')+'"',
+        '"'+signedUp+'"'
+      ].join(','));
+    });
+    const csv=rows.join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='blakkstone-'+(rel.title||'release').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-fans.csv';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast('Exported '+signups.length+' fan email'+(signups.length!==1?'s':''),'ok');
+  }catch(e){
+    console.error('Export presave emails error:',e);
+    toast('Could not export: '+(e.message||'please try again.'),'err');
+  }
+}
 function exportAnalyticsCSV(){
   if(!user)return;
   try{
@@ -7416,7 +7448,8 @@ async function loadSmartLinkStats(releaseId){
       +stat(clicks.length.toLocaleString(),'Store Clicks · '+ctr+'% CTR','var(--gold)')
       +stat(psCount===null?'—':psCount.toLocaleString(),'Pre-save Signups','#34d399')
       +'</div>'+storeRows
-      +(!views&&!clicks.length?'<div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:.5rem">No activity yet — share this release\'s smart link to start collecting stats.</div>':'');
+      +(!views&&!clicks.length?'<div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:.5rem">No activity yet — share this release\'s smart link to start collecting stats.</div>':'')
+      +(psCount>0?'<button class="btn adm-btn-sec btn-sm" style="margin-top:.75rem;width:100%;justify-content:center" onclick="exportPresaveEmails(\''+releaseId+'\')"><i class="ti ti-download"></i> Export Fan Emails (CSV)</button>':'');
   }catch(e){
     console.error('Smart link stats error:',e);
     el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.3)">Run the smart link analytics SQL in Supabase to enable this.</div>';
@@ -9833,6 +9866,27 @@ async function updateStatus(id,status,sel){
     notifyArtistEmail('release_status_'+status,{
       title:relForLog.title,artist:relForLog.profiles?.artist_name||relForLog.profiles?.full_name,reason,releaseId:relForLog.id,artworkUrl:relForLog.artwork_url
     },relForLog.profiles.email);
+  }
+  // Notify fans who signed up to be told when this specific release
+  // dropped. Checked fresh against the database — not the in-memory
+  // release cache, which could be stale or missing this column after a
+  // page refresh — so fans are only ever told once, ever, no matter how
+  // many times the status later gets toggled away from and back to live.
+  if(status==='live'){
+    (async()=>{
+      try{
+        const {data:freshRel}=await sb.from('releases').select('fans_notified_at').eq('id',id).single();
+        if(freshRel&&!freshRel.fans_notified_at){
+          const {data:signups}=await sb.from('presave_signups').select('email').eq('release_id',id);
+          if(signups&&signups.length){
+            signups.forEach(s=>{
+              if(s.email)notifyArtistEmail('fan_release_live',{title:relForLog.title,artist:relForLog.profiles?.artist_name||relForLog.profiles?.full_name,releaseId:relForLog.id,artworkUrl:relForLog.artwork_url},s.email);
+            });
+          }
+          await sb.from('releases').update({fans_notified_at:new Date().toISOString()}).eq('id',id);
+        }
+      }catch(e){console.error('Fan notification error (release status update itself already succeeded):',e);}
+    })();
   }
   const sc={pending:'color:#fbbf24',review:'color:#60a5fa',approved:'color:#2dd4bf',live:'color:#34d399',rejected:'color:#f87171',takendown:'color:#9ca3af'};
   if(sel) sel.style.cssText=sc[status]||'';
