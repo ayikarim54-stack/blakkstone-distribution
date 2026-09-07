@@ -2174,6 +2174,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <button class="wiz-toggle" id="cid-yes" onclick="setToggle('contentid','yes')">Yes, opt in</button>
             </div>
           </div>
+          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-top:1.5rem">
+            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:.5rem">Pitch this release for <strong style="color:#fff">playlist consideration</strong> (optional)</div>
+            <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:.875rem">Tell us the vibe and why it's worth featuring — we'll use this when submitting your release to Spotify and Apple Music's own editorial teams.</p>
+            <div class="fg" style="margin-bottom:.75rem"><label>Mood / Genre Tags</label><input id="r-pitch-mood" type="text" placeholder="e.g. Chill, Late-night, Afrobeats"></div>
+            <div class="fg"><label>Why should a curator feature this?</label><textarea id="r-pitch-note" placeholder="A sentence or two on what makes this release stand out"></textarea></div>
+          </div>
         </div>
         <div style="display:flex;gap:10px;margin-top:2rem">
           <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(2)"><i class="ti ti-arrow-left"></i> Back</button>
@@ -7842,6 +7848,11 @@ async function openDistributionModal(releaseId){
         +(release.excluded_countries?'<div style="font-size:13px;color:#fbbf24;font-weight:700"><i class="ti ti-world-off"></i> Excluded countries: '+esc(release.excluded_countries)+'</div>':'')
         +(release.original_release_date?'<div style="font-size:13px;color:#fbbf24;font-weight:700;margin-top:'+(release.excluded_countries?'6px':'0')+'"><i class="ti ti-calendar-event"></i> Previously released — original date: '+new Date(release.original_release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'</div>':'')
       +'</div>':'')
+      +((release.pitch_mood||release.pitch_note)?'<div style="margin-bottom:1.25rem;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);border-radius:9px;padding:.85rem 1rem">'
+        +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#a78bfa;margin-bottom:6px"><i class="ti ti-playlist"></i> Playlist Pitch</div>'
+        +(release.pitch_mood?'<div style="font-size:13px;color:rgba(255,255,255,.8)"><strong style="color:#fff">Mood/Genre:</strong> '+esc(release.pitch_mood)+'</div>':'')
+        +(release.pitch_note?'<div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:'+(release.pitch_mood?'4px':'0')+'">'+esc(release.pitch_note)+'</div>':'')
+      +'</div>':'')
       +'<div style="margin-bottom:1.25rem"><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-barcode"></i> UPC (once assigned by ONErpm)</div>'
         +'<input id="dist-upc-input" placeholder="UPC (e.g. 197xxxxxxxxx)" value="'+esc(release.upc||'')+'" style="width:100%;max-width:260px;font-size:13px;font-family:monospace;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;color:#fff">'
       +'</div>'
@@ -9082,6 +9093,8 @@ function collectWizardState(){
     contentIdOptIn: wizToggleState['contentid']||'no',
     prevReleased: wizToggleState['prev-released']||'no',
     countryRestrict: wizToggleState['country-restrict']||'no',
+    pitchMood: document.getElementById('r-pitch-mood')?.value||'',
+    pitchNote: document.getElementById('r-pitch-note')?.value||'',
     stores: wizStores,
     artUrl: wizData.artUrl||null,
     artPath: wizData.artPath||null,
@@ -9281,6 +9294,8 @@ async function restoreWizardState(state){
   if(state.contentIdOptIn) setToggle('contentid',state.contentIdOptIn);
   if(state.prevReleased) setToggle('prev-released',state.prevReleased);
   if(state.countryRestrict) setToggle('country-restrict',state.countryRestrict);
+  setVal('r-pitch-mood', state.pitchMood);
+  setVal('r-pitch-note', state.pitchNote);
   // Restore tracks with their cloud URLs
   if(state.tracks?.length){
     wizTracks=state.tracks.map(t=>({
@@ -9483,7 +9498,9 @@ async function submitRelease(){
       // request was recorded, would have had it silently discarded on
       // submission, with their music going out completely unrestricted.
       excluded_countries:wizToggleState['country-restrict']==='yes'?(document.getElementById('r-countries')?.value.trim()||null):null,
-      original_release_date:wizToggleState['prev-released']==='yes'?(document.getElementById('r-orig-date')?.value||null):null
+      original_release_date:wizToggleState['prev-released']==='yes'?(document.getElementById('r-orig-date')?.value||null):null,
+      pitch_mood:document.getElementById('r-pitch-mood')?.value.trim()||null,
+      pitch_note:document.getElementById('r-pitch-note')?.value.trim()||null
     };
     if(splitsData&&splitsData.length>1)relPayload.splits=splitsData;
     let {data:insertedRelease,error:dbe}=await sb.from('releases').insert(relPayload).select('id').single();
@@ -9500,6 +9517,11 @@ async function submitRelease(){
       delete relPayload.excluded_countries;delete relPayload.original_release_date;
       ({data:insertedRelease,error:dbe}=await sb.from('releases').insert(relPayload).select('id').single());
       if(!dbe)toast('Release submitted, but country restrictions / original release date were NOT saved — run the SQL in Supabase','err');
+    }
+    if(dbe&&/pitch_mood|pitch_note/i.test(dbe.message||'')){
+      delete relPayload.pitch_mood;delete relPayload.pitch_note;
+      ({data:insertedRelease,error:dbe}=await sb.from('releases').insert(relPayload).select('id').single());
+      if(!dbe)toast('Release submitted, but the playlist pitch was NOT saved — run the SQL in Supabase','err');
     }
     if(dbe)throw new Error('Submission failed: '+dbe.message);
     // Persist every track (not just the first) so the full tracklist and each
