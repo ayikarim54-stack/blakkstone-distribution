@@ -6495,6 +6495,8 @@ async function submitPayout(){
       const num=document.getElementById('momo-number').value.trim();
       const name=document.getElementById('momo-name').value.trim();
       if(!num||!name){toast('Fill in all Mobile Money fields','err');return;}
+      const numErr=validateGhanaMobileNumber(num);
+      if(numErr){toast(numErr,'err');return;}
       account=name+' — '+num;network=momoNetwork;
     } else {
       const bank=document.getElementById('bank-name').value.trim();
@@ -6674,6 +6676,8 @@ async function savePayoutMethod(){
     const num=document.getElementById('new-momo-number')?.value.trim();
     const name=document.getElementById('new-momo-name')?.value.trim();
     if(!num||!name){toast('Fill in all MoMo fields','err');return;}
+    const numErr=validateGhanaMobileNumber(num);
+    if(numErr){toast(numErr,'err');return;}
     row.network=newMethodNetwork;row.number=num;row.account_name=name;
     row.nickname=newMethodNetwork+' MoMo · '+num;
   } else {
@@ -7729,6 +7733,22 @@ function showLegalPage(page){
       '<p style="margin-bottom:1rem;color:#444">Questions about these terms can be directed to Support from within your dashboard.</p>'
     ].join('');
   }
+}
+function validateGhanaMobileNumber(num){
+  const digits=String(num||'').replace(/[\s-]/g,'');
+  if(!/^0\d{9}$/.test(digits)){
+    return 'Enter a valid 10-digit mobile number starting with 0 (e.g. 0241234567).';
+  }
+  // Checked against all three networks' known prefixes, not just whichever
+  // one was selected above — Ghana's mobile number portability means a
+  // number can legitimately keep its original prefix after switching
+  // networks, so a strict match to the selected network could wrongly
+  // reject a real, ported number.
+  const validPrefixes=['024','025','053','054','055','059','020','050','026','027','056','057'];
+  if(!validPrefixes.includes(digits.slice(0,3))){
+    return 'That doesn\'t look like a valid Ghanaian mobile number.';
+  }
+  return null;
 }
 function validateImageFile(file){
   if(!file.type||!file.type.startsWith('image/')){
