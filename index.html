@@ -9651,21 +9651,34 @@ async function loadAdminActionQueue(){
   const container=document.getElementById('adm-needs-attention');if(!container)return;
   try{
     const renewalCutoff=new Date(Date.now()+14*24*60*60*1000).toISOString();
-    const [{data:releases},{data:payouts},{data:messages},{data:deletions},{data:takedowns},{data:renewals}]=await Promise.all([
+    const [{data:releases},{data:payouts},{data:messages},{data:deletions},{data:takedowns},{data:renewals},{data:liveReleases},{data:liveTracks}]=await Promise.all([
       sb.from('releases').select('id').in('status',['pending','review']),
       Promise.resolve(sb.from('payouts').select('id').eq('status','pending')).catch(()=>({data:[]})),
       sb.from('messages').select('id,deleted_by_admin').eq('direction','in').is('read_at',null),
       Promise.resolve(sb.from('account_deletion_requests').select('id').eq('status','pending')).catch(()=>({data:[]})),
       Promise.resolve(sb.from('release_takedown_requests').select('id').eq('status','pending')).catch(()=>({data:[]})),
-      Promise.resolve(sb.from('profiles').select('id').in('plan',['solo_paid','artist_plus','label']).not('plan_expires_at','is',null).lte('plan_expires_at',renewalCutoff).gte('plan_expires_at',new Date().toISOString())).catch(()=>({data:[]}))
+      Promise.resolve(sb.from('profiles').select('id').in('plan',['solo_paid','artist_plus','label']).not('plan_expires_at','is',null).lte('plan_expires_at',renewalCutoff).gte('plan_expires_at',new Date().toISOString())).catch(()=>({data:[]})),
+      sb.from('releases').select('id,isrc').eq('status','live'),
+      Promise.resolve(sb.from('release_tracks').select('release_id,isrc')).catch(()=>({data:[]}))
     ]);
+    // A release with no release_tracks rows keeps its ISRC directly on the
+    // release itself (the legacy, single-track case) — otherwise every
+    // individual track needs its own code, so even one gap on a multi-track
+    // release still counts as missing.
+    const tracksByRelease={};
+    (liveTracks||[]).forEach(t=>{(tracksByRelease[t.release_id]=tracksByRelease[t.release_id]||[]).push(t);});
+    const missingIsrc=(liveReleases||[]).filter(r=>{
+      const tracks=tracksByRelease[r.id];
+      return tracks&&tracks.length?tracks.some(t=>!t.isrc):!r.isrc;
+    });
     const items=[
       {label:'Pending Releases',count:(releases||[]).length,tab:'releases',icon:'ti-music',color:'#fbbf24'},
       {label:'Pending Payouts',count:(payouts||[]).length,tab:'payouts',icon:'ti-wallet',color:'#ef4444'},
       {label:'Unread Messages',count:(messages||[]).filter(m=>!m.deleted_by_admin).length,tab:'messages',icon:'ti-message',color:'#3b82f6'},
       {label:'Deletion Requests',count:(deletions||[]).length,tab:'notifications',icon:'ti-user-x',color:'#f97316'},
       {label:'Takedown Requests',count:(takedowns||[]).length,tab:'notifications',icon:'ti-broadcast-off',color:'#fbbf24'},
-      {label:'Renewals Due (14d)',count:(renewals||[]).length,tab:'subs',icon:'ti-calendar-due',color:'#fbbf24'}
+      {label:'Renewals Due (14d)',count:(renewals||[]).length,tab:'subs',icon:'ti-calendar-due',color:'#fbbf24'},
+      {label:'Live Releases Missing ISRC',count:missingIsrc.length,tab:'releases',icon:'ti-barcode',color:'#a78bfa'}
     ];
     const total=items.reduce((a,i)=>a+i.count,0);
     container.innerHTML=total===0
