@@ -7838,6 +7838,10 @@ async function openDistributionModal(releaseId){
         +'</div>'
         +(release.artwork_url?'<button class="btn adm-btn-sec btn-sm" style="flex-shrink:0" onclick="downloadDistributionFile(\''+esc(release.artwork_url)+'\',\''+esc((release.title||'artwork').replace(/[^\w\- ]/g,'').trim())+'.jpg\',this)"><i class="ti ti-download"></i> Artwork</button>':'')
       +'</div>'
+      +((release.excluded_countries||release.original_release_date)?'<div style="margin-bottom:1.25rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.85rem 1rem">'
+        +(release.excluded_countries?'<div style="font-size:13px;color:#fbbf24;font-weight:700"><i class="ti ti-world-off"></i> Excluded countries: '+esc(release.excluded_countries)+'</div>':'')
+        +(release.original_release_date?'<div style="font-size:13px;color:#fbbf24;font-weight:700;margin-top:'+(release.excluded_countries?'6px':'0')+'"><i class="ti ti-calendar-event"></i> Previously released — original date: '+new Date(release.original_release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'</div>':'')
+      +'</div>':'')
       +'<div style="margin-bottom:1.25rem"><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-barcode"></i> UPC (once assigned by ONErpm)</div>'
         +'<input id="dist-upc-input" placeholder="UPC (e.g. 197xxxxxxxxx)" value="'+esc(release.upc||'')+'" style="width:100%;max-width:260px;font-size:13px;font-family:monospace;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;color:#fff">'
       +'</div>'
@@ -9467,7 +9471,15 @@ async function submitRelease(){
       // real columns for historical releases and revenue reporting, but no
       // new release is ever marked priority again.
       is_priority:false,priority_ref:null,
-      content_id_opt_in:wizToggleState['contentid']==='yes'
+      content_id_opt_in:wizToggleState['contentid']==='yes',
+      // The country-restriction and previous-release-date detail fields
+      // were previously collected in the UI (and required a "yes" answer
+      // to even reveal them) but never actually read or saved anywhere —
+      // an artist typing real country codes to exclude, believing that
+      // request was recorded, would have had it silently discarded on
+      // submission, with their music going out completely unrestricted.
+      excluded_countries:wizToggleState['country-restrict']==='yes'?(document.getElementById('r-countries')?.value.trim()||null):null,
+      original_release_date:wizToggleState['prev-released']==='yes'?(document.getElementById('r-orig-date')?.value||null):null
     };
     if(splitsData&&splitsData.length>1)relPayload.splits=splitsData;
     let {data:insertedRelease,error:dbe}=await sb.from('releases').insert(relPayload).select('id').single();
@@ -9476,6 +9488,14 @@ async function submitRelease(){
       delete relPayload.splits;
       ({data:insertedRelease,error:dbe}=await sb.from('releases').insert(relPayload).select('id').single());
       if(!dbe)toast('Release submitted, but the split sheet was NOT saved — run the splits SQL in Supabase','err');
+    }
+    if(dbe&&/excluded_countries|original_release_date/i.test(dbe.message||'')){
+      // Same not-yet-migrated situation as splits above — submit anyway
+      // rather than block the artist entirely, but make sure this doesn't
+      // silently repeat the exact bug this fix exists to close.
+      delete relPayload.excluded_countries;delete relPayload.original_release_date;
+      ({data:insertedRelease,error:dbe}=await sb.from('releases').insert(relPayload).select('id').single());
+      if(!dbe)toast('Release submitted, but country restrictions / original release date were NOT saved — run the SQL in Supabase','err');
     }
     if(dbe)throw new Error('Submission failed: '+dbe.message);
     // Persist every track (not just the first) so the full tracklist and each
