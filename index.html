@@ -9457,6 +9457,10 @@ async function submitRelease(){
       ...relCreditLines,
       ...trackMetaLines,
       wizToggleState['explicit']==='yes'?'EXPLICIT CONTENT':'',
+      // The artist's own free-form "Admin Notes" field — explicitly labeled
+      // as being for admin to read, correctly saved into the draft, but
+      // never actually included here, so it silently never reached anyone.
+      document.getElementById('r-notes')?.value.trim()?'Artist note: '+document.getElementById('r-notes').value.trim():'',
       'Stores: '+wizStores.join(', ')
     ].filter(Boolean).join(' | ');
     const splitsData=splitRows.length>1
