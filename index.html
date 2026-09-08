@@ -7624,6 +7624,11 @@ function cancelSmartRedirect(){
 function renderSmartLink(r){
   const content=document.getElementById('smartlink-content');
   const isLive=r.status==='live';
+  // A rejected release may never actually go out until the artist fixes
+  // and resubmits it, and a taken-down one already came and went — neither
+  // should invite a fan to sign up waiting for something that isn't
+  // genuinely still coming.
+  if(r.status==='rejected'||r.status==='takendown'){smartLinkNotFound();return;}
   // An external smart link (e.g. from ONErpm) takes priority over the
   // manual per-platform button list entirely — it's already a complete,
   // working smart link with real resolved URLs, so there's no reason to
