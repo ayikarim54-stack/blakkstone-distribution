@@ -1620,7 +1620,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <button onclick="returnToAdminFromImpersonation()" class="btn btn-sm" style="background:var(--gold);color:var(--black);font-weight:700">Return to Admin</button>
   </div>
   <div id="team-context-banner" style="display:none;background:linear-gradient(90deg,#7a6ff0,#5b4fd6);padding:.75rem 1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:600"><i class="ti ti-users"></i> Managing <span id="team-context-owner-name" style="font-weight:800"></span>'s account as <span id="team-context-role"></span></div>
+    <div id="team-context-text" style="display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:600"><i class="ti ti-users"></i> Managing <span id="team-context-owner-name" style="font-weight:800"></span>'s account as <span id="team-context-role"></span></div>
+    <button id="team-context-switch-btn" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;font-weight:700"></button>
   </div>
   <!-- TOP NAV -->
   <div class="dash-topnav">
@@ -2944,6 +2945,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
                 <option value="manager">Manager</option>
                 <option value="viewer">Viewer</option>
               </select>
+              <div style="font-size:10.5px;color:rgba(255,255,255,.3);margin-top:4px">Both currently have the same, view-only access.</div>
             </div>
             <button class="btn btn-gold" onclick="inviteTeamMember()" style="flex-shrink:0"><i class="ti ti-user-plus"></i> Invite</button>
           </div>
@@ -4370,6 +4372,8 @@ function showLapsedPlanBanner(oldPlan){
   toast('Your '+label+' plan has expired — renew anytime from the Upgrade page to keep distributing new releases.','err');
 }
 let teamContext=null; // {ownerId, role, ownerProfile} when this login is managing someone else's account
+let myOwnProfile=null; // this login's own, real profile — captured before it's overwritten with an owner's, so switching back needs no re-fetch
+let teamContextSuspended=false; // true when a team member has chosen to temporarily view their own account instead of the one they manage
 async function checkTeamMembership(){
   try{
     // Accept any pending invite matching this login's email — converts a
@@ -4393,8 +4397,18 @@ async function checkTeamMembership(){
     if(data){
       const {data:ownerProfile,error:ownerErr}=await sb.from('profiles').select('*').eq('id',data.owner_id).single();
       if(!ownerErr&&ownerProfile){
+        myOwnProfile=profile; // captured before the overwrite below, so switching back later needs no re-fetch
         teamContext={ownerId:data.owner_id,role:data.role,ownerProfile};
         profile=ownerProfile; // every page from here on reflects the OWNER's account, not this login's own
+        // If this person previously chose to view their own account instead,
+        // that choice persists across reloads — teamContext stays populated
+        // either way, so the banner can still offer switching back to the
+        // managed account, but profile/activeAccountId() follow their own
+        // account until they explicitly switch again.
+        if(sessionStorage.getItem('_teamContextSuspended')==='true'){
+          teamContextSuspended=true;
+          profile=myOwnProfile;
+        }
       }
     }
   }catch(e){
@@ -4405,7 +4419,7 @@ async function checkTeamMembership(){
 // managing someone else's account via team access, otherwise this login's
 // own ID (the normal case, unchanged for every existing user).
 function activeAccountId(){
-  return teamContext?teamContext.ownerId:user.id;
+  return (teamContext&&!teamContextSuspended)?teamContext.ownerId:user.id;
 }
 function isTeamViewerOnly(){
   // Every team member is strictly view-only now, regardless of their
@@ -4413,7 +4427,18 @@ function isTeamViewerOnly(){
   // change or edit anything. Kept as its own named function (rather than
   // checking !!teamContext inline everywhere) so this policy lives in
   // exactly one place if it's ever revisited.
-  return !!teamContext;
+  // Suspended while viewing their own account instead — at that point
+  // they're a full, unrestricted owner of their own data, not a view-only
+  // guest on someone else's.
+  return !!teamContext&&!teamContextSuspended;
+}
+function switchToOwnAccount(){
+  sessionStorage.setItem('_teamContextSuspended','true');
+  location.reload();
+}
+function switchToTeamAccount(){
+  sessionStorage.removeItem('_teamContextSuspended');
+  location.reload();
 }
 function showPaywall(lapsedPlan){
   const name=profile?.artist_name||profile?.full_name||user?.email?.split('@')[0]||'';
@@ -4540,10 +4565,19 @@ function enterDashboard(){
     if(teamBanner){
       if(teamContext){
         teamBanner.style.display='flex';
-        const ownerNameEl=document.getElementById('team-context-owner-name');
-        if(ownerNameEl)ownerNameEl.textContent=teamContext.ownerProfile?.artist_name||teamContext.ownerProfile?.full_name||'this';
-        const roleEl=document.getElementById('team-context-role');
-        if(roleEl)roleEl.textContent=teamContext.role==='manager'?'Manager':'Viewer';
+        const ownerName=teamContext.ownerProfile?.artist_name||teamContext.ownerProfile?.full_name||'this';
+        const textEl=document.getElementById('team-context-text');
+        const switchBtn=document.getElementById('team-context-switch-btn');
+        if(teamContextSuspended){
+          if(textEl)textEl.innerHTML='<i class="ti ti-user"></i> Viewing your own account — team access to <strong>'+esc(ownerName)+'</strong>\'s account is paused';
+          if(switchBtn){switchBtn.textContent='Switch to '+ownerName+'\'s account';switchBtn.onclick=switchToTeamAccount;}
+        } else {
+          const ownerNameEl=document.getElementById('team-context-owner-name');
+          if(ownerNameEl)ownerNameEl.textContent=ownerName;
+          const roleEl=document.getElementById('team-context-role');
+          if(roleEl)roleEl.textContent=teamContext.role==='manager'?'Manager':'Viewer';
+          if(switchBtn){switchBtn.textContent='Switch to my own account';switchBtn.onclick=switchToOwnAccount;}
+        }
       } else {
         teamBanner.style.display='none';
       }
