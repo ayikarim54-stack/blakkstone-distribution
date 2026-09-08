@@ -1862,6 +1862,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
               <span id="rel-modal-priority-badge"></span>
             </div>
             <button class="btn adm-btn-sec btn-sm" id="rel-modal-duplicate-btn" onclick="duplicateReleaseAsNew(_currentModalReleaseId)"><i class="ti ti-copy"></i> Duplicate as New Release</button>
+            <button class="btn adm-btn-sec btn-sm" id="rel-modal-edit-btn" onclick="openEditReleaseModal(_currentModalReleaseId)" style="display:none;margin-left:8px"><i class="ti ti-pencil"></i> Edit Details</button>
             <button class="btn btn-sm" id="rel-modal-cancel-btn" onclick="cancelPendingRelease(_currentModalReleaseId)" style="display:none;background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25);margin-left:8px"><i class="ti ti-circle-x"></i> Cancel Submission</button>
             <div style="margin-top:1.25rem">
               <div id="rel-modal-smartlink-status" style="margin-bottom:.75rem"></div>
@@ -3660,6 +3661,38 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="modal" style="max-width:720px">
     <h3>Distribution Package <button onclick="closeDistributionModal()">×</button></h3>
     <div id="distribution-modal-body"><div style="text-align:center;padding:3rem"><span class="loader"></span></div></div>
+  </div>
+</div>
+
+<!-- EDIT RELEASE — only reachable while a release is still pending/review,
+     re-checked at save time too, since it may have moved on by then. Only
+     covers fields that genuinely exist as their own database column;
+     "Credits & Details" is edited as the one combined block of text it
+     actually is, rather than pretending label/copyright/featured-artist/etc
+     are separately stored when they were already folded together at
+     submission time. -->
+<div class="overlay" id="edit-release-overlay">
+  <div class="modal" style="max-width:560px">
+    <h3>Edit Release <button onclick="closeEditReleaseModal()">×</button></h3>
+    <div id="edit-release-body">
+      <input type="hidden" id="er-release-id">
+      <div class="fg"><label>Title</label><input id="er-title" type="text"></div>
+      <div class="fg"><label>Artist</label><input id="er-artist" type="text"></div>
+      <div style="display:flex;gap:12px">
+        <div class="fg" style="flex:1"><label>Genre</label>
+          <select id="er-genre"><option value="">Select genre</option><option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option><option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option><option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option><option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option></select>
+        </div>
+        <div class="fg" style="flex:1"><label>Release Date</label><input id="er-date" type="date"></div>
+      </div>
+      <div class="fg"><label>Excluded Countries</label><input id="er-countries" type="text" placeholder="e.g. US, UK, CA — separate with commas"></div>
+      <div class="fg"><label>Original Release Date (if a reissue)</label><input id="er-orig-date" type="date"></div>
+      <div class="fg"><label>Playlist Pitch — Mood / Genre Tags</label><input id="er-pitch-mood" type="text"></div>
+      <div class="fg"><label>Playlist Pitch — Why should a curator feature this?</label><textarea id="er-pitch-note"></textarea></div>
+      <div class="fg" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="er-contentid" style="accent-color:var(--gold)"><label style="margin:0">Opt in to YouTube Content Protection</label></div>
+      <div class="fg"><label>Credits & Details</label><textarea id="er-notes" style="min-height:100px" placeholder="Label, copyright, featured artist, remixer, language, explicit content, or anything else worth noting"></textarea></div>
+      <div style="font-size:11px;color:rgba(255,255,255,.3);line-height:1.6;margin-bottom:1rem">This edits the release's own details directly — separate from the split sheet or track files, which aren't changed here.</div>
+      <button class="btn btn-gold" id="er-save-btn" style="width:100%;justify-content:center" onclick="saveReleaseEdits()"><i class="ti ti-device-floppy"></i> Save Changes</button>
+    </div>
   </div>
 </div>
 
@@ -5472,6 +5505,7 @@ function openReleaseModal(r,updateUrl){
   const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
   const sb2=document.getElementById('rel-modal-status-badge');if(sb2) sb2.innerHTML='<span class="badge '+bc+'" style="font-size:12px;padding:4px 12px">'+bl+'</span>';
   const cancelBtn=document.getElementById('rel-modal-cancel-btn');if(cancelBtn) cancelBtn.style.display=r.status==='pending'?'inline-flex':'none';
+  const editBtn=document.getElementById('rel-modal-edit-btn');if(editBtn) editBtn.style.display=(!isTeamViewerOnly()&&(r.status==='pending'||r.status==='review'))?'inline-flex':'none';
   const reasonBanner=document.getElementById('rel-modal-reason-banner');
   if(reasonBanner){
     if((r.status==='rejected'||r.status==='takendown')&&r.status_reason){
@@ -7851,6 +7885,72 @@ async function openArtistModal(userId,name){
 }
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
 function closeDistributionModal(){document.getElementById('distribution-overlay').classList.remove('open');}
+function openEditReleaseModal(id){
+  const r=_releaseMap[id];
+  if(!r){toast('Could not load this release','err');return;}
+  if(r.status!=='pending'&&r.status!=='review'){toast('This release can no longer be edited — it\'s already moved past review','err');return;}
+  document.getElementById('er-release-id').value=id;
+  document.getElementById('er-title').value=r.title||'';
+  document.getElementById('er-artist').value=r.artist||'';
+  document.getElementById('er-genre').value=r.genre||'';
+  document.getElementById('er-date').value=r.release_date||'';
+  document.getElementById('er-countries').value=r.excluded_countries||'';
+  document.getElementById('er-orig-date').value=r.original_release_date||'';
+  document.getElementById('er-pitch-mood').value=r.pitch_mood||'';
+  document.getElementById('er-pitch-note').value=r.pitch_note||'';
+  document.getElementById('er-contentid').checked=!!r.content_id_opt_in;
+  document.getElementById('er-notes').value=r.notes||'';
+  document.getElementById('edit-release-overlay').classList.add('open');
+}
+function closeEditReleaseModal(){document.getElementById('edit-release-overlay').classList.remove('open');}
+async function saveReleaseEdits(){
+  if(isTeamViewerOnly()){toast('Team members can only view this account, not edit releases','err');return;}
+  const id=document.getElementById('er-release-id').value;
+  const title=document.getElementById('er-title').value.trim();
+  const artist=document.getElementById('er-artist').value.trim();
+  const genre=document.getElementById('er-genre').value;
+  if(!title||!artist||!genre){toast('Title, artist, and genre are all required','err');return;}
+  for(const rule of FORBIDDEN_TITLE_PHRASES){
+    if(rule.re.test(title)){
+      toast('Title can\'t contain "'+((title.match(rule.re)||[''])[0])+'" — use the '+rule.field+' field instead','err');
+      return;
+    }
+  }
+  const btn=document.getElementById('er-save-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="loader" style="width:14px;height:14px"></span> Saving…';}
+  try{
+    // Re-verified fresh here, not trusted from whenever the modal happened
+    // to open — admin could have approved, rejected, or taken action on
+    // this release in the meantime.
+    const {data:fresh,error:fetchErr}=await sb.from('releases').select('id,status,user_id').eq('id',id).eq('user_id',activeAccountId()).single();
+    if(fetchErr||!fresh){toast('Could not verify this release','err');return;}
+    if(fresh.status!=='pending'&&fresh.status!=='review'){
+      toast('This release can no longer be edited — it\'s already moved past review','err');
+      closeEditReleaseModal();
+      return;
+    }
+    const updatePayload={
+      title,artist,genre,
+      release_date:document.getElementById('er-date').value||null,
+      excluded_countries:document.getElementById('er-countries').value.trim()||null,
+      original_release_date:document.getElementById('er-orig-date').value||null,
+      pitch_mood:document.getElementById('er-pitch-mood').value.trim()||null,
+      pitch_note:document.getElementById('er-pitch-note').value.trim()||null,
+      content_id_opt_in:document.getElementById('er-contentid').checked,
+      notes:document.getElementById('er-notes').value.trim()||null
+    };
+    const {error:updateErr}=await sb.from('releases').update(updatePayload).eq('id',id).eq('user_id',activeAccountId());
+    if(updateErr)throw updateErr;
+    toast('Release updated','ok');
+    closeEditReleaseModal();
+    loadReleases();
+  }catch(e){
+    console.error('Save release edits error:',e);
+    toast('Could not save changes: '+(e.message||'please try again.'),'err');
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Save Changes';}
+  }
+}
 // Generic cross-origin file download - fetches as a blob rather than a
 // plain <a download> link, since browsers commonly ignore the download
 // attribute for cross-origin URLs (like Supabase Storage's public URLs)
