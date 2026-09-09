@@ -3940,7 +3940,7 @@ function toggleCurrencySwitcher(){
   const menu=document.getElementById('currency-switcher-menu');if(!menu)return;
   menu.style.display=menu.style.display==='none'?'block':'none';
 }
-const PLANS={solo:{monthly:11,yearly:14,label:'Solo'},artist_plus:{monthly:20,yearly:25,label:'Artist+'},label:{monthly:35,yearly:40,label:'Label'}};
+const PLANS={solo:{monthly:3,yearly:14,label:'Solo'},artist_plus:{monthly:6,yearly:25,label:'Artist+'},label:{monthly:8,yearly:40,label:'Label'}};
 // Launch offer: first N signups (by account creation, not by payment) get
 // 20% off their first year on any plan. Change this one number to adjust
 // how many spots the offer covers.
@@ -12365,7 +12365,7 @@ async function checkLaunchOfferDiscount(){
 }
 function updateRateNote(){
   const p=PLANS[selectedPlan];if(!p)return;
-  let usd=billing==='monthly'?p.monthly:p.yearly;
+  let usd=p[billing];
   const ghs=(usd*currentDisplayRates.GHS).toFixed(2);
   const rn=document.getElementById('rate-note');
   const discountEl=document.getElementById('upgrade-discount-note');
@@ -12541,7 +12541,7 @@ function doPaystack(){
   const p=PLANS[selectedPlan];
   const autoRenew=document.getElementById('pay-auto-renew')?.checked;
   const planCode=PAYSTACK_PLAN_CODES[selectedPlan];
-  let usd=billing==='monthly'?p.monthly:p.yearly;
+  let usd=p[billing];
   let appliedReferral=null;
   let appliedLaunchOffer=false;
   let appliedUpgradeCredit=false;
