@@ -1243,7 +1243,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="pcv2 pcv2-dark">
           <div class="pcv2-tag">// // LABEL</div>
           <div class="pcv2-price"><span data-usd-price="40">$40</span><span class="pcv2-period">/year</span></div>
-          <p class="pcv2-desc">For up to 5+ artists. Manage your whole roster and keep 100% of royalties.</p>
+          <p class="pcv2-desc">5 artists included, $1/month (or $5/year) for each additional. Manage your whole roster and keep 100% of royalties.</p>
           <button class="pcv2-btn pcv2-btn-gold" onclick="showAuth('signup')">Choose Label</button>
           <ul class="pcv2-feats">
             <li><span class="pcv2-check">✓</span> <strong>5+ artist profiles</strong></li>
@@ -1585,7 +1585,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div class="paywall-card-name">Label</div>
             <div class="paywall-card-price">$40 <span>/ year</span></div>
             <div class="paywall-card-ghs">≈ <span data-usd-price="40">$40.00</span></div>
-            <p class="paywall-card-desc">5+ artists, 0% commission. For labels & collectives.</p>
+            <p class="paywall-card-desc">5 artists included, $1/month (or $5/year) for each additional. For labels & collectives.</p>
             <ul class="paywall-feats">
               <li><i class="ti ti-check"></i> 5+ artist profiles</li>
               <li><i class="ti ti-check"></i> Unlimited releases</li>
@@ -2836,7 +2836,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="ug-card dark">
           <div class="ug-name">Label</div>
           <div class="ug-price"><span data-usd-price="40">$40</span> <small>/ year</small></div>
-          <p class="ug-desc">5+ artists. For labels and collectives.</p>
+          <p class="ug-desc">5 artists included, $1/month (or $5/year) for each additional. For labels and collectives.</p>
           <ul class="ug-feats">
             <li><span class="ug-check">✓</span> 5+ artist profiles</li>
             <li><span class="ug-check">✓</span> Unlimited releases</li>
@@ -4511,7 +4511,7 @@ function paywallPay(plan){
   const titleEl=document.getElementById('pay-modal-title');
   if(titleEl) titleEl.textContent='Get '+p.label+' Plan';
   const descEl=document.getElementById('pay-modal-desc');
-  const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5+ artists, 0% commission, priority support.'};
+  const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5 artists included ($1/mo or $5/yr each additional), 0% commission, priority support.'};
   if(descEl) descEl.textContent=descs[plan]||'';
   const yp=document.getElementById('b-yearly-price');
   if(yp){yp.textContent=convertPrice(p.yearly);yp.dataset.usdPrice=p.yearly;}
@@ -7140,6 +7140,11 @@ function getRosterMax(){
   if(plan==='artist_plus')return 2;
   return 0;
 }
+const EXTRA_ARTIST_PRICE_MONTHLY=1;
+const EXTRA_ARTIST_PRICE_YEARLY=5;
+function canExceedRosterMax(){
+  return isAdmin()||profile?.plan==='label';
+}
 let _rosterCache=[];
 let _rosterReleaseCounts={};
 let _rosterStreams={};
@@ -7171,7 +7176,12 @@ async function loadMyArtistsGrid(){
     _rosterReleaseCounts=counts;
     _rosterStreams=streamsMap;
     _rosterEarnings=earningsMap;
-    if(limitEl)limitEl.textContent=_rosterCache.length+' of '+max+' artist slot'+(max===1?'':'s')+' used';
+    if(limitEl){
+      const extra=Math.max(0,_rosterCache.length-max);
+      limitEl.textContent=extra>0
+        ?_rosterCache.length+' artists ('+max+' included + '+extra+' extra — $'+(extra*EXTRA_ARTIST_PRICE_MONTHLY)+'/month or $'+(extra*EXTRA_ARTIST_PRICE_YEARLY)+'/year, depending on your billing cycle)'
+        :_rosterCache.length+' of '+max+' artist slot'+(max===1?'':'s')+' used';
+    }
     renderMyArtistsGrid(counts);
   }catch(e){
     console.error('Roster load error:',e);
@@ -7202,7 +7212,7 @@ function renderMyArtistsGrid(counts){
       +'</div>';
     return '<div onclick="openMyArtistDetail(\''+a.id+'\')" style="background:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;position:relative;cursor:pointer">'+actions+avatar+nameDisplay+'<div style="font-size:12px;color:#7a6ff0;font-weight:600;margin-top:4px">'+n+' Release'+(n===1?'':'s')+'</div><div style="font-size:11px;color:rgba(0,0,0,.4);margin-top:2px">'+stats+'</div>'+lockedNote+'</div>';
   }).join('');
-  const addTile=(_rosterCache.length<max&&!isTeamViewerOnly())?'<div onclick="document.getElementById(\'myartist-add-name\').focus()" style="border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:1.5rem 1rem;text-align:center;cursor:text;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:178px"><div style="width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem"><i class="ti ti-plus" style="font-size:24px;color:rgba(255,255,255,.6)"></i></div><input id="myartist-add-name" type="text" placeholder="Artist name" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')addRosterArtist()" style="background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:13px;width:100%;text-align:center;margin-bottom:8px"><button id="roster-add-btn" onclick="event.stopPropagation();addRosterArtist()" class="btn btn-gold btn-sm" style="width:100%;justify-content:center">Add Artist</button></div>':'';
+  const addTile=((_rosterCache.length<max||canExceedRosterMax())&&!isTeamViewerOnly())?'<div onclick="document.getElementById(\'myartist-add-name\').focus()" style="border:2px dashed rgba(255,255,255,.15);border-radius:14px;padding:1.5rem 1rem;text-align:center;cursor:text;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:178px"><div style="width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem"><i class="ti ti-plus" style="font-size:24px;color:rgba(255,255,255,.6)"></i></div><input id="myartist-add-name" type="text" placeholder="Artist name" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')addRosterArtist()" style="background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;font-size:13px;width:100%;text-align:center;margin-bottom:8px"><button id="roster-add-btn" onclick="event.stopPropagation();addRosterArtist()" class="btn btn-gold btn-sm" style="width:100%;justify-content:center">Add Artist</button></div>':'';
   grid.innerHTML=(cards||'')+addTile;
   if(!_rosterCache.length&&!addTile) grid.innerHTML='<p style="color:rgba(255,255,255,.3);font-size:13px;grid-column:1/-1">No artists yet.</p>';
 }
@@ -7212,7 +7222,13 @@ async function addRosterArtist(){
   const name=input.value.trim();
   if(!name){toast('Enter an artist name','err');return;}
   const max=getRosterMax();
-  if(_rosterCache.length>=max){toast('Your plan supports up to '+max+' artist names','err');return;}
+  if(_rosterCache.length>=max){
+    if(!canExceedRosterMax()){toast('Your plan supports up to '+max+' artist names','err');return;}
+    const extraNumber=_rosterCache.length-max+1;
+    if(!confirm('This will be artist #'+extraNumber+' beyond your included '+max+' — an additional $'+EXTRA_ARTIST_PRICE_MONTHLY+'/month (or $'+EXTRA_ARTIST_PRICE_YEARLY+'/year if you\'re on annual billing) will be added to your recurring bill at renewal. Continue?')){
+      return;
+    }
+  }
   const btn=document.getElementById('roster-add-btn');
   if(btn){btn.disabled=true;btn.innerHTML='<span class="loader"></span>';}
   try{
@@ -12313,7 +12329,7 @@ function openPaystack(plan){
   selectedPlan=plan||'artist_plus';
   const p=PLANS[selectedPlan];
   document.getElementById('pay-modal-title').textContent='Get '+p.label+' Plan';
-  const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5+ artists, 0% commission, priority support.'};
+  const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5 artists included ($1/mo or $5/yr each additional), 0% commission, priority support.'};
   document.getElementById('pay-modal-desc').textContent=descs[selectedPlan]||'';
   const featsEl=document.getElementById('pay-modal-feats');
   if(featsEl){
@@ -12528,13 +12544,21 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
     if(paywallEl&&paywallEl.classList.contains('active')) enterDashboard();
   }catch(e){toast('Plan activated! Refresh if needed.','ok');closePaystack();}
 }
-function toggleAutoRenewNote(){
+async function toggleAutoRenewNote(){
+  const cb=document.getElementById('pay-auto-renew');
+  if(cb?.checked&&selectedPlan==='label'){
+    const {count}=await sb.from('roster_artists').select('id',{count:'exact',head:true}).eq('user_id',activeAccountId());
+    if(Math.max(0,(count||0)-5)>0){
+      cb.checked=false;
+      toast('Auto-renew isn\'t available with extra artists beyond your included 5 — the fixed subscription price can\'t account for them, so please renew manually each time instead.','err');
+    }
+  }
   const checked=document.getElementById('pay-auto-renew')?.checked;
   const note=document.getElementById('auto-renew-note');
   if(note)note.style.display=checked?'block':'none';
   updateRateNote();
 }
-function doPaystack(){
+async function doPaystack(){
   if(isTeamViewerOnly()){toast('Team members can only view this account — only the owner can upgrade or renew the plan','err');return;}
   const email=document.getElementById('pay-em').value.trim();
   if(!email){toast('Enter your email','err');return;}
@@ -12542,6 +12566,18 @@ function doPaystack(){
   const autoRenew=document.getElementById('pay-auto-renew')?.checked;
   const planCode=PAYSTACK_PLAN_CODES[selectedPlan];
   let usd=p[billing];
+  // Extra roster artists beyond the included 5 only meaningfully affect a
+  // one-time payment — see the comment below on why a real Paystack
+  // subscription (autoRenew) always charges its own fixed plan price
+  // regardless of this computed amount. Queried fresh here rather than
+  // trusting _rosterCache, which may still be empty if the artists page
+  // was never visited this session — this directly determines the real
+  // amount charged, so it needs to be accurate regardless of what's cached.
+  if(selectedPlan==='label'&&!autoRenew){
+    const {count}=await sb.from('roster_artists').select('id',{count:'exact',head:true}).eq('user_id',activeAccountId());
+    const extraArtists=Math.max(0,(count||0)-5);
+    if(extraArtists>0)usd+=extraArtists*(billing==='yearly'?EXTRA_ARTIST_PRICE_YEARLY:EXTRA_ARTIST_PRICE_MONTHLY);
+  }
   let appliedReferral=null;
   let appliedLaunchOffer=false;
   let appliedUpgradeCredit=false;
