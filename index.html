@@ -4514,7 +4514,7 @@ function paywallPay(plan){
   const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5+ artists, 0% commission, priority support.'};
   if(descEl) descEl.textContent=descs[plan]||'';
   const yp=document.getElementById('b-yearly-price');
-  if(yp) yp.textContent='$'+p.yearly;
+  if(yp){yp.textContent=convertPrice(p.yearly);yp.dataset.usdPrice=p.yearly;}
   updateRateNote();
 }
 async function logout(){
@@ -12319,8 +12319,8 @@ function openPaystack(plan){
   if(featsEl){
     featsEl.innerHTML=(PLAN_FEATURES[selectedPlan]||[]).map(f=>'<li style="display:flex;align-items:center;gap:7px;font-size:13px;color:rgba(255,255,255,.75)"><i class="ti ti-check" style="color:var(--gold);font-size:15px;flex-shrink:0"></i> '+f+'</li>').join('');
   }
-  document.getElementById('b-yearly-price').textContent='$'+p.yearly;
-  document.getElementById('b-monthly-price').textContent='$'+p.monthly;
+  {const el=document.getElementById('b-yearly-price');if(el){el.textContent=convertPrice(p.yearly);el.dataset.usdPrice=p.yearly;}}
+  {const el=document.getElementById('b-monthly-price');if(el){el.textContent=convertPrice(p.monthly);el.dataset.usdPrice=p.monthly;}}
   setBilling('yearly');
   if(user) document.getElementById('pay-em').value=user.email||'';
   currentUpgradeDiscount=calculateUpgradeDiscount(selectedPlan);
