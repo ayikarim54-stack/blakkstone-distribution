@@ -2194,6 +2194,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div class="fg" style="margin-bottom:.75rem"><label>Mood / Genre Tags</label><input id="r-pitch-mood" type="text" placeholder="e.g. Chill, Late-night, Afrobeats"></div>
             <div class="fg"><label>Why should a curator feature this?</label><textarea id="r-pitch-note" placeholder="A sentence or two on what makes this release stand out"></textarea></div>
           </div>
+          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-top:1.5rem">
+            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:.5rem">Was AI used in creating this release?</div>
+            <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:.875rem">Stores are increasingly requiring this disclosure. Answer honestly for whichever parts of this release — lyrics, vocals, instrumentation, or production — involved AI tools.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="wiz-toggle active" id="ai-none" onclick="setAiUse('none')">No AI used</button>
+              <button class="wiz-toggle" id="ai-some" onclick="setAiUse('some')">Partially AI</button>
+              <button class="wiz-toggle" id="ai-full" onclick="setAiUse('full')">Fully AI</button>
+            </div>
+          </div>
         </div>
         <div style="display:flex;gap:10px;margin-top:2rem">
           <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(2)"><i class="ti ti-arrow-left"></i> Back</button>
@@ -8116,6 +8125,9 @@ async function openDistributionModal(releaseId){
         +(release.pitch_mood?'<div style="font-size:13px;color:rgba(255,255,255,.8)"><strong style="color:#fff">Mood/Genre:</strong> '+esc(release.pitch_mood)+'</div>':'')
         +(release.pitch_note?'<div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:'+(release.pitch_mood?'4px':'0')+'">'+esc(release.pitch_note)+'</div>':'')
       +'</div>':'')
+      +((release.ai_use&&release.ai_use!=='none')?'<div style="margin-bottom:1.25rem;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.25);border-radius:9px;padding:.85rem 1rem">'
+        +'<div style="font-size:13px;color:#60a5fa;font-weight:700"><i class="ti ti-robot"></i> AI use disclosed: '+(release.ai_use==='full'?'Fully AI-generated':'Partially AI-assisted')+'</div>'
+      +'</div>':'')
       +'<div style="margin-bottom:1.25rem"><div class="adm-card-title" style="margin-bottom:.6rem"><i class="ti ti-barcode"></i> UPC (once assigned by ONErpm)</div>'
         +'<input id="dist-upc-input" placeholder="UPC (e.g. 197xxxxxxxxx)" value="'+esc(release.upc||'')+'" style="width:100%;max-width:260px;font-size:13px;font-family:monospace;background:var(--input-bg);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 10px;color:#fff">'
       +'</div>'
@@ -9304,6 +9316,10 @@ function setToggle(key,val){
     const fieldsEl=document.getElementById(key+'-fields');if(fieldsEl) fieldsEl.style.display=val==='yes'?'block':'none';
   }
 }
+function setAiUse(val){
+  wizToggleState.aiuse=val;
+  ['none','some','full'].forEach(v=>document.getElementById('ai-'+v)?.classList.toggle('active',v===val));
+}
 function renderStoresGrid(){
   const grid=document.getElementById('stores-grid');if(!grid)return;
   grid.innerHTML=ALL_STORES.map(s=>'<div class="store-chip'+(wizStores.includes(s.name)?' selected':'')+'" id="store-'+s.name.replace(/[^a-z]/gi,'')+'" onclick="toggleStore(\''+s.name.replace(/[^a-z]/gi,'')+'\',' +'\'' +s.name+'\')"><div class="store-chip-icon" style="background:rgba(255,255,255,.05);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:4px">'+(s.logo?'<span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:4px;padding:1px;vertical-align:middle"><img src="'+s.logo+'" alt="'+esc(s.name)+'" width="18" height="18" style="object-fit:contain;display:block"></span>':'<i class="ti ti-music" style="font-size:12px;color:rgba(255,255,255,.3)"></i>')+'</div><div class="store-chip-name">'+s.name+'</div><div class="store-chip-check"></div></div>').join('');
@@ -9356,6 +9372,7 @@ function collectWizardState(){
     contentIdOptIn: wizToggleState['contentid']||'no',
     prevReleased: wizToggleState['prev-released']||'no',
     countryRestrict: wizToggleState['country-restrict']||'no',
+    aiUse: wizToggleState['aiuse']||'none',
     pitchMood: document.getElementById('r-pitch-mood')?.value||'',
     pitchNote: document.getElementById('r-pitch-note')?.value||'',
     stores: wizStores,
@@ -9557,6 +9574,7 @@ async function restoreWizardState(state){
   if(state.contentIdOptIn) setToggle('contentid',state.contentIdOptIn);
   if(state.prevReleased) setToggle('prev-released',state.prevReleased);
   if(state.countryRestrict) setToggle('country-restrict',state.countryRestrict);
+  if(state.aiUse) setAiUse(state.aiUse);
   setVal('r-pitch-mood', state.pitchMood);
   setVal('r-pitch-note', state.pitchNote);
   // Restore tracks with their cloud URLs
@@ -9763,7 +9781,8 @@ async function submitRelease(){
       excluded_countries:wizToggleState['country-restrict']==='yes'?(document.getElementById('r-countries')?.value.trim()||null):null,
       original_release_date:wizToggleState['prev-released']==='yes'?(document.getElementById('r-orig-date')?.value||null):null,
       pitch_mood:document.getElementById('r-pitch-mood')?.value.trim()||null,
-      pitch_note:document.getElementById('r-pitch-note')?.value.trim()||null
+      pitch_note:document.getElementById('r-pitch-note')?.value.trim()||null,
+      ai_use:wizToggleState['aiuse']||'none'
     };
     if(splitsData&&splitsData.length>1)relPayload.splits=splitsData;
     let {data:insertedRelease,error:dbe}=await sb.from('releases').insert(relPayload).select('id').single();
@@ -9785,6 +9804,11 @@ async function submitRelease(){
       delete relPayload.pitch_mood;delete relPayload.pitch_note;
       ({data:insertedRelease,error:dbe}=await sb.from('releases').insert(relPayload).select('id').single());
       if(!dbe)toast('Release submitted, but the playlist pitch was NOT saved — run the SQL in Supabase','err');
+    }
+    if(dbe&&/ai_use/i.test(dbe.message||'')){
+      delete relPayload.ai_use;
+      ({data:insertedRelease,error:dbe}=await sb.from('releases').insert(relPayload).select('id').single());
+      if(!dbe)toast('Release submitted, but the AI-use disclosure was NOT saved — run the SQL in Supabase','err');
     }
     if(dbe)throw new Error('Submission failed: '+dbe.message);
     // Persist every track (not just the first) so the full tracklist and each
