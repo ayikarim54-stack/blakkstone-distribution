@@ -1163,22 +1163,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <!-- PLANS -->
   <section class="plans-sec" id="pricing-sec">
     <div style="max-width:1100px;margin:0 auto">
-      <div id="launch-offer-banner" style="display:none;margin-bottom:2rem;background:linear-gradient(135deg,#111,#1a1a1a);border:1px solid rgba(212,175,55,.35);border-radius:16px;padding:1.5rem 2rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:12px">
-            <span style="font-size:26px">🚀</span>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:#fff">Launch Offer — <span id="launch-offer-spots" style="color:var(--gold)">— spots</span> left</div>
-              <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:2px">Be one of our first 30 founding artists — get 20% off your first year, automatically.</div>
-            </div>
-          </div>
-          <div style="flex:1;min-width:180px;max-width:260px">
-            <div style="height:8px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden">
-              <div id="launch-offer-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#8A6A1F,var(--gold));border-radius:5px;transition:width .4s"></div>
-            </div>
-          </div>
-        </div>
-      </div>
       <div class="pricing-v2-head">
         <h2 class="pricing-v2-title">Pricing.<span>Pick a plan.</span></h2>
         <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3);border-radius:20px;padding:5px 14px;margin-top:.75rem;font-size:12px;font-weight:700;color:#a07d10">
@@ -2282,6 +2266,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div id="split-legal-content" style="font-size:12px;color:rgba(255,255,255,.45);line-height:1.8;display:flex;flex-direction:column;gap:.625rem"></div>
           </div>
 
+          <!-- STREAM MANIPULATION WARNING -->
+          <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:14px;padding:1.25rem;margin-bottom:1rem">
+            <div style="font-size:14px;font-weight:700;color:#f87171;margin-bottom:.5rem;display:flex;align-items:center;gap:8px"><i class="ti ti-alert-triangle"></i> A Note on Fake Streams &amp; Stream Farming</div>
+            <p style="font-size:12.5px;color:rgba(255,255,255,.55);line-height:1.7;margin:0">Streams from bots, click farms, or paid "stream farming" services are actively detected by Spotify, Apple Music, and other stores. They earn <strong style="color:rgba(255,255,255,.75)">zero royalties</strong> and are stripped from your public counts the moment they're caught — regardless of how they were generated. Stores can also fine distributors per flagged track, and those fines get passed on to the artist responsible. Severe or repeated cases can mean tracks or entire releases being pulled, and accounts being suspended or permanently terminated. Please only promote your music through genuine listeners. Full details are in our <a href="?legal=terms" target="_blank" onclick="event.stopPropagation()" style="color:#f87171;text-decoration:underline">Terms of Service</a>.</p>
+          </div>
+
           <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem">
             <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0">
               <input type="checkbox" id="r-terms" style="accent-color:var(--gold);margin-top:2px;flex-shrink:0">
@@ -3174,10 +3164,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <div id="adm-needs-attention"><div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div></div>
         </div>
-        <div class="adm-card" id="adm-launch-offer-card" style="margin-bottom:1.25rem">
-          <div class="adm-card-title"><i class="ti ti-rocket"></i> Launch Offer Progress</div>
-          <div id="adm-launch-offer-progress"><div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div></div>
-        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem">
           <div class="adm-card">
             <div class="adm-card-title"><i class="ti ti-chart-line"></i> Revenue Overview</div>
@@ -3956,39 +3942,6 @@ function toggleCurrencySwitcher(){
   menu.style.display=menu.style.display==='none'?'block':'none';
 }
 const PLANS={solo:{monthly:3,yearly:14,label:'Solo'},artist_plus:{monthly:6,yearly:25,label:'Artist+'},label:{monthly:8,yearly:40,label:'Label'}};
-// Launch offer: first N signups (by account creation, not by payment) get
-// 20% off their first year on any plan. Change this one number to adjust
-// how many spots the offer covers.
-const LAUNCH_FOUNDER_LIMIT=30;
-const LAUNCH_FOUNDER_DISCOUNT_PERCENT=20;
-// Launch founder eligibility used to be flagged at signup time via this
-// function — removed now that eligibility is checked live at checkout
-// instead (see checkLaunchOfferDiscount), based on how many people have
-// actually paid so far, not on signup order.
-// Shows the same "X spots left" progress the admin dashboard already
-// tracks, but publicly on the landing page — this runs from an anonymous,
-// logged-out session, unlike every other launch-offer query in the app
-// which only ever runs after someone's authenticated. If RLS on `profiles`
-// doesn't already permit an anonymous count, this fails quietly and the
-// banner just never appears, rather than showing an incorrect number.
-async function loadLaunchOfferBanner(){
-  const banner=document.getElementById('launch-offer-banner');
-  if(!banner)return;
-  try{
-    const {data:claimed,error}=await sb.rpc('get_launch_founder_count');
-    if(error){console.error('Launch offer banner count error (public landing page — run launch_offer_public_count.sql if this is new):',error);return;}
-    const claimedCapped=Math.min(claimed||0,LAUNCH_FOUNDER_LIMIT);
-    const spotsLeft=Math.max(0,LAUNCH_FOUNDER_LIMIT-claimedCapped);
-    if(spotsLeft<=0)return; // offer's fully claimed — no reason to advertise a launch promo that's already gone
-    const spotsEl=document.getElementById('launch-offer-spots');
-    const barEl=document.getElementById('launch-offer-bar');
-    if(spotsEl)spotsEl.textContent=spotsLeft+' spots';
-    if(barEl)barEl.style.width=Math.round((claimedCapped/LAUNCH_FOUNDER_LIMIT)*100)+'%';
-    banner.style.display='block';
-  }catch(e){
-    console.error('Launch offer banner error (public landing page):',e);
-  }
-}
 // Priority Distribution was discontinued as a paid add-on (ONErpm couldn't
 // guarantee the faster turnaround, so charging for it was a real risk) —
 // no UI or payment path can set this anymore. This constant remains
@@ -4264,7 +4217,6 @@ function showView(id){
   updateSupportBubble();
   if(id==='landing'){
     startCurrencyDetectionOnce();
-    loadLaunchOfferBanner();
   }
 }
 
@@ -7857,8 +7809,9 @@ function showLegalPage(page){
       '<p style="margin-bottom:1rem;color:#444">All subscription payments are final. We do not offer refunds for any plan, whether unused, partially used, or cancelled before the end of its billing period. Please review your plan carefully before purchasing.</p>',
       '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">8. Team Access</h3>',
       '<p style="margin-bottom:1rem;color:#444">Account owners may invite team members to view their account. Team members cannot submit releases, request payouts, or change account settings regardless of their assigned role. The account owner remains fully responsible for all activity on the account, including anything done by an invited team member.</p>',
-      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">9. Prohibited Content</h3>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">9. Prohibited Content &amp; Stream Manipulation</h3>',
       '<p style="margin-bottom:1rem;color:#444">You may not submit content that infringes copyright, contains unauthorized samples, or otherwise violates the content policies of ONErpm or the individual stores we distribute to.</p>',
+      '<p style="margin-bottom:1rem;color:#444">You also may not engage in, encourage, or pay for stream manipulation of any kind — including bots, click farms, stream farming services, incentivized or purchased streams, or any other method intended to artificially inflate a release\'s streaming numbers. Spotify, Apple Music, and other stores actively detect this activity. Streams identified as fraudulent earn no royalties and are removed from public counts regardless of how they were generated or how long they\'ve been live. Stores may fine distributors per flagged track, and we may pass these fines on to the artist responsible. Depending on severity, violations can result in the affected tracks or releases being removed, and accounts being suspended or permanently terminated. If you believe a release has been targeted by stream manipulation you did not authorize (for example, by a competitor), contact Support immediately so we can flag it with our distribution partner.</p>',
       '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">10. YouTube Content ID</h3>',
       '<p style="margin-bottom:1rem;color:#444">You may optionally opt a release into YouTube Content Protection at submission. This feature is activated on a rolling basis; opting in registers your interest but does not guarantee immediate enrollment.</p>',
       '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">11. Account Termination &amp; Deletion</h3>',
@@ -10047,25 +10000,6 @@ async function loadAdminDashboard(){
     const totalP=(profiles||[]).length||1;
     const planEl=document.getElementById('adm-plan-breakdown');
     if(planEl) planEl.innerHTML=[{k:'Solo',v:plans.solo_paid,c:'#D4AF37'},{k:'Artist+',v:plans.artist_plus,c:'#34d399'},{k:'Label',v:plans.label,c:'#059669'},{k:'Free',v:plans.free,c:'#6b7280'}].map(p=>'<div class="adm-bar-row"><div class="adm-bar-label">'+p.k+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round((p.v/totalP)*100)+'%;background:'+p.c+'"></div></div><div class="adm-bar-val">'+p.v+'</div></div>').join('');
-    const loEl=document.getElementById('adm-launch-offer-progress');
-    if(loEl){
-      try{
-        const {count:claimed,error:founderErr}=await sb.from('profiles').select('id',{count:'exact',head:true}).eq('launch_discount_used',true);
-        if(founderErr)throw founderErr;
-        const claimedCount=claimed||0;
-        const pct=Math.min(100,Math.round((claimedCount/LAUNCH_FOUNDER_LIMIT)*100));
-        const spotsLeft=Math.max(0,LAUNCH_FOUNDER_LIMIT-claimedCount);
-        loEl.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
-          +'<div style="font-size:22px;font-weight:800;color:#fff">'+claimedCount+' <span style="font-size:14px;font-weight:600;color:rgba(255,255,255,.4)">/ '+LAUNCH_FOUNDER_LIMIT+' spots claimed</span></div>'
-          +'<div style="font-size:13px;font-weight:700;color:'+(spotsLeft===0?'#34d399':'var(--gold)')+'">'+(spotsLeft===0?'Fully claimed! 🎉':spotsLeft+' left')+'</div>'
-        +'</div>'
-        +'<div style="height:10px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;margin-bottom:10px"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#8A6A1F,var(--gold));border-radius:6px;transition:width .3s"></div></div>'
-        +'<div style="font-size:12px;color:rgba(255,255,255,.4)">Counts artists who\'ve actually paid with the discount — not just signed up</div>';
-      }catch(e){
-        console.error('Launch offer widget error — likely means launch_offer.sql hasn\'t been run yet on this database:',e);
-        loEl.innerHTML='<div style="color:rgba(255,255,255,.35);font-size:12px">Could not load — run launch_offer.sql in Supabase if you haven\'t yet.</div>';
-      }
-    }
     const statuses={pending:0,review:0,approved:0,live:0,rejected:0,takendown:0};
     (releases||[]).forEach(r=>statuses[r.status]=(statuses[r.status]||0)+1);
     const totalR=(releases||[]).length||1;
@@ -12396,44 +12330,21 @@ function openPaystack(plan){
   if(user) document.getElementById('pay-em').value=user.email||'';
   currentUpgradeDiscount=calculateUpgradeDiscount(selectedPlan);
   currentReferralDiscount=null;
-  checkLaunchOfferDiscount(); // async — updates the note itself once resolved
+  updateRateNote(); // refresh now that the upgrade credit above is known
   document.getElementById('pay-overlay').classList.add('open');
 }
-function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');currentUpgradeDiscount=null;currentReferralDiscount=null;currentLaunchOfferDiscount=null;}
+function closePaystack(){document.getElementById('pay-overlay').classList.remove('open');currentUpgradeDiscount=null;currentReferralDiscount=null;}
 function setBilling(cycle){
   billing=cycle;
   document.getElementById('b-yearly')?.classList.toggle('sel',cycle==='yearly');
   document.getElementById('b-monthly')?.classList.toggle('sel',cycle==='monthly');
   updateRateNote();
 }
+// Referral reward discounts are discontinued entirely (the checkout check
+// that used to populate this was removed). It stays declared and always null
+// so the discount-stacking logic in updateRateNote()/doPaystack() safely
+// never triggers it, without needing to touch that logic directly.
 let currentReferralDiscount=null;
-let currentLaunchOfferDiscount=null;
-async function checkLaunchOfferDiscount(){
-  currentReferralDiscount=null;
-  currentLaunchOfferDiscount=null;
-  if(!user)return;
-  // Launch offer: first 30 people to actually PAY (not sign up) get 20%
-  // off that payment. Checked live at checkout, since eligibility now
-  // depends on how many people have already paid so far, not on signup
-  // order — someone who signed up early but hasn't paid yet shouldn't be
-  // guaranteed a spot over someone who signed up later but pays first.
-  if(!profile?.launch_discount_used){
-    try{
-      const {count:paidFoundersSoFar,error:founderCountErr}=await sb.from('profiles').select('id',{count:'exact',head:true}).eq('launch_discount_used',true);
-      if(founderCountErr)console.error('Launch offer eligibility check error (treating as not eligible):',founderCountErr);
-      else if((paidFoundersSoFar||0)<LAUNCH_FOUNDER_LIMIT){
-        currentLaunchOfferDiscount={percent:20};
-      }
-    }catch(e){console.error('Launch offer eligibility check error (treating as not eligible):',e);}
-  }
-  // The referral reward discount was removed here (previously checked a
-  // qualified `referrals` row and offered 20% off) — referral rewards are
-  // discontinued entirely, not just the 10% new-signup version removed
-  // earlier. currentReferralDiscount stays declared elsewhere and always
-  // null now, so the discount-stacking logic in doPaystack() safely never
-  // triggers it, without needing to touch that logic directly.
-  updateRateNote();
-}
 function updateRateNote(){
   const p=PLANS[selectedPlan];if(!p)return;
   let usd=p[billing];
@@ -12441,27 +12352,6 @@ function updateRateNote(){
   const rn=document.getElementById('rate-note');
   const discountEl=document.getElementById('upgrade-discount-note');
   const autoRenew=document.getElementById('pay-auto-renew')?.checked;
-  // Launch offer takes priority over everything else — it's scarce (30
-  // spots, gone forever once used) and one-time, whereas the referral
-  // discount can still be earned again later and upgrade credit is really
-  // just returning the artist's own unused balance, not a promotion.
-  if(currentLaunchOfferDiscount&&billing==='yearly'&&!autoRenew){
-    const pct=currentLaunchOfferDiscount.percent;
-    const discountedUsd=(usd*(1-pct/100)).toFixed(2);
-    const discountedGhs=(discountedUsd*currentDisplayRates.GHS).toFixed(2);
-    if(discountEl){
-      discountEl.style.display='block';
-      discountEl.innerHTML='<i class="ti ti-rocket"></i> Launch founder discount — you\'re one of our first 30 founding artists to subscribe: <strong>'+pct+'% off</strong>. You pay <strong>$'+discountedUsd+'</strong> instead of $'+usd.toFixed(2)+'.';
-    }
-    if(rn){
-      if(currentDisplayCurrency==='GHS'){
-        rn.textContent='GHS '+discountedGhs+' at current rate (launch founder discount applied). Charged in GHS via Paystack.';
-      } else {
-        rn.textContent='Shown as '+convertPrice(parseFloat(discountedUsd))+' ('+currentDisplayCurrency+') for reference — actual charge is GHS '+discountedGhs+' via Paystack, launch founder discount applied.';
-      }
-    }
-    return;
-  }
   // Referral discounts take priority over the upgrade-proration discount if
   // both somehow apply at once — kept simple rather than stacking two
   // discounts in one purchase. Neither applies when auto-renewal is
@@ -12511,7 +12401,7 @@ function updateRateNote(){
     }
   }
 }
-async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,appliedReferral,appliedLaunchOffer,appliedUpgradeCredit){
+async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,appliedReferral,appliedUpgradeCredit){
   try{
     // Check BEFORE inserting this payment's own subscriptions row, so we can
     // tell "is this a renewal" (had at least one prior payment already) from
@@ -12554,14 +12444,7 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
       // Profile page can show "activating..." in the meantime rather than
       // nothing at all.
       if(autoRenew)profileUpdate.auto_renew_status='activating';
-      // Marks this as one of the first 30 to actually pay — this is the
-      // moment someone's spot is genuinely secured, not at signup.
-      if(appliedLaunchOffer)profileUpdate.launch_discount_used=true;
       let {error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id);
-      if(planUpdateError&&/launch_discount_used/i.test(planUpdateError.message||'')){
-        delete profileUpdate.launch_discount_used;
-        ({error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id));
-      }
       if(planUpdateError&&/auto_renew_status/i.test(planUpdateError.message||'')){
         delete profileUpdate.auto_renew_status;
         ({error:planUpdateError}=await sb.from('profiles').update(profileUpdate).eq('id',user.id));
@@ -12634,12 +12517,8 @@ async function doPaystack(){
     if(extraArtists>0)usd+=extraArtists*(billing==='yearly'?EXTRA_ARTIST_PRICE_YEARLY:EXTRA_ARTIST_PRICE_MONTHLY);
   }
   let appliedReferral=null;
-  let appliedLaunchOffer=false;
   let appliedUpgradeCredit=false;
-  if(currentLaunchOfferDiscount&&billing==='yearly'&&!autoRenew){
-    usd=usd*(1-currentLaunchOfferDiscount.percent/100);
-    appliedLaunchOffer=true;
-  } else if(currentReferralDiscount&&billing==='yearly'&&!autoRenew){
+  if(currentReferralDiscount&&billing==='yearly'&&!autoRenew){
     usd=usd*(1-currentReferralDiscount.percent/100);
     appliedReferral=currentReferralDiscount;
   } else if(currentUpgradeDiscount&&billing==='yearly'&&!autoRenew){
@@ -12657,13 +12536,13 @@ async function doPaystack(){
   }
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
   const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode),_appliedReferral=appliedReferral,_appliedLaunchOffer=appliedLaunchOffer,_appliedUpgradeCredit=appliedUpgradeCredit;
+  const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode),_appliedReferral=appliedReferral,_appliedUpgradeCredit=appliedUpgradeCredit;
   try{
     const popup=new PaystackPop();
     const txOptions={
       key:PK,email,currency:'GHS',ref,
       channels:['card','mobile_money','apple_pay'],
-      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew,_appliedReferral,_appliedLaunchOffer,_appliedUpgradeCredit);},
+      onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew,_appliedReferral,_appliedUpgradeCredit);},
       onCancel:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';},
       onError:function(err){toast('Payment error: '+(err?.message||'please try again.'),'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';}
     };
