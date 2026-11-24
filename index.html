@@ -3750,7 +3750,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="bopt sel" id="b-yearly" onclick="setBilling('yearly')" style="cursor:pointer">Billed Annually<strong id="b-yearly-price">$11</strong><small style="font-size:10px;color:var(--success)">One payment per year</small></div>
       <div class="bopt" id="b-monthly" onclick="setBilling('monthly')" style="cursor:pointer">Billed Monthly<strong id="b-monthly-price">$11</strong><small style="font-size:10px;color:rgba(255,255,255,.4)">Charged every month</small></div>
     </div>
-    <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:.75rem;cursor:pointer;padding:.75rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:9px">
+    <label id="auto-renew-row" style="display:none;align-items:flex-start;gap:8px;margin-bottom:.75rem;cursor:pointer;padding:.75rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:9px">
       <input type="checkbox" id="pay-auto-renew" onchange="toggleAutoRenewNote()" style="accent-color:var(--gold);width:16px;height:16px;margin-top:2px;flex-shrink:0">
       <span style="font-size:12.5px;color:rgba(255,255,255,.7);line-height:1.5">
         <strong style="color:#fff">Auto-renew next year</strong> — your card is saved and charged automatically when this plan expires, so you never lose access.
@@ -3952,9 +3952,57 @@ const PRIORITY_DISTRO_FEE_USD=5;
 // Fill these in after creating the matching plans in Paystack Dashboard →
 // Products → Plans (annual interval, price in GHS). Each plan_code looks
 // like "PLN_xxxxxxxxxxxxxx" — copy it exactly from Paystack, not the plan
-// name. Auto-renewal silently does nothing (falls back to a one-time
-// charge) until these are filled in, so nothing breaks in the meantime.
+// name. Until a tier's code is filled in, the "Auto-renew" option is simply
+// not shown for that tier (see autoRenewAvailable below), so nobody can be
+// promised a renewal that isn't actually set up.
 const PAYSTACK_PLAN_CODES={solo:'',artist_plus:'',label:''};
+// Auto-renewal is only offered when it can genuinely work:
+//  - a Paystack plan code must exist for the selected tier, and
+//  - billing must be annual. The Paystack plans are created with an annual interval, and
+//    passing a plan code OVERRIDES the amount entirely — so a customer on "Billed Monthly"
+//    who ticked auto-renew would have been charged the full annual price for one month.
+function autoRenewAvailable(plan,cycle){
+  return !!PAYSTACK_PLAN_CODES[plan||selectedPlan]&&(cycle||billing)==='yearly';
+}
+// Shows/hides the auto-renew checkbox to match autoRenewAvailable(), and guarantees the box
+// can never be left ticked while hidden. Called whenever the plan or billing cycle changes.
+function syncAutoRenewOption(){
+  const row=document.getElementById('auto-renew-row');
+  const cb=document.getElementById('pay-auto-renew');
+  const note=document.getElementById('auto-renew-note');
+  const ok=autoRenewAvailable();
+  if(row)row.style.display=ok?'flex':'none';
+  if(!ok){
+    if(cb)cb.checked=false;
+    if(note)note.style.display='none';
+  }
+}
+// Every time the checkout opens, auto-renew starts unticked: saving a card for future charges
+// has to be a fresh, explicit choice, not whatever was left over from the last time it was open.
+function resetAutoRenewOption(){
+  const cb=document.getElementById('pay-auto-renew');
+  const note=document.getElementById('auto-renew-note');
+  if(cb)cb.checked=false;
+  if(note)note.style.display='none';
+}
+// ── RENEWAL GRACE ──────────────────────────────────────
+// A Paystack renewal is charged on the billing date, which can land hours after the exact
+// timestamp we recorded as the plan's expiry — and if our webhook endpoint is ever down,
+// Paystack keeps redelivering the charge.success event for up to 72 hours. Dropping the plan
+// to Free the instant that timestamp passed would punish a customer whose payment is merely
+// still arriving (and the late webhook would then find them on Free). So accounts on
+// auto-renewal keep their plan for this many extra days. Everyone else — one-time payments,
+// or auto-renew that was cancelled — still lapses exactly at expiry, as before.
+const RENEWAL_GRACE_DAYS=3;
+function isAutoRenewing(p){return ['active','activating','payment_failed'].includes((p&&p.auto_renew_status)||'');}
+// The moment this account's paid plan genuinely ends: its expiry, plus the grace window if it is auto-renewing.
+function planEndsAt(p){
+  if(!p||!p.plan_expires_at)return null;
+  const t=new Date(p.plan_expires_at).getTime();
+  if(isNaN(t))return null;
+  return new Date(t+(isAutoRenewing(p)?RENEWAL_GRACE_DAYS*86400000:0));
+}
+function planHasLapsed(p,now){const end=planEndsAt(p);return !!end&&end<(now||new Date());}
 // Real, shared plan feature content — single source of truth for both the checkout modal and the artist's own Profile page.
 const PLAN_FEATURES={
   solo:['1 artist profile','Unlimited releases','150+ DSPs worldwide','Royalty dashboard','Mobile Money + Bank payouts'],
@@ -4349,9 +4397,11 @@ async function loadProfile(u){
   // Real enforcement: a genuinely lapsed paid plan reverts to Free before any access decision is made.
   // This never touches existing releases or roster artists — those stay exactly as they are, protected
   // by the roster-lock system already in place. Only future privileges (commission exemption, roster room) stop.
+  // Accounts on auto-renewal get a short grace window past expiry (RENEWAL_GRACE_DAYS) so a renewal that is
+  // still arriving never drops a paying customer to Free.
   let justLapsedPlan=null;
   if(!adminNow&&profile?.plan_expires_at&&['solo_paid','artist_plus','label'].includes(profile.plan)){
-    const hasExpired=new Date(profile.plan_expires_at)<new Date();
+    const hasExpired=planHasLapsed(profile);
     if(hasExpired){
       const {error:revertError}=await sb.from('profiles').update({plan:'free'}).eq('id',u.id);
       if(revertError){
@@ -4473,7 +4523,8 @@ function paywallPay(plan){
   const p=PLANS[plan];
   const emailEl=document.getElementById('pay-em');
   if(emailEl) emailEl.value=user?.email||'';
-  billing='yearly';
+  resetAutoRenewOption();
+  setBilling('yearly'); // also resyncs the Annual/Monthly toggle visuals and the auto-renew option
   document.getElementById('pay-overlay').classList.add('open');
   const titleEl=document.getElementById('pay-modal-title');
   if(titleEl) titleEl.textContent='Get '+p.label+' Plan';
@@ -7005,12 +7056,24 @@ async function loadProfileStats(){
         const now=new Date();const expiry=new Date(expiresAt);
         const daysLeft=Math.ceil((expiry-now)/(1000*60*60*24));
         const dateStr=expiry.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+        // Past the expiry timestamp but still on the paid plan = auto-renewal grace window: the
+        // renewal charge hasn't been confirmed yet. Say that, instead of calling it "Expired".
+        const pastExpiry=expiry<now;
+        const inGrace=pastExpiry&&isAutoRenewing(profile);
+        const graceEnd=planEndsAt(profile);
+        const graceStr=graceEnd?graceEnd.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):dateStr;
         if(bpDateValue){
-          bpDateLabel.textContent=daysLeft<0?'Expired':'Renews';
+          bpDateLabel.textContent=inGrace?'Renewal pending':pastExpiry?'Expired':'Renews';
           bpDateValue.textContent=dateStr;
-          bpDateValue.style.color=daysLeft<0?'#f87171':daysLeft<=30?'#fbbf24':'#fff';
+          bpDateValue.style.color=inGrace?'#fbbf24':pastExpiry?'#f87171':daysLeft<=30?'#fbbf24':'#fff';
         }
-        if(daysLeft<0){
+        if(inGrace){
+          renewalNote.style.display='block';
+          renewalNote.innerHTML=(profile.auto_renew_status==='payment_failed'
+            ?'<span style="color:#fbbf24"><i class="ti ti-credit-card-off"></i> We couldn\'t charge your card for this renewal.</span> Your plan stays active until '+graceStr+'. '
+            :'<span style="color:#fbbf24"><i class="ti ti-clock"></i> Your renewal is still being processed.</span> Your plan stays active until '+graceStr+'. ')
+            +'<a onclick="goPage(\'upgrade\',null)" style="color:var(--gold);font-weight:600;cursor:pointer">Renew now</a> to make sure there\'s no interruption.';
+        } else if(pastExpiry){
           renewalNote.style.display='block';
           renewalNote.innerHTML='<span style="color:#f87171"><i class="ti ti-alert-triangle"></i> Your plan expired on '+dateStr+'.</span> <a onclick="goPage(\'upgrade\',null)" style="color:var(--gold);font-weight:600;cursor:pointer">Renew now</a> to keep your current benefits.';
         } else if(daysLeft<=30){
@@ -12342,6 +12405,7 @@ function openPaystack(plan){
   }
   {const el=document.getElementById('b-yearly-price');if(el){el.textContent=convertPrice(p.yearly);el.dataset.usdPrice=p.yearly;}}
   {const el=document.getElementById('b-monthly-price');if(el){el.textContent=convertPrice(p.monthly);el.dataset.usdPrice=p.monthly;}}
+  resetAutoRenewOption();
   setBilling('yearly');
   if(user) document.getElementById('pay-em').value=user.email||'';
   currentUpgradeDiscount=calculateUpgradeDiscount(selectedPlan);
@@ -12354,6 +12418,7 @@ function setBilling(cycle){
   billing=cycle;
   document.getElementById('b-yearly')?.classList.toggle('sel',cycle==='yearly');
   document.getElementById('b-monthly')?.classList.toggle('sel',cycle==='monthly');
+  syncAutoRenewOption(); // before updateRateNote, which reads the checkbox
   updateRateNote();
 }
 // Referral reward discounts are discontinued entirely (the checkout check
@@ -12500,6 +12565,10 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
 }
 async function toggleAutoRenewNote(){
   const cb=document.getElementById('pay-auto-renew');
+  if(cb?.checked&&!autoRenewAvailable()){
+    // Shouldn't be reachable (the option is hidden when unavailable) — belt and braces.
+    cb.checked=false;syncAutoRenewOption();updateRateNote();return;
+  }
   if(cb?.checked&&selectedPlan==='label'){
     const {count}=await sb.from('roster_artists').select('id',{count:'exact',head:true}).eq('user_id',activeAccountId());
     if(Math.max(0,(count||0)-5)>0){
@@ -12517,8 +12586,13 @@ async function doPaystack(){
   const email=document.getElementById('pay-em').value.trim();
   if(!email){toast('Enter your email','err');return;}
   const p=PLANS[selectedPlan];
-  const autoRenew=document.getElementById('pay-auto-renew')?.checked;
   const planCode=PAYSTACK_PLAN_CODES[selectedPlan];
+  // The EFFECTIVE auto-renew choice: ticked AND actually possible (plan code exists + annual
+  // billing). Everything below — extra-artist fees, discounts, and what gets sent to Paystack —
+  // keys off this one value, so we can never charge for one thing while describing another
+  // (previously a ticked box with no plan code skipped the fees/discounts yet still took a
+  // one-time payment).
+  const autoRenew=!!(document.getElementById('pay-auto-renew')?.checked&&autoRenewAvailable());
   let usd=p[billing];
   // Extra roster artists beyond the included 5 only meaningfully affect a
   // one-time payment — see the comment below on why a real Paystack
@@ -12547,9 +12621,6 @@ async function doPaystack(){
   const pesewas=Math.round(usd*currentDisplayRates.GHS*100);
   const btn=document.getElementById('pay-btn');
   if(typeof PaystackPop==='undefined'){toast('Paystack not loaded. Check your connection.','err');return;}
-  if(autoRenew&&!planCode){
-    toast('Auto-renewal isn\'t set up yet for this plan — proceeding with a one-time payment instead.','err');
-  }
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Opening...';
   const ref='BLK_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
   const _plan=selectedPlan,_billing=billing,_usd=usd,_pesewas=pesewas,_autoRenew=!!(autoRenew&&planCode),_appliedReferral=appliedReferral,_appliedUpgradeCredit=appliedUpgradeCredit;
