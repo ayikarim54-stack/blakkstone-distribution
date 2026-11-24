@@ -203,19 +203,25 @@ footer{background:var(--black);border-top:1px solid #1a1a1a;padding:1.75rem 2.5r
 #dashboard{flex-direction:column;min-height:100vh;background:var(--black);
   background-image:radial-gradient(circle at 0% 0%, rgba(212,175,55,0.04) 0%, transparent 50%)}
 /* TOP NAV */
-.dash-topnav{background:var(--black);border-bottom:1px solid var(--line);height:62px;display:flex;align-items:center;padding:0 2rem;gap:0;position:sticky;top:0;z-index:200}
+.dash-topnav{background:var(--black);border-bottom:1px solid #1C1C25;height:62px;display:flex;align-items:center;padding:0 2rem;gap:0;position:sticky;top:0;z-index:200}
 .dash-topnav-logo{font-size:16px;font-weight:900;color:#fff;margin-right:2rem;cursor:pointer;white-space:nowrap}
 .dash-topnav-logo span{color:var(--gold)}
 .dash-topnav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto}
 .dash-topnav-links::-webkit-scrollbar{display:none}
-.tnav-item{display:flex;align-items:center;gap:6px;padding:8px 16px;font-size:14px;font-weight:500;color:rgba(255,255,255,.55);cursor:pointer;transition:all .12s;border-radius:0;white-space:nowrap;border-bottom:2px solid transparent;height:62px;}
-.tnav-item:hover{background:transparent;color:#fff}
-.tnav-item.active{background:transparent;color:#fff;font-weight:600;border-bottom:2px solid var(--gold);border-radius:0;margin-bottom:-1px}
-.tnav-item i{font-size:16px}
-.tnav-sep{width:1px;height:20px;background:rgba(255,255,255,.1);margin:0 6px;flex-shrink:0}
+.tnav-item{display:flex;align-items:center;gap:8px;padding:0 14px;height:44px;font-size:14px;font-weight:500;color:#B8B8C4;cursor:pointer;transition:background .12s,color .12s;border-radius:10px;white-space:nowrap}
+.tnav-item:hover{background:rgba(255,255,255,.04);color:#fff}
+.tnav-item.active{background:#17171F;color:#fff;font-weight:600}
+.tnav-item.active>i:first-child{color:var(--gold)}
+.tnav-item i{font-size:18px}
+.tnav-sep{width:1px;height:20px;background:#23232D;margin:0 8px;flex-shrink:0}
+#upgrade-nav{border:1px solid rgba(212,175,55,.5);border-radius:999px;padding:0 16px;color:#E3C25A;font-weight:600}
+#upgrade-nav:hover{background:rgba(212,175,55,.1);color:#F0D27A}
+#upgrade-nav.active{background:rgba(212,175,55,.14);color:#F0D27A}
+#upgrade-nav.active>i:first-child{color:#E3C25A}
+#upgrade-nav i{font-size:16px}
 .dash-topnav-right{display:flex;gap:8px;align-items:center;margin-left:auto;flex-shrink:0}
-.dash-user-chip{display:flex;align-items:center;gap:8px;background:transparent;border:none;border-radius:8px;padding:5px 8px;cursor:pointer}
-.dash-user-chip:hover{border-color:rgba(201,168,76,.5)}
+.dash-user-chip{display:flex;align-items:center;gap:10px;background:#111118;border:1px solid #23232D;border-radius:999px;padding:4px 14px 4px 5px;min-height:44px;cursor:pointer}
+.dash-user-chip:hover{border-color:rgba(212,175,55,.5)}
 /* MAIN */
 .dash-body{flex:1;padding:2.5rem;overflow-y:auto;min-height:0;background:var(--black)}
 .page{display:none}
@@ -745,13 +751,238 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* Release cards on overview - clickable */
 .rg-card{cursor:pointer}
 /* Onboarding checklist */
-.onboard-card{background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(160,125,16,.04));border:1px solid rgba(124,58,237,.3);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem}
-.onboard-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:.875rem;display:flex;align-items:center;justify-content:space-between}
-.onboard-steps{display:flex;gap:8px;flex-wrap:wrap}
-.ob-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5)}
-.ob-step.done{background:rgba(16,185,129,.15);color:#34d399}
-.ob-step.done i{color:#34d399}
-.ob-step i{font-size:14px}
+/* ── OVERVIEW (redesigned) ─────────────────────────────────────────────── */
+#page-overview{--o-card:#111118;--o-line:#23232D;--o-line2:#1C1C25;--o-btn:#2F2F3B;--o-t1:#F5F5F7;--o-t2:#B8B8C4;--o-t3:#8E8E9C;--o-gold:#D4AF37;--o-gold2:#E3C25A;--o-green:#34D399;--o-amber:#FBBF24;--o-blue:#60A5FA;--o-red:#F87171;--o-teal:#2DD4BF;--o-ink:#0B0B0F;font-size:14px;line-height:20px;color:var(--o-t1)}
+#page-overview.ov-loading .ov2>*{visibility:hidden}
+.ov2{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+.ov2-pop,.ov2-main,.ov2-aside{display:flex;flex-direction:column;gap:24px;min-width:0}
+.ov-first .ov2-pop,.ov-first .ov2-new{display:none}
+.ov2-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ov2-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.ov2-h1{font-size:30px;line-height:36px;font-weight:800;letter-spacing:-.025em;color:#fff}
+.ov2-sub{margin-top:6px;font-size:14px;line-height:20px;color:var(--o-t2)}
+.ov2-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ov2-h2{font-size:20px;line-height:26px;font-weight:700;color:#fff}
+.ov2-h3{font-size:16px;line-height:22px;font-weight:700;color:#fff}
+.ov2-eyebrow{font-size:11px;line-height:16px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--o-t3)}
+.ov2-eyebrow-gold{color:var(--o-gold2)}
+.ov2-fine{font-size:12px;line-height:16px;color:var(--o-t3)}
+.ov2-row-between{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap}
+.ov2-card{background:var(--o-card);border:1px solid var(--o-line);border-radius:16px;padding:24px;min-width:0}
+.ov2-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:12px;border:1px solid transparent;font-family:inherit;font-size:14px;font-weight:700;line-height:20px;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background .15s,border-color .15s}
+.ov2-btn i{font-size:18px}
+.ov2-btn-gold{background:var(--o-gold);color:var(--o-ink)}
+.ov2-btn-gold:hover{background:var(--o-gold2)}
+.ov2-btn-ghost{background:transparent;border-color:var(--o-btn);color:var(--o-t1);font-weight:600}
+.ov2-btn-ghost:hover{border-color:#4A4A5E;background:rgba(255,255,255,.03)}
+.ov2-btn:focus-visible,.ov2-chip:focus-visible,.ov2-link:focus-visible,.ov2-textlink:focus-visible,.ov2-rel:focus-visible,.ob-step:focus-visible{outline:2px solid var(--o-gold2);outline-offset:2px}
+.ov2-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap}
+.ov2-tag i{font-size:14px}
+.ov2-tag-gold{background:rgba(212,175,55,.12);color:var(--o-gold2)}
+.ov2-tag-up{background:rgba(52,211,153,.12);color:var(--o-green)}
+.ov2-tag-down{background:rgba(248,113,113,.12);color:var(--o-red)}
+.ov2-tag-flat{background:rgba(142,142,156,.14);color:var(--o-t2)}
+/* top row: balance + streams/releases */
+.ov2-top{display:flex;flex-wrap:wrap;align-items:stretch;gap:16px}
+.ov2-balance{flex:1.2 1 400px;border-color:rgba(212,175,55,.4);display:flex;flex-direction:column;gap:16px}
+.ov2-amount{font-size:46px;line-height:50px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:#fff}
+.ov2-split{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px}
+.ov2-split span{display:block;min-width:4px;height:100%}
+.ov2-legend{list-style:none;display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:10px;font-size:12px;line-height:16px;color:var(--o-t2);font-variant-numeric:tabular-nums}
+.ov2-legend strong{color:var(--o-t1);font-weight:600}
+.ov2-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.ov2-link{display:inline-flex;align-items:center;min-height:44px;background:none;border:0;padding:0;font-family:inherit;color:var(--o-t2);font-size:13px;font-weight:500;text-decoration:underline;cursor:pointer}
+.ov2-link:hover{color:#fff}
+.ov2-kpis{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.ov2-kpi{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:8px;padding:20px 24px;cursor:pointer;transition:border-color .15s}
+.ov2-kpi:hover{border-color:#3A3A4C}
+.ov2-kpi-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.ov2-kpi-row-rel{justify-content:flex-start;flex-wrap:wrap;gap:12px 28px}
+.ov2-dist{flex:1 1 200px;min-width:0}
+.ov2-num{font-size:36px;line-height:40px;font-weight:800;letter-spacing:-.025em;font-variant-numeric:tabular-nums;color:#fff}
+.ov2-spark{flex:none}
+.ov2-m-only{display:none}
+/* next up */
+.ov2-next{align-items:center;flex-wrap:wrap;gap:20px 28px;padding:20px 24px}
+.ov2-next-art{width:80px;height:80px;border-radius:12px;overflow:hidden;flex:none;background:#17171F;display:flex;align-items:center;justify-content:center;color:var(--o-t3);font-size:28px}
+.ov2-next-art img{width:100%;height:100%;object-fit:cover;display:block}
+.ov2-next-text{flex:1 1 220px;min-width:0}
+.ov2-next-title{margin-top:4px;font-size:20px;line-height:26px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ov2-next-meta{margin-top:2px;font-size:13px;line-height:18px;color:var(--o-t2)}
+.ov2-steps{flex:2 1 360px;min-width:0;list-style:none;display:flex;align-items:flex-start}
+.ov2-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;min-width:0}
+.ov2-step-line{position:absolute;top:11px;left:50%;width:100%;height:2px;background:#2F2F3B}
+.ov2-step-line.done{background:var(--o-green)}
+.ov2-step-mark{position:relative;width:24px;height:24px;border-radius:50%;background:#08080C;border:2px solid #2F2F3B;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center}
+.ov2-step-mark.done{background:var(--o-green);border-color:var(--o-green);color:#08080C}
+.ov2-step-mark.done i{font-size:14px}
+.ov2-step-mark.cur{border-color:var(--o-gold)}
+.ov2-step-mark.cur span{width:8px;height:8px;border-radius:50%;background:var(--o-gold)}
+.ov2-step-label{font-size:12px;line-height:16px;font-weight:500;color:var(--o-t3);text-align:center}
+.ov2-step.is-done .ov2-step-label{color:var(--o-t2)}
+.ov2-step.is-cur .ov2-step-label{font-weight:700;color:var(--o-t1)}
+/* two columns: chart + releases | activity + plan */
+.ov2-cols{display:flex;flex-wrap:wrap;align-items:flex-start;gap:24px}
+.ov2-main{flex:999 1 620px}
+.ov2-aside{flex:1 1 320px}
+.ov2-chart-head{margin-bottom:12px}
+.ov2-chart{width:100%}
+.ov2-chart svg{display:block}
+.ov2-rels-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-bottom:16px}
+.ov2-chips{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.ov2-chip{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--o-line);background:transparent;color:var(--o-t2);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:border-color .15s,color .15s}
+.ov2-chip:hover{border-color:#4A4A5E;color:#fff}
+.ov2-chip[aria-pressed="true"]{border-color:rgba(212,175,55,.45);background:rgba(212,175,55,.14);color:var(--o-gold2);font-weight:600}
+.ov2-textlink{order:3;display:inline-flex;align-items:center;gap:6px;min-height:44px;background:none;border:0;padding:0 4px;font-family:inherit;font-size:13px;font-weight:600;color:var(--o-t2);cursor:pointer}
+.ov2-textlink:hover{color:var(--o-gold2)}
+.ov2-search{position:relative;margin:-4px 0 16px auto;max-width:280px}
+.ov2-search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--o-t3);font-size:16px;pointer-events:none}
+.ov2-search input{width:100%;min-height:44px;padding:0 14px 0 38px;border-radius:12px;border:1px solid var(--o-line);background:var(--o-card);color:var(--o-t1);font-family:inherit;font-size:14px;outline:none}
+.ov2-search input:focus{border-color:rgba(212,175,55,.6)}
+.ov2-rel-grid{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:20px 16px}
+.ov2-rel{display:flex;flex-direction:column;gap:10px;width:100%;background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.ov2-rel-art{position:relative;display:block;width:100%;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:#17171F;transition:box-shadow .15s}
+.ov2-rel-art img{display:block;width:100%;height:100%;object-fit:cover}
+.ov2-rel-art>i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;color:rgba(255,255,255,.2)}
+.ov2-rel:hover .ov2-rel-art{box-shadow:0 0 0 2px rgba(212,175,55,.45)}
+.ov2-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;background:rgba(8,8,12,.82);font-size:12px;line-height:16px;font-weight:600;white-space:nowrap}
+.ov2-dot{width:6px;height:6px;border-radius:50%;flex:none}
+.ov2-pill-art{position:absolute;left:8px;bottom:8px}
+.ov2-pill-row{display:none}
+.ov2-rel-text{display:block;min-width:0}
+.ov2-rel-title{display:block;font-size:14px;line-height:20px;font-weight:600;color:var(--o-t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ov2-rel-meta{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--o-t2);font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ov2-rel-meta.bad{color:var(--o-red)}
+.ov2-rel-meta.mute{color:var(--o-t3)}
+.ov2-empty{grid-column:1/-1;padding:32px 16px;text-align:center;color:var(--o-t3);font-size:14px;border:1px dashed var(--o-line);border-radius:12px}
+/* activity + plan */
+.ov2-activity{padding:20px 24px 8px}
+.ov2-act-list{list-style:none;margin-top:8px}
+.ov2-act{display:flex;gap:12px;padding:14px 0;border-top:1px solid var(--o-line2)}
+.ov2-act-ic{flex:none;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.ov2-act-ic i{font-size:16px}
+.ov2-act-tx{flex:1;min-width:0}
+.ov2-act-main{display:block;font-size:14px;line-height:20px;color:var(--o-t1)}
+.ov2-act-main strong{font-weight:600}
+.ov2-act-time{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--o-t3)}
+.ov2-plan{padding:20px 24px;flex-direction:column;gap:12px}
+.ov2-plan-row{display:flex;align-items:baseline;justify-content:space-between;gap:4px 12px;flex-wrap:wrap}
+.ov2-plan-name{font-size:20px;line-height:26px;font-weight:700;color:#fff}
+.ov2-plan-use{font-size:12px;line-height:16px;color:var(--o-t2)}
+.ov2-meter{height:6px;border-radius:3px;background:var(--o-line);overflow:hidden}
+.ov2-meter span{display:block;height:100%;background:var(--o-gold)}
+.ov2-plan-text{font-size:13px;line-height:19px;color:var(--o-t2)}
+.ov2-plan .ov2-btn{width:100%}
+/* first day: hero + checklist + three quiet cards */
+.ov2-lead{display:contents}
+.ov-first .ov2-lead{display:flex;flex-wrap:wrap;align-items:stretch;gap:16px}
+.ov2-hero{display:none}
+.ov-first .ov2-hero{display:flex;flex:1.7 1 480px;flex-wrap:wrap;align-items:center;gap:24px 32px;padding:32px;border-color:rgba(212,175,55,.35)}
+.ov2-hero-copy{flex:1 1 340px;min-width:0}
+.ov2-hero-title{margin-top:12px;font-size:28px;line-height:34px;font-weight:800;letter-spacing:-.02em;color:#fff;max-width:520px}
+.ov2-hero-text{margin-top:14px;font-size:14px;line-height:22px;color:var(--o-t2);max-width:460px}
+.ov2-hero-steps{list-style:none;margin-top:18px;display:flex;flex-direction:column;gap:10px}
+.ov2-hero-steps li{display:flex;align-items:center;gap:12px;font-size:14px;line-height:20px;color:var(--o-t1)}
+.ov2-hero-steps li span{flex:none;width:28px;height:28px;border-radius:50%;background:rgba(212,175,55,.14);color:var(--o-gold2);font-weight:700;font-size:13px;display:inline-flex;align-items:center;justify-content:center}
+.ov2-hero .ov2-actions{margin-top:24px}
+.ov2-art-ph{flex:0 0 200px;width:200px;height:200px;border-radius:16px;border:2px dashed rgba(212,175,55,.5);background:#14141B;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--o-gold2);font-size:13px;font-weight:600}
+.ov2-art-ph i{font-size:40px}
+.ov2-first-kpis{display:none;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.ov-first .ov2-first-kpis{display:grid}
+.ov2-first-kpis .ov2-num{margin-top:10px;color:#D4D4DC}
+.ov2-first-kpis .ov2-fine{margin-top:10px;line-height:18px}
+/* getting-started checklist: compact strip on a populated Overview, taller list beside the hero on day one */
+.onboard-card{padding:16px 20px}
+.ob-head{display:flex;align-items:center;gap:12px}
+.ob-title{font-size:16px;line-height:22px;font-weight:700;color:#fff;margin-right:auto}
+.ob-count{font-size:12px;line-height:16px;color:var(--o-t2);font-weight:500}
+.ob-dismiss{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin:-4px -8px -4px 0;border:0;border-radius:8px;background:none;color:var(--o-t3);cursor:pointer;font-size:18px}
+.ob-dismiss:hover{color:#fff;background:rgba(255,255,255,.06)}
+.ob-bar{height:6px;border-radius:3px;background:var(--o-line);overflow:hidden;margin:12px 0 14px}
+.ob-bar span{display:block;height:100%;background:var(--o-gold);border-radius:3px;transition:width .3s}
+.ob-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.ob-step{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--o-line);border-radius:12px;background:rgba(255,255,255,.02);font-family:inherit;font-size:14px;font-weight:600;line-height:20px;color:var(--o-t1);text-align:left;cursor:pointer}
+div.ob-step{cursor:default}
+.ob-step:hover{border-color:#3A3A4C}
+div.ob-step:hover{border-color:var(--o-line)}
+.ob-mark{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid #3A3A48;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;color:#08080C}
+.ob-mark i{font-size:14px}
+.ob-step.current .ob-mark{border-color:var(--o-gold)}
+.ob-step.done .ob-mark{background:var(--o-green);border-color:var(--o-green)}
+.ob-step.done .ob-label{color:var(--o-t3);font-weight:500;text-decoration:line-through}
+.ob-go{margin-left:auto;font-size:16px;color:var(--o-t3)}
+.ob-step.done .ob-go{display:none}
+.ob-help{display:none}
+.ov-first .onboard-card{flex:1 1 300px;padding:24px;display:flex;flex-direction:column}
+.ov-first .ob-dismiss{display:none}
+.ov-first .ob-steps{display:flex;flex-direction:column;gap:0}
+.ov-first .ob-step{min-height:52px;padding:0;border:0;border-top:1px solid var(--o-line2);border-radius:0;background:none}
+.ov-first .ob-step:hover{border-color:var(--o-line2)}
+.ov-first .ob-step.current{color:#fff}
+.ov-first .ob-help{display:block;margin-top:auto;padding-top:16px;border-top:1px solid var(--o-line2);font-size:13px;line-height:19px;color:var(--o-t2)}
+.ov-first .ob-bar{margin:12px 0 8px}
+#page-overview:not(.ov-first) #onboard-card{flex:1 1 100%}
+/* phone */
+@media(max-width:768px){
+  .ov2,.ov2-pop,.ov2-main,.ov2-aside{gap:16px}
+  .ov2{padding-bottom:72px} /* clears the floating support button when scrolled to the end */
+  .ov2-hide-m,.ov2-next-who{display:none}
+  .ov2-legend{gap:4px 12px}
+  .ov2-balance,.ov2-kpi{flex:none}
+  .ov2-h1{font-size:26px;line-height:32px}
+  .ov2-new{display:none}
+  .ov2-card{padding:20px}
+  .ov2-top,.ov2-kpis{display:contents}
+  .ov2-balance{order:1}
+  .ov2-next{order:2}
+  .ov2-streams{order:3}
+  .ov2-cols{order:4;gap:16px}
+  .ov2-main,.ov2-aside{flex-basis:100%}
+  .ov2-kpi-rel{display:none}
+  .ov2-amount{font-size:40px;line-height:44px}
+  .ov2-balance .ov2-actions{flex-wrap:nowrap}
+  .ov2-balance .ov2-actions>*{flex:1}
+  .ov2-balance .ov2-link{justify-content:center;border:1px solid var(--o-btn);border-radius:12px;text-decoration:none;color:var(--o-t1);font-weight:600;font-size:14px}
+  .ov2-streams{padding:20px}
+  .ov2-spark{display:none!important}
+  .has-trend .ov2-m-only{display:block}
+  .ov2-m-only .ov2-fine{margin-bottom:8px}
+  #ov-trend-card{display:none!important}
+  .ov2-next{padding:16px;gap:14px 12px}
+  .ov2-next-art{order:1;width:56px;height:56px;border-radius:10px;font-size:22px}
+  .ov2-next-text{order:2;flex:1 1 0}
+  .ov2-next-title{font-size:18px;line-height:24px}
+  .ov2-next-btn{order:3;min-width:36px;padding:0;border-color:transparent}
+  .ov2-next-btn .ov2-btn-text{display:none}
+  .ov2-steps{order:4;flex:1 1 100%}
+  .ov2-rel-grid{grid-template-columns:1fr;gap:0}
+  .ov2-rel{flex-direction:row;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--o-line2)}
+  .ov2-rel-art{width:56px;flex:none;border-radius:10px}
+  .ov2-rel-art>i{font-size:22px}
+  .ov2-rel-text{flex:1}
+  .ov2-rel-title{font-size:15px}
+  .ov2-rel-meta{font-size:13px}
+  .ov2-pill-art{display:none}
+  .ov2-pill-row{display:inline-flex;flex:none;background:rgba(255,255,255,.05)}
+  .ov2-chips{flex-basis:100%;margin-left:0;order:3}
+  .ov2-textlink{order:2;margin-left:auto}
+  .ov2-search{max-width:none;margin-left:0}
+  .ov-first .ov2-hero{padding:20px}
+  .ov2-hero-title{font-size:24px;line-height:30px}
+  .ov2-art-ph{display:none}
+  .ov-first .onboard-card{padding:20px}
+  .ov2-first-kpis{grid-template-columns:1fr;gap:12px}
+  .ov2-first-kpis .ov2-card{padding:16px 20px}
+  .ov2-first-kpis .ov2-num{font-size:28px;line-height:32px;margin-top:6px}
+  .ov2-first-kpis .ov2-fine{margin-top:6px}
+}
+.ann-bar{background:rgba(212,175,55,.07);border-bottom:1px solid rgba(212,175,55,.28);flex-shrink:0}
+.ann-inner{flex:1 1 auto;max-width:1280px;margin:0 auto;padding:12px 2.5rem;display:flex;align-items:center;gap:16px;font-size:13px;line-height:20px;color:#F5F5F7}
+.ann-text{flex:1;min-width:0}
+.ann-action{background:none;border:0;padding:0;font-family:inherit;font-size:13px;font-weight:600;color:#E3C25A;text-decoration:underline;cursor:pointer;white-space:nowrap}
+.ann-close{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;margin:-6px -8px -6px 0;border:0;border-radius:8px;background:none;color:#B8B8C4;cursor:pointer;font-size:18px}
+.ann-close:hover{color:#fff;background:rgba(255,255,255,.06)}
+@media(max-width:768px){.ann-inner{padding:10px 1rem;flex-wrap:wrap;gap:6px 12px}.ann-text{flex:1 1 calc(100% - 48px)}.ann-action{order:3;flex-basis:100%;text-align:left}.ann-close{order:2}}
 /* Notification dot on nav items */
 .nav-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block;margin-left:3px;vertical-align:middle;animation:pulse 2s infinite}
 /* Support chat bubble */
@@ -805,32 +1036,99 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .roy-hero-val{font-size:28px;font-weight:800;letter-spacing:-.5px;color:#fff}
 .roy-hero-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px}
 
-/* ── PAYWALL ── */
-#paywall{min-height:100vh}
-.paywall-card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:1.75rem;position:relative;text-align:left;display:flex;flex-direction:column;gap:0}
-.paywall-card-featured{border-color:var(--gold);background:#12100a}
-.paywall-featured-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-size:9px;font-weight:800;letter-spacing:1.5px;padding:4px 14px;border-radius:0 0 8px 8px}
-.paywall-card-name{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem;margin-top:.5rem}
-.paywall-card-price{font-size:32px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:2px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
-.paywall-card-price b{font-weight:inherit;white-space:nowrap}
-.paywall-card-price span{font-size:14px;font-weight:500;color:rgba(255,255,255,.35);letter-spacing:0}
-.paywall-card-ghs{font-size:12px;color:rgba(255,255,255,.3);margin-bottom:.875rem}
-.paywall-card-desc{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:1.25rem}
-.paywall-feats{list-style:none;margin-bottom:1.5rem;flex:1;display:flex;flex-direction:column;gap:6px}
-.paywall-feats li{font-size:13px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px}
-.paywall-feats li i{font-size:14px;color:var(--gold);flex-shrink:0}
-.paywall-feats li strong{color:#fff}
-/* The plan cards are rendered by renderWelcomePlans(). Three across on desktop; one column on phones,
-   with the featured (most popular) plan moved to the top so it is the first thing seen there. */
-.paywall-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;max-width:860px;margin:0 auto 2rem}
-.paywall-card-btn{width:100%;justify-content:center;min-height:44px}
-/* (font-size lives here, not inline on the <h1>, so the phone rule below can actually override it) */
-#paywall h1{font-size:42px;letter-spacing:-1.5px}
+/* ── WELCOME / PLAN PICKER ──
+   Shown once to a brand-new signup (and as the lapsed-plan screen). Same black-and-gold look as the Overview:
+   what every plan includes is said once, each card lists only what makes it different, and the payment facts
+   sit together under "Before you pay". The cards are built by renderWelcomePlans(). */
+#paywall{min-height:100vh;background:#08080C}
+.pw{min-height:100vh;display:flex;flex-direction:column;background:#08080C;color:#F5F5F7;font-size:14px;line-height:20px}
+.pw-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 32px;border-bottom:1px solid #1C1C25;background:#08080C}
+.pw-logout{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid #2F2F3B;background:transparent;color:#B8B8C4;font-family:inherit;font-size:14px;line-height:20px;font-weight:600;cursor:pointer}
+.pw-logout:hover{color:#fff;border-color:#4A4A58}
+.pw-logout i{font-size:16px}
+.pw-logout:focus-visible,#paywall-skip:focus-visible,.paywall-card-btn:focus-visible{outline:2px solid #E3C25A;outline-offset:2px}
+.pw-main{width:100%;max-width:1080px;margin:0 auto;padding:48px 32px 64px;box-sizing:border-box;display:flex;flex-direction:column;gap:32px}
+.pw-head{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.pw-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px 5px 10px;border-radius:999px;border:1px solid rgba(212,175,55,.45);background:rgba(212,175,55,.08);color:#E3C25A;font-size:12px;line-height:16px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.pw-badge i{font-size:14px}
+#paywall h1{margin:0;font-size:44px;line-height:50px;font-weight:800;letter-spacing:-.03em;color:#fff}
+.pw-sub{margin:0;max-width:600px;font-size:17px;line-height:26px;color:#B8B8C4}
+.pw-lapsed{max-width:520px;margin:2px auto 0;padding:12px 16px;border-radius:12px;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.08);font-size:13px;line-height:19px;color:#FBBF24}
+.pw-incl{box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px 32px;padding:16px 24px;border-radius:16px;border:1px solid #23232D;background:#0E0E14}
+.pw-incl h2,.pw-pay h2{margin:0;font-size:11px;line-height:16px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#8E8E9C}
+.pw-incl h2{flex:1 1 100%;text-align:center}
+.pw-incl ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 28px;font-size:14px;line-height:20px;color:#F5F5F7}
+.pw-incl li{display:inline-flex;align-items:center;gap:8px}
+.pw-incl li i{font-size:18px;color:#D4AF37;flex:none}
+.pw-incl li strong{font-weight:700}
+.paywall-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch}
+.paywall-card{box-sizing:border-box;min-width:0;display:flex;flex-direction:column;gap:20px;padding:28px;border-radius:20px;border:1px solid #23232D;background:#111118;text-align:left}
+.paywall-card-featured{border:1.5px solid #D4AF37;background:linear-gradient(180deg,rgba(212,175,55,.07),rgba(212,175,55,0) 40%),#111118}
+.pwc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:-8px}
+.paywall-card-name{margin:0;font-size:12px;line-height:24px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#B8B8C4}
+.paywall-card-featured .paywall-card-name{color:#E3C25A}
+.paywall-featured-badge{padding:3px 10px;border-radius:999px;background:#D4AF37;color:#0B0B0F;font-size:11px;line-height:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.pwc-pricing{display:flex;flex-direction:column;gap:2px}
+/* The big price never wraps. Its size comes from --pw-price, which fitWelcomePrices() lowers (for all three cards at once, so the
+   rows underneath still line up) when a long display currency such as "GHS 282.50" would not fit; the fallback is the designed size. */
+.paywall-card-price{margin:0;display:flex;flex-wrap:nowrap;align-items:baseline;gap:0 6px;max-width:100%;white-space:nowrap;font-size:var(--pw-price,48px);line-height:calc(var(--pw-price,48px) + 4px);font-weight:800;letter-spacing:-.03em;color:#fff}
+.paywall-card-price b{font-weight:inherit}
+.paywall-card-price span{font-size:16px;line-height:22px;font-weight:500;letter-spacing:0;color:#B8B8C4}
+.pwc-monthly{margin:0;font-size:13px;line-height:18px;color:#8E8E9C}
+.pwc-artists{margin:0;font-size:17px;line-height:24px;font-weight:700;color:#fff}
+.pwc-extra{margin:2px 0 0;font-size:13px;line-height:18px;color:#B8B8C4}
+.paywall-feats{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:12px;font-size:14px;line-height:20px;color:#E8E8EE}
+.paywall-feats li{display:flex;gap:10px}
+.paywall-feats li i{flex:none;margin-top:1px;font-size:18px;color:#D4AF37}
+.paywall-card-btn{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;padding:0 20px;box-sizing:border-box;border-radius:12px;border:1px solid #3A3A48;background:transparent;color:#fff;font-family:inherit;font-size:15px;line-height:20px;font-weight:700;cursor:pointer}
+.paywall-card-btn:hover{border-color:#6A6A78;background:rgba(255,255,255,.04)}
+.paywall-card-btn.is-primary{border-color:transparent;background:#D4AF37;color:#0B0B0F}
+.paywall-card-btn.is-primary:hover{background:#E3C25A}
+.pw-skip{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+/* A block (not a flex row) so that on a narrow phone the sentence wraps and stays centred, with the arrow following the last word */
+#paywall-skip{display:block;box-sizing:border-box;max-width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:8px;background:none;color:#F5F5F7;font-family:inherit;font-size:15px;line-height:24px;font-weight:600;text-align:center;cursor:pointer}
+#paywall-skip span{text-decoration:underline;text-underline-offset:4px;text-decoration-color:#5A5A68}
+#paywall-skip:hover span{text-decoration-color:#D4AF37}
+#paywall-skip i{display:inline-block;margin-left:8px;font-size:16px;vertical-align:-2px}
+.pw-skip p{margin:0;font-size:13px;line-height:18px;color:#B8B8C4}
+.pw-pay{box-sizing:border-box;border-top:1px solid #1C1C25;padding-top:24px}
+.pw-pay h2{margin-bottom:14px;text-align:center}
+.pw-pay ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:12px 36px;font-size:13px;line-height:18px;color:#B8B8C4}
+.pw-pay li{display:inline-flex;align-items:center;gap:8px}
+.pw-pay li i{flex:none;font-size:16px;color:#D4AF37}
+.pw-pay li.pw-final{color:#F5F5F7;font-weight:600}
+.pw-pay li.pw-final i{color:#FBBF24}
+.pw-fee{margin:14px 0 0;text-align:center;font-size:12px;line-height:16px;color:#8E8E9C}
+/* below 900px the three cards become one column with the most popular first, and the monthly price moves beside the yearly one */
 @media(max-width:900px){
-  .paywall-grid{grid-template-columns:1fr;max-width:420px}
+  .paywall-grid{grid-template-columns:1fr;width:100%;max-width:460px;margin:0 auto}
   .paywall-card-featured{order:-1}
-  #paywall h1{font-size:clamp(24px,7vw,30px);letter-spacing:-1px}
-  #paywall-skip{min-height:44px}
+  .pwc-pricing{flex-direction:row;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px}
+}
+@media(max-width:640px){
+  .pw-nav{padding:8px 12px 8px 16px}
+  .pw-logout{padding:0 14px}
+  .pw-main{padding:28px 16px 32px;gap:24px}
+  .pw-head{gap:12px}
+  #paywall h1{font-size:30px;line-height:36px}
+  .pw-sub{font-size:15px;line-height:22px}
+  .pw-incl{display:block;padding:16px 18px}
+  .pw-incl h2{margin-bottom:12px;text-align:left}
+  .pw-incl ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;font-size:13px;line-height:18px}
+  .pw-incl li{align-items:flex-start}
+  .paywall-card{gap:16px;padding:20px}
+  .pwc-head{margin-bottom:0}
+  .paywall-card-price{font-size:var(--pw-price,40px);line-height:calc(var(--pw-price,40px) + 4px)}
+  .paywall-card-price span{font-size:15px;line-height:20px}
+  .pwc-artists{font-size:16px;line-height:22px}
+  .paywall-feats{margin-top:12px;gap:10px}
+  .pw-skip{gap:2px}
+  .pw-pay{padding-top:20px}
+  .pw-pay h2{margin-bottom:12px;text-align:left}
+  .pw-pay ul{flex-direction:column;align-items:flex-start;gap:12px}
+  .pw-pay li{align-items:flex-start;gap:10px}
+  .pw-pay li i{margin-top:1px}
+  .pw-fee{text-align:left}
 }
 
 /* ── FIELD WARNINGS ── */
@@ -1510,46 +1808,50 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <!-- ══════════════ PAYWALL ══════════════ -->
 <div class="view" id="paywall">
 
-  <div style="min-height:100vh;background:var(--black);display:flex;flex-direction:column">
+  <div class="pw">
     <!-- Nav -->
-    <div style="background:#000;border-bottom:1px solid rgba(255,255,255,.08);height:62px;display:flex;align-items:center;padding:0 2rem;justify-content:space-between">
+    <header class="pw-nav">
       <div style="display:flex;align-items:center;gap:10px"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAkACUDASIAAhEBAxEB/8QAHAAAAQQDAQAAAAAAAAAAAAAAAAIEBQYBAwcI/8QAKhAAAgEDAwQBBAIDAAAAAAAAAQIDAAQRBRIhBgcTMVEiIzJBQmFxgbH/xAAYAQADAQEAAAAAAAAAAAAAAAAAAQIDBP/EABwRAAICAwEBAAAAAAAAAAAAAAABAhEDEhMUMf/aAAwDAQACEQMRAD8A80wincQzTGFxT6zCSOfI6JEm0vuONwz+I/s81sjNmwbXB2ENt945xTeX910PoLQZbu51HWJdPnvBKjW0Mfh2xWwK8NKf45CttXGcD5K5iu4Nl0zZWtsbC9lkvzGkbRog8f0DxsSSeDujY8ZzvHxXN6ovJzRpyeuxRZB9VFJdhmiugg1I+Mc1K6BrS6RdRX0FjHdXcb742nXciEesLnBI95Pr9D91ZbzubFqnS9r09qfTNnNawWkNsWS8eORvH4cHIQ4B8IJHP5NyKnbDulNfPcXUmi9L2coube5k+7JGZTFt8ap7IXbEiOvpgFzjFRKKkqY06dogZ+5mut0++lwvPFASRDbW6JDbwZ/OTagy8retzZ2jPsnIpL3JkblTGP4ruyAPgf7zXWH7g6gojMJ0e1nF1NLm3vnRYy0BiaONFwAmWDKCWC7FVSAKjbHvDe2aRBuntHuwFjWRbp3kU7DFxGMfaXMKsFU8MWbJyRUwxwx3qqscpOX1nM2bn/lFTPcPquXq7VLa/ls47NoLWO22JKXQhBjIBA25+Of80VoSVlSaWCaKKQGaSSaKKANbE5ooopgf/9k=" alt="Blakkstone" style="height:34px;width:auto;object-fit:contain"><span style="font-size:16px;font-weight:900;color:#fff;letter-spacing:-.3px">Blakkstone<span style="color:var(--gold)">.</span></span></div>
-      <button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>
-    </div>
+      <button type="button" class="pw-logout" onclick="logout()"><i class="ti ti-logout" aria-hidden="true"></i> Log out</button>
+    </header>
 
-    <!-- Content -->
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1rem">
-      <div style="max-width:900px;width:100%;text-align:center">
-        <!-- Header (copy is set by showPaywall(): welcome for a brand-new signup, or the lapsed-plan variant) -->
-        <div style="margin-bottom:2.5rem">
-          <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:1.5rem">
-            <i class="ti ti-rocket"></i> <span id="paywall-badge-text">Account created</span>
-          </div>
-          <h1 id="paywall-title" style="font-weight:900;color:#fff;margin-bottom:.75rem">Welcome to Blakkstone!</h1>
-          <p id="paywall-sub" style="font-size:16px;color:rgba(255,255,255,.45);max-width:540px;margin:0 auto;line-height:1.6">Pick a plan to start distributing your music to 150+ platforms worldwide.</p>
-          <div id="paywall-lapsed-note" style="display:none;margin-top:1rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#fbbf24;max-width:500px;margin-left:auto;margin-right:auto"></div>
-        </div>
-
-        <!-- Plans: rendered by renderWelcomePlans() from PLANS + PLAN_FEATURES (the same sources checkout and the
-             Upgrade page use), so the prices and features shown here can never drift from what is actually charged. -->
-        <div class="paywall-grid" id="paywall-plans"></div>
-
-        <!-- Skip: signing up never requires paying — a plan is only needed at the moment a release is submitted. -->
-        <div style="margin:0 0 2.25rem">
-          <button class="btn btn-ghost" id="paywall-skip" onclick="skipWelcomePlans()">Skip for now — take me to my dashboard <i class="ti ti-arrow-right"></i></button>
-          <p style="font-size:12px;color:rgba(255,255,255,.3);margin-top:.6rem;line-height:1.6">You can choose a plan any time from <strong style="color:rgba(255,255,255,.5)">Upgrade</strong> — a plan is only needed when you submit a release.</p>
-        </div>
-
-        <!-- Trust note -->
-        <div style="display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap;font-size:12px;color:rgba(255,255,255,.3)">
-          <span><i class="ti ti-lock" style="color:var(--gold)"></i> Secure payment via Paystack</span>
-          <span><i class="ti ti-device-mobile" style="color:var(--gold)"></i> Charged in GHS via Paystack · Card &amp; Mobile Money accepted</span>
-          <span><i class="ti ti-brand-apple" style="color:var(--gold)"></i> Apple Pay supported</span>
-          <span><i class="ti ti-ban" style="color:var(--gold)"></i> No refunds — all payments are final</span>
-          <span id="paywall-autocharge-note"><i class="ti ti-refresh" style="color:var(--gold)"></i> One-time payment — no auto-charge</span>
-        </div>
+    <main class="pw-main">
+      <!-- Header (copy is set by showPaywall(): welcome for a brand-new signup, or the lapsed-plan variant) -->
+      <div class="pw-head">
+        <span class="pw-badge"><i class="ti ti-check" id="paywall-badge-icon" aria-hidden="true"></i><span id="paywall-badge-text">Account created</span></span>
+        <h1 id="paywall-title">Welcome to Blakkstone</h1>
+        <p id="paywall-sub" class="pw-sub">Pick a plan to start distributing your music to 150+ platforms.</p>
+        <div id="paywall-lapsed-note" class="pw-lapsed" style="display:none"></div>
       </div>
-    </div>
+
+      <!-- What every plan has, said once: renderWelcomePlans() fills this with the features all three plans share (from PLAN_FEATURES). -->
+      <section class="pw-incl" aria-labelledby="pw-incl-h">
+        <h2 id="pw-incl-h">Every plan includes</h2>
+        <ul id="paywall-shared"></ul>
+      </section>
+
+      <!-- Plans: rendered by renderWelcomePlans() from PLANS + PLAN_FEATURES (the same sources checkout and the
+           Upgrade page use), so the prices and features shown here can never drift from what is actually charged. -->
+      <div class="paywall-grid" id="paywall-plans"></div>
+
+      <!-- Skip: signing up never requires paying — a plan is only needed at the moment a release is submitted. -->
+      <div class="pw-skip">
+        <button type="button" id="paywall-skip" onclick="skipWelcomePlans()"><span>Skip for now and take me to my dashboard</span><i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+        <p>You can choose a plan any time from Upgrade.</p>
+      </div>
+
+      <!-- Everything to know about paying, in one place -->
+      <section class="pw-pay" aria-labelledby="pw-pay-h">
+        <h2 id="pw-pay-h">Before you pay</h2>
+        <ul>
+          <li><i class="ti ti-lock" aria-hidden="true"></i><span>Secure payment with Paystack</span></li>
+          <li><i class="ti ti-credit-card" aria-hidden="true"></i><span>Card or Mobile Money, charged in GHS. Apple Pay supported.</span></li>
+          <li id="paywall-autocharge-note"><i class="ti ti-refresh" aria-hidden="true"></i><span>One-time payment, no auto-charge</span></li>
+          <li class="pw-final"><i class="ti ti-alert-triangle" aria-hidden="true"></i><span>No refunds: all payments are final</span></li>
+        </ul>
+        <p class="pw-fee">A 2% fee applies when you withdraw royalties.</p>
+      </section>
+    </main>
   </div>
 </div>
 
@@ -1583,7 +1885,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
     <div class="dash-topnav-right">
       <div style="position:relative">
-        <button class="btn" id="artist-notif-btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:none;padding:7px 12px;position:relative" onclick="toggleNotifBell()" title="Notifications">
+        <button class="btn" id="artist-notif-btn" style="background:#111118;color:#B8B8C4;border:1px solid #23232D;border-radius:12px;width:44px;height:44px;padding:0;justify-content:center;position:relative" onclick="toggleNotifBell()" title="Notifications" aria-label="Notifications">
           <i class="ti ti-bell"></i>
           <span id="artist-notif-badge" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:20px;position:absolute;top:1px;right:1px;line-height:1.3">0</span>
         </button>
@@ -1599,17 +1901,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div style="font-size:10px;font-weight:600;color:var(--gold);cursor:pointer" id="tnav-account-id" onclick="copyAccountId()" title="Click to copy"></div>
         </div>
       </div>
-      <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:none;padding:7px 12px" onclick="logout()"><i class="ti ti-logout"></i></button>
+      <button class="btn" style="background:#111118;color:#B8B8C4;border:1px solid #23232D;border-radius:12px;width:44px;height:44px;padding:0;justify-content:center" onclick="logout()" title="Log out" aria-label="Log out"><i class="ti ti-logout"></i></button>
     </div>
   </div>
 
   <!-- ANNOUNCEMENT BANNER -->
-  <div id="announcement-banner" style="background:linear-gradient(90deg,var(--gold),#4f46e5);padding:.625rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-shrink:0;display:none">
-    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#fff;font-weight:500">
-      <i class="ti ti-speakerphone" style="font-size:16px"></i>
-      <span id="announcement-text">🎉 Welcome to Blakkstone Distribution! Submit your first release and go global.</span>
+  <div id="announcement-banner" class="ann-bar" style="display:none">
+    <div class="ann-inner">
+      <span id="announcement-text" class="ann-text">Welcome to Blakkstone Distribution! Submit your first release and go global.</span>
+      <button type="button" id="announcement-action" class="ann-action" onclick="goPage('upgrade',null)" style="display:none">Choose a plan</button>
+      <button type="button" class="ann-close" aria-label="Dismiss" onclick="document.getElementById('announcement-banner').style.display='none'"><i class="ti ti-x"></i></button>
     </div>
-    <button onclick="document.getElementById('announcement-banner').style.display='none'" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.6);font-size:16px;flex-shrink:0">×</button>
   </div>
   <!-- MOBILE BOTTOM NAV -->
   <div class="mobile-nav" id="mobile-nav">
@@ -1635,105 +1937,172 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
   <div class="dash-body">
     <!-- OVERVIEW -->
-    <div class="page active" id="page-overview">
-      <div class="ph" style="margin-bottom:1.5rem">
-        <div>
-          <h1 id="welcome-h" style="font-size:38px;font-weight:800;letter-spacing:-.5px">Overview</h1>
-          <p style="font-size:14px;color:rgba(255,255,255,.45);margin-top:6px">Here's a snapshot of your music's performance this week. <span class="welcome-time" id="welcome-time"></span></p>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <div style="position:relative;display:none" id="ov-artist-filter-wrap">
-            <button class="btn adm-btn-sec" id="ov-artist-filter-btn" onclick="toggleOvArtistMenu()" style="font-size:13px"><i class="ti ti-user"></i> Viewing: All Artists <i class="ti ti-chevron-down" style="font-size:12px"></i></button>
-            <div id="ov-artist-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--dropdown);border:1px solid var(--line);border-radius:10px;padding:.5rem;min-width:180px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.4)"></div>
-          </div>
-          <button class="btn btn-purple" style="border-radius:24px;padding:12px 24px;font-size:14px" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> Create Release</button>
-        </div>
-      </div>
-      <!-- UPCOMING RELEASE COUNTDOWN (shown only if a future release date exists) -->
-      <div id="ov-upcoming-banner" style="display:none;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#1d1a3d,#2a1f4d);border:1px solid rgba(212,175,55,.25);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem"></div>
-      <!-- ONBOARDING CHECKLIST (shown until complete) -->
-      <div class="onboard-card" id="onboard-card" style="display:none">
-        <div class="onboard-title">
-          <span>🚀 Getting started checklist</span>
-          <button onclick="document.getElementById('onboard-card').style.display='none'" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:18px">×</button>
-        </div>
-        <div class="onboard-steps">
-          <div class="ob-step done" id="ob-account"><i class="ti ti-check"></i> Account created</div>
-          <div class="ob-step" id="ob-release" onclick="goPage('submit',null)" style="cursor:pointer"><i class="ti ti-music"></i> Submit first release</div>
-          <div class="ob-step" id="ob-profile" onclick="goPage('profile',null)" style="cursor:pointer"><i class="ti ti-user"></i> Complete profile</div>
-          <div class="ob-step" id="ob-payout" onclick="goPageRoyaltiesTab('payouts')" style="cursor:pointer"><i class="ti ti-wallet"></i> Set up payout</div>
-        </div>
-      </div>
-      <!-- COLOURFUL STAT CARDS -->
-      <div class="overview-cards">
-        <div class="ov-card ov-card-1" onclick="goPage('analytics',null)" title="View Analytics">
-          <div class="ov-card-icon"><i class="ti ti-wave-sine"></i></div>
-          <div style="flex:1">
-            <div class="ov-card-label">Total Streams</div>
-            <div style="display:flex;align-items:baseline;gap:8px">
-              <div class="ov-card-value" id="s-streams">—</div>
-              <span id="s-streams-trend" style="font-size:12px;font-weight:700;display:none"></span>
-            </div>
-            <div class="ov-card-sub">All stores · all time</div>
-          </div>
-          <i class="ti ti-trending-up" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
-        </div>
-        <div class="ov-card ov-card-2" onclick="goPageFilterReleases('all')" title="View all releases">
-          <div class="ov-card-icon"><i class="ti ti-music"></i></div>
-          <div style="flex:1">
-            <div class="ov-card-label">Total Releases</div>
-            <div class="ov-card-value" id="s-total">—</div>
-            <div class="ov-card-sub" id="s-live-sub">— live on DSPs</div>
-          </div>
-          <i class="ti ti-disc" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
-        </div>
-        <div class="ov-card ov-card-3" onclick="goPageRoyaltiesTab('payouts')" title="View payouts">
-          <div class="ov-card-icon"><i class="ti ti-coin"></i></div>
-          <div style="flex:1">
-            <div class="ov-card-label">Available Balance<span id="ov-balance-scope-note" style="display:none;font-weight:400;opacity:.8"> (all artists)</span></div>
-            <div class="ov-card-value" id="s-earnings">$0.00</div>
-            <div class="ov-card-sub" id="s-earnings-sub">Ready to withdraw · 2% fee applies</div>
-          </div>
-          <i class="ti ti-cash" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
-        </div>
-        <div class="ov-card ov-card-4" onclick="goPageFilterReleases('pending')" title="View pending releases">
-          <div class="ov-card-icon"><i class="ti ti-clock"></i></div>
-          <div style="flex:1">
-            <div class="ov-card-label">Pending Review</div>
-            <div class="ov-card-value" id="s-pending">—</div>
-            <div class="ov-card-sub">Awaiting distribution</div>
-          </div>
-          <i class="ti ti-loader" style="font-size:28px;color:rgba(255,255,255,.15);align-self:flex-end"></i>
-        </div>
-      </div>
-      <!-- STREAMS TREND (last 14 real days — hidden if there isn't enough daily data yet) -->
-      <div class="adm-card" id="ov-trend-card" style="margin-bottom:1.5rem;display:none">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;flex-wrap:wrap;gap:6px">
+    <div class="page active ov-loading" id="page-overview">
+      <div class="ov2">
+
+        <!-- HEADER -->
+        <div class="ov2-head">
           <div>
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3)">Streams — Last 14 Days</div>
-            <div id="ov-trend-scope-note" style="display:none;font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">Daily breakdown isn't available per-artist yet — this chart covers all artists on the account.</div>
+            <h1 id="welcome-h" class="ov2-h1">Overview</h1>
+            <p id="ov-sub" class="ov2-sub">Here is how your music is doing.</p>
           </div>
-          <div id="ov-trend-delta" style="font-size:12px;font-weight:700"></div>
-        </div>
-        <canvas id="ov-trend-chart" height="70"></canvas>
-      </div>
-      <!-- RECENT ACTIVITY (hidden if there's nothing to show yet) -->
-      <div class="adm-card" id="ov-activity-card" style="margin-bottom:1.5rem;display:none">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.5rem">Recent Activity</div>
-        <div id="ov-activity-list"></div>
-      </div>
-      <!-- YOUR RELEASES -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px">
-        <h2 style="font-size:28px;font-weight:800;color:#fff;letter-spacing:-.3px">Your Releases</h2>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="position:relative">
-            <i class="ti ti-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.35);font-size:15px;pointer-events:none"></i>
-            <input type="text" placeholder="Search for a release..." id="ov-search-input" oninput="filterOvSearch()" style="background:var(--chip-bg);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:9px 14px 9px 35px;font-size:13px;color:#fff;font-family:Inter,sans-serif;outline:none;width:240px">
+          <div class="ov2-head-actions">
+            <div style="position:relative;display:none" id="ov-artist-filter-wrap">
+              <button type="button" class="ov2-btn ov2-btn-ghost" id="ov-artist-filter-btn" onclick="toggleOvArtistMenu()"><i class="ti ti-user"></i> Viewing: All Artists <i class="ti ti-chevron-down" style="font-size:12px"></i></button>
+              <div id="ov-artist-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--dropdown);border:1px solid var(--line);border-radius:10px;padding:.5rem;min-width:180px;max-height:280px;overflow-y:auto;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.4)"></div>
+            </div>
+            <button type="button" class="ov2-btn ov2-btn-gold ov2-new" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> New release</button>
           </div>
-          <button class="btn" style="background:var(--chip-bg);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;padding:9px 16px" onclick="goPage('releases',document.querySelectorAll('.tnav-item')[1])">View all <i class="ti ti-arrow-right"></i></button>
+        </div>
+
+        <!-- FIRST DAY (no releases yet): hero + getting-started checklist. On a populated Overview only the checklist can appear, as a slim strip. -->
+        <div class="ov2-lead">
+          <section class="ov2-card ov2-hero" aria-labelledby="ov-hero-h">
+            <div class="ov2-hero-copy">
+              <h2 id="ov-hero-h" class="ov2-eyebrow ov2-eyebrow-gold">Your first release</h2>
+              <p class="ov2-hero-title">Get your first song on Spotify, Apple Music and 150+ stores</p>
+              <p class="ov2-hero-text">Upload your track and cover art, add the details, and we take it from there. You can save a draft and finish later.</p>
+              <ol class="ov2-hero-steps">
+                <li><span aria-hidden="true">1</span>Upload your track and artwork</li>
+                <li><span aria-hidden="true">2</span>We review it before it goes out</li>
+                <li><span aria-hidden="true">3</span>It goes live in stores once it is approved</li>
+              </ol>
+              <div class="ov2-actions">
+                <button type="button" class="ov2-btn ov2-btn-gold" onclick="goPage('submit',document.querySelectorAll('.tnav-item')[2])"><i class="ti ti-plus"></i> Start a release</button>
+                <span class="ov2-fine">Saved automatically as a draft</span>
+              </div>
+            </div>
+            <div class="ov2-art-ph" aria-hidden="true"><i class="ti ti-music"></i><span>Your cover art</span></div>
+          </section>
+          <!-- ONBOARDING CHECKLIST (shown until complete) -->
+          <section class="ov2-card onboard-card" id="onboard-card" style="display:none" aria-labelledby="ob-h">
+            <div class="ob-head">
+              <h2 id="ob-h" class="ob-title">Getting started</h2>
+              <span class="ob-count" id="ob-count">1 of 4 done</span>
+              <button type="button" class="ob-dismiss" aria-label="Hide the getting started checklist" onclick="dismissOnboarding()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="ob-bar" aria-hidden="true"><span id="ob-bar-fill" style="width:25%"></span></div>
+            <div class="ob-steps">
+              <div class="ob-step done" id="ob-account"><span class="ob-mark"><i class="ti ti-check" aria-hidden="true"></i></span><span class="ob-label"><span class="ov2-sr">Done: </span>Account created</span></div>
+              <button type="button" class="ob-step" id="ob-release" onclick="goPage('submit',null)"><span class="ob-mark"></span><span class="ob-label">Submit first release</span><i class="ti ti-chevron-right ob-go" aria-hidden="true"></i></button>
+              <button type="button" class="ob-step" id="ob-profile" onclick="goPage('profile',null)"><span class="ob-mark"></span><span class="ob-label">Complete profile</span><i class="ti ti-chevron-right ob-go" aria-hidden="true"></i></button>
+              <button type="button" class="ob-step" id="ob-payout" onclick="goPageRoyaltiesTab('payouts')"><span class="ob-mark"></span><span class="ob-label">Set up payout</span><i class="ti ti-chevron-right ob-go" aria-hidden="true"></i></button>
+            </div>
+            <p class="ob-help">Need a hand? Use the chat button at the bottom right to reach support.</p>
+          </section>
+        </div>
+
+        <!-- FIRST DAY: three quiet cards (everything is zero, so no charts) -->
+        <div class="ov2-first-kpis">
+          <section class="ov2-card" aria-labelledby="ov-f1">
+            <h2 id="ov-f1" class="ov2-eyebrow">Available balance</h2>
+            <p class="ov2-num">$0.00</p>
+            <p class="ov2-fine">Ready to withdraw. A 2% fee applies. Stores pay royalties with a delay of at least two months.</p>
+          </section>
+          <section class="ov2-card" aria-labelledby="ov-f2">
+            <h2 id="ov-f2" class="ov2-eyebrow">Streams</h2>
+            <p class="ov2-num">0</p>
+            <p class="ov2-fine">All stores, all time. Counts start once your first release is live.</p>
+          </section>
+          <section class="ov2-card" aria-labelledby="ov-f3">
+            <h2 id="ov-f3" class="ov2-eyebrow">Releases</h2>
+            <p class="ov2-num">0</p>
+            <p class="ov2-fine">Nothing live or in review yet. Your drafts and submissions will be listed here.</p>
+          </section>
+        </div>
+
+        <!-- EVERYTHING BELOW IS HIDDEN WHILE THE ACCOUNT HAS NO RELEASES AT ALL -->
+        <div class="ov2-pop">
+
+          <div class="ov2-top">
+            <!-- BALANCE -->
+            <section class="ov2-card ov2-balance" aria-labelledby="ov-bal-h">
+              <div class="ov2-row-between">
+                <h2 id="ov-bal-h" class="ov2-eyebrow">Available to withdraw<span id="ov-balance-scope-note" style="display:none;font-weight:400;text-transform:none;letter-spacing:0"> (all artists)</span></h2>
+                <span class="ov2-tag ov2-tag-gold">0% commission</span>
+              </div>
+              <p class="ov2-amount" id="s-earnings">$0.00</p>
+              <div>
+                <div class="ov2-split" id="ov-bal-bar" aria-hidden="true"></div>
+                <ul class="ov2-legend" id="ov-bal-legend"></ul>
+              </div>
+              <div class="ov2-actions">
+                <button type="button" class="ov2-btn ov2-btn-gold" id="ov-withdraw-btn" onclick="goPageRoyaltiesTab('payouts')"><i class="ti ti-wallet"></i> Withdraw</button>
+                <button type="button" class="ov2-link" onclick="goPageRoyaltiesTab('payouts')">View payouts</button>
+              </div>
+              <p class="ov2-fine" id="s-earnings-sub">A 2% fee applies when you withdraw. You see the exact amount before you confirm.</p>
+            </section>
+            <div class="ov2-kpis">
+              <!-- STREAMS -->
+              <section class="ov2-card ov2-kpi ov2-streams" id="ov-streams-card" aria-labelledby="ov-str-h" onclick="goPage('analytics',null)" title="View analytics">
+                <div class="ov2-row-between">
+                  <h2 id="ov-str-h" class="ov2-eyebrow">Streams, all time</h2>
+                  <span id="s-streams-trend" class="ov2-tag ov2-tag-up" style="display:none"></span>
+                </div>
+                <div class="ov2-kpi-row">
+                  <p class="ov2-num" id="s-streams">—</p>
+                  <svg id="ov-spark" class="ov2-spark" width="150" height="52" viewBox="0 0 132 40" role="img" aria-label="Streams per day, last 14 days" style="display:none"></svg>
+                </div>
+                <div class="ov2-m-only">
+                  <p class="ov2-fine">Last 14 days, all stores, per day</p>
+                  <div id="ov-trend-m" class="ov2-chart"></div>
+                </div>
+              </section>
+              <!-- RELEASES -->
+              <section class="ov2-card ov2-kpi ov2-kpi-rel" aria-labelledby="ov-rel-h" onclick="goPageFilterReleases('all')" title="View all releases">
+                <h2 id="ov-rel-h" class="ov2-eyebrow">Releases</h2>
+                <div class="ov2-kpi-row ov2-kpi-row-rel">
+                  <p class="ov2-num" id="s-total">—</p>
+                  <div class="ov2-dist">
+                    <div class="ov2-split" id="ov-rel-bar" aria-hidden="true"></div>
+                    <ul class="ov2-legend" id="ov-rel-legend"></ul>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- NEXT UP (shown only if a future release date exists) -->
+          <section id="ov-upcoming-banner" class="ov2-card ov2-next" style="display:none" aria-labelledby="ov-next-h"></section>
+
+          <div class="ov2-cols">
+            <div class="ov2-main">
+              <!-- STREAMS TREND (last 14 real days — hidden if there isn't enough daily data yet) -->
+              <section class="ov2-card" id="ov-trend-card" style="display:none" aria-labelledby="ov-chart-h">
+                <div class="ov2-row-between ov2-chart-head">
+                  <h2 id="ov-chart-h" class="ov2-h3">Streams, last 14 days</h2>
+                  <span class="ov2-fine">All stores, per day</span>
+                </div>
+                <p id="ov-trend-scope-note" class="ov2-fine" style="display:none;margin-bottom:8px">Daily breakdown isn't available per-artist yet — this chart covers all artists on the account.</p>
+                <div id="ov-trend-chart" class="ov2-chart"></div>
+              </section>
+              <!-- YOUR RELEASES -->
+              <section aria-labelledby="ov-rels-h">
+                <div class="ov2-rels-head">
+                  <h2 id="ov-rels-h" class="ov2-h2">Your releases</h2>
+                  <div class="ov2-chips" id="ov-chips" role="group" aria-label="Filter releases"></div>
+                  <button type="button" class="ov2-textlink" onclick="goPage('releases',document.querySelectorAll('.tnav-item')[1])">View all <i class="ti ti-arrow-right"></i></button>
+                </div>
+                <div class="ov2-search" id="ov-search-wrap" style="display:none">
+                  <i class="ti ti-search" aria-hidden="true"></i>
+                  <input type="text" id="ov-search-input" placeholder="Search releases" aria-label="Search your releases" oninput="filterOvSearch()" autocomplete="off">
+                </div>
+                <ul id="ov-releases-grid" class="ov2-rel-grid"></ul>
+              </section>
+            </div>
+            <aside class="ov2-aside">
+              <!-- RECENT ACTIVITY (hidden if there's nothing to show yet) -->
+              <section class="ov2-card ov2-activity" id="ov-activity-card" style="display:none" aria-labelledby="ov-act-h">
+                <h2 id="ov-act-h" class="ov2-h3">Recent activity</h2>
+                <ol id="ov-activity-list" class="ov2-act-list"></ol>
+              </section>
+              <!-- YOUR PLAN -->
+              <section class="ov2-card ov2-plan" id="ov-plan-card" style="display:none" aria-labelledby="ov-plan-h"></section>
+            </aside>
+          </div>
+
         </div>
       </div>
-      <div id="ov-releases-grid" class="releases-grid"></div>
     </div>
 
     <!-- MUSIC / RELEASES -->
@@ -3871,8 +4240,9 @@ function setDisplayCurrency(currency){
 function refreshAllDisplayedPrices(){
   document.querySelectorAll('[data-usd-price]').forEach(el=>{
     const usd=parseFloat(el.dataset.usdPrice);
-    if(!isNaN(usd))el.textContent=convertPrice(usd);
+    if(!isNaN(usd)){const t=convertPrice(usd);el.textContent=el.hasAttribute('data-trim')?trimPriceZeros(t):t;}
   });
+  fitWelcomePrices();
   updateRateNote();
   if(document.getElementById('page-profile')?.classList.contains('active'))loadProfileStats();
 }
@@ -4130,11 +4500,7 @@ function updateSupportBubble(){
 
 // ── WELCOME TIME GREETING ──────────────────────────────
 function updateWelcomeTime(){
-  const el=document.getElementById('welcome-time');
-  if(!el)return;
-  const h=new Date().getHours();
-  const greet=h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';
-  el.textContent='· '+greet;
+  renderOverviewGreeting(!!document.getElementById('page-overview')?.classList.contains('ov-first'));
 }
 
 // ── ONBOARDING CHECKLIST ──────────────────────────────
@@ -4144,6 +4510,13 @@ function setMobNav(activeId){
   if(el) el.classList.add('active');
 }
 
+function obStepInner(done,label){
+  return '<span class="ob-mark">'+(done?'<i class="ti ti-check" aria-hidden="true"></i>':'')+'</span><span class="ob-label">'+(done?'<span class="ov2-sr">Done: </span>':'')+label+'</span><i class="ti ti-chevron-right ob-go" aria-hidden="true"></i>';
+}
+function dismissOnboarding(){
+  _obDismissed=true;
+  const card=document.getElementById('onboard-card');if(card)card.style.display='none';
+}
 async function updateOnboarding(){
   const card=document.getElementById('onboard-card');
   if(!card)return;
@@ -4155,24 +4528,28 @@ async function updateOnboarding(){
     const {data,error}=await sb.from('payout_methods').select('id').eq('user_id',activeAccountId()).limit(1);
     if(!error)hasPayout=!!(data&&data.length);
   }catch(e){console.error('Onboarding payout-check error (non-critical):',e);}
-  const obRelease=document.getElementById('ob-release');
-  const obProfile=document.getElementById('ob-profile');
-  const obPayout=document.getElementById('ob-payout');
-  if(obRelease) obRelease.className='ob-step'+(hasRelease?' done':'');
-  if(obRelease) obRelease.innerHTML=(hasRelease?'<i class="ti ti-check"></i>':'<i class="ti ti-music"></i>')+' Submit first release';
-  if(obProfile) obProfile.className='ob-step'+(hasProfile?' done':'');
-  if(obProfile) obProfile.innerHTML=(hasProfile?'<i class="ti ti-check"></i>':'<i class="ti ti-user"></i>')+' Complete profile';
-  if(obPayout) obPayout.className='ob-step'+(hasPayout?' done':'');
-  if(obPayout) obPayout.innerHTML=(hasPayout?'<i class="ti ti-check"></i>':'<i class="ti ti-wallet"></i>')+' Set up payout';
+  const steps=[['ob-release',hasRelease,'Submit first release'],['ob-profile',hasProfile,'Complete profile'],['ob-payout',hasPayout,'Set up payout']];
+  let currentTaken=false;
+  steps.forEach(([id,done,label])=>{
+    const el=document.getElementById(id);if(!el)return;
+    const current=!done&&!currentTaken;
+    if(!done)currentTaken=true;
+    el.className='ob-step'+(done?' done':'')+(current?' current':'');
+    el.innerHTML=obStepInner(done,label);
+  });
+  const doneCount=1+steps.filter(x=>x[1]).length; // the account itself is always step one
+  const cnt=document.getElementById('ob-count');if(cnt)cnt.textContent=doneCount+' of 4 done';
+  const bar=document.getElementById('ob-bar-fill');if(bar)bar.style.width=(doneCount/4*100)+'%';
   // Show card if not everything done, hide it once genuinely complete
   const allDone=hasRelease&&hasProfile&&hasPayout;
   if(allDone){
     card.style.display='none';
   } else {
-    // Only show first 5 days after signup
+    // Only show first 5 days after signup — except while nothing has been released yet: then it's the
+    // guide beside the "first release" panel and stays until the first release is in.
     const signupDate=profile?.created_at?new Date(profile.created_at):new Date();
     const daysSince=(Date.now()-signupDate)/86400000;
-    if(daysSince<5) card.style.display='block';
+    card.style.display=(!hasRelease||(daysSince<5&&!_obDismissed))?'':'none';
   }
 }
 
@@ -4488,38 +4865,83 @@ function markWelcomePlansSeen(){
     }).catch(e=>console.error('Could not save the welcome-screen flag to the account:',e));
   }catch(e){console.error('Could not save the welcome-screen flag to the account:',e);}
 }
-function welcomePlanDesc(key){
-  if(key==='solo')return '1 artist profile. Keep 100% of your royalties.';
-  if(key==='artist_plus')return '2 artist profiles. Keep 100% of your royalties.';
-  return '5 artists included, $'+EXTRA_ARTIST_PRICE_MONTHLY+'/month (or $'+EXTRA_ARTIST_PRICE_YEARLY+'/year) for each additional. For labels & collectives.';
+// The features all three plans share are said once, in the "Every plan includes" strip; each card then lists only what
+// makes that plan different. Both come from PLAN_FEATURES (never typed a second time), so a feature added to or dropped
+// from a plan moves between the strip and the cards by itself. The "N artist profile(s)" line is each card's headline;
+// a "+" after the number (e.g. "5+") means the plan allows paid extra artists.
+const WELCOME_SHARED_LOOK={
+  'Unlimited releases':{icon:'music',text:'Unlimited releases'},
+  '150+ DSPs worldwide':{icon:'world',text:'150+ platforms worldwide'},
+  '0% commission':{icon:'percentage',text:'0% commission',strong:true},
+  'Mobile Money + Bank payouts':{icon:'wallet',text:'Mobile Money and bank payouts'}
+};
+function welcomeSplitFeatures(){
+  const rest=WELCOME_PLAN_ORDER.map(k=>(PLAN_FEATURES[k]||[]).filter(f=>!/artist profiles?/i.test(f)));
+  const shared=rest[0].filter(f=>rest.every(l=>l.includes(f)));
+  const own={};
+  WELCOME_PLAN_ORDER.forEach((k,i)=>{own[k]=rest[i].filter(f=>!shared.includes(f));});
+  return {shared,own};
 }
+function welcomeArtists(key){
+  const line=(PLAN_FEATURES[key]||[]).find(f=>/artist profiles?/i.test(f))||'';
+  const n=parseInt(line,10);
+  if(!n)return {headline:line,extra:false};
+  const more=/^\d+\+/.test(line);
+  return {headline:n+' artist profile'+(n===1?'':'s')+(more?' included':''),extra:more};
+}
+// "$14.00" → "$14", "GH₵147.00" → "GH₵147": a whole-number price reads cleaner big and bold; real decimals are kept.
+function trimPriceZeros(s){return String(s).replace(/([.,])00(?!\d)/,'');}
+// A price that follows the display currency: refreshAllDisplayedPrices() rewrites every [data-usd-price] element.
+function wprice(usd,tag){tag=tag||'span';return '<'+tag+' data-usd-price="'+usd+'" data-trim>'+esc(trimPriceZeros(convertPrice(usd)))+'</'+tag+'>';}
+// The big yearly price must stay on one line inside its card whatever the display currency is ("$25" is short, "GHS 282.50" is
+// not). All three cards share ONE size so the rows underneath still line up: start from the designed size (the CSS fallback of
+// --pw-price) and step down until the widest price, with its "/ year", fits. It runs after the cards are built, when the display
+// currency changes (refreshAllDisplayedPrices), when the window is resized and when the web font finishes loading, because
+// each of those changes how wide the text is. While the screen is hidden there is nothing to measure, so it does nothing.
+function fitWelcomePrices(){
+  const grid=document.getElementById('paywall-plans');
+  if(!grid||!grid.offsetWidth)return;
+  grid.style.removeProperty('--pw-price');
+  const prices=Array.from(grid.querySelectorAll('.paywall-card-price'));
+  if(!prices.length)return;
+  const tooWide=()=>prices.some(p=>p.scrollWidth>p.clientWidth+1);
+  let size=parseFloat(getComputedStyle(prices[0]).fontSize)||48;
+  while(tooWide()&&size>26){size-=2;grid.style.setProperty('--pw-price',size+'px');}
+}
+let _pwFitTimer=null;
+window.addEventListener('resize',()=>{clearTimeout(_pwFitTimer);_pwFitTimer=setTimeout(fitWelcomePrices,120);});
+try{if(document.fonts&&document.fonts.addEventListener)document.fonts.addEventListener('loadingdone',fitWelcomePrices);}catch(e){}
 function renderWelcomePlans(){
   const grid=document.getElementById('paywall-plans');
   if(!grid)return;
-  const icons={solo:'bolt',artist_plus:'crown',label:'users'};
-  const btnStyle={
-    solo:'background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.2)',
-    artist_plus:'',
-    label:'background:#fff;color:#111;font-weight:700'
-  };
+  const {shared,own}=welcomeSplitFeatures();
+  const strip=document.getElementById('paywall-shared');
+  if(strip){
+    strip.innerHTML=shared.map(f=>{
+      const look=WELCOME_SHARED_LOOK[f]||{icon:'check',text:f};
+      return '<li><i class="ti ti-'+look.icon+'" aria-hidden="true"></i>'+(look.strong?'<strong>'+esc(look.text)+'</strong>':'<span>'+esc(look.text)+'</span>')+'</li>';
+    }).join('');
+    const box=strip.closest('.pw-incl');
+    if(box)box.style.display=shared.length?'':'none';
+  }
   grid.innerHTML=WELCOME_PLAN_ORDER.map(key=>{
     const p=PLANS[key];
     const featured=key==='artist_plus';
-    const feats=(PLAN_FEATURES[key]||[]).map(f=>'<li><i class="ti ti-check"></i> '+(/^0% commission$/i.test(f)?'<strong>'+esc(f)+'</strong>':esc(f))+'</li>').join('');
-    return '<div class="paywall-card'+(featured?' paywall-card-featured':'')+'" data-plan="'+esc(key)+'">'
-      +(featured?'<div class="paywall-featured-badge">MOST POPULAR</div>':'')
-      +'<div class="paywall-card-name">'+esc(p.label)+'</div>'
-      +'<div class="paywall-card-price"><b data-usd-price="'+p.yearly+'">'+esc(convertPrice(p.yearly))+'</b> <span>/ year</span></div>'
-      +'<p class="paywall-card-desc">'+esc(welcomePlanDesc(key))+'</p>'
-      +'<ul class="paywall-feats">'+feats+'</ul>'
-      +'<button class="btn'+(featured?' btn-gold':'')+' paywall-card-btn" style="'+btnStyle[key]+'" onclick="paywallPay('+jsArg(key)+')"><i class="ti ti-'+icons[key]+'"></i> Choose '+esc(p.label)+'</button>'
-      +'</div>';
+    const a=welcomeArtists(key);
+    const feats=(own[key]||[]).map(f=>'<li><i class="ti ti-check" aria-hidden="true"></i><span>'+esc(f)+'</span></li>').join('');
+    const extra=a.extra?'<p class="pwc-extra">'+wprice(EXTRA_ARTIST_PRICE_MONTHLY)+' / month or '+wprice(EXTRA_ARTIST_PRICE_YEARLY)+' / year for each extra artist</p>':'';
+    return '<section class="paywall-card'+(featured?' paywall-card-featured':'')+'" data-plan="'+esc(key)+'" aria-labelledby="pwc-'+esc(key)+'">'
+      +'<div class="pwc-head"><h2 class="paywall-card-name" id="pwc-'+esc(key)+'">'+esc(p.label)+'</h2>'+(featured?'<span class="paywall-featured-badge">Most popular</span>':'')+'</div>'
+      +'<div class="pwc-pricing"><p class="paywall-card-price">'+wprice(p.yearly,'b')+'<span>/ year</span></p><p class="pwc-monthly">or '+wprice(p.monthly)+' / month</p></div>'
+      +'<div class="pwc-body"><p class="pwc-artists">'+esc(a.headline)+'</p>'+extra+(feats?'<ul class="paywall-feats">'+feats+'</ul>':'')+'</div>'
+      +'<button type="button" class="paywall-card-btn'+(featured?' is-primary':'')+'" onclick="paywallPay('+jsArg(key)+')">Choose '+esc(p.label)+'</button>'
+      +'</section>';
   }).join('');
   // Keep the "no auto-charge" claim true in both states: once any plan has a Paystack plan code, auto-renew exists (always opt-in).
   const note=document.getElementById('paywall-autocharge-note');
   if(note){
     const autoRenewOffered=Object.values(PAYSTACK_PLAN_CODES).some(Boolean);
-    note.innerHTML='<i class="ti ti-refresh" style="color:var(--gold)"></i> '+(autoRenewOffered?'Auto-renew is optional — you choose at checkout':'One-time payment — no auto-charge');
+    note.innerHTML='<i class="ti ti-refresh" aria-hidden="true"></i><span>'+(autoRenewOffered?'Auto-renew is optional, you choose at checkout':'One-time payment, no auto-charge')+'</span>';
   }
 }
 // mode 'welcome' = a brand-new signup; anything else = the lapsed-plan variant (kept working for any future caller).
@@ -4528,9 +4950,11 @@ function showPaywall(lapsedPlan,mode){
   const first=(profile?.full_name||profile?.artist_name||user?.email?.split('@')[0]||'').split(' ')[0];
   const setText=(id,t)=>{const el=document.getElementById(id);if(el)el.textContent=t;};
   setText('paywall-badge-text',welcome?'Account created':'Choose a plan');
-  setText('paywall-title',welcome?'Welcome to Blakkstone'+(first?', '+first:'')+'!':'Choose your plan'+(first?', '+first:''));
+  const badgeIcon=document.getElementById('paywall-badge-icon');
+  if(badgeIcon)badgeIcon.className='ti ti-'+(welcome?'check':'crown');
+  setText('paywall-title',welcome?'Welcome to Blakkstone'+(first?', '+first:''):'Choose your plan'+(first?', '+first:''));
   setText('paywall-sub',welcome
-    ?'Pick a plan to start distributing your music to 150+ platforms worldwide — or look around first. You only need a plan when you submit a release.'
+    ?'Pick a plan to start distributing your music to 150+ platforms. You only need one when you submit a release, so feel free to look around first.'
     :'Pick a plan below to start distributing your music to 150+ platforms worldwide.');
   const lapsedNote=document.getElementById('paywall-lapsed-note');
   if(lapsedNote){
@@ -4544,6 +4968,7 @@ function showPaywall(lapsedPlan,mode){
   }
   renderWelcomePlans();
   showView('paywall');
+  fitWelcomePrices(); // measured only now that the screen is visible
 }
 function showWelcomePlans(){
   // Checkout charges using currentDisplayRates.GHS. enterDashboard() normally refreshes the live rate and the
@@ -4701,7 +5126,7 @@ function enterDashboard(){
     const isMaxedOut=profile?.plan==='label';
     const upgradeNav=document.getElementById('upgrade-nav');
     if(upgradeNav) upgradeNav.style.display=(adminNow||isMaxedOut)?'none':'flex';
-    set('welcome-h','Hi, '+name.split(' ')[0]+' 👋');
+    renderOverviewGreeting(!!document.getElementById('page-overview')?.classList.contains('ov-first'));
     const lr=document.getElementById('lnav-right');
     if(lr) lr.innerHTML='<button class="btn btn-ghost btn-sm" onclick="logout()">Log out</button>';
     if(profile){
@@ -4737,7 +5162,6 @@ function enterDashboard(){
       }
     }
     loadReleases().then(()=>{
-      updateOnboarding();
       if(page==='releases'&&pathSub&&_releaseMap[pathSub]){
         openReleaseModal(_releaseMap[pathSub],false);
         history.replaceState({page:'releases',sub:pathSub},'',pagePath('releases',pathSub));
@@ -5242,14 +5666,6 @@ function goRelPage(delta){
   filterReleasesCombined();
   document.getElementById('rel-list-view')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function filterOvSearch(){
-  const q=(document.getElementById('ov-search-input')?.value||'').toLowerCase();
-  const grid=document.getElementById('ov-releases-grid');if(!grid)return;
-  const base=ovViewingArtist?(allRelData||[]).filter(r=>r.artist===ovViewingArtist):(allRelData||[]);
-  if(!q){grid.innerHTML=base.slice(0,8).map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';return;}
-  const filtered=base.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
-  grid.innerHTML=filtered.map(r=>releaseGridCard(r)).join('')||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-search"></i><p>No matches.</p></div>';
-}
 function getNotifLastSeen(){
   if(!user)return null;
   return localStorage.getItem('bs_notif_seen_'+user.id);
@@ -5359,53 +5775,43 @@ function describeActivityForArtist(l,releaseMap){
   }
   return null;
 }
-async function loadOverviewActivity(){
-  const card=document.getElementById('ov-activity-card');
-  const list=document.getElementById('ov-activity-list');
-  if(!card||!list||!user)return;
-  try{
-    const {data:logs,error}=await sb.from('admin_audit_log').select('*').eq('target_user_id',activeAccountId()).in('field',['release_status','release_deleted','payout_status','payout_deleted','plan']).order('changed_at',{ascending:false}).limit(8);
-    if(error)throw error;
-    if(!logs||!logs.length){card.style.display='none';return;}
-    const relIds=[...new Set(logs.filter(l=>l.target_release_id).map(l=>l.target_release_id))];
-    let releaseMap={};
-    if(relIds.length){
-      const {data:rels}=await Promise.resolve(sb.from('releases').select('id,title').in('id',relIds)).catch(()=>({data:[]}));
-      (rels||[]).forEach(r=>{releaseMap[r.id]=r;});
-    }
-    const items=logs.map(l=>({text:describeActivityForArtist(l,releaseMap),when:l.changed_at})).filter(i=>i.text);
-    if(!items.length){card.style.display='none';return;}
-    list.innerHTML=items.map(i=>'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05)"><div style="font-size:13px;color:rgba(255,255,255,.75)">'+esc(i.text)+'</div><div style="font-size:11px;color:rgba(255,255,255,.3);flex-shrink:0;white-space:nowrap">'+timeSince(new Date(i.when))+'</div></div>').join('');
-    card.style.display='block';
-  }catch(e){
-    console.error('Overview activity load error:',e);
-    card.style.display='none';
-  }
-}
+let _ovReadyFallback=null;
 async function loadReleases(){
   if(!user)return;
   const el=document.getElementById('s-total');if(el) el.textContent='…';
+  // The Overview stays covered until its first data arrives (so a brand-new account never flashes the
+  // full dashboard before switching to its first-day view). If that never happens, uncover it anyway.
+  if(!_ovReadyFallback)_ovReadyFallback=setTimeout(()=>{document.getElementById('page-overview')?.classList.remove('ov-loading');},4000);
   const {data,error}=await sb.from('releases').select('*').eq('user_id',activeAccountId()).order('submitted_at',{ascending:false});
   if(error){toast('Error loading releases','err');return;}
   allRelData=data||[];
   const releases=allRelData;
   const banner=document.getElementById('announcement-banner');
   const bannerText=document.getElementById('announcement-text');
-  if(banner&&releases.length===0&&profile){
-    const hasPlan=hasActivePlan();
-    if(bannerText){
-      bannerText.innerHTML=hasPlan
-        ?'🎉 Welcome to Blakkstone Distribution! Submit your first release and go global.'
-        :'👋 Welcome to Blakkstone! <a onclick="goPage(\'upgrade\',null)" style="color:#fff;text-decoration:underline;cursor:pointer;font-weight:700">Choose a plan</a> to start distributing your music.';
+  const bannerAction=document.getElementById('announcement-action');
+  if(banner&&profile){
+    if(releases.length===0){
+      const hasPlan=hasActivePlan();
+      if(bannerText){
+        bannerText.textContent=hasPlan
+          ?'Welcome to Blakkstone Distribution! Submit your first release and go global.'
+          :'Welcome to Blakkstone! Choose a plan to start distributing your music.';
+      }
+      if(bannerAction)bannerAction.style.display=hasPlan?'none':'';
+      banner.style.display='flex';
+    } else {
+      // The welcome note is for accounts with nothing released yet; once there's a release it has done its job.
+      banner.style.display='none';
     }
-    banner.style.display='flex';
   }
   const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',activeAccountId());
   _ovPayoutsCache=payoutsData||[];
   renderOverviewStats();
+  renderUpcomingReleaseBanner();
+  renderOverviewPlan();
+  updateOnboarding();
   _cachedDraftsForMusicTab=await loadAllDrafts();
   filterReleasesCombined();
-  renderUpcomingReleaseBanner();
   loadOverviewTrend();
 }
 let ovViewingArtist='';
@@ -5443,11 +5849,79 @@ function setOvViewingArtist(name){
   const searchInput=document.getElementById('ov-search-input');
   if(searchInput&&searchInput.value.trim())filterOvSearch();
 }
+// ── OVERVIEW (redesigned) ──────────────────────────────────────────────
+// Everything on the Overview is worked out from data the page already loads (releases, payouts,
+// daily stream entries, audit log) — the redesign changes how it's shown, not what's counted.
+const OV_STATUS={
+  live:{label:'Live',color:'#34D399'},
+  approved:{label:'Approved',color:'#2DD4BF'},
+  review:{label:'In review',color:'#60A5FA'},
+  pending:{label:'Pending',color:'#FBBF24'},
+  rejected:{label:'Rejected',color:'#F87171'},
+  takendown:{label:'Taken down',color:'#9CA3AF'}
+};
+let ovRelFilter='all';   // 'all' | 'live' | 'pending' (= In progress) | 'rejected' (= Inactive) | 'takendown'
+let _ovTrend=null;       // {dates,values,chip} once enough daily stream data has loaded; null = nothing to chart
+let _obDismissed=false;  // the checklist's × was clicked this session
+
+function ovUsd(n){return '$'+(Number(n)||0).toFixed(2);}
+function ovCompact(n){
+  n=Number(n)||0;
+  if(n>=1e6)return (n/1e6).toFixed(1).replace(/\.0$/,'')+'M';
+  if(n>=1e3){const k=Math.round(n/100)/10;if(k>=1000)return '1M';return String(k).replace(/\.0$/,'')+'K';}
+  return String(Math.round(n));
+}
+function ovAgo(d){
+  const t=d&&d.getTime?d.getTime():NaN;
+  if(isNaN(t))return '';
+  const m=Math.floor((Date.now()-t)/60000);
+  if(m<1)return 'just now';
+  if(m<60)return m+(m===1?' minute ago':' minutes ago');
+  const h=Math.floor(m/60);
+  if(h<24)return h+(h===1?' hour ago':' hours ago');
+  const dd=Math.floor(h/24);
+  if(dd<=60)return dd+(dd===1?' day ago':' days ago');
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+// live / in progress (pending, review, approved) / inactive (rejected) / taken down — the same groups the Music page tabs use
+function ovStatusCounts(list){
+  const c={live:0,progress:0,rejected:0,takendown:0,total:list.length};
+  list.forEach(r=>{
+    if(r.status==='live')c.live++;
+    else if(r.status==='rejected')c.rejected++;
+    else if(r.status==='takendown')c.takendown++;
+    else c.progress++;
+  });
+  return c;
+}
+function ovMatches(r,f){
+  if(f==='live')return r.status==='live';
+  if(f==='rejected')return r.status==='rejected';
+  if(f==='takendown')return r.status==='takendown';
+  if(f==='pending')return r.status!=='live'&&r.status!=='rejected'&&r.status!=='takendown';
+  return true;
+}
+// A stacked bar: one segment per non-empty part, sized by its share of the total.
+function ovSplit(el,parts){
+  if(!el)return;
+  const on=parts.filter(p=>p.n>0);
+  const total=on.reduce((a,p)=>a+p.n,0);
+  el.innerHTML=total>0
+    ?on.map(p=>'<span style="width:'+(p.n/total*100).toFixed(2)+'%;background:'+p.color+'"></span>').join('')
+    :'<span style="flex:1;background:#23232D"></span>';
+}
+function setOvRelFilter(f){ovRelFilter=f;renderOvReleases();}
+function filterOvSearch(){renderOvReleases();}
+
 function renderOverviewStats(){
   const allReleases=allRelData||[];
   const scoped=ovViewingArtist?allReleases.filter(r=>r.artist===ovViewingArtist):allReleases;
-  const live=scoped.filter(r=>r.status==='live').length;
-  const pending=scoped.filter(r=>r.status==='pending'||r.status==='review').length;
+  // "First day" = the account has no releases at all. (An artist filter that matches nothing is not first day.)
+  const firstDay=allReleases.length===0;
+  const page=document.getElementById('page-overview');
+  if(page){page.classList.toggle('ov-first',firstDay);page.classList.remove('ov-loading');}
+  renderOverviewGreeting(firstDay);
+  const counts=ovStatusCounts(scoped);
   const streams=scoped.reduce((a,r)=>a+(r.streams||0),0);
   // Available Balance always reflects the whole account — payout withdrawals aren't
   // broken down per artist (Blakkstone pays the account holder, not individual roster
@@ -5458,21 +5932,106 @@ function renderOverviewStats(){
   const pendingOut=(_ovPayoutsCache||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const availableBalance=Math.max(0,grossEarnings-paidOut2-pendingOut);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('s-total',scoped.length);set('s-live-sub',live+' live on DSPs');
-  set('s-pending',pending);set('s-streams',streams.toLocaleString());set('s-earnings','$'+availableBalance.toFixed(2));
-  const balSub=document.getElementById('s-earnings-sub');
-  if(balSub){
-    balSub.textContent=pendingOut>0?'$'+pendingOut.toFixed(2)+' pending withdrawal':'Ready to withdraw · 2% fee applies';
-  }
+  set('s-total',scoped.length);
+  set('s-streams',streams.toLocaleString());
+  set('s-earnings',ovUsd(availableBalance));
+  ovSplit(document.getElementById('ov-bal-bar'),[{n:paidOut2,color:'#4B5563'},{n:pendingOut,color:'#FBBF24'},{n:availableBalance,color:'#34D399'}]);
+  const balLegend=document.getElementById('ov-bal-legend');
+  if(balLegend)balLegend.innerHTML='<li>Paid<span class="ov2-hide-m"> out</span> <strong>'+ovUsd(paidOut2)+'</strong></li><li>Pending <strong>'+ovUsd(pendingOut)+'</strong></li><li>Available <strong>'+ovUsd(availableBalance)+'</strong></li>';
+  // Withdrawals start at $1; team members can look but not withdraw.
+  const wb=document.getElementById('ov-withdraw-btn');
+  if(wb)wb.style.display=(availableBalance>=1&&!isTeamViewerOnly())?'':'none';
+  ovSplit(document.getElementById('ov-rel-bar'),[{n:counts.live,color:'#34D399'},{n:counts.progress,color:'#60A5FA'},{n:counts.rejected,color:'#F87171'},{n:counts.takendown,color:'#6B7280'}]);
+  const relLegend=document.getElementById('ov-rel-legend');
+  if(relLegend)relLegend.innerHTML=[[counts.live,'Live'],[counts.progress,'In progress'],[counts.rejected,'Inactive'],[counts.takendown,'Taken down']].filter(x=>x[0]>0).map(x=>'<li><strong>'+x[0]+'</strong> '+x[1]+'</li>').join('');
   const balScopeNote=document.getElementById('ov-balance-scope-note');
   if(balScopeNote)balScopeNote.style.display=ovViewingArtist?'inline':'none';
   const trendScopeNote=document.getElementById('ov-trend-scope-note');
   if(trendScopeNote)trendScopeNote.style.display=ovViewingArtist?'block':'none';
-  const rcb=document.getElementById('releases-count-badge');if(rcb) rcb.textContent=scoped.length>0?scoped.length+' total':'';
-  const grid=document.getElementById('ov-releases-grid');
-  if(grid){const cards=scoped.slice(0,8).map(r=>releaseGridCard(r)).join('');grid.innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-music-off"></i><p>No releases yet.</p></div>';}
+  ovRenderTrend();
+  renderOvReleases();
   const artistWrap=document.getElementById('ov-artist-filter-wrap');
   if(artistWrap)artistWrap.style.display=getOvArtistList().length>1?'':'none';
+}
+
+function renderOverviewGreeting(firstDay){
+  const h=document.getElementById('welcome-h');if(!h)return;
+  const full=(profile?.full_name||profile?.artist_name||(user&&user.email?user.email.split('@')[0]:'')||'').trim();
+  const first=full.split(' ')[0];
+  const hr=new Date().getHours();
+  const hello=firstDay?'Hi':(hr<12?'Good morning':hr<17?'Good afternoon':'Good evening');
+  h.textContent=first?hello+', '+first:hello;
+  const sub=document.getElementById('ov-sub');
+  if(sub)sub.textContent=firstDay?'Let us get your first release out to the world.':'Here is how your music is doing.';
+}
+
+// What to say under a release's title on the Overview.
+function ovRelMeta(r){
+  const d=r.release_date?new Date(r.release_date):null;
+  const valid=!!d&&!isNaN(d);
+  const future=valid&&d>new Date();
+  const short=valid?d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'';
+  switch(r.status){
+    case 'live':return {t:ovCompact(r.streams||0)+' streams · '+ovUsd(r.earnings||0),c:''};
+    case 'approved':return {t:future?'Drops '+short:(r.artist||'Approved'),c:''};
+    case 'review':return {t:'Being reviewed',c:''};
+    case 'pending':return {t:'Waiting for review',c:''};
+    case 'rejected':return {t:r.status_reason?'See why and fix it':'See details',c:'bad'};
+    case 'takendown':return {t:'See details',c:'mute'};
+    default:return {t:r.artist||'',c:''};
+  }
+}
+function ovRelCard(r){
+  _releaseMap[r.id]=r;
+  const st=OV_STATUS[r.status]||OV_STATUS.pending;
+  const art=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" alt="" loading="lazy">':'<i class="ti ti-music" aria-hidden="true"></i>';
+  const pill=cls=>'<span class="ov2-pill '+cls+'" style="color:'+st.color+'"><span class="ov2-dot" style="background:'+st.color+'" aria-hidden="true"></span>'+esc(st.label)+'</span>';
+  const m=ovRelMeta(r);
+  return '<li><button type="button" class="ov2-rel" onclick="openReleaseFromCard('+jsArg(r.id)+')">'
+    +'<span class="ov2-rel-art">'+art+pill('ov2-pill-art')+'</span>'
+    +'<span class="ov2-rel-text"><span class="ov2-rel-title">'+esc(r.title||'Untitled release')+'</span><span class="ov2-rel-meta'+(m.c?' '+m.c:'')+'">'+esc(m.t)+'</span></span>'
+    +pill('ov2-pill-row')
+    +'</button></li>';
+}
+function renderOvReleases(){
+  const grid=document.getElementById('ov-releases-grid');if(!grid)return;
+  const all=allRelData||[];
+  const scoped=ovViewingArtist?all.filter(r=>r.artist===ovViewingArtist):all;
+  const c=ovStatusCounts(scoped);
+  const cats=[['live','Live',c.live],['pending','In progress',c.progress],['rejected','Inactive',c.rejected],['takendown','Taken down',c.takendown]].filter(x=>x[2]>0);
+  if(ovRelFilter!=='all'&&!cats.some(x=>x[0]===ovRelFilter))ovRelFilter='all';
+  const chips=document.getElementById('ov-chips');
+  if(chips){
+    // Filter chips only appear when there's more than one group to filter between.
+    chips.innerHTML=cats.length>1
+      ?[['all','All',c.total]].concat(cats).map(x=>'<button type="button" class="ov2-chip" aria-pressed="'+(ovRelFilter===x[0])+'" onclick="setOvRelFilter(\''+x[0]+'\')">'+x[1]+' '+x[2]+'</button>').join('')
+      :'';
+  }
+  // The grid shows the 8 newest; search only matters (and only appears) once there are more than that.
+  const canSearch=scoped.length>8;
+  const sw=document.getElementById('ov-search-wrap');if(sw)sw.style.display=canSearch?'':'none';
+  const si=document.getElementById('ov-search-input');
+  if(!canSearch&&si)si.value='';
+  const q=canSearch&&si?si.value.trim().toLowerCase():'';
+  let list=scoped.filter(r=>ovMatches(r,ovRelFilter));
+  if(q)list=list.filter(r=>(r.title||'').toLowerCase().includes(q)||(r.artist||'').toLowerCase().includes(q));
+  else list=list.slice(0,8);
+  grid.innerHTML=list.length?list.map(ovRelCard).join(''):'<li class="ov2-empty">'+(q?'No matches.':scoped.length?'No releases in this group.':'No releases yet.')+'</li>';
+}
+
+// Four-step progress for the next release: Submitted → In review → Approved → Live on stores.
+function ovStepper(status){
+  const steps=['Submitted','In review','Approved','Live<span class="ov2-hide-m"> on stores</span>'];
+  const at={pending:0,review:1,approved:2,live:3}[status];
+  const idx=at==null?0:at;
+  const allDone=status==='live';
+  return '<ol class="ov2-steps" aria-label="Release progress">'+steps.map((s,i)=>{
+    const done=allDone||i<idx;
+    const cur=!allDone&&i===idx;
+    const mark=done?'<span class="ov2-step-mark done"><i class="ti ti-check" aria-hidden="true"></i></span>':cur?'<span class="ov2-step-mark cur"><span></span></span>':'<span class="ov2-step-mark"></span>';
+    const line=i<steps.length-1?'<span class="ov2-step-line'+(done?' done':'')+'" aria-hidden="true"></span>':'';
+    return '<li class="ov2-step'+(done?' is-done':cur?' is-cur':'')+'"'+(cur?' aria-current="step"':'')+'>'+line+mark+'<span class="ov2-step-label">'+s+'</span></li>';
+  }).join('')+'</ol>';
 }
 function renderUpcomingReleaseBanner(){
   const wrap=document.getElementById('ov-upcoming-banner');if(!wrap)return;
@@ -5481,18 +6040,129 @@ function renderUpcomingReleaseBanner(){
   const upcoming=base.filter(r=>r.release_date&&new Date(r.release_date)>now&&r.status!=='takendown'&&r.status!=='rejected').sort((a,b)=>new Date(a.release_date)-new Date(b.release_date));
   if(!upcoming.length){wrap.style.display='none';wrap.innerHTML='';return;}
   const next=upcoming[0];
-  const days=Math.ceil((new Date(next.release_date)-now)/(24*60*60*1000));
-  const art=next.artwork_url?'<img src="'+esc(next.artwork_url)+'" alt="'+esc(next.title||'Release')+' cover art" style="width:100%;height:100%;object-fit:cover">':'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="color:rgba(255,255,255,.3)"></i></div>';
+  _releaseMap[next.id]=next;
+  const rd=new Date(next.release_date);
+  const days=Math.ceil((rd-now)/(24*60*60*1000));
+  const art=next.artwork_url?'<img src="'+esc(next.artwork_url)+'" alt="">':'<i class="ti ti-music" aria-hidden="true"></i>';
+  const when=rd.toLocaleDateString('en-GB',{day:'numeric',month:'long'});
+  const who=[next.artist,next.genre].filter(Boolean).map(esc).join(' · ');
+  const meta=(who?'<span class="ov2-next-who">'+who+' · </span>':'')+days+' day'+(days===1?'':'s')+' to go';
   wrap.style.display='flex';
-  wrap.innerHTML='<div style="display:flex;align-items:center;gap:12px;min-width:0">'
-    +'<div style="width:44px;height:44px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--chip-bg)">'+art+'</div>'
-    +'<div style="min-width:0"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🔥 "'+esc(next.title)+'" drops in '+days+' day'+(days===1?'':'s')+'</div><div style="font-size:11px;color:rgba(255,255,255,.4)">'+esc(next.artist||'')+' · '+new Date(next.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long'})+'</div></div>'
-  +'</div>'
-  +'<button onclick="openReleaseFromCard(\''+next.id+'\')" class="btn adm-btn-sec btn-sm" style="flex-shrink:0">View</button>';
+  wrap.innerHTML='<span class="ov2-next-art">'+art+'</span>'
+    +'<div class="ov2-next-text"><h2 id="ov-next-h" class="ov2-eyebrow ov2-eyebrow-gold">Next up · drops '+esc(when)+'</h2><p class="ov2-next-title">'+esc(next.title||'Untitled release')+'</p><p class="ov2-next-meta">'+meta+'</p></div>'
+    +ovStepper(next.status)
+    +'<button type="button" class="ov2-btn ov2-btn-ghost ov2-next-btn" aria-label="View release '+esc(next.title||'')+'" onclick="openReleaseFromCard('+jsArg(next.id)+')"><span class="ov2-btn-text">View release</span><i class="ti ti-chevron-right"></i></button>';
 }
+
+// ── streams trend: small hand-drawn SVG charts (no library), sized to the space they sit in ──
+function ovDayLabel(ymd){
+  const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const p=String(ymd).split('-');
+  return p.length<3?String(ymd):(+p[2])+' '+m[(+p[1])-1];
+}
+function ovDayNum(ymd){const p=String(ymd).split('-');return Date.UTC(+p[0],(+p[1])-1,+p[2])/86400000;}
+// A round top value and step for the y axis: 962..1587 → 0, 500, 1k, 1.5k, 2k
+function ovNiceScale(max,ticks){
+  if(!(max>0))return {top:ticks,step:1};
+  const raw=max/ticks;
+  const mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  const norm=raw/mag;
+  const f=[1,2,2.5,5,10].find(x=>norm<=x+1e-9);
+  const step=Math.max(1,f*mag);
+  return {top:step*ticks,step};
+}
+function ovAxis(v){
+  if(v>=1e6)return +(v/1e6).toFixed(2)+'M';
+  if(v>=1e3)return +(v/1e3).toFixed(2)+'k';
+  return String(v);
+}
+function ovTrendSvg(dates,values,w){
+  const compact=w<480;
+  const H=compact?150:230;
+  const L=compact?36:50,R=compact?12:24,T=compact?12:16,B=compact?26:34;
+  const fs=compact?10:11;
+  const plotW=Math.max(60,w-L-R),plotH=H-T-B;
+  const ticks=compact?2:4;
+  const sc=ovNiceScale(Math.max.apply(null,values),ticks);
+  const days=dates.map(ovDayNum);
+  const d0=days[0],span=Math.max(1,days[days.length-1]-d0);
+  const X=i=>L+((days[i]-d0)/span)*plotW;
+  const Y=v=>T+plotH-(v/sc.top)*plotH;
+  let grid='',ylab='';
+  for(let i=0;i<=ticks;i++){
+    const y=Y(sc.step*i);
+    grid+='<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+(L+plotW)+'" y2="'+y.toFixed(1)+'" stroke="'+(i===0?'#3A3A48':'#23232D')+'" stroke-width="1"/>';
+    ylab+='<text x="'+(L-8)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end">'+ovAxis(sc.step*i)+'</text>';
+  }
+  const k=compact?Math.max(1,Math.round(span/2)):Math.max(1,Math.round(span/5));
+  const offs=[];
+  for(let o=0;o<span;o+=k)offs.push(o);
+  if(span-offs[offs.length-1]<k*0.6)offs.pop();
+  offs.push(span);
+  const n=new Date();
+  const todayStr=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+  const lastYmd=dates[dates.length-1];
+  let xlab='';
+  offs.forEach((o,j)=>{
+    const ymd=new Date((d0+o)*86400000).toISOString().slice(0,10);
+    const last=j===offs.length-1;
+    const text=last&&ymd===todayStr?'Today':ovDayLabel(ymd);
+    xlab+='<text x="'+(L+(o/span)*plotW).toFixed(1)+'" y="'+(H-8)+'" text-anchor="'+(last?'end':'middle')+'">'+text+'</text>';
+  });
+  const pts=values.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1));
+  const line='M'+pts.join(' L');
+  const area=line+' L'+X(values.length-1).toFixed(1)+','+(T+plotH)+' L'+X(0).toFixed(1)+','+(T+plotH)+' Z';
+  const lx=X(values.length-1),ly=Y(values[values.length-1]);
+  const lo=Math.min.apply(null,values),hi=Math.max.apply(null,values);
+  const loAt=dates[values.indexOf(lo)],hiAt=dates[values.indexOf(hi)];
+  const aria='Streams per day, '+ovDayLabel(dates[0])+' to '+ovDayLabel(lastYmd)+'. Lowest '+lo.toLocaleString()+' on '+ovDayLabel(loAt)+', highest '+hi.toLocaleString()+' on '+ovDayLabel(hiAt)+', latest '+values[values.length-1].toLocaleString()+'.';
+  return '<svg viewBox="0 0 '+w+' '+H+'" width="'+w+'" height="'+H+'" role="img" aria-label="'+esc(aria)+'">'
+    +grid
+    +'<g font-family="Inter, system-ui, sans-serif" font-size="'+fs+'" fill="#8E8E9C">'+ylab+xlab+'</g>'
+    +'<path d="'+area+'" fill="rgba(212,175,55,0.10)"/>'
+    +'<path d="'+line+'" fill="none" stroke="#D4AF37" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    +'<circle cx="'+lx.toFixed(1)+'" cy="'+ly.toFixed(1)+'" r="5" fill="#D4AF37" stroke="#111118" stroke-width="2"/>'
+    +'</svg>';
+}
+function ovSparkInner(values){
+  const n=values.length,min=Math.min.apply(null,values),max=Math.max.apply(null,values),rng=(max-min)||1;
+  const pts=values.map((v,i)=>((i/(n-1))*132).toFixed(1)+','+(36-((v-min)/rng)*32).toFixed(1)).join(' ');
+  return '<polygon points="'+pts+' 132,40 0,40" fill="rgba(212,175,55,0.12)"/><polyline points="'+pts+'" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+}
+function ovDrawChart(id){
+  const el=document.getElementById(id);if(!el)return;
+  if(!_ovTrend){el.innerHTML='';return;}
+  const w=Math.floor(el.clientWidth);
+  if(w<120)return; // not on screen right now (hidden card / other page) — drawn again when it is
+  el.innerHTML=ovTrendSvg(_ovTrend.dates,_ovTrend.values,w);
+}
+// Draws everything that depends on the daily stream data: the "vs last week" tag, the little line in the
+// Streams card, and the big chart (the phone shows the chart inside the Streams card instead).
+function ovRenderTrend(){
+  const tr=_ovTrend;
+  const scoped=!!ovViewingArtist; // the daily data is account-wide, so it isn't shown next to one artist's totals
+  const card=document.getElementById('ov-trend-card');
+  if(card)card.style.display=tr?'block':'none';
+  const sc=document.getElementById('ov-streams-card');
+  if(sc)sc.classList.toggle('has-trend',!!tr);
+  const chip=document.getElementById('s-streams-trend');
+  if(chip){
+    if(tr&&tr.chip&&!scoped){chip.style.display='inline-flex';chip.className='ov2-tag '+tr.chip.cls;chip.innerHTML=tr.chip.html;}
+    else chip.style.display='none';
+  }
+  const spark=document.getElementById('ov-spark');
+  if(spark){
+    if(tr&&!scoped){spark.innerHTML=ovSparkInner(tr.values);spark.style.display='';}
+    else spark.style.display='none';
+  }
+  ovDrawChart('ov-trend-chart');
+  ovDrawChart('ov-trend-m');
+}
+let _ovResizeT=null;
+window.addEventListener('resize',()=>{clearTimeout(_ovResizeT);_ovResizeT=setTimeout(()=>{if(_ovTrend){ovDrawChart('ov-trend-chart');ovDrawChart('ov-trend-m');}},120);});
+
 async function loadOverviewTrend(){
   const card=document.getElementById('ov-trend-card');if(!card||!user)return;
-  const trendBadge=document.getElementById('s-streams-trend');
   try{
     const cutoff=new Date();cutoff.setDate(cutoff.getDate()-14);
     const cutoffStr=cutoff.toISOString().split('T')[0];
@@ -5500,10 +6170,10 @@ async function loadOverviewTrend(){
     if(error)throw error;
     const rows=entries||[];
     const distinctDates=new Set(rows.map(r=>r.date));
-    // Only show a "this week" trend when there's real daily granularity behind it —
+    // Only show a chart / "this week" trend when there's real daily granularity behind it —
     // showing a chart built from smoothed/synthetic monthly totals would misrepresent
     // an actual weekly trend, which is exactly what this card is promising.
-    if(distinctDates.size<4){card.style.display='none';if(trendBadge)trendBadge.style.display='none';return;}
+    if(distinctDates.size<4){_ovTrend=null;ovRenderTrend();return;}
     const storeKeys=['spotify','apple_music','youtube_music','audiomack','boomplay','others'];
     const dailyTotals={};
     rows.forEach(r=>{
@@ -5511,7 +6181,6 @@ async function loadOverviewTrend(){
       dailyTotals[r.date]=(dailyTotals[r.date]||0)+t;
     });
     const dates=Object.keys(dailyTotals).sort();
-    const labels=dates.map(d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));
     const values=dates.map(d=>dailyTotals[d]);
     const now=new Date();
     const sevenAgo=new Date(now);sevenAgo.setDate(now.getDate()-7);
@@ -5522,32 +6191,133 @@ async function loadOverviewTrend(){
       if(dd>=sevenAgo)thisWeek+=dailyTotals[d];
       else if(dd>=fourteenAgo)lastWeek+=dailyTotals[d];
     });
-    const deltaEl=document.getElementById('ov-trend-delta');
-    if(deltaEl||trendBadge){
-      if(lastWeek>0){
-        const pct=Math.round(((thisWeek-lastWeek)/lastWeek)*100);
-        const up=pct>=0;
-        if(deltaEl)deltaEl.innerHTML='<span style="color:'+(up?'#34d399':'#f87171')+'"><i class="ti ti-trending-'+(up?'up':'down')+'"></i> '+(up?'+':'')+pct+'% vs last week</span>';
-        if(trendBadge){
-          trendBadge.style.display='inline-flex';
-          trendBadge.style.color=up?'#34d399':'#f87171';
-          trendBadge.innerHTML='<i class="ti ti-trending-'+(up?'up':'down')+'"></i> '+(up?'+':'')+pct+'%';
-        }
-      } else if(thisWeek>0){
-        if(deltaEl)deltaEl.innerHTML='<span style="color:#34d399">New activity this week</span>';
-        if(trendBadge){trendBadge.style.display='inline-flex';trendBadge.style.color='#34d399';trendBadge.innerHTML='New';}
-      } else {
-        if(deltaEl)deltaEl.innerHTML='';
-        if(trendBadge)trendBadge.style.display='none';
-      }
+    let chip=null;
+    if(lastWeek>0){
+      const pct=Math.round(((thisWeek-lastWeek)/lastWeek)*100);
+      chip=pct===0
+        ?{cls:'ov2-tag-flat',html:'Same as last week'}
+        :{cls:pct>0?'ov2-tag-up':'ov2-tag-down',html:'<i class="ti ti-trending-'+(pct>0?'up':'down')+'"></i> '+Math.abs(pct)+'% vs last week'};
+    } else if(thisWeek>0){
+      chip={cls:'ov2-tag-up',html:'New this week'};
     }
-    card.style.display='block';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>renderLineChart('ov-trend-chart',labels,values,'#D4AF37','')));
+    _ovTrend={dates,values,chip};
+    ovRenderTrend(); // shows the card…
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ovDrawChart('ov-trend-chart');ovDrawChart('ov-trend-m');})); // …then measures it
   }catch(e){
     console.error('Overview trend load error:',e);
-    card.style.display='none';
-    if(trendBadge)trendBadge.style.display='none';
+    _ovTrend=null;ovRenderTrend();
   }
+}
+
+// ── recent activity ──
+function ovActivityItem(l,relMap){
+  const rel=l.target_release_id?relMap[l.target_release_id]:null;
+  const subj=rel&&rel.title?'<strong>'+esc(rel.title)+'</strong>':'Your release';
+  const nv=(l.new_value||'').split(' —')[0].trim();
+  const C={ok:'#34D399',warn:'#FBBF24',bad:'#F87171',info:'#60A5FA',teal:'#2DD4BF',mute:'#9CA3AF',gold:'#D4AF37'};
+  let icon,tone,html;
+  if(l.field==='release_status'){
+    const m={
+      live:['ti-headphones',C.ok,'went live'],
+      approved:['ti-circle-check',C.teal,'was approved'],
+      review:['ti-eye',C.info,'is being reviewed'],
+      pending:['ti-clock',C.warn,'is waiting for review'],
+      rejected:['ti-alert-triangle',C.bad,'was rejected'],
+      takendown:['ti-ban',C.mute,'was taken down']
+    }[nv];
+    if(m){icon=m[0];tone=m[1];html=subj+' '+m[2];}
+    else{icon='ti-disc';tone=C.mute;html=subj+' is now '+esc(l.new_value||'updated');}
+  } else if(l.field==='release_deleted'){
+    icon='ti-trash';tone=C.mute;html=subj+' was removed';
+  } else if(l.field==='payout_status'){
+    const m={
+      paid:['ti-cash',C.ok,'Your payout was paid'],
+      processing:['ti-clock',C.warn,'Your payout is processing'],
+      pending:['ti-clock',C.warn,'Your payout is pending'],
+      failed:['ti-alert-triangle',C.bad,'Your payout failed'],
+      cancelled:['ti-circle-x',C.mute,'Your payout was cancelled']
+    }[nv];
+    if(m){icon=m[0];tone=m[1];html=m[2];}
+    else{icon='ti-wallet';tone=C.mute;html='Your payout is now '+esc(l.new_value||'updated');}
+  } else if(l.field==='payout_deleted'){
+    icon='ti-trash';tone=C.mute;html='A payout request was removed';
+  } else if(l.field==='plan'){
+    const label={free:'Free',solo_paid:'Solo',artist_plus:'Artist+',label:'Label',admin:'Admin'}[l.new_value]||l.new_value;
+    icon='ti-crown';tone=C.gold;html='Your plan changed to '+esc(label);
+  } else return null;
+  const when=new Date(l.changed_at);
+  const iso=isNaN(when)?'':when.toISOString();
+  return '<li class="ov2-act"><span class="ov2-act-ic" style="background:'+tone+'24;color:'+tone+'"><i class="ti '+icon+'" aria-hidden="true"></i></span>'
+    +'<span class="ov2-act-tx"><span class="ov2-act-main">'+html+'</span><time class="ov2-act-time"'+(iso?' datetime="'+iso+'"':'')+'>'+esc(ovAgo(when))+'</time></span></li>';
+}
+async function loadOverviewActivity(){
+  const card=document.getElementById('ov-activity-card');
+  const list=document.getElementById('ov-activity-list');
+  if(!card||!list||!user)return;
+  try{
+    const {data:logs,error}=await sb.from('admin_audit_log').select('*').eq('target_user_id',activeAccountId()).in('field',['release_status','release_deleted','payout_status','payout_deleted','plan']).order('changed_at',{ascending:false}).limit(8);
+    if(error)throw error;
+    if(!logs||!logs.length){card.style.display='none';return;}
+    const relIds=[...new Set(logs.filter(l=>l.target_release_id).map(l=>l.target_release_id))];
+    let releaseMap={};
+    if(relIds.length){
+      const {data:rels}=await Promise.resolve(sb.from('releases').select('id,title').in('id',relIds)).catch(()=>({data:[]}));
+      (rels||[]).forEach(r=>{releaseMap[r.id]=r;});
+    }
+    const items=logs.map(l=>ovActivityItem(l,releaseMap)).filter(Boolean);
+    if(!items.length){card.style.display='none';return;}
+    list.innerHTML=items.join('');
+    card.style.display='block';
+  }catch(e){
+    console.error('Overview activity load error:',e);
+    card.style.display='none';
+  }
+}
+
+// ── your plan ──
+let _ovPlanSeq=0;
+async function renderOverviewPlan(){
+  const card=document.getElementById('ov-plan-card');if(!card)return;
+  if(!profile||isAdmin()){card.style.display='none';return;}
+  const seq=++_ovPlanSeq;
+  const plan=profile.plan||'free';
+  const max=getRosterMax();                       // artist slots on Artist+ / Label; 0 on Solo and Free
+  const label={solo_paid:'Solo',artist_plus:'Artist+',label:'Label'}[plan];
+  let count=null;
+  if(label&&max>0){
+    try{
+      const {count:c,error}=await sb.from('roster_artists').select('id',{count:'exact',head:true}).eq('user_id',activeAccountId());
+      if(!error&&c!=null)count=c;
+    }catch(e){/* usage line is simply left out */}
+    if(seq!==_ovPlanSeq)return;                   // a newer render took over while we waited
+  }
+  let title,use='',pct=null,body='',cta=null;
+  if(!label){
+    title='No plan yet';
+    body='Choose a plan to start distributing your music to 150+ stores.';
+    cta={text:'Choose a plan',gold:true,go:"goPage('upgrade',null)"};
+  } else {
+    title=label;
+    if(max>0){
+      if(count!=null){
+        const extra=Math.max(0,count-max);
+        use=extra>0?count+' artists ('+max+' included + '+extra+' extra)':count+' of '+max+' artist slots used';
+        pct=Math.min(100,Math.round(count/max*100));
+      } else use=max+' artist slots included';
+    } else use='1 artist profile included';
+    body={
+      solo_paid:'Need a second artist profile, ISRC codes or release scheduling? Artist+ adds all three.',
+      artist_plus:'Managing more artists? Label includes 5 artist profiles, plus priority support and a dedicated account manager.'
+    }[plan]||'';
+    cta=plan==='label'?{text:'Manage artists',go:"goPage('myartists',null)"}:{text:'Compare plans',go:"goPage('upgrade',null)"};
+  }
+  if(isTeamViewerOnly()){body='';cta=null;}      // team members can look but not change the plan
+  card.innerHTML='<h2 id="ov-plan-h" class="ov2-eyebrow">Your plan</h2>'
+    +'<div class="ov2-plan-row"><p class="ov2-plan-name">'+esc(title)+'</p>'+(use?'<span class="ov2-plan-use">'+esc(use)+'</span>':'')+'</div>'
+    +(pct!=null?'<div class="ov2-meter" role="img" aria-label="'+esc(use)+'"><span style="width:'+pct+'%"></span></div>':'')
+    +(body?'<p class="ov2-plan-text">'+esc(body)+'</p>':'')
+    +(cta?'<button type="button" class="ov2-btn '+(cta.gold?'ov2-btn-gold':'ov2-btn-ghost')+'" onclick="'+cta.go+'">'+esc(cta.text)+' <i class="ti ti-arrow-right"></i></button>':'');
+  card.style.display='flex';
 }
 
 // ── RELEASE MODAL ──────────────────────────────────────
