@@ -334,7 +334,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .rsub:hover{color:rgba(255,255,255,.7)}
 .rsub.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:600}
 .yellow-banner{background:#f59e0b;border-radius:10px;padding:.875rem 1.25rem;font-size:13px;color:#000;font-weight:500;margin-bottom:1.5rem;display:flex;align-items:center;gap:8px}
-.comm-bar{margin-bottom:1.25rem}
 /* PAYOUT */
 .payout-balance-card{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:2rem;max-width:560px;margin-bottom:1.5rem}
 .payout-bar-wrap{background:#2a2a45;border-radius:8px;height:10px;margin:1rem 0;overflow:hidden}
@@ -526,6 +525,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
   /* ROYALTIES */
   .roy-hero-grid{grid-template-columns:1fr 1fr}
+  .roy-hero-grid>:last-child:nth-child(odd){grid-column:1/-1}
   .roy-hero-val{font-size:22px}
   #page-royalties>div[style*="grid-template-columns:1fr 320px"]{grid-template-columns:1fr!important}
 
@@ -794,13 +794,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .roy-hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
 .roy-hero-card{border-radius:14px;padding:1.5rem;display:flex;align-items:flex-start;gap:1rem;border:1px solid rgba(255,255,255,.07)}
 .roy-hero-gross{background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(138,100,32,.06));border-color:rgba(201,168,76,.25)}
-.roy-hero-comm{background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(185,28,28,.06));border-color:rgba(239,68,68,.2)}
 .roy-hero-payout{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(4,120,87,.06));border-color:rgba(16,185,129,.2)}
 .roy-hero-period{background:#1e1e35;border-color:rgba(255,255,255,.07)}
 .roy-hero-icon{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .roy-hero-icon i{font-size:20px;color:var(--gold)}
 .roy-hero-gross .roy-hero-icon i{color:var(--gold)}
-.roy-hero-comm .roy-hero-icon i{color:#f87171}
 .roy-hero-payout .roy-hero-icon i{color:#34d399}
 .roy-hero-period .roy-hero-icon i{color:#fbbf24}
 .roy-hero-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.4);margin-bottom:.4rem}
@@ -1026,14 +1024,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <p class="hero-sub">Release to Spotify, Apple Music, Boomplay, Audiomack and 150+ platforms worldwide. Mobile Money and bank payouts. No hidden fees.</p>
       <div class="hero-ctas">
         <button class="btn btn-gold btn-lg" onclick="showAuth('signup')"><i class="ti ti-rocket"></i> Start distributing</button>
-        <button class="btn btn-lg hero-watch-btn" onclick="document.getElementById('how-sec').scrollIntoView({behavior:'smooth'})"><i class="ti ti-play"></i> See how it works</button>
+        <button class="btn btn-lg hero-watch-btn" onclick="document.getElementById('how-sec').scrollIntoView({behavior:'smooth'})"><i class="ti ti-player-play"></i> See how it works</button>
       </div>
       <div class="hero-trust">
         
         <div class="trust-i"><i class="ti ti-check"></i> Mobile Money payouts</div>
         <div class="trust-i"><i class="ti ti-check"></i> 150+ platforms</div>
         <div class="trust-i"><i class="ti ti-check"></i> No per-release fees</div>
-        <div class="trust-i"><i class="ti ti-check"></i> Keep 100% with Artist+</div>
+        <div class="trust-i"><i class="ti ti-check"></i> 0% commission — keep 100%</div>
       </div>
     </div>
   </section>
@@ -1206,18 +1204,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <li><span class="pcv2-check">✓</span> 1 artist profile</li>
             <li><span class="pcv2-check">✓</span> Unlimited releases</li>
             <li><span class="pcv2-check">✓</span> 150+ DSPs worldwide</li>
+            <li><span class="pcv2-check">✓</span> 0% commission — keep 100%</li>
             <li><span class="pcv2-check">✓</span> Royalty dashboard</li>
             <li><span class="pcv2-check">✓</span> Mobile Money + Bank payouts</li>
             <li><span class="pcv2-check">✓</span> Store-level analytics</li>
           </ul>
-          <div style="text-align:center;font-size:11px;color:rgba(0,0,0,.4);margin-top:1rem">≈ <span data-usd-price="14">$14.00</span> · Billed annually · 9% commission</div>
+          <div style="text-align:center;font-size:11px;color:rgba(0,0,0,.4);margin-top:1rem">≈ <span data-usd-price="14">$14.00</span> · Billed annually</div>
         </div>
 
         <div class="pcv2 pcv2-featured">
           <div class="pcv2-badge">★ MOST POPULAR</div>
           <div class="pcv2-tag">// // ARTIST+</div>
           <div class="pcv2-price"><span data-usd-price="25">$25</span><span class="pcv2-period">/year</span></div>
-          <p class="pcv2-desc">2 artist profiles. Take the next step and keep 100% of your royalties.</p>
+          <p class="pcv2-desc">2 artist profiles, with ISRC codes and release scheduling.</p>
           <button class="pcv2-btn pcv2-btn-dark" onclick="showAuth('signup')">Choose Artist+</button>
           <ul class="pcv2-feats">
             <li><span class="pcv2-check">✓</span> <strong>2 artist profiles</strong></li>
@@ -1236,7 +1235,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div class="pcv2 pcv2-dark">
           <div class="pcv2-tag">// // LABEL</div>
           <div class="pcv2-price"><span data-usd-price="40">$40</span><span class="pcv2-period">/year</span></div>
-          <p class="pcv2-desc">5 artists included, $1/month (or $5/year) for each additional. Manage your whole roster and keep 100% of royalties.</p>
+          <p class="pcv2-desc">5 artists included, $1/month (or $5/year) for each additional. Manage your whole roster with priority support.</p>
           <button class="pcv2-btn pcv2-btn-gold" onclick="showAuth('signup')">Choose Label</button>
           <ul class="pcv2-feats">
             <li><span class="pcv2-check">✓</span> <strong>5+ artist profiles</strong></li>
@@ -1255,7 +1254,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
 
       <div class="pricing-v2-note">
-        <i class="ti ti-info-circle"></i> The Solo plan carries a 9% commission on royalties. Upgrade to Artist+ or Label to keep 100%.
+        <i class="ti ti-info-circle"></i> 0% commission on every plan — you keep 100% of your royalties. Plans differ in how many artists you can manage and which tools you get.
       </div>
     </div>
   </section>
@@ -1303,8 +1302,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div class="faq-a">You can request payouts via Mobile Money (Ghana and Nigeria) or direct bank transfer worldwide with your SWIFT/BIC code. All payments are processed within 5–7 business days of your request. Pricing is shown in your local currency for reference, though your actual subscription charge is processed in Ghana Cedis (GHS) via Paystack.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">What is the 9% commission on the Solo plan? <i class="ti ti-chevron-down"></i></div>
-          <div class="faq-a">On the Solo plan, Blakkstone keeps 9% of your royalties. Upgrade to Artist+ ($25/year) or Label ($40/year) to keep 100% of everything you earn.</div>
+          <div class="faq-q">Does Blakkstone take a commission on my royalties? <i class="ti ti-chevron-down"></i></div>
+          <div class="faq-a">No. Blakkstone takes 0% commission on every plan, so you keep 100% of the royalties you earn. A small service fee applies when you withdraw, and you'll see the exact amount before you confirm each payout request.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-q">Can I distribute compilations or Various Artists albums? <i class="ti ti-chevron-down"></i></div>
@@ -1668,7 +1667,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- COLOURFUL STAT CARDS -->
       <div class="overview-cards">
         <div class="ov-card ov-card-1" onclick="goPage('analytics',null)" title="View Analytics">
-          <div class="ov-card-icon"><i class="ti ti-wavesaw-mono"></i></div>
+          <div class="ov-card-icon"><i class="ti ti-wave-sine"></i></div>
           <div style="flex:1">
             <div class="ov-card-label">Total Streams</div>
             <div style="display:flex;align-items:baseline;gap:8px">
@@ -1850,21 +1849,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <!-- PERFORMANCE -->
         <div class="adm-card" style="margin-bottom:1.25rem">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.3);margin-bottom:.875rem">Performance</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
             <div style="background:var(--black);border-radius:10px;padding:1rem">
-              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-wavesaw-mono" style="color:var(--gold)"></i> Streams</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-wave-sine" style="color:var(--gold)"></i> Streams</div>
               <div id="rel-modal-streams" style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px">0</div>
               <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px">Total plays</div>
             </div>
             <div style="background:var(--black);border-radius:10px;padding:1rem">
-              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-coin" style="color:#34d399"></i> Gross</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-coin" style="color:#34d399"></i> Earnings</div>
               <div id="rel-modal-earnings" style="font-size:26px;font-weight:800;color:#34d399;letter-spacing:-.5px">$0.00</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px">Before commission</div>
-            </div>
-            <div style="background:var(--black);border-radius:10px;padding:1rem">
-              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px;display:flex;align-items:center;gap:5px"><i class="ti ti-wallet" style="color:#fbbf24"></i> Payout</div>
-              <div id="rel-modal-payout" style="font-size:26px;font-weight:800;color:#fbbf24;letter-spacing:-.5px">$0.00</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px" id="rel-modal-payout-sub">Your share</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:3px">Total earned</div>
             </div>
           </div>
         </div>
@@ -2161,7 +2155,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <p style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1.5rem">Choose which platforms to distribute to. All are selected by default.</p>
           <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
-            <button class="btn btn-purple btn-sm" onclick="selectAllStores(true)"><i class="ti ti-check-all"></i> Select All</button>
+            <button class="btn btn-purple btn-sm" onclick="selectAllStores(true)"><i class="ti ti-checks"></i> Select All</button>
             <button class="btn btn-sm" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="selectAllStores(false)">Deselect All</button>
             <div style="display:flex;gap:6px;margin-left:auto">
               <button class="store-filter-btn active" onclick="filterStores('all',this)">All</button>
@@ -2379,8 +2373,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
             Stores pay out royalties with a minimum delay of two months. Figures shown are estimates until confirmed by DSPs.
           </div>
 
-          <!-- COMMISSION NOTICE -->
-          <div id="commission-bar"></div>
+          <!-- PENDING PAYOUT NOTICE -->
+          <div id="royalty-notice"></div>
 
           <!-- CONTENT PROTECTION STATUS -->
           <div style="background:var(--card,#1a1a1a);border:1px solid rgba(212,175,55,.15);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.5rem">
@@ -2398,17 +2392,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div class="roy-hero-card roy-hero-gross">
               <div class="roy-hero-icon"><i class="ti ti-trending-up"></i></div>
               <div>
-                <div class="roy-hero-label">Gross Earnings</div>
+                <div class="roy-hero-label">Total Earnings</div>
                 <div class="roy-hero-val" id="r-gross">$0.00</div>
-                <div class="roy-hero-sub">Total before deductions</div>
-              </div>
-            </div>
-            <div class="roy-hero-card roy-hero-comm">
-              <div class="roy-hero-icon"><i class="ti ti-percentage"></i></div>
-              <div>
-                <div class="roy-hero-label">Commission</div>
-                <div class="roy-hero-val" id="r-commission" style="color:#f87171">$0.00</div>
-                <div class="roy-hero-sub" id="r-comm-sub">Blakkstone 9% commission</div>
+                <div class="roy-hero-sub">All-time, before withdrawals</div>
               </div>
             </div>
             <div class="roy-hero-card roy-hero-payout">
@@ -2454,7 +2440,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <div class="dark-table-wrap" style="margin-bottom:1.5rem">
             <table>
-              <thead><tr><th>Release</th><th>Streams</th><th>Gross</th><th>Commission</th><th>Your Payout</th><th>Status</th></tr></thead>
+              <thead><tr><th>Release</th><th>Streams</th><th>Earnings</th><th>Status</th></tr></thead>
               <tbody id="royalty-tbody"></tbody>
             </table>
           </div>
@@ -2659,7 +2645,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div id="an-v2-tab-metrics">
             <div class="an-v2-stats">
               <div class="an-v2-stat">
-                <div class="an-v2-stat-icon"><i class="ti ti-wavesaw-mono"></i></div>
+                <div class="an-v2-stat-icon"><i class="ti ti-wave-sine"></i></div>
                 <div>
                   <div class="an-v2-stat-label">Total Streams</div>
                   <div class="an-v2-stat-value" id="a-streams">—</div>
@@ -2753,19 +2739,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- UPGRADE -->
     <div class="page" id="page-upgrade">
-      <div class="ug-hero"><h1 id="ug-hero-title">Upgrade your plan</h1><p id="ug-hero-sub">Remove commission, unlock more artists, get priority support.</p></div>
+      <div class="ug-hero"><h1 id="ug-hero-title">Upgrade your plan</h1><p id="ug-hero-sub">Unlock more artists, ISRC codes, release scheduling and priority support.</p></div>
       <div class="ug-grid">
         <div class="ug-card plain">
           <div class="ug-name">Solo</div>
           <div class="ug-price"><span data-usd-price="14">$14</span> <small>/ year</small></div>
-          <p class="ug-desc">1 artist profile. 9% commission on royalties.</p>
+          <p class="ug-desc">1 artist profile. Keep 100% of your royalties.</p>
           <ul class="ug-feats">
             <li><span class="ug-check">✓</span> 1 artist profile</li>
             <li><span class="ug-check">✓</span> Unlimited releases</li>
             <li><span class="ug-check">✓</span> 150+ DSPs worldwide</li>
             <li><span class="ug-check">✓</span> Royalty dashboard</li>
             <li><span class="ug-check">✓</span> Mobile Money + Bank payouts</li>
-            <li><span class="ug-check cx">✕</span> 9% commission</li>
+            <li><span class="ug-check">✓</span> 0% commission</li>
             <li><span class="ug-check cx">✕</span> Multiple artists</li>
           </ul>
           <button class="ug-btn ug-btn-dark" id="ug-solo-btn" onclick="openPaystack('solo')">Get Solo</button>
@@ -2774,7 +2760,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div class="ug-badge">★ MOST POPULAR</div>
           <div class="ug-name">Artist+</div>
           <div class="ug-price"><span data-usd-price="25">$25</span> <small>/ year</small></div>
-          <p class="ug-desc">Keep 100% of your royalties. 2 artists.</p>
+          <p class="ug-desc">2 artist profiles. Keep 100% of your royalties.</p>
           <ul class="ug-feats">
             <li><span class="ug-check">✓</span> 2 artist profiles</li>
             <li><span class="ug-check">✓</span> Unlimited releases</li>
@@ -2808,7 +2794,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
       <div style="background:#fff8e7;border:1px solid var(--gl);border-radius:10px;padding:1.1rem;font-size:13px;color:#a07d10;line-height:1.7;max-width:860px;width:100%;margin:0 auto">
-        <strong>About the 9% commission:</strong> On the Solo plan, Blakkstone keeps 9% of royalties to cover distribution costs. Upgrade to Artist+ or Label to keep 100%.
+        <strong>0% commission on every plan:</strong> Blakkstone takes no cut of your royalties. Plans differ in how many artists you can manage and which tools you get.
       </div>
     </div>
 
@@ -3050,7 +3036,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <div class="atab" id="atab-releases" onclick="switchAdminTab('releases',this)"><i class="ti ti-music"></i> Releases</div>
             <div class="atab" id="atab-users" onclick="switchAdminTab('users',this)"><i class="ti ti-users"></i> Artists</div>
             <div class="atab" id="atab-payouts" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts <span id="payout-alert" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:2px">!</span></div>
-            <div class="atab" id="atab-streams" onclick="switchAdminTab('streams',this)"><i class="ti ti-wavesaw-mono"></i> Streams</div>
+            <div class="atab" id="atab-streams" onclick="switchAdminTab('streams',this)"><i class="ti ti-wave-sine"></i> Streams</div>
             <div class="atab" id="atab-royalties" onclick="switchAdminTab('royalties',this)"><i class="ti ti-coin"></i> Royalties</div>
             <div class="atab" id="atab-subs" onclick="switchAdminTab('subs',this)"><i class="ti ti-crown"></i> Subscriptions</div>
             <div class="atab" id="atab-reports" onclick="switchAdminTab('reports',this)"><i class="ti ti-file-analytics"></i> Reports</div>
@@ -3758,14 +3744,11 @@ function isAdmin(){
 function hasActivePlan(){
   return isAdmin()||['solo_paid','artist_plus','label'].includes(profile?.plan||'');
 }
-const COMM=0.09;
-// Single source of truth for "does this account pay Blakkstone's 9% commission or not."
-// Previously duplicated identically across 7 separate functions — consolidated here so a
-// future plan-tier change only ever needs to happen in one place, not seven.
-function isCommissionExempt(planOverride){
-  if(planOverride!==undefined)return ['label','artist_plus','admin'].includes(planOverride);
-  return ['label','artist_plus','admin'].includes(profile?.plan)||user?.email===ADMIN_EMAIL;
-}
+// Blakkstone takes NO commission on royalties, on any plan (the old Solo-plan commission was removed).
+// What an account has earned is what it can withdraw, less anything already paid out or pending.
+// Balances are worked out on screen from each release's earnings figure (nothing is stored per payout),
+// so the removal also applies to royalties earned before the change — exactly as upgrading from Solo to
+// Artist+ always did. A small service fee still applies when withdrawing (PAYOUT_FEE_PERCENT).
 // Note: GHS conversion now always reads currentDisplayRates.GHS (live-fetched,
 // falls back to CURRENCY_FALLBACK_RATES.GHS if the fetch hasn't completed) —
 // there used to be a separate, static GHS_RATE constant here that several
@@ -3961,7 +3944,7 @@ function planEndsAt(p){
 function planHasLapsed(p,now){const end=planEndsAt(p);return !!end&&end<(now||new Date());}
 // Real, shared plan feature content — single source of truth for both the checkout modal and the artist's own Profile page.
 const PLAN_FEATURES={
-  solo:['1 artist profile','Unlimited releases','150+ DSPs worldwide','Royalty dashboard','Mobile Money + Bank payouts'],
+  solo:['1 artist profile','Unlimited releases','150+ DSPs worldwide','0% commission','Royalty dashboard','Mobile Money + Bank payouts'],
   artist_plus:['2 artist profiles','Unlimited releases','150+ DSPs worldwide','0% commission','ISRC code generation','Release scheduling','Earnings dashboard','Mobile Money + Bank payouts','Store analytics'],
   label:['5+ artist profiles','Unlimited releases','150+ DSPs worldwide','0% commission','ISRC code generation','Full royalty dashboard','Mobile Money + Bank payouts','Label analytics overview','Priority support','Dedicated account manager']
 };
@@ -4352,7 +4335,7 @@ async function loadProfile(u){
   const adminNow=isAdmin();
   // Real enforcement: a genuinely lapsed paid plan reverts to Free before any access decision is made.
   // This never touches existing releases or roster artists — those stay exactly as they are, protected
-  // by the roster-lock system already in place. Only future privileges (commission exemption, roster room) stop.
+  // by the roster-lock system already in place. Only future privileges (roster room, plan features) stop.
   // Accounts on auto-renewal get a short grace window past expiry (RENEWAL_GRACE_DAYS) so a renewal that is
   // still arriving never drops a paying customer to Free.
   let justLapsedPlan=null;
@@ -4506,8 +4489,8 @@ function markWelcomePlansSeen(){
   }catch(e){console.error('Could not save the welcome-screen flag to the account:',e);}
 }
 function welcomePlanDesc(key){
-  if(key==='solo')return '1 artist profile. '+Math.round(COMM*100)+'% commission on royalties.';
-  if(key==='artist_plus')return '2 artist profiles, keep 100% of your royalties.';
+  if(key==='solo')return '1 artist profile. Keep 100% of your royalties.';
+  if(key==='artist_plus')return '2 artist profiles. Keep 100% of your royalties.';
   return '5 artists included, $'+EXTRA_ARTIST_PRICE_MONTHLY+'/month (or $'+EXTRA_ARTIST_PRICE_YEARLY+'/year) for each additional. For labels & collectives.';
 }
 function renderWelcomePlans(){
@@ -4523,14 +4506,12 @@ function renderWelcomePlans(){
     const p=PLANS[key];
     const featured=key==='artist_plus';
     const feats=(PLAN_FEATURES[key]||[]).map(f=>'<li><i class="ti ti-check"></i> '+(/^0% commission$/i.test(f)?'<strong>'+esc(f)+'</strong>':esc(f))+'</li>').join('');
-    // Solo's commission is a real cost of the plan, so it is stated on the card rather than left for the customer to discover later.
-    const commissionNote=key==='solo'?'<li><i class="ti ti-alert-circle" style="color:#fbbf24"></i> '+Math.round(COMM*100)+'% royalty commission</li>':'';
     return '<div class="paywall-card'+(featured?' paywall-card-featured':'')+'" data-plan="'+esc(key)+'">'
       +(featured?'<div class="paywall-featured-badge">MOST POPULAR</div>':'')
       +'<div class="paywall-card-name">'+esc(p.label)+'</div>'
       +'<div class="paywall-card-price"><b data-usd-price="'+p.yearly+'">'+esc(convertPrice(p.yearly))+'</b> <span>/ year</span></div>'
       +'<p class="paywall-card-desc">'+esc(welcomePlanDesc(key))+'</p>'
-      +'<ul class="paywall-feats">'+feats+commissionNote+'</ul>'
+      +'<ul class="paywall-feats">'+feats+'</ul>'
       +'<button class="btn'+(featured?' btn-gold':'')+' paywall-card-btn" style="'+btnStyle[key]+'" onclick="paywallPay('+jsArg(key)+')"><i class="ti ti-'+icons[key]+'"></i> Choose '+esc(p.label)+'</button>'
       +'</div>';
   }).join('');
@@ -4586,7 +4567,7 @@ function paywallPay(plan){
   const titleEl=document.getElementById('pay-modal-title');
   if(titleEl) titleEl.textContent='Get '+p.label+' Plan';
   const descEl=document.getElementById('pay-modal-desc');
-  const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5 artists included ($1/mo or $5/yr each additional), 0% commission, priority support.'};
+  const descs={solo:'1 artist, 0% commission.',artist_plus:'2 artists, 0% commission.',label:'5 artists included ($1/mo or $5/yr each additional), 0% commission, priority support.'};
   if(descEl) descEl.textContent=descs[plan]||'';
   const yp=document.getElementById('b-yearly-price');
   if(yp){yp.textContent=convertPrice(p.yearly);yp.dataset.usdPrice=p.yearly;}
@@ -4608,11 +4589,6 @@ function setAvatarDisplay(initials,url){
     else{if(ta) ta.innerHTML='<span style="font-size:11px;font-weight:700;color:var(--gold)">'+initials+'</span>';}
     const pai=document.getElementById('profile-avatar-initials');if(pai) pai.textContent=initials;
   }catch(e){}
-}
-function updateCommBar(isPaid,isAdmin){
-  const bar=document.getElementById('commission-bar');if(!bar)return;
-  if(!isPaid&&!isAdmin) bar.innerHTML='<div class="comm-bar"><i class="ti ti-info-circle"></i> You are on the <strong>Solo plan</strong> — Blakkstone keeps 9%. <a onclick="goPage(\'upgrade\',null)" style="color:var(--gold);font-weight:600;margin-left:6px">Upgrade</a></div>';
-  else bar.innerHTML='';
 }
 function updateUpgradePage(plan){
   const soloBtn=document.getElementById('ug-solo-btn');
@@ -4648,16 +4624,16 @@ function updateUpgradePage(plan){
   const sub=document.getElementById('ug-hero-sub');
   if(plan==='solo_paid'){
     if(title)title.textContent='Ready for more?';
-    if(sub)sub.textContent='You\'re already distributing worldwide on Solo. Move up to keep 100% of your royalties and add more artist profiles.';
+    if(sub)sub.textContent='You\'re already distributing worldwide on Solo. Move up for more artist profiles, ISRC codes, release scheduling and store analytics.';
   } else if(plan==='artist_plus'){
     if(title)title.textContent='You\'re on Artist+';
-    if(sub)sub.textContent='Keeping 100% of your royalties with room for 2 artists. Need 5 or more? Label is the next step up.';
+    if(sub)sub.textContent='Room for 2 artists, with ISRC codes and release scheduling. Need 5 or more? Label is the next step up.';
   } else if(plan==='label'){
     if(title)title.textContent='You\'re on the Label plan';
     if(sub)sub.textContent='You already have our highest tier — every feature, 0% commission, unlimited room to grow your roster.';
   } else {
     if(title)title.textContent='Upgrade your plan';
-    if(sub)sub.textContent='Remove commission, unlock more artists, get priority support.';
+    if(sub)sub.textContent='Unlock more artists, ISRC codes, release scheduling and priority support.';
   }
 }
 function enterDashboard(){
@@ -4717,7 +4693,6 @@ function enterDashboard(){
     const name=profile?.full_name||profile?.artist_name||user.email.split('@')[0];
     const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const adminNow=isAdmin();
-    const isPaid=isCommissionExempt();
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     set('tnav-name',name.split(' ')[0]);
     set('tnav-account-id',profile?.account_id||'');
@@ -4740,7 +4715,7 @@ function enterDashboard(){
       const prefReplies=document.getElementById('pref-replies');if(prefReplies) prefReplies.checked=profile.email_pref_replies!==false;
       const prefBroadcasts=document.getElementById('pref-broadcasts');if(prefBroadcasts) prefBroadcasts.checked=profile.email_pref_broadcasts!==false;
     }
-    updateCommBar(isPaid,adminNow);updateUpgradePage(profile?.plan);
+    updateUpgradePage(profile?.plan);
     const maNav=document.getElementById('myartists-nav');
     const _rm=getRosterMax();
     if(maNav)maNav.style.display=_rm>0?'':'none';
@@ -4796,9 +4771,9 @@ async function refreshProfileAndUpgradePage(){
     // managed (the owner's, if a team member is viewing via team access),
     // never this specific login's own row. Overwriting the global profile
     // with the wrong one here wouldn't just show this page incorrectly —
-    // isCommissionExempt() reads this same profile.plan, so every balance
-    // shown afterward on Overview, Royalties, and Analytics would silently
-    // use the wrong plan's commission rate for the rest of the session.
+    // hasActivePlan() and the roster limits read this same profile.plan, so every
+    // plan-dependent screen afterward would silently use the wrong account's plan
+    // for the rest of the session.
     const {data,error}=await sb.from('profiles').select('*').eq('id',activeAccountId()).single();
     if(error)throw error;
     if(data){profile=data;updateUpgradePage(profile.plan);}
@@ -5478,8 +5453,7 @@ function renderOverviewStats(){
   // broken down per artist (Blakkstone pays the account holder, not individual roster
   // artists), so scoping this number per-artist would just be inaccurate.
   const earnings=allReleases.reduce((a,r)=>a+(r.earnings||0),0);
-  const isPaidPlan=isCommissionExempt();
-  const grossEarnings=isPaidPlan?earnings:earnings*(1-COMM);
+  const grossEarnings=earnings; // no commission on any plan
   const paidOut2=(_ovPayoutsCache||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingOut=(_ovPayoutsCache||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const availableBalance=Math.max(0,grossEarnings-paidOut2-pendingOut);
@@ -5594,8 +5568,6 @@ function openReleaseFromCard(id){
 function openReleaseModal(r,updateUrl){
   if(updateUrl===undefined)updateUrl=true;
   _currentModalReleaseId=r.id;
-  const isPaid=isCommissionExempt();
-  const comm=isPaid?0:(r.earnings||0)*COMM;const payout=(r.earnings||0)-comm;
   const artEl=document.getElementById('rel-modal-art');
   if(artEl) artEl.innerHTML=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" alt="'+esc(r.title||'Release')+' cover art" style="width:100%;height:100%;object-fit:cover">':'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"><i class="ti ti-music" style="font-size:32px;color:rgba(255,255,255,.2)"></i></div>';
   const artDlBtn=document.getElementById('rel-modal-artwork-download-btn');
@@ -5622,7 +5594,6 @@ function openReleaseModal(r,updateUrl){
   }
   loadReleaseStatusHistory(r.id);
   set('rel-modal-streams',(r.streams||0).toLocaleString());set('rel-modal-earnings','$'+(r.earnings||0).toFixed(2));
-  set('rel-modal-payout','$'+payout.toFixed(2));set('rel-modal-payout-sub',isPaid?'100% yours':'After 9% commission');
   set('rel-modal-date',r.release_date?new Date(r.release_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—');
   set('rel-modal-status-text',bl);set('rel-modal-submitted',r.submitted_at?new Date(r.submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—');
   const ic=document.getElementById('rel-modal-isrc-cell');if(ic) ic.style.display=r.isrc?'block':'none';set('rel-modal-isrc',r.isrc||'');
@@ -6455,14 +6426,13 @@ async function loadRoyalties(){
     sb.from('payouts').select('amount,status').eq('user_id',activeAccountId())
   ]);
   const rl=(relData||[]).filter(r=>(r.earnings||0)>0);const allRel=relData||[];
-  const isPaid=isCommissionExempt();
   const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
-  const comm=isPaid?0:gross*COMM;const totalPayout=gross-comm;
+  const totalPayout=gross; // no commission on any plan
   const paidOut3=(payoutData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingP=(payoutData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const available=Math.max(0,totalPayout-paidOut3-pendingP);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('r-gross','$'+gross.toFixed(2));set('r-commission',isPaid?'$0.00':'-$'+comm.toFixed(2));
+  set('r-gross','$'+gross.toFixed(2));
   set('r-payout','$'+available.toFixed(2));
   try{
     const {data:lastEntry,error:leErr}=await sb.from('royalty_entries')
@@ -6481,7 +6451,6 @@ async function loadRoyalties(){
     console.error('Last reporting period fetch error:',e);
     set('r-updated','—');
   }
-  const cSub=document.getElementById('r-comm-sub');if(cSub) cSub.textContent=isPaid?'No commission (paid plan)':'Blakkstone 9% commission';
   const cidCount=allRel.filter(r=>r.content_id_opt_in).length;
   const cidEl=document.getElementById('cid-optin-count');
   if(cidEl){
@@ -6489,11 +6458,9 @@ async function loadRoyalties(){
       ?cidCount+' release'+(cidCount===1?'':'s')+' opted in — ready to activate once this launches.'
       :'No releases opted in yet. You can opt in during submission for any new release.';
   }
-  const commBar=document.getElementById('commission-bar');
-  if(commBar){
-    if(!isPaid&&gross>0) commBar.innerHTML='<div style="background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.25);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:var(--gold);margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><span><i class="ti ti-crown"></i> Upgrade to keep 100% of your royalties.</span><button class="btn btn-purple btn-sm" onclick="goPage(\'upgrade\',null)">Upgrade</button></div>';
-    else if(pendingP>0) commBar.innerHTML='<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1.25rem"><i class="ti ti-clock"></i> $'+pendingP.toFixed(2)+' pending payout.</div>';
-    else commBar.innerHTML='';
+  const noticeBar=document.getElementById('royalty-notice');
+  if(noticeBar){
+    noticeBar.innerHTML=pendingP>0?'<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:.875rem 1.1rem;font-size:13px;color:#fbbf24;margin-bottom:1.25rem"><i class="ti ti-clock"></i> $'+pendingP.toFixed(2)+' pending payout.</div>':'';
   }
   const byStatus={};
   allRel.forEach(r=>{const s=r.status||'pending';byStatus[s]=(byStatus[s]||0)+(r.earnings||0);});
@@ -6530,13 +6497,12 @@ async function loadRoyalties(){
   }
   const tbody=document.getElementById('royalty-tbody');
   if(tbody){
-    if(!allRel.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
+    if(!allRel.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:2rem">No releases yet.</td></tr>';return;}
     tbody.innerHTML=allRel.map(r=>{
-      const rc=isPaid?0:(r.earnings||0)*COMM;const rp=(r.earnings||0)-rc;
       const bc={pending:'b-pending',review:'b-review',approved:'b-approved',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
       const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
       const art=r.artwork_url?'<img src="'+esc(r.artwork_url)+'" alt="'+esc(r.title||'Release')+' cover art" style="width:30px;height:30px;border-radius:5px;object-fit:cover;vertical-align:middle;margin-right:7px">':'';
-      return '<tr><td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;margin-left:37px">'+esc(r.artist)+'</div></td><td style="color:rgba(255,255,255,.6)">'+(r.streams||0).toLocaleString()+'</td><td>$'+(r.earnings||0).toFixed(2)+'</td><td style="color:#f87171">-$'+rc.toFixed(2)+'</td><td style="color:#34d399;font-weight:700">$'+rp.toFixed(2)+'</td><td><span class="badge '+bc+'">'+bl+'</span></td></tr>';
+      return '<tr><td>'+art+'<strong style="color:#fff">'+esc(r.title)+'</strong><div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;margin-left:37px">'+esc(r.artist)+'</div></td><td style="color:rgba(255,255,255,.6)">'+(r.streams||0).toLocaleString()+'</td><td style="color:#34d399;font-weight:700">$'+(r.earnings||0).toFixed(2)+'</td><td><span class="badge '+bc+'">'+bl+'</span></td></tr>';
     }).join('');
   }
 }
@@ -6556,16 +6522,14 @@ async function loadPayout(){
     sb.from('releases').select('earnings').eq('user_id',activeAccountId()),
     sb.from('payouts').select('amount,status,id,method,network,account,created_at,failure_reason').eq('user_id',activeAccountId()).order('created_at',{ascending:false})
   ]);
-  const isPaid=isCommissionExempt();
-  const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
-  const afterComm=isPaid?gross:gross*(1-COMM);
+  const totalEarned=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0); // no commission on any plan
   // Subtract ALL non-failed/cancelled payouts from balance
   const paidOut=(payoutData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingP=(payoutData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
-  const bal=Math.max(0,afterComm-paidOut-pendingP);
+  const bal=Math.max(0,totalEarned-paidOut-pendingP);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   set('payout-balance','$'+bal.toFixed(2));set('payout-available-label','$'+bal.toFixed(2));set('payout-pending-label','$'+pendingP.toFixed(2));
-  const barEl=document.getElementById('payout-bar');if(barEl) barEl.style.width=Math.min(100,(bal/(afterComm||1))*100)+'%';
+  const barEl=document.getElementById('payout-bar');if(barEl) barEl.style.width=Math.min(100,(bal/(totalEarned||1))*100)+'%';
   const wi=document.getElementById('withdraw-amount');if(wi) wi.max=bal;
   const h=document.getElementById('payout-history-tbody');if(!h)return;
   if(!payoutData||!payoutData.length){h.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payouts yet.</td></tr>';return;}
@@ -6663,12 +6627,10 @@ async function submitPayout(){
       sb.from('releases').select('earnings').eq('user_id',activeAccountId()),
       sb.from('payouts').select('amount,status').eq('user_id',activeAccountId())
     ]);
-    const isPaid=isCommissionExempt();
-    const gross=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0);
-    const afterComm=isPaid?gross:gross*(1-COMM);
+    const totalEarned=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0); // no commission on any plan
     const paidTotal=(existing||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
     const pendingTotal=(existing||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
-    const available=Math.max(0,afterComm-paidTotal-pendingTotal);
+    const available=Math.max(0,totalEarned-paidTotal-pendingTotal);
     if(amt>available+0.005){toast('Amount exceeds available balance of $'+available.toFixed(2),'err');return;}
     let account='',network='';
     if(payoutMethod==='momo'){
@@ -7058,8 +7020,7 @@ async function loadProfileStats(){
   try{
     const {data:rels}=await sb.from('releases').select('streams,earnings').eq('user_id',activeAccountId());
     const cnt=rels?.length||0;const earn=(rels||[]).reduce((a,r)=>a+(r.earnings||0),0);
-    const isPaid=isCommissionExempt();
-    const net=isPaid?earn:earn*(1-COMM);
+    const net=earn; // no commission on any plan
     const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     set('prof-release-count',cnt);set('prof-earnings','$'+net.toFixed(2));
     const pb=document.getElementById('prof-plan-badge');
@@ -7937,8 +7898,8 @@ function showLegalPage(page){
       '<p style="margin-bottom:1rem;color:#444">Blakkstone is not itself a digital service provider. We distribute your releases to Spotify, Apple Music, Boomplay, and 150+ other stores through our distribution partner, ONErpm. By submitting a release, you also agree to comply with ONErpm\'s own content and technical policies, and with each individual store\'s requirements — since ultimate delivery, content moderation (including Content ID claims), and store-level takedowns are carried out by ONErpm and the stores themselves, not by Blakkstone directly. We\'ll always be your point of contact, but some actions on a live release depend on processes outside our own systems.</p>',
       '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">4. Release Review &amp; Requirements</h3>',
       '<p style="margin-bottom:1rem;color:#444">Every release is reviewed before distribution and may be approved, sent back for changes, or rejected. Submissions generally need at least 10 days\' lead time before your chosen release date to allow for review and store processing. We accept singles, EPs, albums, and mixtapes. Release titles can\'t include inline contributor credits (like "feat." or "prod. by") — use the dedicated fields provided instead.</p>',
-      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">5. Royalties, Commission &amp; Payouts</h3>',
-      '<p style="margin-bottom:1rem;color:#444">Accounts on the Solo plan — and accounts whose paid plan has lapsed — are subject to a 9% commission on royalties; Artist+ and Label plans keep 100%. Payout requests are paid via Mobile Money (Ghana and, through our partners\' cross-border network, Nigeria) or bank transfer with a SWIFT/BIC code for any country. Commission rates, splits, and payout details are as displayed in your dashboard at the time of submission or payout request.</p>',
+      '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">5. Royalties &amp; Payouts</h3>',
+      '<p style="margin-bottom:1rem;color:#444">Blakkstone does not currently charge a commission on royalties, on any plan. A small service fee applies to payout requests; the exact amount is shown before you confirm each request. Payout requests are paid via Mobile Money (Ghana and, through our partners\' cross-border network, Nigeria) or bank transfer with a SWIFT/BIC code for any country. Splits, fees, and payout details are as displayed in your dashboard at the time of submission or payout request.</p>',
       '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">6. Subscription Plans &amp; Billing</h3>',
       '<p style="margin-bottom:1rem;color:#444">Subscription plans, pricing, and included features are as displayed at checkout, and payments are processed via Paystack. Plans renew on the billing cycle you select unless cancelled beforehand.</p>',
       '<h3 style="font-size:15px;color:#111;margin:1.25rem 0 .5rem">7. No Refunds</h3>',
@@ -8290,8 +8251,7 @@ function renderViewAsArtist(profileData,releases,payoutsData){
   const pending=releases.filter(r=>r.status==='pending'||r.status==='review').length;
   const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
   const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
-  const isPaidPlan=isCommissionExempt(profileData?.plan);
-  const grossEarnings=isPaidPlan?earnings:earnings*(1-COMM);
+  const grossEarnings=earnings; // no commission on any plan
   const paidOut=(payoutsData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingOut=(payoutsData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const availableBalance=Math.max(0,grossEarnings-paidOut-pendingOut);
@@ -8302,7 +8262,7 @@ function renderViewAsArtist(profileData,releases,payoutsData){
     +'<div><div style="font-size:16px;font-weight:800;color:#fff">'+esc(profileData?.artist_name||profileData?.full_name||'—')+'</div><div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:2px">'+esc(profileData?.email||'')+' · '+planLabel+' plan · Joined '+joined+'</div></div>'
   +'</div>';
   const cards='<div class="overview-cards" style="margin-bottom:1.25rem">'
-    +'<div class="ov-card ov-card-1"><div class="ov-card-icon"><i class="ti ti-wavesaw-mono"></i></div><div style="flex:1"><div class="ov-card-label">Total Streams</div><div class="ov-card-value">'+streams.toLocaleString()+'</div><div class="ov-card-sub">All stores · all time</div></div></div>'
+    +'<div class="ov-card ov-card-1"><div class="ov-card-icon"><i class="ti ti-wave-sine"></i></div><div style="flex:1"><div class="ov-card-label">Total Streams</div><div class="ov-card-value">'+streams.toLocaleString()+'</div><div class="ov-card-sub">All stores · all time</div></div></div>'
     +'<div class="ov-card ov-card-2"><div class="ov-card-icon"><i class="ti ti-music"></i></div><div style="flex:1"><div class="ov-card-label">Total Releases</div><div class="ov-card-value">'+releases.length+'</div><div class="ov-card-sub">'+live+' live on DSPs</div></div></div>'
     +'<div class="ov-card ov-card-3"><div class="ov-card-icon"><i class="ti ti-coin"></i></div><div style="flex:1"><div class="ov-card-label">Available Balance</div><div class="ov-card-value">$'+availableBalance.toFixed(2)+'</div><div class="ov-card-sub">Ready to withdraw · 2% fee applies</div></div></div>'
     +'<div class="ov-card ov-card-4"><div class="ov-card-icon"><i class="ti ti-clock"></i></div><div style="flex:1"><div class="ov-card-label">Pending Review</div><div class="ov-card-value">'+pending+'</div><div class="ov-card-sub">Awaiting distribution</div></div></div>'
@@ -10759,11 +10719,10 @@ async function loadAdminReports(){
     const allRel=releases||[];
     const totalEarnings=allRel.reduce((a,r)=>a+(r.earnings||0),0);
     const totalStreams=allRel.reduce((a,r)=>a+(r.streams||0),0);
-    const totalComm=totalEarnings*COMM;
     const priorityPaid=allRel.filter(r=>r.is_priority&&r.priority_ref);
     const priorityRevenue=priorityPaid.length*PRIORITY_DISTRO_FEE_USD;
     const revEl=document.getElementById('adm-revenue-summary');
-    if(revEl) revEl.innerHTML='<div class="adm-bar-row"><div class="adm-bar-label">Gross Earnings</div><div class="adm-bar-val" style="color:#34d399">$'+totalEarnings.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Commission (9%)</div><div class="adm-bar-val" style="color:var(--gold)">$'+totalComm.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Priority Distro ('+priorityPaid.length+')</div><div class="adm-bar-val" style="color:#fbbf24">$'+priorityRevenue.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Total Streams</div><div class="adm-bar-val" style="color:#60a5fa">'+totalStreams.toLocaleString()+'</div></div>';
+    if(revEl) revEl.innerHTML='<div class="adm-bar-row"><div class="adm-bar-label">Gross Earnings</div><div class="adm-bar-val" style="color:#34d399">$'+totalEarnings.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Priority Distro ('+priorityPaid.length+')</div><div class="adm-bar-val" style="color:#fbbf24">$'+priorityRevenue.toFixed(2)+'</div></div><div class="adm-bar-row"><div class="adm-bar-label">Total Streams</div><div class="adm-bar-val" style="color:#60a5fa">'+totalStreams.toLocaleString()+'</div></div>';
     const maxRS=allRel[0]?.streams||1;
     const trEl=document.getElementById('adm-top-releases');
     if(trEl) trEl.innerHTML=allRel.slice(0,5).map(r=>'<div class="adm-bar-row"><div class="adm-bar-label" style="width:120px">'+esc(r.title)+'</div><div class="adm-bar-track"><div class="adm-bar-fill" style="width:'+Math.round(((r.streams||0)/maxRS)*100)+'%"></div></div><div class="adm-bar-val">'+(r.streams||0).toLocaleString()+'</div></div>').join('')||'<div style="color:rgba(255,255,255,.3);font-size:12px">No releases yet</div>';
@@ -11557,9 +11516,7 @@ async function exportAnnualSummary(){
     if(relErr)throw relErr;
     if(payErr)throw payErr;
 
-    const isPaidPlan=isCommissionExempt();
-    const lifetimeGross=(releases||[]).reduce((a,r)=>a+(r.earnings||0),0);
-    const lifetimeNet=isPaidPlan?lifetimeGross:lifetimeGross*(1-COMM);
+    const lifetimeEarnings=(releases||[]).reduce((a,r)=>a+(r.earnings||0),0); // no commission on any plan
 
     const yearPayouts=payouts||[];
     const paidThisYear=yearPayouts.filter(p=>p.status==='paid');
@@ -11575,9 +11532,8 @@ async function exportAnnualSummary(){
     lines.push(['Generated',new Date().toLocaleString('en-GB')]);
     lines.push([]);
     lines.push(['Lifetime Earnings (all-time — not limited to '+year+')']);
-    lines.push(['Note: release earnings aren\'t tracked per-year in this system, only as a running lifetime total, so these two figures reflect your entire history on Blakkstone, not just '+year+'.']);
-    lines.push(['Gross Lifetime Earnings (USD)',lifetimeGross.toFixed(2)]);
-    lines.push(['Net Lifetime Earnings after commission (USD)',lifetimeNet.toFixed(2)]);
+    lines.push(['Note: release earnings aren\'t tracked per-year in this system, only as a running lifetime total, so this figure reflects your entire history on Blakkstone, not just '+year+'.']);
+    lines.push(['Lifetime Earnings (USD)',lifetimeEarnings.toFixed(2)]);
     lines.push([]);
     lines.push(['Payouts in '+year+' (accurately date-filtered)']);
     lines.push(['All Payout Requests — Gross (USD)',totalRequested.toFixed(2)]);
@@ -11616,15 +11572,10 @@ async function exportMyEarningsCSV(){
     const {data,error}=await sb.from('releases').select('title,artist,genre,release_date,status,streams,earnings').eq('user_id',activeAccountId()).order('release_date',{ascending:false});
     if(error)throw error;
     if(!data||!data.length){toast('No releases to export yet','err');return;}
-    const isPaid=isCommissionExempt();
-    const headers=['Title','Artist','Genre','Release Date','Status','Streams','Gross Earnings (USD)','Your Earnings (USD)'];
-    const rows=data.map(r=>{
-      const gross=r.earnings||0;
-      const net=isPaid?gross:gross*(1-COMM);
-      return [r.title||'',r.artist||'',r.genre||'',r.release_date||'',r.status||'',r.streams||0,gross.toFixed(2),net.toFixed(2)];
-    });
-    const totalNet=rows.reduce((a,r)=>a+parseFloat(r[7]),0);
-    rows.push(['','','','','','','Total',totalNet.toFixed(2)]);
+    const headers=['Title','Artist','Genre','Release Date','Status','Streams','Earnings (USD)'];
+    const rows=data.map(r=>[r.title||'',r.artist||'',r.genre||'',r.release_date||'',r.status||'',r.streams||0,(r.earnings||0).toFixed(2)]);
+    const totalEarned=rows.reduce((a,r)=>a+parseFloat(r[6]),0);
+    rows.push(['','','','','','Total',totalEarned.toFixed(2)]);
     const csv=[headers,...rows].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
     const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;a.download='blakkstone-my-earnings.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -12454,7 +12405,7 @@ function openPaystack(plan){
   selectedPlan=plan||'artist_plus';
   const p=PLANS[selectedPlan];
   document.getElementById('pay-modal-title').textContent='Get '+p.label+' Plan';
-  const descs={solo:'1 artist, 9% commission.',artist_plus:'2 artists, 0% commission.',label:'5 artists included ($1/mo or $5/yr each additional), 0% commission, priority support.'};
+  const descs={solo:'1 artist, 0% commission.',artist_plus:'2 artists, 0% commission.',label:'5 artists included ($1/mo or $5/yr each additional), 0% commission, priority support.'};
   document.getElementById('pay-modal-desc').textContent=descs[selectedPlan]||'';
   const featsEl=document.getElementById('pay-modal-feats');
   if(featsEl){
@@ -12561,7 +12512,7 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
       // genuine downgrade (e.g. Label with time left, paying for Solo) —
       // otherwise the new, lower tier's expiry would stack the old, higher
       // tier's unused time on top, even though the old tier's actual
-      // benefits (more roster room, no commission) are lost immediately
+      // benefits (more roster room, plan features) are lost immediately
       // once profiles.plan changes below, well before that stacked time
       // would suggest.
       const {data:currentProfile}=await sb.from('profiles').select('plan,plan_expires_at').eq('id',user.id).single();
@@ -12735,8 +12686,7 @@ function renderSplitSheet(r){
   if(splits.length<2){wrap.style.display='none';_splitStatementRelease=null;return;}
   wrap.style.display='block';
   _splitStatementRelease=r;
-  const isPaid=isCommissionExempt();
-  const net=(r.earnings||0)*(isPaid?1:(1-COMM));
+  const net=(r.earnings||0); // no commission on any plan
   const totalBp=splits.reduce((a,s)=>a+(s.bp||0),0)||10000;
   el.innerHTML=splits.slice().sort((a,b)=>(b.bp||0)-(a.bp||0)).map((s,i)=>{
     const share=net*((s.bp||0)/totalBp);
@@ -12757,9 +12707,8 @@ function exportSplitStatement(){
   if(!r){toast('No split data for this release','err');return;}
   const splits=Array.isArray(r.splits)?r.splits.filter(s=>s&&s.name&&(s.bp||0)>0):[];
   if(splits.length<2){toast('No split data for this release','err');return;}
-  const isPaid=isCommissionExempt();
   const gross=r.earnings||0;
-  const net=gross*(isPaid?1:(1-COMM));
+  const net=gross; // no commission on any plan
   const totalBp=splits.reduce((a,s)=>a+(s.bp||0),0)||10000;
   const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   const headers=['Contributor','Share (%)','Share (bp)','Amount (USD)'];
@@ -12770,9 +12719,7 @@ function exportSplitStatement(){
     ['Split Statement — '+(r.title||''),'','',''],
     ['Artist',r.artist||'','',''],
     ['Generated',today,'',''],
-    ['Gross earnings (USD)',gross.toFixed(2),'',''],
-    ['Commission',isPaid?'None (paid plan)':(COMM*100)+'%','',''],
-    ['Net payout (USD)',net.toFixed(2),'',''],
+    ['Earnings to split (USD)',gross.toFixed(2),'',''],
     ['','','',''],
   ];
   const csv=[...meta,headers,...rows].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
