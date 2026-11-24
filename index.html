@@ -813,7 +813,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .paywall-card-featured{border-color:var(--gold);background:#12100a}
 .paywall-featured-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-size:9px;font-weight:800;letter-spacing:1.5px;padding:4px 14px;border-radius:0 0 8px 8px}
 .paywall-card-name{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem;margin-top:.5rem}
-.paywall-card-price{font-size:36px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:2px}
+.paywall-card-price{font-size:32px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:2px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+.paywall-card-price b{font-weight:inherit;white-space:nowrap}
 .paywall-card-price span{font-size:14px;font-weight:500;color:rgba(255,255,255,.35);letter-spacing:0}
 .paywall-card-ghs{font-size:12px;color:rgba(255,255,255,.3);margin-bottom:.875rem}
 .paywall-card-desc{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:1.25rem}
@@ -821,9 +822,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .paywall-feats li{font-size:13px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px}
 .paywall-feats li i{font-size:14px;color:var(--gold);flex-shrink:0}
 .paywall-feats li strong{color:#fff}
-@media(max-width:700px){
-  #paywall div[style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr!important}
-  #paywall h1{font-size:28px}
+/* The plan cards are rendered by renderWelcomePlans(). Three across on desktop; one column on phones,
+   with the featured (most popular) plan moved to the top so it is the first thing seen there. */
+.paywall-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;max-width:860px;margin:0 auto 2rem}
+.paywall-card-btn{width:100%;justify-content:center;min-height:44px}
+/* (font-size lives here, not inline on the <h1>, so the phone rule below can actually override it) */
+#paywall h1{font-size:42px;letter-spacing:-1.5px}
+@media(max-width:900px){
+  .paywall-grid{grid-template-columns:1fr;max-width:420px}
+  .paywall-card-featured{order:-1}
+  #paywall h1{font-size:clamp(24px,7vw,30px);letter-spacing:-1px}
+  #paywall-skip{min-height:44px}
 }
 
 /* ── FIELD WARNINGS ── */
@@ -1512,77 +1521,24 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <!-- Content -->
     <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1rem">
       <div style="max-width:900px;width:100%;text-align:center">
-        <!-- Header -->
-        <div style="margin-bottom:3rem">
+        <!-- Header (copy is set by showPaywall(): welcome for a brand-new signup, or the lapsed-plan variant) -->
+        <div style="margin-bottom:2.5rem">
           <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:1.5rem">
-            <i class="ti ti-lock"></i> Subscription Required
+            <i class="ti ti-rocket"></i> <span id="paywall-badge-text">Account created</span>
           </div>
-          <h1 style="font-size:42px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.75rem">Choose your plan to get started</h1>
-          <p style="font-size:16px;color:rgba(255,255,255,.45);max-width:500px;margin:0 auto">Welcome, <strong style="color:#fff" id="paywall-name"></strong>! Select a plan to start distributing your music to 150+ platforms worldwide.</p>
+          <h1 id="paywall-title" style="font-weight:900;color:#fff;margin-bottom:.75rem">Welcome to Blakkstone!</h1>
+          <p id="paywall-sub" style="font-size:16px;color:rgba(255,255,255,.45);max-width:540px;margin:0 auto;line-height:1.6">Pick a plan to start distributing your music to 150+ platforms worldwide.</p>
           <div id="paywall-lapsed-note" style="display:none;margin-top:1rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.75rem 1.1rem;font-size:13px;color:#fbbf24;max-width:500px;margin-left:auto;margin-right:auto"></div>
         </div>
 
-        <!-- Plans grid -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;max-width:860px;margin:0 auto 2.5rem">
+        <!-- Plans: rendered by renderWelcomePlans() from PLANS + PLAN_FEATURES (the same sources checkout and the
+             Upgrade page use), so the prices and features shown here can never drift from what is actually charged. -->
+        <div class="paywall-grid" id="paywall-plans"></div>
 
-          <!-- Solo -->
-          <div class="paywall-card">
-            <div class="paywall-card-name">Solo</div>
-            <div class="paywall-card-price">$14 <span>/ year</span></div>
-            <div class="paywall-card-ghs">≈ <span data-usd-price="14">$14.00</span></div>
-            <p class="paywall-card-desc">1 artist profile. 9% commission on royalties.</p>
-            <ul class="paywall-feats">
-              <li><i class="ti ti-check"></i> 1 artist profile</li>
-              <li><i class="ti ti-check"></i> Unlimited releases</li>
-              <li><i class="ti ti-check"></i> 150+ DSPs worldwide</li>
-              <li><i class="ti ti-check"></i> Mobile Money payouts</li>
-              <li><i class="ti ti-alert-circle" style="color:#fbbf24"></i> 9% royalty commission</li>
-            </ul>
-            <button class="btn" style="width:100%;justify-content:center;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="paywallPay('solo')">
-              <i class="ti ti-bolt"></i> Get Solo — $14/yr
-            </button>
-          </div>
-
-          <!-- Artist+ (featured) -->
-          <div class="paywall-card paywall-card-featured">
-            <div class="paywall-featured-badge">MOST POPULAR</div>
-            <div class="paywall-card-name">Artist+</div>
-            <div class="paywall-card-price">$25 <span>/ year</span></div>
-            <div class="paywall-card-ghs">≈ <span data-usd-price="25">$25.00</span></div>
-            <p class="paywall-card-desc">2 artist profiles, keep 100% of your royalties.</p>
-            <ul class="paywall-feats">
-              <li><i class="ti ti-check"></i> 2 artist profiles</li>
-              <li><i class="ti ti-check"></i> Unlimited releases</li>
-              <li><i class="ti ti-check"></i> 150+ DSPs worldwide</li>
-              <li><i class="ti ti-check"></i> <strong>0% commission</strong></li>
-              <li><i class="ti ti-check"></i> ISRC code generation</li>
-              <li><i class="ti ti-check"></i> Store analytics</li>
-              <li><i class="ti ti-check"></i> Mobile Money + Bank payouts</li>
-            </ul>
-            <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="paywallPay('artist_plus')">
-              <i class="ti ti-crown"></i> Get Artist+ — $25/yr
-            </button>
-          </div>
-
-          <!-- Label -->
-          <div class="paywall-card">
-            <div class="paywall-card-name">Label</div>
-            <div class="paywall-card-price">$40 <span>/ year</span></div>
-            <div class="paywall-card-ghs">≈ <span data-usd-price="40">$40.00</span></div>
-            <p class="paywall-card-desc">5 artists included, $1/month (or $5/year) for each additional. For labels & collectives.</p>
-            <ul class="paywall-feats">
-              <li><i class="ti ti-check"></i> 5+ artist profiles</li>
-              <li><i class="ti ti-check"></i> Unlimited releases</li>
-              <li><i class="ti ti-check"></i> 150+ DSPs worldwide</li>
-              <li><i class="ti ti-check"></i> <strong>0% commission</strong></li>
-              <li><i class="ti ti-check"></i> Priority support</li>
-              <li><i class="ti ti-check"></i> Label analytics overview</li>
-              <li><i class="ti ti-check"></i> Dedicated account manager</li>
-            </ul>
-            <button class="btn" style="width:100%;justify-content:center;background:#fff;color:#111;font-weight:700" onclick="paywallPay('label')">
-              Get Label — $40/yr
-            </button>
-          </div>
+        <!-- Skip: signing up never requires paying — a plan is only needed at the moment a release is submitted. -->
+        <div style="margin:0 0 2.25rem">
+          <button class="btn btn-ghost" id="paywall-skip" onclick="skipWelcomePlans()">Skip for now — take me to my dashboard <i class="ti ti-arrow-right"></i></button>
+          <p style="font-size:12px;color:rgba(255,255,255,.3);margin-top:.6rem;line-height:1.6">You can choose a plan any time from <strong style="color:rgba(255,255,255,.5)">Upgrade</strong> — a plan is only needed when you submit a release.</p>
         </div>
 
         <!-- Trust note -->
@@ -1591,7 +1547,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <span><i class="ti ti-device-mobile" style="color:var(--gold)"></i> Charged in GHS via Paystack · Card &amp; Mobile Money accepted</span>
           <span><i class="ti ti-brand-apple" style="color:var(--gold)"></i> Apple Pay supported</span>
           <span><i class="ti ti-ban" style="color:var(--gold)"></i> No refunds — all payments are final</span>
-          <span><i class="ti ti-refresh" style="color:var(--gold)"></i> One-time payment — no auto-charge</span>
+          <span id="paywall-autocharge-note"><i class="ti ti-refresh" style="color:var(--gold)"></i> One-time payment — no auto-charge</span>
         </div>
       </div>
     </div>
@@ -4426,7 +4382,10 @@ async function loadProfile(u){
   // point, not as a blanket gate on login). This lowers signup friction:
   // someone can look around, set up their profile, add roster artists to
   // preview the idea, before ever being asked to pay.
-  enterDashboard();
+  // The one exception is a brand-new signup's FIRST visit: they get a one-time, skippable plans screen so
+  // subscribing is one click away (shouldShowWelcomePlans() restricts this to genuinely new, unsubscribed accounts).
+  if(shouldShowWelcomePlans(u))showWelcomePlans();
+  else if(!welcomeScreenIsUp(u))enterDashboard(); // (a repeat run must not pull someone off the welcome screen it just showed)
   if(justLapsedPlan)showLapsedPlanBanner(justLapsedPlan);
 }
 function showLapsedPlanBanner(oldPlan){
@@ -4502,22 +4461,120 @@ function switchToTeamAccount(){
   sessionStorage.removeItem('_teamContextSuspended');
   location.reload();
 }
-function showPaywall(lapsedPlan){
-  const name=profile?.artist_name||profile?.full_name||user?.email?.split('@')[0]||'';
-  const el=document.getElementById('paywall-name');
-  if(el) el.textContent=name;
+// ── WELCOME / PLANS SCREEN ─────────────────────────────────
+// Shown ONCE to a brand-new signup, straight after the account exists, so subscribing is one click away
+// instead of hidden behind the Upgrade page. It is never a gate: skipping goes to the dashboard exactly as
+// before (a plan is only required at the moment a release is submitted — see the Submit page gate).
+// The cards are built from PLANS + PLAN_FEATURES — the same sources the checkout modal and Upgrade page
+// use — so the prices and feature lists here cannot drift from what the customer is actually charged.
+const WELCOME_PLANS_WINDOW_DAYS=7; // only accounts this new count as "first signup" (covers confirming the email a few days late)
+const WELCOME_PLAN_ORDER=['solo','artist_plus','label'];
+function welcomeSeenKey(id){return 'blk_welcome_plans_seen_'+id;}
+// loadProfile() can run twice for ONE signup: when a session is issued immediately, both the auth listener and the
+// signup form call it. The first run shows this screen and records it as seen, so the second run would otherwise see
+// "already seen" and send the new user straight to the dashboard a moment later. Remember who is looking at it now.
+let welcomeScreenUserId=null;
+function welcomeScreenIsUp(u){
+  const pw=document.getElementById('paywall');
+  return !!u&&welcomeScreenUserId===u.id&&!!pw&&pw.classList.contains('active');
+}
+// True only for a genuinely new, still-unsubscribed account that has never been shown this screen.
+function shouldShowWelcomePlans(u){
+  try{
+    if(!u||!profile)return false;
+    if(isAdmin()||teamContext||hasActivePlan())return false; // admins, team members (they follow the owner's account) and paying customers never see a sales screen
+    // An admin impersonating a user must not trigger this: it would stamp the "seen" flag onto the real user's account.
+    if(sessionStorage.getItem('_adminOriginalSession'))return false;
+    if(u.user_metadata&&u.user_metadata.welcome_plans_seen)return false; // seen on another device
+    try{if(localStorage.getItem(welcomeSeenKey(u.id)))return false;}catch(e){} // seen in this browser
+    const created=new Date(u.created_at||profile.created_at).getTime();
+    return !isNaN(created)&&(Date.now()-created)<WELCOME_PLANS_WINDOW_DAYS*86400000;
+  }catch(e){
+    console.error('Welcome-screen check failed (continuing to the dashboard):',e);
+    return false;
+  }
+}
+// Remembered in this browser immediately, and on the account itself (Supabase Auth user metadata — needs no
+// database change) so it also holds on other devices. If either write fails the screen simply may show once more.
+function markWelcomePlansSeen(){
+  if(!user)return;
+  try{localStorage.setItem(welcomeSeenKey(user.id),'1');}catch(e){}
+  try{
+    Promise.resolve(sb.auth.updateUser({data:{welcome_plans_seen:true}})).then(r=>{
+      if(r&&r.error)console.error('Could not save the welcome-screen flag to the account:',r.error);
+    }).catch(e=>console.error('Could not save the welcome-screen flag to the account:',e));
+  }catch(e){console.error('Could not save the welcome-screen flag to the account:',e);}
+}
+function welcomePlanDesc(key){
+  if(key==='solo')return '1 artist profile. '+Math.round(COMM*100)+'% commission on royalties.';
+  if(key==='artist_plus')return '2 artist profiles, keep 100% of your royalties.';
+  return '5 artists included, $'+EXTRA_ARTIST_PRICE_MONTHLY+'/month (or $'+EXTRA_ARTIST_PRICE_YEARLY+'/year) for each additional. For labels & collectives.';
+}
+function renderWelcomePlans(){
+  const grid=document.getElementById('paywall-plans');
+  if(!grid)return;
+  const icons={solo:'bolt',artist_plus:'crown',label:'users'};
+  const btnStyle={
+    solo:'background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.2)',
+    artist_plus:'',
+    label:'background:#fff;color:#111;font-weight:700'
+  };
+  grid.innerHTML=WELCOME_PLAN_ORDER.map(key=>{
+    const p=PLANS[key];
+    const featured=key==='artist_plus';
+    const feats=(PLAN_FEATURES[key]||[]).map(f=>'<li><i class="ti ti-check"></i> '+(/^0% commission$/i.test(f)?'<strong>'+esc(f)+'</strong>':esc(f))+'</li>').join('');
+    // Solo's commission is a real cost of the plan, so it is stated on the card rather than left for the customer to discover later.
+    const commissionNote=key==='solo'?'<li><i class="ti ti-alert-circle" style="color:#fbbf24"></i> '+Math.round(COMM*100)+'% royalty commission</li>':'';
+    return '<div class="paywall-card'+(featured?' paywall-card-featured':'')+'" data-plan="'+esc(key)+'">'
+      +(featured?'<div class="paywall-featured-badge">MOST POPULAR</div>':'')
+      +'<div class="paywall-card-name">'+esc(p.label)+'</div>'
+      +'<div class="paywall-card-price"><b data-usd-price="'+p.yearly+'">'+esc(convertPrice(p.yearly))+'</b> <span>/ year</span></div>'
+      +'<p class="paywall-card-desc">'+esc(welcomePlanDesc(key))+'</p>'
+      +'<ul class="paywall-feats">'+feats+commissionNote+'</ul>'
+      +'<button class="btn'+(featured?' btn-gold':'')+' paywall-card-btn" style="'+btnStyle[key]+'" onclick="paywallPay('+jsArg(key)+')"><i class="ti ti-'+icons[key]+'"></i> Choose '+esc(p.label)+'</button>'
+      +'</div>';
+  }).join('');
+  // Keep the "no auto-charge" claim true in both states: once any plan has a Paystack plan code, auto-renew exists (always opt-in).
+  const note=document.getElementById('paywall-autocharge-note');
+  if(note){
+    const autoRenewOffered=Object.values(PAYSTACK_PLAN_CODES).some(Boolean);
+    note.innerHTML='<i class="ti ti-refresh" style="color:var(--gold)"></i> '+(autoRenewOffered?'Auto-renew is optional — you choose at checkout':'One-time payment — no auto-charge');
+  }
+}
+// mode 'welcome' = a brand-new signup; anything else = the lapsed-plan variant (kept working for any future caller).
+function showPaywall(lapsedPlan,mode){
+  const welcome=mode==='welcome';
+  const first=(profile?.full_name||profile?.artist_name||user?.email?.split('@')[0]||'').split(' ')[0];
+  const setText=(id,t)=>{const el=document.getElementById(id);if(el)el.textContent=t;};
+  setText('paywall-badge-text',welcome?'Account created':'Choose a plan');
+  setText('paywall-title',welcome?'Welcome to Blakkstone'+(first?', '+first:'')+'!':'Choose your plan'+(first?', '+first:''));
+  setText('paywall-sub',welcome
+    ?'Pick a plan to start distributing your music to 150+ platforms worldwide — or look around first. You only need a plan when you submit a release.'
+    :'Pick a plan below to start distributing your music to 150+ platforms worldwide.');
   const lapsedNote=document.getElementById('paywall-lapsed-note');
   if(lapsedNote){
     if(lapsedPlan){
       const planLabel={solo_paid:'Solo',artist_plus:'Artist+',label:'Label'}[lapsedPlan]||lapsedPlan;
-      lapsedNote.innerHTML='<i class="ti ti-clock"></i> Your <strong>'+planLabel+'</strong> plan has expired. Your releases and roster are safe — pick a plan below to pick up right where you left off.';
+      lapsedNote.innerHTML='<i class="ti ti-clock"></i> Your <strong>'+esc(planLabel)+'</strong> plan has expired. Your releases and roster are safe — pick a plan below to pick up right where you left off.';
       lapsedNote.style.display='block';
     } else {
       lapsedNote.style.display='none';lapsedNote.innerHTML='';
     }
   }
+  renderWelcomePlans();
   showView('paywall');
 }
+function showWelcomePlans(){
+  // Checkout charges using currentDisplayRates.GHS. enterDashboard() normally refreshes the live rate and the
+  // detected currency, but this screen comes BEFORE it — and someone arriving straight at /signup from an ad never
+  // saw the landing page either — so without this their first checkout could use the stale built-in rate.
+  fetchLiveCurrencyRates();
+  detectCurrencyByIP();
+  welcomeScreenUserId=user?.id||null;
+  showPaywall(null,'welcome');
+  markWelcomePlansSeen();
+}
+function skipWelcomePlans(){enterDashboard();}
 function paywallPay(plan){
   selectedPlan=plan;
   const p=PLANS[plan];
