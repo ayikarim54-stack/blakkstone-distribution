@@ -3484,7 +3484,10 @@ div.ob-step:hover{border-color:var(--o-line)}
         <div class="adm-card" style="margin-bottom:1.25rem">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
             <div class="adm-card-title" style="margin-bottom:0"><i class="ti ti-list-check"></i> Needs Attention</div>
-            <button id="test-notif-btn" onclick="sendTestNotificationEmail()" class="btn adm-btn-sec btn-sm" title="Send a harmless test email through the same pipeline used for real notifications"><i class="ti ti-mail"></i> Send Test Notification</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button id="echeck-btn" onclick="openEmailCheck()" class="btn btn-sm" style="background:var(--gold);color:var(--black);font-weight:700" title="Find out why sign-up emails or 'Log in as this artist' might not be working"><i class="ti ti-stethoscope"></i> Email &amp; access check</button>
+              <button id="test-notif-btn" onclick="sendTestNotificationEmail()" class="btn adm-btn-sec btn-sm" title="Send a harmless test email through the same pipeline used for real notifications"><i class="ti ti-mail"></i> Send Test Notification</button>
+            </div>
           </div>
           <div id="adm-needs-attention"><div style="color:rgba(255,255,255,.3);font-size:12px"><span class="loader"></span></div></div>
         </div>
@@ -3989,6 +3992,36 @@ div.ob-step:hover{border-color:var(--o-line)}
     <div id="artist-notes-section" style="margin-bottom:.75rem"></div>
     <div id="artist-audit-section" style="margin-bottom:1.25rem"></div>
     <div id="artist-modal-body"></div>
+  </div>
+</div>
+
+<!-- LOG IN AS ARTIST — confirmation. An in-page box rather than the browser's confirm() pop-up, which browsers can silently block. -->
+<div class="overlay" id="imp-confirm-overlay" onclick="if(event.target===this)closeImpersonateConfirm()">
+  <div class="modal" style="max-width:460px" role="dialog" aria-modal="true" aria-labelledby="imp-confirm-title">
+    <h3 id="imp-confirm-title"><span><i class="ti ti-login-2" style="color:var(--gold)"></i> Log in as <span id="imp-confirm-name"></span>?</span> <button onclick="closeImpersonateConfirm()" aria-label="Close">×</button></h3>
+    <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:1rem">You'll be signed in as this artist and can make changes on their account. A gold bar at the top of the page lets you return to your admin account at any time. This is recorded in the activity log.</p>
+    <div id="imp-confirm-msg" role="alert" aria-live="polite" style="display:none;border-radius:10px;padding:.75rem .9rem;font-size:13px;line-height:1.6"></div>
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <button class="btn" style="flex:1;justify-content:center;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.1)" onclick="closeImpersonateConfirm()">Cancel</button>
+      <button class="btn" id="imp-confirm-go" style="flex:1;justify-content:center" onclick="runImpersonateFromConfirm()"><i class="ti ti-login-2"></i> Log in as artist</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN: EMAIL & ACCESS CHECK — finds which link behind sign-up emails / "Log in as this artist" is broken -->
+<div class="overlay" id="echeck-overlay" onclick="if(event.target===this)closeEmailCheck()">
+  <div class="modal" style="max-width:680px" role="dialog" aria-modal="true" aria-labelledby="echeck-title">
+    <h3 id="echeck-title"><span><i class="ti ti-stethoscope" style="color:var(--gold)"></i> Email &amp; access check</span> <button onclick="closeEmailCheck()" aria-label="Close">×</button></h3>
+    <p style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:1rem">Checks every link behind sign-up emails and "Log in as this artist" and tells you exactly which one is broken. Nothing is changed and no artist is emailed.</p>
+    <div id="echeck-summary" role="status" aria-live="polite" style="margin-bottom:.75rem"></div>
+    <div id="echeck-rows"></div>
+    <div id="echeck-send" style="display:none;margin-top:1rem;padding:.9rem 1rem;border:1px dashed rgba(212,175,55,.35);border-radius:11px">
+      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px"><i class="ti ti-send" style="color:var(--gold)"></i> Send a real test email to someone else</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:8px">This is the test that matters: it sends from your real sender to an address that is not yours — exactly like the welcome email a new artist gets. Use a Gmail or Yahoo address.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="echeck-to" type="email" placeholder="e.g. a friend's or your own Gmail" autocomplete="off" aria-label="Send the test email to this address" style="flex:1;min-width:200px;min-height:40px;box-sizing:border-box;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:9px 12px;color:#fff;font-size:13px"><button class="btn btn-sm" id="echeck-send-btn" style="min-height:40px" onclick="sendEmailCheck()"><i class="ti ti-send"></i> Send test email</button></div>
+      <div id="echeck-send-result" aria-live="polite" style="margin-top:8px"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:1rem;justify-content:flex-end"><button class="btn adm-btn-sec btn-sm" style="min-height:40px" onclick="runEmailCheck()"><i class="ti ti-refresh"></i> Run the check again</button></div>
   </div>
 </div>
 
@@ -4669,8 +4702,7 @@ async function doAuth(){
       if(data.user){
         const {error:profileCreateErr}=await sb.from('profiles').upsert({id:data.user.id,email,full_name:fullName,artist_name:artistName,plan:'free'});
         if(profileCreateErr)console.error('[signup] Profile creation error — account exists in auth but profile row may be incomplete:',profileCreateErr);
-        notifyAdminEmail('new_signup',{email,fullName,artistName});
-        notifyArtistEmail('welcome',{fullName,artistName},email);
+        sendSignupEmails(data.user.id,email,fullName,artistName);
         toast('Account created! Welcome to Blakkstone.','ok');
         await loadProfile(data.user);
       }
@@ -4716,10 +4748,12 @@ async function loadProfile(u){
     const meta=u.user_metadata||{};
     const fullName=meta.full_name||meta.name||(u.email?u.email.split('@')[0]:'');
     const avatarUrl=meta.avatar_url||meta.picture||null;
-    const newProfile={id:u.id,email:u.email,full_name:fullName,artist_name:fullName,plan:'free',avatar_url:avatarUrl};
+    // The sign-up form stores the artist name it collected in the account's metadata — use it (Google sign-ins have none).
+    const artistName=meta.artist_name||fullName;
+    const newProfile={id:u.id,email:u.email,full_name:fullName,artist_name:artistName,plan:'free',avatar_url:avatarUrl};
     const {data:created,error:createErr}=await sb.from('profiles').upsert(newProfile).select().single();
     if(createErr)console.error('Profile auto-create error for new OAuth sign-in:',createErr);
-    else{notifyAdminEmail('new_signup',{email:u.email,fullName,artistName:fullName});notifyArtistEmail('welcome',{fullName,artistName:fullName},u.email);}
+    else sendSignupEmails(u.id,u.email,fullName,artistName);
     data=created||newProfile;
   }
   profile=data;
@@ -7665,19 +7699,66 @@ async function deleteMethod(id){
   loadSavedMethods();
 }
 
+// ── EDGE FUNCTION ERRORS ─────────────────────────────────────
+// supabase-js only ever reports "Edge Function returned a non-2xx status code" — the real answer (our own
+// function's message, or Supabase's) sits unread inside error.context. These helpers read it and turn it into
+// one plain sentence, so a failure is never a mystery again.
+function fnFailureText(error,fnName,status,body){
+  const where='Supabase → Edge Functions → '+fnName;
+  const name=(error&&error.name)||'';
+  const b=body&&typeof body==='object'?body:{};
+  const own=typeof b.error==='string'?b.error:'';
+  const platform=typeof b.message==='string'?b.message:(typeof b.msg==='string'?b.msg:'');
+  if(status===null){
+    if(name==='FunctionsRelayError')return 'Supabase could not start the "'+fnName+'" function right now ('+((error&&error.message)||'relay error')+'). Try again in a minute.';
+    return 'Could not get an answer from the "'+fnName+'" function. Either it is not deployed, it crashed while starting, or Supabase blocked the request before it ran. Open '+where+': check that it exists and is deployed, read its Logs, and try switching "Verify JWT" OFF in its Details.';
+  }
+  if(own)return own;
+  if(status===404||b.code==='NOT_FOUND')return 'The "'+fnName+'" function is not deployed in Supabase (it answered "not found"). Deploy it under Edge Functions.';
+  if(status===401||status===403){
+    if(/jwt/i.test(platform)||b.code===401)return 'Supabase rejected your login token before the function ran ('+(platform||'invalid JWT')+'). Open '+where+' → Details and switch OFF "Verify JWT with legacy secret", then try again.';
+    return 'Supabase refused the request ('+status+(platform?': '+platform:'')+').';
+  }
+  if(status===429)return 'Too many requests right now — wait a minute and try again.';
+  if(status>=500)return 'The "'+fnName+'" function crashed (HTTP '+status+(platform?': '+platform:'')+'). Open '+where+' → Logs to see the exact error.';
+  return (error&&error.message)||('The function answered with HTTP '+status+'.');
+}
+async function describeFnFailure(error,fnName,data){
+  if(!error){
+    const own=data&&typeof data.error==='string'?data.error:'';
+    return {text:own,status:null,code:(data&&data.code)||null,body:data||null};
+  }
+  let status=null,body=null;
+  try{
+    const ctx=error.context;
+    if(ctx&&typeof ctx.status==='number'&&typeof ctx.text==='function'){
+      status=ctx.status;
+      const raw=await ctx.text();
+      try{body=JSON.parse(raw);}catch(_){body=raw?{raw:String(raw).slice(0,300)}:null;}
+    }
+  }catch(_){}
+  return {text:fnFailureText(error,fnName,status,body),status,code:(body&&body.code)||null,body};
+}
+async function explainFnFailure(error,fnName,data){return (await describeFnFailure(error,fnName,data)).text;}
+
 async function sendTestNotificationEmail(){
   const btn=document.getElementById('test-notif-btn');
   if(btn){btn.disabled=true;btn.innerHTML='<span class="loader"></span> Sending...';}
   try{
-    const {error}=await sb.functions.invoke('send-notification-email',{body:{
+    const {data,error}=await sb.functions.invoke('send-notification-email',{body:{
       type:'test',
       data:{triggeredBy:user?.email||'Admin',time:new Date().toLocaleString()}
     }});
-    if(error)throw error;
-    toast('Test email sent! Check your inbox (and spam folder) — should land within a minute or two.','ok');
+    if(error||(data&&data.error)){
+      console.error('Test notification email error:',error||data.error);
+      const why=await explainFnFailure(error,'send-notification-email',data);
+      toast('Test email failed: '+why+' — "Email & access check" shows more.','err',12000);
+    }else{
+      toast('Test email sent to your inbox (check spam too). This proves delivery to YOU only — to check that artists receive emails, use "Email & access check".','ok',9000);
+    }
   }catch(e){
     console.error('Test notification email error:',e);
-    toast('Test email failed: '+(e.message||'check the Edge Function logs for details'),'err');
+    toast('Test email failed: '+(e.message||'check the Edge Function logs for details'),'err',9000);
   }
   if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-mail"></i> Send Test Notification';}
 }
@@ -7689,11 +7770,17 @@ async function notifyAdminEmail(type,data){
   // for deployment steps. Until it's deployed, this fails silently and the
   // app keeps working exactly as it does today (admin still sees everything
   // in the in-app Notifications panel regardless).
+  // Returns true when the email was accepted, false when it was not.
   try{
-    const {error}=await sb.functions.invoke('send-notification-email',{body:{type,data}});
-    if(error)console.error('Admin email notification failed (the action itself still succeeded):',error);
+    const {data:res,error}=await sb.functions.invoke('send-notification-email',{body:{type,data}});
+    if(error||(res&&res.error)){
+      console.error('Admin email notification failed (the action itself still succeeded):',await explainFnFailure(error,'send-notification-email',res));
+      return false;
+    }
+    return true;
   }catch(e){
     console.error('Admin email notification failed (the action itself still succeeded):',e);
+    return false;
   }
 }
 async function notifyArtistEmail(type,data,toEmail,knownPrefs){
@@ -7709,7 +7796,9 @@ async function notifyArtistEmail(type,data,toEmail,knownPrefs){
   // pass the preference in as knownPrefs (already fetched once for the
   // whole recipient list) instead — doing a separate lookup per recipient
   // would mean 100+ extra queries for a broadcast to 100+ artists.
-  if(!toEmail)return;
+  // Returns true when the email was accepted (or deliberately skipped because
+  // the artist opted out), false when it failed.
+  if(!toEmail)return false;
   try{
     // Only these two types actually consult email preferences - skip the
     // lookup entirely for everything else (welcome, payment confirmations,
@@ -7730,16 +7819,38 @@ async function notifyArtistEmail(type,data,toEmail,knownPrefs){
       }
     }
     if(prefs){
-      if(type==='broadcast_message'&&prefs.email_pref_broadcasts===false)return;
-      if(type==='admin_reply'&&prefs.email_pref_replies===false)return;
+      if(type==='broadcast_message'&&prefs.email_pref_broadcasts===false)return true;
+      if(type==='admin_reply'&&prefs.email_pref_replies===false)return true;
     }
     console.log('[notifyArtistEmail] Sending request — type:',type,'to:',toEmail);
-    const {error}=await sb.functions.invoke('send-notification-email',{body:{type,data,to:toEmail}});
-    if(error)console.error('Artist email notification failed (the action itself still succeeded):',error);
-    else console.log('[notifyArtistEmail] Request completed without error for type:',type);
+    const {data:res,error}=await sb.functions.invoke('send-notification-email',{body:{type,data,to:toEmail}});
+    if(error||(res&&res.error)){
+      console.error('Artist email notification failed (the action itself still succeeded):',await explainFnFailure(error,'send-notification-email',res));
+      return false;
+    }
+    console.log('[notifyArtistEmail] Request completed without error for type:',type);
+    return true;
   }catch(e){
     console.error('Artist email notification failed (the action itself still succeeded):',e);
+    return false;
   }
+}
+// A new account triggers exactly ONE welcome email to the artist and ONE heads-up to the admin. Two code paths
+// can notice a new account (the sign-in listener and the sign-up form), and both used to send both emails —
+// four emails per sign-up, enough to trip Resend's 2-per-second limit and drop the welcome email. Now the
+// first path to arrive sends; the other waits for it and only tries again if the first attempt failed.
+// The artist's email goes first, the admin copy after it, so the two never compete for the same second.
+const _signupMail={};
+async function sendSignupEmails(uid,email,fullName,artistName){
+  if(!uid||!email)return;
+  const st=_signupMail[uid]||(_signupMail[uid]={welcome:null,admin:null});
+  const once=async(key,send)=>{
+    if(st[key]){const ok=await st[key];if(ok)return;}
+    st[key]=send();
+    await st[key];
+  };
+  await once('welcome',()=>notifyArtistEmail('welcome',{fullName,artistName},email));
+  await once('admin',()=>notifyAdminEmail('new_signup',{email,fullName,artistName}));
 }
 async function sendPayoutNotificationEmail(amount,method,network,account){
   notifyAdminEmail('payout_requested',{
@@ -8786,21 +8897,202 @@ async function uploadAvatar(input){
 
 // ── ARTISTS ──────────────────────────────────────────────
 async function openArtistModal(userId,name){
+  try{
   const {data:rl}=await sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false});
   const releases=rl||[];
-  document.getElementById('artist-modal-title').innerHTML=esc(name)+'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\','+jsArg(name)+')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button><button onclick="viewAsArtist(\''+userId+'\','+jsArg(name)+')" title="View as this artist (read-only)" style="float:right;background:none;border:none;cursor:pointer;color:#7a6ff0;font-size:16px;margin-right:8px"><i class="ti ti-eye"></i></button><button onclick="confirmImpersonateUser(\''+userId+'\','+jsArg(name)+')" title="Log in as this artist (can make changes)" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-login-2"></i></button>';
+  document.getElementById('artist-modal-title').innerHTML=esc(name)+'\'s Releases ('+releases.length+') <button onclick="closeArtistModal()" style="float:right;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:22px">×</button><button onclick="copyArtistLink(\''+userId+'\','+jsArg(name)+')" title="Copy public page link" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-link"></i></button><button onclick="viewAsArtist(\''+userId+'\','+jsArg(name)+')" title="View as this artist (read-only)" style="float:right;background:none;border:none;cursor:pointer;color:#7a6ff0;font-size:16px;margin-right:8px"><i class="ti ti-eye"></i></button><button onclick="confirmImpersonateUser(\''+userId+'\','+jsArg(name)+')" title="Log in as this artist (can make changes)" style="float:right;background:none;border:none;cursor:pointer;color:var(--gold);font-size:16px;margin-right:8px"><i class="ti ti-login-2"></i></button>';
   _currentArtistModalUserId=userId;
   await loadArtistNotes(userId);
   await loadArtistAuditLog(userId,releases.map(r=>r.id));
-  if(!releases.length){document.getElementById('artist-modal-body').innerHTML='<p style="color:var(--muted);font-size:13px">No releases yet.</p>';document.getElementById('artist-overlay').classList.add('open');return;}
-  document.getElementById('artist-modal-body').innerHTML=releases.map(r=>{
+  // Clearly labelled actions (the small icons in the title are easy to miss, and tiny on a phone).
+  const actions='<div class="artist-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem"><button class="btn btn-sm" style="background:var(--gold);color:var(--black);font-weight:700;min-height:40px;flex:1 1 200px;justify-content:center" onclick="confirmImpersonateUser(\''+userId+'\','+jsArg(name)+')"><i class="ti ti-login-2"></i> Log in as this artist</button><button class="btn adm-btn-sec btn-sm" style="min-height:40px;flex:1 1 200px;justify-content:center" onclick="viewAsArtist(\''+userId+'\','+jsArg(name)+')"><i class="ti ti-eye"></i> View as artist (read-only)</button></div>';
+  if(!releases.length){document.getElementById('artist-modal-body').innerHTML=actions+'<p style="color:var(--muted);font-size:13px">No releases yet.</p>';document.getElementById('artist-overlay').classList.add('open');return;}
+  document.getElementById('artist-modal-body').innerHTML=actions+releases.map(r=>{
     const bc={pending:'b-pending',review:'b-review',approved:'b-approved',live:'b-live',rejected:'b-rejected',takendown:'b-takendown'}[r.status]||'b-pending';
     const bl={pending:'Pending',review:'In Review',approved:'Approved',live:'Live',rejected:'Rejected',takendown:'Taken Down'}[r.status]||r.status;
     return '<div class="release-detail"><div class="rd-header"><div class="r-art" style="width:40px;height:40px">'+(r.artwork_url?'<img src="'+esc(r.artwork_url)+'" alt="'+esc(r.title||'Release')+' cover art" style="width:100%;height:100%;object-fit:cover;border-radius:7px">':'<i class="ti ti-music" style="font-size:18px;color:var(--muted)"></i>')+'</div><div class="r-info"><div class="r-title">'+esc(r.title)+'</div><div class="r-meta">'+esc(r.artist)+'</div></div><span class="badge '+bc+'">'+bl+'</span></div><div class="rd-fields"><div class="fg"><label>Status</label><select class="stsel" onchange="updateStatus(\''+r.id+'\',this.value,this)"><option value="pending" '+(r.status==='pending'?'selected':'')+'>Pending</option><option value="review" '+(r.status==='review'?'selected':'')+'>In Review</option><option value="approved" '+(r.status==='approved'?'selected':'')+'>Approved</option><option value="live" '+(r.status==='live'?'selected':'')+'>Live</option><option value="rejected" '+(r.status==='rejected'?'selected':'')+'>Rejected</option><option value="takendown" '+(r.status==='takendown'?'selected':'')+'>Taken Down</option></select></div><div class="fg"><label>Streams</label><input type="number" value="'+(r.streams||0)+'" class="num-in" style="width:100%" onchange="updateField(\''+r.id+'\',\'streams\',this.value)"></div><div class="fg"><label>Earnings ($)</label><input type="number" value="'+(r.earnings||0)+'" min="0" step="0.01" class="num-in" style="width:100%" onchange="updateField(\''+r.id+'\',\'earnings\',this.value)"></div></div></div>';
   }).join('');
   document.getElementById('artist-overlay').classList.add('open');
+  }catch(e){console.error('Open artist error:',e);toast('Could not open this artist: '+(e&&e.message||e),'err',6000);}
 }
 function closeArtistModal(){document.getElementById('artist-overlay').classList.remove('open');}
+// ── ADMIN: EMAIL & ACCESS CHECK ──────────────────────────────
+// Walks the chain behind (1) the emails new artists should receive and (2) "Log in as this artist", and says in
+// plain words which link is broken and what to do. It only READS settings — it changes nothing and emails nobody
+// (the one real email is sent by the button, to an address the admin types).
+const EMAIL_FIXES={
+  sandbox_sender:'In Supabase → Edge Functions → Secrets set NOTIFICATION_FROM_EMAIL to noreply@blakkstonemusic.com (or delete the secret), then run the check again.',
+  domain_not_verified:'Open Resend → Domains → blakkstonemusic.com and fix its DNS records (they live in Cloudflare) until it shows "Verified".',
+  resend_key_invalid:'In Resend → API Keys create a new key (sending access is enough) and paste it into the RESEND_API_KEY secret in Supabase → Edge Functions → Secrets.',
+  resend_key_missing:'Add RESEND_API_KEY under Supabase → Edge Functions → Secrets (the key comes from Resend → API Keys).',
+  quota_exceeded:'Resend\'s free plan allows 100 emails a day and 3,000 a month. Wait for it to reset, or upgrade in Resend → Settings → Billing.',
+  rate_limited:'Resend allows only 2 emails per second on the free plan. Wait a few seconds and try again.',
+  invalid_request:'Resend did not accept this email — check the sender address in NOTIFICATION_FROM_EMAIL.'
+};
+let _echeckRun=0;
+function echeckRowHtml(r){
+  const look={ok:['ti-circle-check','#34d399'],warn:['ti-alert-triangle','#fbbf24'],bad:['ti-circle-x','#f87171'],info:['ti-info-circle','rgba(255,255,255,.5)'],wait:['','rgba(255,255,255,.5)']}[r.state]||['ti-info-circle','rgba(255,255,255,.5)'];
+  const icon=r.state==='wait'?'<span class="loader" style="width:16px;height:16px"></span>':'<i class="ti '+look[0]+'"></i>';
+  return '<div class="echeck-row" data-state="'+esc(r.state)+'" style="display:flex;gap:10px;padding:.75rem .9rem;background:var(--surface2);border:1px solid var(--line);border-radius:11px;margin-bottom:8px">'
+    +'<div style="flex-shrink:0;font-size:18px;line-height:1.3;color:'+look[1]+'">'+icon+'</div>'
+    +'<div style="min-width:0"><div style="font-size:13px;font-weight:700;color:#fff">'+esc(r.title)+'</div>'
+    +'<div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.6;margin-top:2px;overflow-wrap:anywhere">'+esc(r.text||'')+'</div>'
+    +(r.fix?'<div style="font-size:12px;color:#fbbf24;line-height:1.6;margin-top:4px;overflow-wrap:anywhere"><strong>What to do:</strong> '+esc(r.fix)+'</div>':'')
+    +'</div></div>';
+}
+function openEmailCheck(){
+  document.getElementById('echeck-overlay').classList.add('open');
+  runEmailCheck();
+}
+function closeEmailCheck(){_echeckRun++;document.getElementById('echeck-overlay').classList.remove('open');}
+async function runEmailCheck(){
+  const run=++_echeckRun;
+  const alive=()=>run===_echeckRun;
+  const rowsEl=document.getElementById('echeck-rows'),sumEl=document.getElementById('echeck-summary');
+  const sendBox=document.getElementById('echeck-send');
+  if(!rowsEl||!sumEl||!sendBox)return;
+  const rows=[];
+  const draw=()=>{if(alive())rowsEl.innerHTML=rows.map(echeckRowHtml).join('');};
+  const put=(i,r)=>{rows[i]=r;draw();};
+  sendBox.style.display='none';
+  document.getElementById('echeck-send-result').innerHTML='';
+  sumEl.innerHTML='';
+  const DEPLOY_FIX=fn=>'In Supabase open Edge Functions → '+fn+' → Code, paste the new file you were given, and click Deploy.';
+
+  // 1 — who is signed in
+  const me=user?.email||'';
+  const isMain=me.toLowerCase()===ADMIN_EMAIL.toLowerCase();
+  put(0,{state:isMain?'ok':'warn',title:'Your login',
+    text:isMain?('Signed in as '+me+' — the main admin account.'):('Signed in as '+(me||'(unknown)')+'. "Log in as this artist" only works when you are signed in as '+ADMIN_EMAIL+'.'),
+    fix:isMain?'':'Log out and log in again with '+ADMIN_EMAIL+'.'});
+
+  // 2 — what Supabase does when someone signs up
+  put(1,{state:'wait',title:'Sign-up settings in Supabase',text:'Checking…'});
+  try{
+    const r=await fetch(SB_URL+'/auth/v1/settings',{headers:{apikey:SB_KEY}});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const st=await r.json();
+    if(!alive())return;
+    if(st.disable_signup){
+      put(1,{state:'bad',title:'Sign-up settings in Supabase',text:'New sign-ups are switched OFF in Supabase, so nobody can create an account.',fix:'Supabase → Authentication → Sign In / Providers → turn "Allow new users to sign up" back on.'});
+    }else if(st.mailer_autoconfirm){
+      put(1,{state:'ok',title:'Sign-up settings in Supabase',text:'"Confirm email" is OFF: new artists are signed in the moment they sign up, so Supabase sends them no confirmation email. Their welcome email comes from the email function (checked below).'});
+    }else{
+      put(1,{state:'warn',title:'Sign-up settings in Supabase',text:'"Confirm email" is ON: every new artist must click a link that Supabase emails them before they can use the app. If artists tell you that email never arrives, the cause is almost always Supabase\'s own email sender — it is meant for testing only: it sends very few emails per hour and only to your own team\'s addresses.',
+        fix:'Supabase → Authentication → Emails → SMTP Settings: turn on custom SMTP and use Resend (host smtp.resend.com, port 465, username resend, password = your Resend API key, sender noreply@blakkstonemusic.com). Or, if you do not need email confirmation, turn "Confirm email" OFF under Authentication → Sign In / Providers → Email.'});
+    }
+  }catch(e){
+    if(!alive())return;
+    put(1,{state:'info',title:'Sign-up settings in Supabase',text:'Could not read these from this page ('+(e&&e.message||e)+').',fix:'Look at Supabase → Authentication → Sign In / Providers → Email and check "Confirm email" yourself.'});
+  }
+
+  // 3 + 4 — the email function and its sender
+  put(2,{state:'wait',title:'Email function (send-notification-email)',text:'Checking…'});
+  put(3,{state:'wait',title:'Sender and domain (Resend)',text:'Waiting for the email function…'});
+  let emailFnNew=false;
+  try{
+    const {data,error}=await sb.functions.invoke('send-notification-email',{method:'GET'});
+    if(!alive())return;
+    if(error||!data||data.ok!==true){
+      const d=await describeFnFailure(error,'send-notification-email',data);
+      if(!alive())return;
+      const oldVersion=d.status===500&&d.body&&/json|syntax/i.test(String(d.body.error||''));
+      const oldNoKey=d.status===500&&d.body&&/RESEND_API_KEY/i.test(String(d.body.error||''));
+      if(oldVersion){
+        put(2,{state:'warn',title:'Email function (send-notification-email)',text:'It is deployed and has the Resend key, but it is the OLD version: it cannot be checked, cannot test delivery to artists, and still has the old behaviour.',fix:DEPLOY_FIX('send-notification-email')});
+        put(3,{state:'info',title:'Sender and domain (Resend)',text:'Cannot be read until the new email function is deployed.'});
+      }else if(oldNoKey||d.code==='resend_key_missing'){
+        put(2,{state:'bad',title:'Email function (send-notification-email)',text:'The function is deployed, but it has no Resend API key, so it cannot send any email.',fix:EMAIL_FIXES.resend_key_missing});
+        put(3,{state:'info',title:'Sender and domain (Resend)',text:'Cannot be checked without the Resend key.'});
+      }else{
+        put(2,{state:'bad',title:'Email function (send-notification-email)',text:d.text,fix:(d.code==='not_admin'||d.code==='forbidden')?'Log in as '+ADMIN_EMAIL+' and run the check again.':DEPLOY_FIX('send-notification-email')});
+        put(3,{state:'info',title:'Sender and domain (Resend)',text:'Cannot be checked until the email function answers.'});
+      }
+    }else{
+      emailFnNew=true;
+      put(2,{state:data.resendKeySet?'ok':'bad',title:'Email function (send-notification-email)',
+        text:data.resendKeySet?('Running (version '+data.version+') and a Resend API key is stored.'):'Running (version '+data.version+'), but no Resend API key is stored, so it cannot send anything.',
+        fix:data.resendKeySet?'':EMAIL_FIXES.resend_key_missing});
+      const rs=data.resend||{};
+      const from=data.from||'?';
+      if(!data.resendKeySet){
+        put(3,{state:'info',title:'Sender and domain (Resend)',text:'Cannot be checked without the Resend key.'});
+      }else if(data.fromIsSandbox){
+        put(3,{state:'bad',title:'Sender and domain (Resend)',text:'Emails are being sent from Resend\'s testing address ('+from+'). Resend only delivers those to the account owner — which is why admin emails can arrive while artists never get theirs.',fix:EMAIL_FIXES.sandbox_sender});
+      }else if(rs.access==='full'){
+        const dm=rs.fromDomainStatus;
+        if(dm==='verified')put(3,{state:'ok',title:'Sender and domain (Resend)',text:'Sending as '+from+' — the domain '+data.fromDomain+' is verified in Resend.'});
+        else if(dm==='not_listed')put(3,{state:'bad',title:'Sender and domain (Resend)',text:'Sending as '+from+', but the domain '+data.fromDomain+' is not in your Resend account.',fix:'Add and verify it in Resend → Domains, or set NOTIFICATION_FROM_EMAIL to an address on a domain that is verified there.'});
+        else put(3,{state:'bad',title:'Sender and domain (Resend)',text:'Sending as '+from+', but Resend lists the domain '+data.fromDomain+' as "'+dm+'", not "verified". Emails to artists will be refused.',fix:EMAIL_FIXES.domain_not_verified});
+      }else if(rs.access==='send_only'){
+        put(3,{state:'info',title:'Sender and domain (Resend)',text:'Sending as '+from+'. Your Resend key can only send (it cannot list your domains) — that is normal for a restricted key. Use the test email below to prove delivery works.'});
+      }else if(rs.access==='rejected'){
+        put(3,{state:'bad',title:'Sender and domain (Resend)',text:'Resend rejected the API key'+(rs.message?' ('+rs.message+')':'')+'.',fix:EMAIL_FIXES.resend_key_invalid});
+      }else{
+        put(3,{state:'warn',title:'Sender and domain (Resend)',text:'Sending as '+from+'. Resend could not be asked about your domains right now ('+(rs.access||'no answer')+'). Use the test email below.'});
+      }
+    }
+  }catch(e){
+    if(!alive())return;
+    put(2,{state:'bad',title:'Email function (send-notification-email)',text:'The check itself failed: '+(e&&e.message||e)});
+    put(3,{state:'info',title:'Sender and domain (Resend)',text:'Not checked.'});
+  }
+
+  // 5 — "Log in as this artist"
+  put(4,{state:'wait',title:'"Log in as this artist" function (admin-impersonate-user)',text:'Checking…'});
+  const T5='"Log in as this artist" function (admin-impersonate-user)';
+  try{
+    const {data,error}=await sb.functions.invoke('admin-impersonate-user',{body:{ping:true}});
+    if(!alive())return;
+    if(!error&&data&&data.ok===true){
+      if(data.serviceKey==='accepted')put(4,{state:'ok',title:T5,text:'Works: Supabase accepts your login, you are recognised as the admin, and the function\'s service key is valid (version '+data.version+').'});
+      else put(4,{state:'bad',title:T5,text:'Supabase refused this function\'s service key'+(data.serviceKeyMessage?' ('+data.serviceKeyMessage+')':'')+', so it cannot log you in as anyone.',fix:'Supabase → Project Settings → API Keys: make sure the legacy keys are enabled, or create a secret key and store it as SB_SECRET_KEY under Edge Functions → Secrets.'});
+    }else{
+      const d=await describeFnFailure(error,'admin-impersonate-user',data);
+      if(!alive())return;
+      if(d.status===400&&d.body&&/targetUserId/i.test(String(d.body.error||''))){
+        put(4,{state:'warn',title:T5,text:'It is deployed and accepts your login as the admin, but it is the OLD version (it cannot test its service key and gives less helpful errors).',fix:DEPLOY_FIX('admin-impersonate-user')});
+      }else if(d.code==='not_admin'){
+        put(4,{state:'bad',title:T5,text:d.text,fix:'Log out and log in again with '+ADMIN_EMAIL+'.'});
+      }else{
+        put(4,{state:'bad',title:T5,text:d.text,fix:DEPLOY_FIX('admin-impersonate-user')});
+      }
+    }
+  }catch(e){
+    if(!alive())return;
+    put(4,{state:'bad',title:T5,text:'The check itself failed: '+(e&&e.message||e)});
+  }
+
+  if(!alive())return;
+  const bad=rows.filter(r=>r.state==='bad').length,warn=rows.filter(r=>r.state==='warn').length;
+  if(bad)sumEl.innerHTML='<div style="font-size:13px;font-weight:700;color:#f87171"><i class="ti ti-circle-x"></i> '+bad+' problem'+(bad>1?'s':'')+' found — fix the red items first, then run the check again.</div>';
+  else if(warn)sumEl.innerHTML='<div style="font-size:13px;font-weight:700;color:#fbbf24"><i class="ti ti-alert-triangle"></i> Nothing is broken, but '+warn+' item'+(warn>1?'s need':' needs')+' a look.</div>';
+  else sumEl.innerHTML='<div style="font-size:13px;font-weight:700;color:#34d399"><i class="ti ti-circle-check"></i> Everything checks out. Send a real test email below to see it arrive.</div>';
+  if(emailFnNew)sendBox.style.display='block';
+}
+async function sendEmailCheck(){
+  const input=document.getElementById('echeck-to'),btn=document.getElementById('echeck-send-btn'),out=document.getElementById('echeck-send-result');
+  if(!input||!btn||!out)return;
+  const to=(input.value||'').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){
+    out.innerHTML=echeckRowHtml({state:'bad',title:'That is not an email address',text:'Type a full address such as name@gmail.com.'});
+    return;
+  }
+  btn.disabled=true;btn.innerHTML='<span class="loader" style="width:14px;height:14px"></span> Sending...';
+  out.innerHTML='';
+  try{
+    const {data,error}=await sb.functions.invoke('send-notification-email',{body:{type:'email_check',to}});
+    if(error||!data||data.success!==true){
+      const d=await describeFnFailure(error,'send-notification-email',data);
+      out.innerHTML=echeckRowHtml({state:'bad',title:'The test email was NOT sent',text:d.text,fix:EMAIL_FIXES[d.code]||''});
+    }else{
+      out.innerHTML=echeckRowHtml({state:'ok',title:'Accepted for delivery',text:'Resend accepted the email to '+to+' (sent from '+(data.from||'your sender')+'). It normally arrives within a minute — check the inbox and the Spam folder. If it never arrives, open Resend → Emails: it shows whether it was Delivered, Bounced or marked as spam.'});
+    }
+  }catch(e){
+    out.innerHTML=echeckRowHtml({state:'bad',title:'The test email was NOT sent',text:String(e&&e.message||e)});
+  }
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Send test email';
+}
 function closeDistributionModal(){document.getElementById('distribution-overlay').classList.remove('open');}
 function openEditReleaseModal(id){
   const r=_releaseMap[id];
@@ -9082,64 +9374,113 @@ function exitViewAsArtist(){
   goPage('admin',null);
   switchAdminTab('users',findAdminTabEl('users'));
 }
-async function confirmImpersonateUser(userId,name){
-  if(!confirm('You\'ll be logged in as '+name+' and can make changes on their account. This is recorded in the activity log. Continue?'))return;
-  closeArtistModal();
-  await impersonateUser(userId,name);
+// "Log in as this artist" asks for confirmation in an in-page box. The browser's own confirm() pop-up used to be
+// used, but browsers can silently block those (after "prevent this page from creating more dialogs" was ticked,
+// or inside an app's built-in browser) — and then the button simply did nothing, with no message at all.
+let _impTarget=null,_impBusy=false;
+function confirmImpersonateUser(userId,name){
+  _impTarget={userId,name};
+  const nameEl=document.getElementById('imp-confirm-name');if(nameEl)nameEl.textContent=name;
+  setImpConfirmState('idle');
+  document.getElementById('imp-confirm-overlay').classList.add('open');
+}
+function closeImpersonateConfirm(){
+  if(_impBusy)return;
+  document.getElementById('imp-confirm-overlay').classList.remove('open');
+  _impTarget=null;
+}
+function setImpConfirmState(state,msg){
+  const box=document.getElementById('imp-confirm-msg');
+  const go=document.getElementById('imp-confirm-go');
+  if(!box||!go)return;
+  if(state==='busy'){
+    box.style.display='block';box.style.background='rgba(212,175,55,.08)';box.style.border='1px solid rgba(212,175,55,.3)';box.style.color='#fff';
+    box.innerHTML='<span class="loader" style="width:14px;height:14px;vertical-align:-2px"></span> Logging in as this artist…';
+    go.disabled=true;go.style.opacity='.5';
+  } else if(state==='error'){
+    box.style.display='block';box.style.background='rgba(239,68,68,.1)';box.style.border='1px solid rgba(239,68,68,.4)';box.style.color='#fca5a5';
+    box.innerHTML='<strong style="color:#f87171">Could not log in as this artist.</strong><br>'+esc(msg||'Unknown reason.');
+    go.disabled=false;go.style.opacity='1';go.innerHTML='<i class="ti ti-refresh"></i> Try again';
+  } else {
+    box.style.display='none';box.innerHTML='';
+    go.disabled=false;go.style.opacity='1';go.innerHTML='<i class="ti ti-login-2"></i> Log in as artist';
+  }
+}
+async function runImpersonateFromConfirm(){
+  if(!_impTarget||_impBusy)return;
+  const {userId,name}=_impTarget;
+  _impBusy=true;setImpConfirmState('busy');
+  let why='';
+  try{why=await impersonateUser(userId,name);}
+  catch(e){console.error('Impersonation error:',e);why='Something unexpected went wrong ('+(e&&e.message||e)+').';}
+  _impBusy=false;
+  if(why){
+    setImpConfirmState('error',why);
+    toast('Could not log in as '+name+' — the reason is shown in the box.','err',6000);
+  }
 }
 async function impersonateUser(userId,name){
+  // Returns '' when the switch worked (the page then reloads as the artist), otherwise a plain-language reason.
+  const clearFlags=()=>{try{sessionStorage.removeItem('_adminOriginalSession');sessionStorage.removeItem('_impersonatingName');}catch(e){}};
   try{
     // Save the admin's own session before switching, so returning to admin
     // afterward is a seamless restore rather than a fresh login.
     const {data:{session:adminSession}}=await sb.auth.getSession();
-    if(!adminSession){toast('Could not read your own session — try refreshing and logging in again','err');return;}
+    if(!adminSession)return 'Your own login could not be read. Refresh the page and log in again.';
     sessionStorage.setItem('_adminOriginalSession',JSON.stringify({access_token:adminSession.access_token,refresh_token:adminSession.refresh_token}));
     sessionStorage.setItem('_impersonatingName',name);
 
     const {data,error}=await sb.functions.invoke('admin-impersonate-user',{body:{targetUserId:userId}});
-    if(error||data?.error){
-      console.error('Impersonation error:',error||data?.error);
-      toast('Could not log in as this artist: '+(data?.error||error?.message||'unknown error'),'err');
-      sessionStorage.removeItem('_adminOriginalSession');
-      sessionStorage.removeItem('_impersonatingName');
-      return;
+    if(error||data?.error||!data?.hashed_token){
+      console.error('Impersonation error:',error||data?.error||'the function returned no login token');
+      const why=await explainFnFailure(error,'admin-impersonate-user',data);
+      clearFlags();
+      return why||'The function did not return a login.';
     }
 
     const {error:verifyError}=await sb.auth.verifyOtp({token_hash:data.hashed_token,type:'email'});
     if(verifyError){
       console.error('verifyOtp error:',verifyError);
-      toast('Could not complete login as this artist','err');
-      sessionStorage.removeItem('_adminOriginalSession');
-      sessionStorage.removeItem('_impersonatingName');
-      return;
+      clearFlags();
+      return 'Supabase would not accept the one-time login ('+(verifyError.message||'unknown reason')+'). Try once more; if it keeps failing, look at Supabase → Authentication → Logs.';
     }
 
     // Session has now switched to the target user — a full reload cleanly
     // resets every global variable and cache in the app to that user's
     // context, rather than trying to manually reset dozens of them by hand.
+    closeArtistModal();
     location.reload();
+    return '';
   }catch(e){
     console.error('Impersonation error:',e);
-    toast('Something went wrong trying to log in as this artist','err');
-    sessionStorage.removeItem('_adminOriginalSession');
-    sessionStorage.removeItem('_impersonatingName');
+    clearFlags();
+    return 'Something unexpected went wrong ('+(e&&e.message||e)+').';
   }
 }
 async function returnToAdminFromImpersonation(){
+  // If the admin's own session cannot be restored, never leave the browser sitting inside the artist's account
+  // with the "Viewing as" bar gone: sign this browser out (locally only — the artist's other devices are untouched).
+  const signOutInstead=async(why)=>{
+    try{sessionStorage.removeItem('_adminOriginalSession');sessionStorage.removeItem('_impersonatingName');sessionStorage.setItem('_flash',why);}catch(e){}
+    try{await sb.auth.signOut({scope:'local'});}catch(e){console.error('Sign-out after failed return to admin:',e);}
+    location.reload();
+  };
   try{
     const saved=sessionStorage.getItem('_adminOriginalSession');
     if(!saved){toast('No admin session found to return to — please log in again','err');return;}
     const {access_token,refresh_token}=JSON.parse(saved);
     const {error}=await sb.auth.setSession({access_token,refresh_token});
+    if(error){
+      console.error('Return to admin error:',error);
+      await signOutInstead('Your admin login had expired, so you were signed out of the artist\'s account. Log in again as the admin.');
+      return;
+    }
     sessionStorage.removeItem('_adminOriginalSession');
     sessionStorage.removeItem('_impersonatingName');
-    if(error)console.error('Return to admin error:',error);
     location.reload();
   }catch(e){
     console.error('Return to admin error:',e);
-    sessionStorage.removeItem('_adminOriginalSession');
-    sessionStorage.removeItem('_impersonatingName');
-    location.reload();
+    await signOutInstead('Could not return to your admin account, so you were signed out. Log in again as the admin.');
   }
 }
 // ── ADMIN ARTIST NOTES (private, admin-only) ────────────────
@@ -10714,10 +11055,10 @@ function fileChosen(input,zoneId,labelId){
 
 
 // ── TOAST ──────────────────────────────────────────────
-function toast(msg,type){
+function toast(msg,type,ms){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className='toast'+(type==='ok'?' ok':type==='err'?' err':'');
-  t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);
+  t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms||3500);
 }
 
 // ── ADMIN ──────────────────────────────────────────────
@@ -11320,7 +11661,7 @@ async function executeAdminDeleteUser(){
     const {data,error}=await sb.functions.invoke('admin-delete-user',{body:{targetUserId:_adminDeleteTarget.id}});
     if(error||data?.error){
       console.error('Delete user error:',error||data?.error);
-      toast('Could not delete this account: '+(data?.error||error?.message||'unknown error'),'err');
+      toast('Could not delete this account: '+((await explainFnFailure(error,'admin-delete-user',data))||'unknown error'),'err',9000);
       btn.disabled=false;btn.innerHTML=originalHtml;
       return;
     }
@@ -11343,7 +11684,7 @@ function renderAdminUsersTable(data){
     const planColors={free:'#9ca3af',solo_paid:'#60a5fa',artist_plus:'#c084fc',label:'#fbbf24',admin:'#f87171'};
     const plColor=planColors[p.plan]||'#9ca3af';
     const plSelectStyle='background:'+plColor+'1a;color:'+plColor+';border-color:'+plColor+'40;font-weight:600';
-    return '<tr><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(p.account_id||'—')+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(p.email||'')+'</div></td><td><select class="stsel" style="'+plSelectStyle+'" onchange="updateUserPlan(\''+p.id+'\',this.value)"><option value="free" '+(p.plan==='free'?'selected':'')+'>Free</option><option value="solo_paid" '+(p.plan==='solo_paid'?'selected':'')+'>Solo</option><option value="artist_plus" '+(p.plan==='artist_plus'?'selected':'')+'>Artist+</option><option value="label" '+(p.plan==='label'?'selected':'')+'>Label</option><option value="admin" '+(p.plan==='admin'?'selected':'')+'>Admin</option></select></td><td style="text-align:center;font-weight:600;color:#fff">'+(relCount[p.id]||0)+'</td><td style="color:rgba(255,255,255,.6)">'+(relStreams[p.id]||0).toLocaleString()+'</td><td style="color:#34d399;font-weight:600">$'+(relEarn[p.id]||0).toFixed(2)+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+joined+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" onclick="openArtistModal(\''+p.id+'\','+jsArg(name)+')"><i class="ti ti-eye"></i></button>'+(p.plan==='admin'?'':'<button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" title="Permanently delete this account" onclick="openAdminDeleteUserModal(\''+p.id+'\','+jsArg(name)+','+jsArg(p.email||'')+')"><i class="ti ti-trash"></i></button>')+'</td></tr>';
+    return '<tr><td style="font-weight:700;color:var(--gold);font-size:12px">'+esc(p.account_id||'—')+'</td><td><div style="font-weight:600;color:#fff">'+esc(name)+'</div><div style="font-size:11px;color:rgba(255,255,255,.35)">'+esc(p.email||'')+'</div></td><td><select class="stsel" style="'+plSelectStyle+'" onchange="updateUserPlan(\''+p.id+'\',this.value)"><option value="free" '+(p.plan==='free'?'selected':'')+'>Free</option><option value="solo_paid" '+(p.plan==='solo_paid'?'selected':'')+'>Solo</option><option value="artist_plus" '+(p.plan==='artist_plus'?'selected':'')+'>Artist+</option><option value="label" '+(p.plan==='label'?'selected':'')+'>Label</option><option value="admin" '+(p.plan==='admin'?'selected':'')+'>Admin</option></select></td><td style="text-align:center;font-weight:600;color:#fff">'+(relCount[p.id]||0)+'</td><td style="color:rgba(255,255,255,.6)">'+(relStreams[p.id]||0).toLocaleString()+'</td><td style="color:#34d399;font-weight:600">$'+(relEarn[p.id]||0).toFixed(2)+'</td><td style="color:rgba(255,255,255,.35);font-size:11px">'+joined+'</td><td style="white-space:nowrap"><button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px" title="Open this artist" aria-label="Open this artist" onclick="openArtistModal(\''+p.id+'\','+jsArg(name)+')"><i class="ti ti-eye"></i></button>'+(p.plan==='admin'?'':'<button class="btn adm-btn-sec btn-sm" style="padding:4px 8px;margin-right:3px;color:var(--gold)" title="Log in as this artist" aria-label="Log in as this artist" onclick="confirmImpersonateUser(\''+p.id+'\','+jsArg(name)+')"><i class="ti ti-login-2"></i></button>')+(p.plan==='admin'?'':'<button class="btn-danger-outline" style="font-size:11px;padding:3px 7px" title="Permanently delete this account" onclick="openAdminDeleteUserModal(\''+p.id+'\','+jsArg(name)+','+jsArg(p.email||'')+')"><i class="ti ti-trash"></i></button>')+'</td></tr>';
   }).join('');
 }
 function filterUsers(){
@@ -13653,6 +13994,7 @@ function renderSplitRows(){
     console.error('Session check failed, falling back to landing:',e);
     showView('landing');
   }
+  try{const flash=sessionStorage.getItem('_flash');if(flash){sessionStorage.removeItem('_flash');toast(flash,'err',9000);}}catch(e){}
   sb.auth.onAuthStateChange(async(event,session)=>{
     if(event==='SIGNED_IN'&&session?.user&&!user&&!isRecovery)await loadProfile(session.user);
     if(event==='USER_UPDATED'&&session?.user){
