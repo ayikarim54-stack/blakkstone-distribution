@@ -327,25 +327,125 @@ html:has(#landing.active),body:has(#landing.active){background:#08080C}
 /* kept from the old landing block: also used by the dashboard's new-message dot */
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
 
-/* ── AUTH ── */
-#auth{background:var(--off);align-items:center;justify-content:center;padding:2rem 1rem}
-.auth-wrap{display:flex;max-width:960px;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.06)}
-.auth-l{background:var(--black);padding:3.5rem 3rem;flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
-.auth-l::before{content:'';position:absolute;top:-40%;right:-30%;width:70%;height:70%;background:radial-gradient(circle,rgba(212,175,55,.1),transparent 70%);pointer-events:none}
-.auth-l h2{font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1.12;margin-bottom:.75rem;position:relative}
-.auth-l p{font-size:14px;color:rgba(255,255,255,.5);line-height:1.65;margin-bottom:2.25rem;max-width:34ch;position:relative}
-.auth-credits{list-style:none;position:relative;border-top:1px solid rgba(255,255,255,.1)}
-.auth-credits li{display:flex;justify-content:space-between;align-items:baseline;gap:1.5rem;padding:.8rem 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:13px}
-.auth-credits li span:first-child{color:rgba(255,255,255,.4)}
-.auth-credits li span:last-child{color:#fff;font-weight:600;text-align:right}
-.auth-r{background:var(--card);padding:3rem 3.25rem;flex:1;display:flex;flex-direction:column;justify-content:center}
-.auth-r h3{font-size:22px;font-weight:800;color:#fff;margin-bottom:.2rem}
-.auth-r>p{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1.5rem}
-.auth-r .fg label{color:rgba(255,255,255,.5)}
-.auth-r .fg input,.auth-r .fg select,.auth-r .fg textarea{background:var(--input-bg);border:1.5px solid rgba(255,255,255,.1);color:#fff}
-.auth-r .fg input:focus,.auth-r .fg select:focus{border-color:var(--gold);background:#181826}
-.auth-r .fg input::placeholder{color:rgba(255,255,255,.25)}
-.auth-r .fg select option{background:var(--card);color:#fff}
+/* ── AUTH ── Sign-up, log-in and forgot-password share one screen (#auth). The three screens that follow it (#confirm, #reset-sent, #set-new-pw) wear the same look.
+   Everything is scoped by those four ids and the au- prefix, so none of it can reach the dashboard, the landing page or the legal page. */
+html:has(:is(#auth,#confirm,#reset-sent,#set-new-pw).active),body:has(:is(#auth,#confirm,#reset-sent,#set-new-pw).active){background:#08080C}
+#auth,#confirm,#reset-sent,#set-new-pw{--au-bg:#08080C;--au-line:rgba(255,255,255,.08);--au-line2:rgba(255,255,255,.15);--au-text:#F3F0E8;--au-body:#B8B8C4;--au-dim:#8E8E9C;--au-gold:#D4AF37;--au-gold2:#E3C25A;--au-bad:#FF8484;--au-display:'Bricolage Grotesque','Inter',system-ui,sans-serif;--au-gut:clamp(20px,4.2vw,48px);position:relative;overflow:clip;background:var(--au-bg);color:var(--au-body);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;color-scheme:dark;min-height:100vh;min-height:100dvh}
+:is(#auth,#confirm,#reset-sent,#set-new-pw) :focus-visible{outline:2px solid var(--au-gold2);outline-offset:3px}   /* the ring follows each control's own shape (pill, square, field) */
+:is(#auth,#confirm,#reset-sent,#set-new-pw) .au-field input:focus-visible{outline:none}   /* a field shows focus with its gold border and glow instead */
+.au-link:focus-visible,.au-brand:focus-visible{border-radius:6px}   /* text links have no shape of their own: give the ring a soft corner */
+
+/* top bar: same height and gutters as the landing nav, so the logo does not jump when you arrive from the home page */
+.au-top{flex:none;width:100%;max-width:1240px;height:68px;margin:0 auto;padding:0 var(--au-gut);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.au-brand{display:flex;align-items:center;gap:10px;color:var(--au-text);font:800 20px/1 var(--au-display);letter-spacing:-.02em;text-decoration:none;white-space:nowrap}
+.au-brand img{display:block;height:34px;width:auto;border-radius:7px}
+.au-brand b{color:var(--au-gold);font-weight:800}
+.au-back{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 18px 0 14px;border-radius:999px;background:transparent;border:1px solid var(--au-line2);color:var(--au-text);font:600 14px/1 'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:background .18s,border-color .18s}
+.au-back:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.3)}
+.au-back i{font-size:16px;color:var(--au-dim)}
+
+/* the page: the form comes first in the source (keyboard and screen-reader order), the headline sits on its left on a wide screen */
+.au-shell{flex:1;width:100%;max-width:520px;margin:0 auto;padding:clamp(8px,3vw,32px) var(--au-gut) clamp(48px,8vw,80px);display:grid;grid-template-columns:minmax(0,1fr);gap:56px;align-content:start}
+.au-form-col{position:relative;display:flex;justify-content:center}
+.au-card{position:relative;z-index:1;width:100%;max-width:480px}
+.au-side{min-width:0;display:flex;flex-direction:column;justify-content:center;padding-top:40px;border-top:1px solid var(--au-line)}
+
+/* type */
+.au-title{font-family:var(--au-display);font-weight:700;font-stretch:88%;font-size:clamp(30px,3vw,38px);line-height:1.04;letter-spacing:-.022em;color:var(--au-text);text-wrap:balance}
+.au-sub{margin:10px 0 26px;font-size:16px;line-height:1.5;color:var(--au-body);text-wrap:pretty}
+.au-big{font-family:var(--au-display);font-weight:800;font-stretch:80%;font-size:clamp(40px,5.4vw,80px);line-height:.95;letter-spacing:-.022em;color:var(--au-text);text-wrap:balance}
+.au-big span{display:block}
+.au-lede{margin-top:22px;max-width:34em;font-size:clamp(16px,1.3vw,18px);line-height:1.65;color:var(--au-body);text-wrap:pretty}
+.au-credits{list-style:none;margin-top:34px;max-width:460px;border-top:1px solid var(--au-line)}
+.au-credits li{display:flex;justify-content:space-between;align-items:baseline;gap:24px;padding:14px 0;border-bottom:1px solid var(--au-line);font-size:15px;line-height:1.4}
+.au-credits li span:first-child{color:var(--au-dim)}
+.au-credits li span:last-child{color:var(--au-text);font-weight:600;text-align:right}
+
+/* buttons */
+.au-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:0 24px;border-radius:999px;font:600 16px/1 'Inter',sans-serif;letter-spacing:-.005em;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:background .18s,border-color .18s,color .18s,transform .18s}
+.au-btn-gold{background:var(--au-gold);color:#08080C}
+.au-btn-gold:hover{background:var(--au-gold2);transform:translateY(-1px)}
+.au-btn-gold:active{transform:none}
+.au-btn:disabled{opacity:.8;cursor:progress;transform:none}
+.au-btn .loader{width:14px;height:14px;border-color:rgba(8,8,12,.25);border-top-color:#08080C}
+.au-btn-google{background:rgba(255,255,255,.04);border-color:var(--au-line2);color:var(--au-text)}
+.au-btn-google:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.3)}
+.au-gmark{display:inline-flex;align-items:center;justify-content:center}
+.au-gmark img{display:block;width:18px;height:18px;filter:invert(1)}   /* the icon is a black glyph, so it is flipped to white on the dark button */
+.au-or{display:flex;align-items:center;gap:14px;margin:20px 0 22px;font-size:13px;color:var(--au-dim)}
+.au-or::before,.au-or::after{content:"";flex:1;height:1px;background:var(--au-line)}
+
+/* fields */
+.au-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 12px}
+.au-field{margin-bottom:16px}
+.au-field label{display:block;margin-bottom:8px;font-size:14px;font-weight:500;line-height:1.3;color:var(--au-body)}
+.au-field input{display:block;width:100%;min-height:50px;padding:0 16px;border-radius:12px;background:#0B0B11;border:1px solid var(--au-line2);color:var(--au-text);font:400 16px/1.2 'Inter',sans-serif;outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
+.au-field input::placeholder{color:#7C7C8A;opacity:1}
+.au-field input:hover{border-color:rgba(255,255,255,.28)}
+.au-field input:focus{border-color:var(--au-gold);background:#0E0E15;box-shadow:0 0 0 3px rgba(212,175,55,.22)}
+.au-field input[aria-invalid="true"]{border-color:var(--au-bad);box-shadow:0 0 0 3px rgba(255,132,132,.18)}
+.au-field input:-webkit-autofill,.au-field input:-webkit-autofill:hover{-webkit-text-fill-color:var(--au-text);caret-color:var(--au-text);box-shadow:0 0 0 1000px #0B0B11 inset}
+.au-field input:-webkit-autofill:focus{-webkit-text-fill-color:var(--au-text);caret-color:var(--au-text);box-shadow:0 0 0 1000px #0E0E15 inset,0 0 0 3px rgba(212,175,55,.22)}
+.au-pw{position:relative}
+.au-pw input{padding-right:52px}
+.au-eye{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:42px;height:42px;display:grid;place-items:center;border:0;border-radius:10px;background:transparent;color:var(--au-dim);cursor:pointer;transition:color .15s,background .15s}
+.au-eye:hover{color:var(--au-text);background:rgba(255,255,255,.06)}
+.au-eye i{font-size:20px;line-height:1}
+.au-forgot{margin:-6px 0 18px;text-align:right;font-size:14px}
+.au-forgot .au-link{padding:10px 4px;margin:-10px -4px}   /* the padding makes the tap area bigger without moving the text: the negative margin takes it back */
+.au-link{padding:6px 4px;margin:-6px -4px;border:0;background:none;font:inherit;font-weight:600;color:var(--au-gold2);cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;transition:text-decoration-color .15s}
+.au-link:hover{text-decoration-color:currentColor}
+.au-foot{margin-top:20px;text-align:center;font-size:15px;line-height:1.5;color:var(--au-dim)}
+
+/* the screens after the form: check your email / reset link sent / set a new password */
+#confirm,#reset-sent,#set-new-pw{align-items:center;justify-content:center;padding:32px var(--au-gut)}
+:is(#confirm,#reset-sent,#set-new-pw)::before{content:"";position:absolute;z-index:0;left:50%;top:50%;width:min(900px,200%);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;background:repeating-radial-gradient(circle at 50% 50%,transparent 0 17px,rgba(255,255,255,.085) 17px 18px);-webkit-mask-image:radial-gradient(circle at 50% 50%,#000 0,rgba(0,0,0,.8) 30%,transparent 62%);mask-image:radial-gradient(circle at 50% 50%,#000 0,rgba(0,0,0,.8) 30%,transparent 62%)}
+.au-note{position:relative;z-index:1;width:100%;max-width:460px;padding:44px 36px 36px;border-radius:22px;text-align:center;background:linear-gradient(180deg,#15151d 0,#0f0f15 100%);border:1px solid var(--au-line2);box-shadow:0 50px 90px -40px rgba(0,0,0,.9),0 0 0 1px rgba(0,0,0,.4)}
+.au-note-icon{width:64px;height:64px;margin:0 auto 22px;border-radius:50%;display:grid;place-items:center;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.4)}
+.au-note-icon i{font-size:28px;line-height:1;color:var(--au-gold)}
+.au-note h1{font-family:var(--au-display);font-weight:700;font-stretch:88%;font-size:clamp(28px,6vw,34px);line-height:1.05;letter-spacing:-.022em;color:var(--au-text);text-wrap:balance}
+.au-note p{margin:14px 0 26px;font-size:15px;line-height:1.65;color:var(--au-body);text-wrap:pretty}
+.au-note p strong{color:var(--au-text);font-weight:600;overflow-wrap:anywhere}
+.au-note p.au-small{margin:18px 0 0;font-size:14px;line-height:1.6;color:var(--au-dim)}
+.au-note p.au-small+p.au-small{margin-top:4px}
+.au-note-form .au-fields{margin-top:26px;text-align:left}
+.au-note-form p{margin-bottom:0}
+
+/* wide screens: headline on the left, the form in a sleeve card (the same card as the home page's sample release) on the right */
+@media(min-width:1020px){
+  .au-shell{max-width:1240px;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);grid-template-areas:"side form";column-gap:clamp(32px,5vw,80px);align-items:center;align-content:center;padding-top:8px;padding-bottom:40px}
+  .au-side{grid-area:side;padding-top:0;border-top:0}
+  .au-form-col{grid-area:form}
+  .au-form-col::before{content:"";position:absolute;z-index:0;left:50%;top:50%;width:min(800px,170%);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;background:repeating-radial-gradient(circle at 50% 50%,transparent 0 17px,rgba(255,255,255,.085) 17px 18px);-webkit-mask-image:radial-gradient(circle at 50% 50%,#000 0,rgba(0,0,0,.8) 38%,transparent 72%);mask-image:radial-gradient(circle at 50% 50%,#000 0,rgba(0,0,0,.8) 38%,transparent 72%)}
+}
+/* the card chrome: from phone-landscape up; on a phone the fields get the full width instead */
+@media(min-width:561px){
+  .au-card{padding:36px;border-radius:22px;background:linear-gradient(180deg,#15151d 0,#0f0f15 100%);border:1px solid var(--au-line2);box-shadow:0 50px 90px -40px rgba(0,0,0,.9),0 0 0 1px rgba(0,0,0,.4)}
+}
+/* laptops and short windows: tighter, so the whole form is visible without scrolling (the full-size form needs about 865px of height) */
+@media(min-width:1020px) and (max-height:880px){
+  .au-shell{padding-bottom:24px}
+  .au-card{padding:24px 30px}
+  .au-title{font-size:32px}
+  .au-sub{margin-bottom:16px}
+  .au-field{margin-bottom:10px}
+  .au-field label{margin-bottom:6px}
+  .au-field input,.au-btn{min-height:44px}
+  .au-or{margin:12px 0 14px}
+  .au-foot{margin-top:12px}
+}
+@media(max-width:380px){
+  .au-brand{font-size:18px}
+  .au-brand img{height:30px}
+  .au-back{padding:0 12px}
+  .au-back i{display:none}
+}
+@media(max-width:340px){
+  .au-brand img{display:none}   /* the logo and the 'Back to home' button no longer fit side by side: the name stays */
+}
+@media(prefers-reduced-motion:reduce){
+  :is(#auth,#confirm,#reset-sent,#set-new-pw) *{transition:none!important}
+}
 .fg{margin-bottom:.875rem}
 .fg label{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 .fg input,.fg select,.fg textarea{width:100%;background:var(--surface2);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 11px;font-size:13px;color:#fff;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
@@ -356,16 +456,6 @@ html:has(#landing.active),body:has(#landing.active){background:#08080C}
 .fg select option{background:#1e1e35;color:#fff}
 .fg textarea{resize:vertical;min-height:70px;line-height:1.5}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.auth-foot{font-size:12px;color:var(--muted);text-align:center;margin-top:.875rem}
-
-/* ── CONFIRM ── */
-#confirm{background:var(--off);align-items:center;justify-content:center;padding:2rem}
-.conf-card{background:#fff;border-radius:16px;padding:2.75rem 2.25rem;max-width:420px;width:100%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.07)}
-.conf-icon{width:60px;height:60px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem}
-.conf-icon i{font-size:28px;color:var(--gold)}
-.conf-card h2{font-size:22px;font-weight:800;margin-bottom:.6rem}
-.conf-card p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:1.4rem}
-
 /* ── DASHBOARD DARK THEME (Ditto-inspired) ── */
 #dashboard{flex-direction:column;min-height:100vh;background:var(--black);
   background-image:radial-gradient(circle at 0% 0%, rgba(212,175,55,0.04) 0%, transparent 50%)}
@@ -715,13 +805,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   /* MODALS */
   .modal{width:96%!important;padding:1.25rem}
   .pay-modal{width:96%!important;padding:1.25rem}
-
-  /* AUTH */
-  .auth-wrap{flex-direction:column}
-  .auth-l{padding:1.75rem 1.5rem 1.25rem}
-  .auth-l h2{font-size:26px}
-  .auth-l p{display:none}
-  .auth-r{padding:1.75rem}
 
   /* UPGRADE */
   .ug-grid{max-width:100%}
@@ -2003,98 +2086,99 @@ body:has(#page-submit.active) .toast{bottom:calc(var(--wz-mnav) + var(--wz-bar-h
   </footer>
 </div>
 <!-- ══════════════ AUTH ══════════════ -->
-<div class="view" id="auth" style="background:var(--black);align-items:center;justify-content:center;padding:2rem 1rem">
-  <div class="auth-wrap">
-    <div class="auth-l">
-      <div style="margin-bottom:2.25rem;display:flex;align-items:center;gap:10px;position:relative"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAkACUDASIAAhEBAxEB/8QAHAAAAQQDAQAAAAAAAAAAAAAAAAIEBQYBAwcI/8QAKhAAAgEDAwQBBAIDAAAAAAAAAQIDAAQRBRIhBgcTMVEiIzJBQmFxgbH/xAAYAQADAQEAAAAAAAAAAAAAAAAAAQIDBP/EABwRAAICAwEBAAAAAAAAAAAAAAABAhEDEhMUMf/aAAwDAQACEQMRAD8A80wincQzTGFxT6zCSOfI6JEm0vuONwz+I/s81sjNmwbXB2ENt945xTeX910PoLQZbu51HWJdPnvBKjW0Mfh2xWwK8NKf45CttXGcD5K5iu4Nl0zZWtsbC9lkvzGkbRog8f0DxsSSeDujY8ZzvHxXN6ovJzRpyeuxRZB9VFJdhmiugg1I+Mc1K6BrS6RdRX0FjHdXcb742nXciEesLnBI95Pr9D91ZbzubFqnS9r09qfTNnNawWkNsWS8eORvH4cHIQ4B8IJHP5NyKnbDulNfPcXUmi9L2coube5k+7JGZTFt8ap7IXbEiOvpgFzjFRKKkqY06dogZ+5mut0++lwvPFASRDbW6JDbwZ/OTagy8retzZ2jPsnIpL3JkblTGP4ruyAPgf7zXWH7g6gojMJ0e1nF1NLm3vnRYy0BiaONFwAmWDKCWC7FVSAKjbHvDe2aRBuntHuwFjWRbp3kU7DFxGMfaXMKsFU8MWbJyRUwxwx3qqscpOX1nM2bn/lFTPcPquXq7VLa/ls47NoLWO22JKXQhBjIBA25+Of80VoSVlSaWCaKKQGaSSaKKANbE5ooopgf/9k=" alt="Blakkstone" style="height:36px;width:auto;object-fit:contain"><span style="font-size:17px;font-weight:900;color:#fff">Blakkstone<span style="color:var(--gold)">.</span></span></div>
-      <h2 id="auth-l-title">From Africa. To everywhere.</h2>
-      <p id="auth-l-sub">Get your music onto every major platform — Spotify, Apple Music, Boomplay, and more — from a distributor built for independent African artists.</p>
-      <ul class="auth-credits">
+<div class="view" id="auth">
+  <div class="au-top">
+    <a class="au-brand" href="/" onclick="event.preventDefault();showView('landing')" aria-label="Blakkstone home"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAkACUDASIAAhEBAxEB/8QAHAAAAQQDAQAAAAAAAAAAAAAAAAIEBQYBAwcI/8QAKhAAAgEDAwQBBAIDAAAAAAAAAQIDAAQRBRIhBgcTMVEiIzJBQmFxgbH/xAAYAQADAQEAAAAAAAAAAAAAAAAAAQIDBP/EABwRAAICAwEBAAAAAAAAAAAAAAABAhEDEhMUMf/aAAwDAQACEQMRAD8A80wincQzTGFxT6zCSOfI6JEm0vuONwz+I/s81sjNmwbXB2ENt945xTeX910PoLQZbu51HWJdPnvBKjW0Mfh2xWwK8NKf45CttXGcD5K5iu4Nl0zZWtsbC9lkvzGkbRog8f0DxsSSeDujY8ZzvHxXN6ovJzRpyeuxRZB9VFJdhmiugg1I+Mc1K6BrS6RdRX0FjHdXcb742nXciEesLnBI95Pr9D91ZbzubFqnS9r09qfTNnNawWkNsWS8eORvH4cHIQ4B8IJHP5NyKnbDulNfPcXUmi9L2coube5k+7JGZTFt8ap7IXbEiOvpgFzjFRKKkqY06dogZ+5mut0++lwvPFASRDbW6JDbwZ/OTagy8retzZ2jPsnIpL3JkblTGP4ruyAPgf7zXWH7g6gojMJ0e1nF1NLm3vnRYy0BiaONFwAmWDKCWC7FVSAKjbHvDe2aRBuntHuwFjWRbp3kU7DFxGMfaXMKsFU8MWbJyRUwxwx3qqscpOX1nM2bn/lFTPcPquXq7VLa/ls47NoLWO22JKXQhBjIBA25+Of80VoSVlSaWCaKKQGaSSaKKANbE5ooopgf/9k=" alt=""><span>Blakkstone<b>.</b></span></a>
+    <button type="button" class="au-back" onclick="showView('landing')"><i class="ti ti-arrow-left" aria-hidden="true"></i>Back to home</button>
+  </div>
+  <div class="au-shell">
+    <div class="au-form-col">
+      <div class="au-card">
+        <h1 class="au-title" id="auth-title">Create your account</h1>
+        <p class="au-sub" id="auth-sub">Start distributing your music globally.</p>
+        <div id="oauth-section">
+          <button type="button" class="au-btn au-btn-google" onclick="signInWithGoogle()">
+            <span class="au-gmark"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/google.svg" width="18" height="18" alt=""></span>
+            Continue with Google
+          </button>
+          <div class="au-or"><span>or</span></div>
+        </div>
+        <div id="signup-fields">
+          <div class="au-row">
+            <div class="au-field"><label for="fn">First name</label><input id="fn" type="text" placeholder="Kwame" autocomplete="given-name" autocapitalize="words" spellcheck="false" enterkeyhint="next" onkeydown="if(event.key==='Enter')document.getElementById('ln').focus()"></div>
+            <div class="au-field"><label for="ln">Last name</label><input id="ln" type="text" placeholder="Mensah" autocomplete="family-name" autocapitalize="words" spellcheck="false" enterkeyhint="next" onkeydown="if(event.key==='Enter')document.getElementById('an').focus()"></div>
+          </div>
+          <div class="au-field"><label for="an">Artist / Label name</label><input id="an" type="text" placeholder="Your artist name" autocomplete="off" autocapitalize="words" enterkeyhint="next" onkeydown="if(event.key==='Enter')document.getElementById('em').focus()"></div>
+        </div>
+        <div class="au-field"><label for="em">Email</label><input id="em" type="email" placeholder="you@email.com" autocomplete="email" autocapitalize="none" spellcheck="false" enterkeyhint="next" onkeydown="if(event.key==='Enter'){authMode==='forgot'?doAuth():document.getElementById('pw').focus()}"></div>
+        <div id="pw-field-group">
+          <div class="au-field"><label for="pw">Password</label>
+            <div class="au-pw">
+              <input id="pw" type="password" placeholder="Min. 6 characters" autocomplete="new-password" enterkeyhint="go" onkeydown="if(event.key==='Enter')doAuth()">
+              <button type="button" class="au-eye" onclick="togglePwVis()" aria-label="Show password" aria-pressed="false"><i class="ti ti-eye" id="pw-eye" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <p class="au-forgot" id="forgot-pw-link" style="display:none"><button type="button" class="au-link" onclick="showAuth('forgot')">Forgot password?</button></p>
+        </div>
+        <button type="button" class="au-btn au-btn-gold" id="auth-btn" onclick="doAuth()">Create account</button>
+        <p class="au-foot" id="auth-foot">Have an account? <button type="button" class="au-link" onclick="toggleAuth()">Log in</button></p>
+      </div>
+    </div>
+    <div class="au-side">
+      <h2 class="au-big" id="auth-l-title"><span>From Africa.</span> <span>To everywhere.</span></h2>
+      <p class="au-lede" id="auth-l-sub">Get your music onto every major platform — Spotify, Apple Music, Boomplay, and more — from a distributor built for independent African artists.</p>
+      <ul class="au-credits">
         <li><span>Platforms</span><span>150+ stores</span></li>
         <li><span>Payouts</span><span>Mobile Money, bank transfer</span></li>
         <li><span>Turnaround</span><span>10 business days</span></li>
       </ul>
     </div>
-    <div class="auth-r">
-      <h3 id="auth-title">Create your account</h3>
-      <p id="auth-sub">Start distributing your music globally.</p>
-      <div id="oauth-section">
-        <button type="button" class="btn" onclick="signInWithGoogle()" style="width:100%;justify-content:center;gap:10px;background:#fff;color:#111;border:1px solid #ddd;margin-bottom:1rem">
-          <span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:4px;padding:2px;vertical-align:middle"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v15/icons/google.svg" width="18" height="18" alt="Google" style="object-fit:contain"></span>
-          Continue with Google
-        </button>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
-          <div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div>
-          <span style="font-size:12px;color:rgba(255,255,255,.3)">or</span>
-          <div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div>
-        </div>
-      </div>
-      <div id="signup-fields">
-        <div class="frow">
-          <div class="fg"><label>First name</label><input id="fn" type="text" placeholder="Kwame" onkeydown="if(event.key==='Enter')document.getElementById('ln').focus()"></div>
-          <div class="fg"><label>Last name</label><input id="ln" type="text" placeholder="Mensah" onkeydown="if(event.key==='Enter')document.getElementById('an').focus()"></div>
-        </div>
-        <div class="fg"><label>Artist / Label name</label><input id="an" type="text" placeholder="Your artist name" onkeydown="if(event.key==='Enter')document.getElementById('em').focus()"></div>
-      </div>
-      <div class="fg"><label>Email</label><input id="em" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter'){authMode==='forgot'?doAuth():document.getElementById('pw').focus()}"></div>
-      <div id="pw-field-group">
-        <div class="fg"><label>Password</label>
-          <div style="position:relative">
-            <input id="pw" type="password" placeholder="Min. 6 characters" style="padding-right:44px" onkeydown="if(event.key==='Enter')doAuth()">
-            <button type="button" onclick="togglePwVis()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.35);font-size:16px"><i class="ti ti-eye" id="pw-eye"></i></button>
-          </div>
-        </div>
-        <p id="forgot-pw-link" style="display:none;text-align:right;font-size:12px;margin:-.5rem 0 .875rem"><a onclick="showAuth('forgot')" style="color:var(--gold);font-weight:600;cursor:pointer">Forgot password?</a></p>
-      </div>
-      <button class="btn btn-gold" id="auth-btn" style="width:100%;justify-content:center" onclick="doAuth()">Create account</button>
-      <p class="auth-foot" id="auth-foot" style="color:rgba(255,255,255,.4)">Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a></p>
-      <p style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:.6rem"><a onclick="showView('landing')" style="color:rgba(255,255,255,.3)">← Back to home</a></p>
-    </div>
   </div>
 </div>
 
 <!-- ══════════════ CONFIRM ══════════════ -->
-<div class="view" id="confirm" style="background:var(--off);align-items:center;justify-content:center;padding:2rem">
-  <div class="conf-card">
-    <div class="conf-icon"><i class="ti ti-mail-check"></i></div>
-    <h2>Check your email</h2>
+<div class="view" id="confirm">
+  <div class="au-note">
+    <div class="au-note-icon"><i class="ti ti-mail-check" aria-hidden="true"></i></div>
+    <h1>Check your email</h1>
     <p>We sent a confirmation link to <strong id="confirm-email"></strong>. Click the link to activate your account, then log in.</p>
-    <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('login')">Go to Login</button>
-    <p style="font-size:11px;color:var(--muted);margin-top:.875rem">Didn't get it? Check your spam folder.</p>
+    <button type="button" class="au-btn au-btn-gold" onclick="showAuth('login')">Go to Login</button>
+    <p class="au-small">Didn't get it? Check your spam folder.</p>
+    <p class="au-small">Wrong address? <button type="button" class="au-link" onclick="showAuth('signup')">Go back</button></p>
   </div>
 </div>
 
 <!-- ══════════════ RESET LINK SENT ══════════════ -->
-<div class="view" id="reset-sent" style="background:var(--off);align-items:center;justify-content:center;padding:2rem">
-  <div class="conf-card">
-    <div class="conf-icon"><i class="ti ti-mail-check"></i></div>
-    <h2>Check your email</h2>
+<div class="view" id="reset-sent">
+  <div class="au-note">
+    <div class="au-note-icon"><i class="ti ti-mail-check" aria-hidden="true"></i></div>
+    <h1>Check your email</h1>
     <p>If an account exists for <strong id="reset-sent-email"></strong>, we've sent a password reset link. Click it to choose a new password.</p>
-    <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="showAuth('login')">Back to Login</button>
-    <p style="font-size:11px;color:var(--muted);margin-top:.875rem">Didn't get it? Check your spam folder, or <a onclick="showAuth('forgot')" style="color:var(--gold);font-weight:600;cursor:pointer">try again</a>.</p>
+    <button type="button" class="au-btn au-btn-gold" onclick="showAuth('login')">Back to Login</button>
+    <p class="au-small">Didn't get it? Check your spam folder, or <button type="button" class="au-link" onclick="showAuth('forgot')">try again</button>.</p>
   </div>
 </div>
 
 <!-- ══════════════ SET NEW PASSWORD ══════════════ -->
-<div class="view" id="set-new-pw" style="background:var(--off);align-items:center;justify-content:center;padding:2rem 1rem">
-  <div class="conf-card" style="max-width:420px">
-    <div class="conf-icon"><i class="ti ti-lock"></i></div>
-    <h2>Set a new password</h2>
+<div class="view" id="set-new-pw">
+  <div class="au-note au-note-form">
+    <div class="au-note-icon"><i class="ti ti-lock" aria-hidden="true"></i></div>
+    <h1>Set a new password</h1>
     <p>Choose a new password for <strong id="reset-pw-email"></strong>.</p>
-    <div class="auth-r" style="padding:0;background:transparent;text-align:left">
-      <div class="fg"><label>New password</label>
-        <div style="position:relative">
-          <input id="new-pw" type="password" placeholder="Min. 6 characters" style="padding-right:44px" onkeydown="if(event.key==='Enter')document.getElementById('new-pw2').focus()">
-          <button type="button" onclick="toggleVis('new-pw','new-pw-eye')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px"><i class="ti ti-eye" id="new-pw-eye"></i></button>
+    <div class="au-fields">
+      <div class="au-field"><label for="new-pw">New password</label>
+        <div class="au-pw">
+          <input id="new-pw" type="password" placeholder="Min. 6 characters" autocomplete="new-password" enterkeyhint="next" onkeydown="if(event.key==='Enter')document.getElementById('new-pw2').focus()">
+          <button type="button" class="au-eye" onclick="toggleVis('new-pw','new-pw-eye')" aria-label="Show password" aria-pressed="false"><i class="ti ti-eye" id="new-pw-eye" aria-hidden="true"></i></button>
         </div>
       </div>
-      <div class="fg"><label>Confirm new password</label>
-        <div style="position:relative">
-          <input id="new-pw2" type="password" placeholder="Re-enter password" style="padding-right:44px" onkeydown="if(event.key==='Enter')doPasswordUpdate()">
-          <button type="button" onclick="toggleVis('new-pw2','new-pw2-eye')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px"><i class="ti ti-eye" id="new-pw2-eye"></i></button>
+      <div class="au-field"><label for="new-pw2">Confirm new password</label>
+        <div class="au-pw">
+          <input id="new-pw2" type="password" placeholder="Re-enter password" autocomplete="new-password" enterkeyhint="go" onkeydown="if(event.key==='Enter')doPasswordUpdate()">
+          <button type="button" class="au-eye" onclick="toggleVis('new-pw2','new-pw2-eye')" aria-label="Show password" aria-pressed="false"><i class="ti ti-eye" id="new-pw2-eye" aria-hidden="true"></i></button>
         </div>
       </div>
-      <button class="btn btn-gold" id="set-pw-btn" style="width:100%;justify-content:center" onclick="doPasswordUpdate()">Update password</button>
+      <button type="button" class="au-btn au-btn-gold" id="set-pw-btn" onclick="doPasswordUpdate()">Update password</button>
     </div>
   </div>
 </div>
@@ -4992,10 +5076,35 @@ async function signInWithGoogle(){
     toast('Could not start Google sign-in: '+(e.message||'please try again.'),'err');
   }
 }
+// ── AUTH: small helpers for the redesigned sign-up screen ──
+// authFlag(...ids): marks the fields that stopped a submit (the toast still says why) and puts the cursor in the first one
+function authFlag(...ids){
+  ids.forEach((id,i)=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.setAttribute('aria-invalid','true');
+    if(i===0)el.focus();
+  });
+}
+// typing in a flagged field clears the flag
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t&&t.getAttribute&&t.getAttribute('aria-invalid')==='true'&&t.closest&&t.closest('#auth'))t.removeAttribute('aria-invalid');
+});
+// the eye buttons: keep the screen-reader state in step with what toggleVis() just did to the field
+document.addEventListener('click',e=>{
+  const b=e.target.closest&&e.target.closest('.au-eye');if(!b)return;
+  const inp=b.parentElement&&b.parentElement.querySelector('input');if(!inp)return;
+  const shown=inp.type==='text';
+  b.setAttribute('aria-pressed',shown?'true':'false');
+  b.setAttribute('aria-label',shown?'Hide password':'Show password');
+});
 function showAuth(mode){
   authMode=mode;
   const isSignup=mode==='signup';
   const isForgot=mode==='forgot';
+  const pwInput=document.getElementById('pw');
+  if(pwInput)pwInput.setAttribute('autocomplete',isSignup?'new-password':'current-password');
+  document.querySelectorAll('#auth [aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));
   document.getElementById('signup-fields').style.display=isSignup?'block':'none';
   document.getElementById('pw-field-group').style.display=isForgot?'none':'block';
   const oauthSection=document.getElementById('oauth-section');
@@ -5006,10 +5115,10 @@ function showAuth(mode){
   document.getElementById('auth-title').textContent=isForgot?'Reset your password':(isSignup?'Create your account':'Welcome back');
   document.getElementById('auth-sub').textContent=isForgot?"We'll email you a secure link to set a new password.":(isSignup?'Start distributing your music globally.':'Log in to manage your releases and royalties.');
   document.getElementById('auth-foot').innerHTML=isForgot
-    ?'Remember your password? <a onclick="showAuth(\'login\')" style="color:var(--gold);font-weight:600">Log in</a>'
+    ?'Remember your password? <button type="button" class="au-link" onclick="showAuth(\'login\')">Log in</button>'
     :isSignup
-      ?'Have an account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Log in</a>'
-      :'No account? <a onclick="toggleAuth()" style="color:var(--gold);font-weight:600">Sign up</a>';
+      ?'Have an account? <button type="button" class="au-link" onclick="toggleAuth()">Log in</button>'
+      :'No account? <button type="button" class="au-link" onclick="toggleAuth()">Sign up</button>';
   showView('auth');
 }
 function toggleAuth(){showAuth(authMode==='signup'?'login':'signup');}
@@ -5024,10 +5133,11 @@ function togglePwVis(){toggleVis('pw','pw-eye');}
 async function doAuth(){
   if(authMode==='forgot')return doForgotPasswordRequest();
   const btn=document.getElementById('auth-btn');
+  if(btn.disabled)return; // still waiting for the answer: a second Enter must not send a second request
   const email=document.getElementById('em').value.trim();
   const pass=document.getElementById('pw').value;
-  if(!email||!pass){toast('Please fill in all fields','err');return;}
-  if(pass.length<6){toast('Password must be at least 6 characters','err');return;}
+  if(!email||!pass){authFlag(...[!email&&'em',!pass&&'pw'].filter(Boolean));toast('Please fill in all fields','err');return;}
+  if(pass.length<6){authFlag('pw');toast('Password must be at least 6 characters','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Please wait...';
   try{
     if(authMode==='signup'){
@@ -5065,8 +5175,9 @@ async function doAuth(){
 }
 async function doForgotPasswordRequest(){
   const btn=document.getElementById('auth-btn');
+  if(btn.disabled)return; // still waiting for the answer: a second Enter must not send a second request
   const email=document.getElementById('em').value.trim();
-  if(!email){toast('Please enter your email','err');return;}
+  if(!email){authFlag('em');toast('Please enter your email','err');return;}
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Please wait...';
   try{
     const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:'https://blakkstonemusic.com'});
@@ -8997,6 +9108,7 @@ async function requestEmailChange(){
 }
 async function doPasswordUpdate(){
   const btn=document.getElementById('set-pw-btn');
+  if(btn.disabled)return; // still waiting for the answer: a second Enter must not send a second request
   btn.disabled=true;btn.innerHTML='<span class="loader"></span> Updating...';
   await updatePassword('new-pw','new-pw2',async(data)=>{
     history.replaceState(null,'',window.location.pathname);
