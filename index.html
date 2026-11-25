@@ -527,15 +527,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .rr{padding:.75rem}
   .r-art{width:38px;height:38px}
 
-  /* SUBMIT WIZARD */
-  #page-submit{margin:-1rem -1rem -1rem}
-  .wpanel-inner{grid-template-columns:1fr!important}
-  .wpanel-sidebar{position:static}
-  .wiz-center{padding:1.25rem 1rem}
-  .wizard-step{padding:.75rem .5rem}
-  .ws-label{display:none}
-  .ws-num{width:28px;height:28px;font-size:12px}
-
   /* PAYOUT */
   #page-payout>div[style*="grid-template-columns:1fr 340px"]{grid-template-columns:1fr!important}
   .pmethod-card{display:none}/* hide saved methods card on mobile */
@@ -598,46 +589,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .hero h1{font-size:30px}
   .roy-hero-grid{grid-template-columns:1fr 1fr}
 }
-
-/* ── WIZARD ── */
-.wizard-step{display:flex;align-items:center;gap:8px;padding:1rem 1.25rem;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap}
-.wizard-step.active{border-bottom-color:var(--gold)}
-.wizard-step.done{border-bottom-color:#10b981}
-.ws-num{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:rgba(255,255,255,.4);flex-shrink:0}
-.wizard-step.active .ws-num{background:var(--gold);color:#000}
-.wizard-step.done .ws-num{background:#10b981;color:#fff}
-.ws-label{font-size:13px;font-weight:500;color:rgba(255,255,255,.35)}
-.wizard-step.active .ws-label{color:var(--gold);font-weight:600}
-.wizard-step.done .ws-label{color:#34d399}
-.ws-line{flex:1;height:2px;background:rgba(255,255,255,.08);margin:0 4px;align-self:center}
-.ws-line.done{background:#10b981}
-.wizard-panel{display:none;scroll-margin-top:140px}
-.wizard-panel.active{display:block}
-.wiz-drop-zone{border:2px dashed rgba(212,175,55,.2);border-radius:16px;padding:4rem 2rem;cursor:pointer;background:var(--card);transition:all .2s}
-.wiz-drop-zone:hover,.wiz-drop-zone.drag-over{border-color:var(--gold);background:rgba(201,168,76,.08)}
-.track-item{background:#1e1e35;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.875rem 1.1rem;display:flex;align-items:center;gap:.875rem;margin-bottom:8px}
-.track-num{width:28px;height:28px;border-radius:6px;background:rgba(201,168,76,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0}
-.track-name{flex:1;font-size:13px;font-weight:500;color:#fff}
-.track-size{font-size:11px;color:rgba(255,255,255,.3)}
-.track-remove{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:18px;line-height:1;padding:0}
-.track-remove:hover{color:#ef4444}
-.track-isrc{background:var(--chip-bg);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:4px 8px;font-size:11px;color:#fff;font-family:Inter,sans-serif;outline:none;width:140px}
-.wiz-toggle{padding:7px 20px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
-.wiz-toggle.active{background:var(--gold);border-color:var(--gold);color:#000;font-weight:700}
-.store-chip{background:var(--surface2);border:1.5px solid rgba(255,255,255,.08);border-radius:10px;padding:.625rem .875rem;display:flex;align-items:center;gap:.625rem;cursor:pointer;transition:all .15s}
-.store-chip:hover{border-color:rgba(201,168,76,.4)}
-.store-chip.selected{border-color:var(--gold);background:rgba(201,168,76,.1)}
-.store-chip-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.store-chip-name{font-size:12px;font-weight:500;color:rgba(255,255,255,.7);flex:1}
-.store-chip-check{width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.store-chip.selected .store-chip-check{background:var(--gold);border-color:var(--gold)}
-.store-chip.selected .store-chip-check::after{content:'✓';font-size:9px;color:#fff;font-weight:700}
-.store-filter-btn{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
-.store-filter-btn.active{background:rgba(201,168,76,.15);border-color:var(--gold);color:var(--gold)}
-.review-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
-.review-row:last-child{border-bottom:none}
-.review-label{color:rgba(255,255,255,.35)}
-.review-val{color:#fff;font-weight:500;text-align:right;max-width:60%}
 
 /* ── ADVANCED ADMIN ── */
 .adm-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
@@ -1196,40 +1147,387 @@ div.ob-step:hover{border-color:var(--o-line)}
 .track-remove-btn:hover{color:#f87171;background:rgba(239,68,68,.1)}
 @media(max-width:600px){.track-meta-grid{grid-template-columns:1fr}}
 
-/* ── WIZARD CENTERED LAYOUT ── */
-#page-submit{
-  margin:-2.5rem -2.5rem -2.5rem;  /* break out of dash-body padding */
-  min-height:calc(100vh - 62px);
+/* ── SUBMIT WIZARD ──────────────────────────────────────────────────────────
+   One block for the whole wizard, desktop and phone together, so the phone rules always come AFTER the
+   desktop ones (the old split into two far-apart blocks let the desktop margin win on phones and crop the page). */
+:root{--wz-nav-h:62px;--wz-head-h:58px;--wz-bar-h:72px;--wz-mnav:0px}
+#page-submit{margin:-2.5rem -2.5rem -2.5rem}
+/* The page scrolls with the window. .dash-body used to be a (never-scrolling) overflow container, which stopped
+   anything inside it from sticking to the screen — so while the wizard is open it lets the window do the scrolling. */
+.dash-body:has(#page-submit.active){overflow:visible}
+html:has(#page-submit.active){scroll-padding-top:calc(var(--wz-nav-h) + var(--wz-head-h) + 12px);scroll-padding-bottom:calc(var(--wz-mnav) + var(--wz-bar-h) + 12px)}
+.wz{position:relative;display:flex;flex-direction:column;color:#fff;overflow-x:clip;min-height:calc(100vh - var(--wz-nav-h) - var(--wz-mnav))}
+@supports (height:100dvh){.wz{min-height:calc(100dvh - var(--wz-nav-h) - var(--wz-mnav))}}
+.wz [hidden]{display:none!important}
+.wz-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ── header: the five steps + draft status, stays under the top bar while you scroll ── */
+.wz-head{position:sticky;top:var(--wz-nav-h);z-index:120;background:rgba(8,8,12,.96);border-bottom:1px solid var(--line)}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .wz-head,.wz-bar{background:rgba(8,8,12,.84);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 }
-.wiz-center{max-width:960px;margin:0 auto;padding:2rem 2.5rem}
-.wpanel-inner{display:grid;grid-template-columns:1fr 280px;gap:3rem;align-items:start}
-.wpanel-form{min-width:0}
-.wpanel-sidebar{position:sticky;top:80px}
-.wiz-h1{font-size:30px;font-weight:800;color:#fff;margin-bottom:2rem;letter-spacing:-.5px}
-/* underline input style like Ditto */
-.wiz-field-ul{background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,.12);border-radius:0;padding:10px 2px;font-size:15px;color:#fff;font-family:Inter,sans-serif;outline:none;width:100%;transition:border-color .15s}
-.wiz-field-ul:focus{border-bottom-color:var(--gold)}
-.wiz-field-ul::placeholder{color:rgba(255,255,255,.25)}
-/* labels */
-.wiz-label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;display:block}
-/* section divider */
-.wiz-section{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.3);padding:1.5rem 0 .75rem;border-top:1px solid rgba(255,255,255,.07);margin-top:1.5rem}
-.wiz-section:first-child{border-top:none;padding-top:0;margin-top:0}
-/* 2-col field row */
-.wiz-row{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
-.wiz-row.wiz-row-3{grid-template-columns:1fr 1fr 1fr}
-.wiz-col{display:flex;flex-direction:column;gap:4px}
-.wiz-col.full{grid-column:1/-1}
-/* artwork sidebar */
-.wiz-art-box{background:var(--card);border:1.5px dashed rgba(255,255,255,.1);border-radius:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:border-color .15s;margin-bottom:.75rem}
-.wiz-art-box:hover{border-color:rgba(212,175,55,.3)}
-.wiz-art-title{font-size:14px;font-weight:600;color:#fff;text-align:center;margin-bottom:2px}
-.wiz-art-sub{font-size:11px;color:rgba(255,255,255,.3);text-align:center}
-@media(max-width:700px){
-  .wpanel-inner{grid-template-columns:1fr}
-  .wpanel-sidebar{position:static}
-  .wiz-row{grid-template-columns:1fr}
-  .wiz-center{padding:1.25rem}
+.wz-head-in{max-width:1100px;margin:0 auto;padding:.5rem 2rem;display:flex;align-items:center;gap:1.25rem}
+.wz-nav{flex:1;min-width:0}
+.wz-steps{list-style:none;display:flex;align-items:center;width:100%;max-width:720px;margin:0;padding:0}
+.wz-step-li{display:flex;flex:0 0 auto;list-style:none}
+.wizard-step{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:4px 12px 4px 4px;border:0;background:none;border-radius:999px;cursor:pointer;font-family:inherit;color:rgba(255,255,255,.45);white-space:nowrap;transition:background .15s,color .15s}
+.wizard-step:hover{background:rgba(255,255,255,.05);color:#fff}
+.wizard-step:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.ws-num{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:rgba(255,255,255,.55);flex-shrink:0;transition:background .15s,color .15s,box-shadow .15s}
+.ws-label{font-size:13px;font-weight:600}
+.wizard-step.active{color:#fff}
+.wizard-step.active .ws-num{background:var(--gold);color:#111;box-shadow:0 0 0 4px rgba(212,175,55,.16)}
+.wizard-step.done{color:rgba(255,255,255,.78)}
+.wizard-step.done .ws-num{background:rgba(16,185,129,.18);color:#34d399;font-size:0}
+.wizard-step.done .ws-num::after{content:'✓';font-size:13px;font-weight:800}
+.ws-line{flex:1 1 12px;min-width:10px;height:2px;margin:0 4px;border-radius:2px;background:rgba(255,255,255,.1);list-style:none;transition:background .2s}
+.ws-line.done{background:rgba(16,185,129,.55)}
+
+.wz-save{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:12px;font-weight:600;color:rgba(255,255,255,.5);white-space:nowrap;flex-shrink:0;transition:color .2s,border-color .2s,background .2s}
+.wz-save i{font-size:15px}
+.wz-save[data-state=saving]{color:var(--gold);border-color:rgba(212,175,55,.3)}
+.wz-save[data-state=saved]{color:#34d399;border-color:rgba(52,211,153,.3);background:rgba(16,185,129,.06)}
+.wz-save[data-state=local]{color:#fbbf24;border-color:rgba(251,191,36,.35);background:rgba(245,158,11,.06)}
+.wz-spin{display:inline-block;animation:spin .8s linear infinite}
+
+/* ── body ── */
+.wz-main{flex:1;width:100%;max-width:1100px;margin:0 auto;padding:1.75rem 2rem 2.25rem}
+.wizard-panel{display:none}
+.wizard-panel.active{display:block;animation:wzIn .24s ease both}
+@keyframes wzIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.wz-narrow{max-width:720px;margin:0 auto}
+.wz-ph{margin-bottom:1.5rem}
+.wz-ph h2{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.2;color:#fff;margin-bottom:.4rem}
+.wz-ph h2:focus{outline:none}
+.wz-ph p{font-size:14px;line-height:1.65;color:rgba(255,255,255,.5);max-width:640px}
+
+.wz-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.25rem 1.4rem;margin-bottom:1rem;box-shadow:inset 0 1px 0 var(--rim)}
+.wz-card-h{display:flex;align-items:center;gap:.65rem;margin-bottom:1.1rem;min-width:0}
+.wz-card-h h3{font-size:15px;font-weight:700;color:#fff;flex:1 1 auto;min-width:0}
+.wz-ico{width:30px;height:30px;border-radius:9px;background:rgba(212,175,55,.12);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.wz-count{font-size:12px;font-weight:600;color:rgba(255,255,255,.4)}
+.wz-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.4px;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.22);padding:2px 9px;border-radius:999px;white-space:nowrap}
+.wz-opt-tag{font-size:11px;font-weight:600;color:rgba(255,255,255,.35);margin-left:4px}
+.wz-hint{font-size:12px;line-height:1.55;color:rgba(255,255,255,.4);margin-top:5px}
+.wz-hint-top{margin:-.35rem 0 .9rem}
+.wz-ctr{text-align:center}
+.wz-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:.65rem .85rem;font-size:12px;color:#fbbf24;line-height:1.55;margin-top:8px}
+.wz-tip{display:flex;gap:.65rem;align-items:flex-start;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:.8rem .95rem;font-size:12.5px;line-height:1.6;color:rgba(255,255,255,.55);margin-top:.9rem}
+.wz-tip>i{font-size:16px;color:rgba(255,255,255,.4);margin-top:1px;flex-shrink:0}
+.wz-tip strong{color:#fff}
+.wz-tip-gold{background:rgba(212,175,55,.07);border-color:rgba(212,175,55,.22);color:rgba(255,255,255,.7)}
+.wz-tip-gold>i{color:var(--gold)}
+
+/* fields */
+.wz .fg{margin-bottom:1rem}
+.wz .fg input,.wz .fg select,.wz .fg textarea{min-height:44px;border-radius:10px;padding:10px 12px;font-size:14px;border:1px solid rgba(255,255,255,.1)}
+.wz .fg textarea{min-height:88px}
+.wz .fg input:focus,.wz .fg select:focus,.wz .fg textarea:focus{border-color:rgba(212,175,55,.65);box-shadow:0 0 0 3px rgba(212,175,55,.12);background:#16162a}
+.wz .fg input[readonly]{opacity:.75;cursor:not-allowed;border-color:rgba(212,175,55,.2)}
+.wz .wz-title-fg input{font-size:18px;font-weight:600;min-height:52px}
+.wz-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}
+.wz-lrow{display:flex;align-items:center;justify-content:space-between;gap:.5rem;min-height:26px;margin-bottom:5px}
+.wz .fg .wz-lrow label{margin-bottom:0}
+.wz-mini{min-height:30px;padding:0 9px;border:0;border-radius:8px;background:rgba(212,175,55,.1);color:var(--gold);font:600 11px Inter,sans-serif;cursor:pointer;white-space:nowrap}
+.wz-mini:hover{background:rgba(212,175,55,.2)}
+.wz-check{display:flex;align-items:center;gap:.6rem;min-height:40px;font-size:13.5px;color:rgba(255,255,255,.7);cursor:pointer}
+.wz-check input{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0;margin:0}
+.wz-check-top{align-items:flex-start;padding-top:.1rem}
+.wz-check-top input{margin-top:2px}
+.wz-fs{border:0;margin:0 0 1rem;padding:0;min-width:0}
+.wz-fs legend{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:6px;padding:0}
+.wz-radios{display:flex;flex-wrap:wrap;gap:.5rem}
+.wz-radio{display:inline-flex;align-items:center;gap:.5rem;min-height:44px;padding:0 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:var(--input-bg);color:rgba(255,255,255,.75);font-size:13.5px;cursor:pointer}
+.wz-radio input{accent-color:var(--gold);width:16px;height:16px;margin:0}
+.wz-radio:has(input:checked){border-color:rgba(212,175,55,.6);background:rgba(212,175,55,.08);color:#fff}
+.wz-opt{margin-bottom:.15rem}
+.wz-opt>div{margin-top:.35rem}
+
+/* yes / no questions */
+.wz-q{padding:.15rem 0 1.1rem;margin-bottom:1.1rem;border-bottom:1px solid var(--line)}
+.wz-q:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.wz-q-t{font-size:14px;line-height:1.55;color:rgba(255,255,255,.85);margin-bottom:.7rem}
+.wz-q-t strong{color:#fff}
+.wz-seg{display:flex;flex-wrap:wrap;gap:.5rem}
+.wiz-toggle{min-height:42px;padding:0 18px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.14);color:rgba(255,255,255,.55);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
+.wiz-toggle:hover{border-color:rgba(255,255,255,.3);color:#fff}
+.wiz-toggle.active{background:var(--gold);border-color:var(--gold);color:#111;font-weight:700}
+.wiz-toggle:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#country-restrict-fields,#prev-released-fields{margin-top:.85rem}
+.wz-picks{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:-.25rem 0 .4rem}
+.wz-picks-l{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-right:.25rem}
+.wz-pick{min-height:38px;padding:0 14px;border-radius:999px;border:1.5px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.7);font:600 12.5px Inter,sans-serif;cursor:pointer;transition:all .15s}
+.wz-pick:hover{border-color:rgba(212,175,55,.5);color:#fff}
+.wz-pick.active{background:rgba(212,175,55,.14);border-color:var(--gold);color:var(--gold)}
+
+/* buttons */
+.wz-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:12px;border:1px solid transparent;font:600 14px Inter,sans-serif;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s,color .15s,opacity .15s}
+.wz-btn i{font-size:17px}
+.wz-btn:disabled{opacity:.55;cursor:not-allowed}
+.wz-btn:focus-visible,.wz-btn-sm:focus-visible,.wz-mini:focus-visible,.wz-pick:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.wz-btn-primary{background:var(--gold);color:#111;font-weight:700;padding:0 24px}
+.wz-btn-primary:hover:not(:disabled){background:#e3c25a}
+.wz-btn-primary .loader{border-color:rgba(17,17,17,.25);border-top-color:#111}
+.wz-btn-ghost{background:rgba(255,255,255,.06);border-color:var(--line);color:rgba(255,255,255,.75)}
+.wz-btn-ghost:hover{background:rgba(255,255,255,.1);color:#fff}
+.wz-btn-save{background:rgba(212,175,55,.08);border-color:rgba(212,175,55,.25);color:var(--gold)}
+.wz-btn-save:hover:not(:disabled){background:rgba(212,175,55,.16)}
+.wz-btn-sm{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:0 14px;border-radius:10px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.25);color:var(--gold);font:600 12.5px Inter,sans-serif;cursor:pointer;white-space:nowrap}
+.wz-btn-sm:hover{background:rgba(212,175,55,.18)}
+.wz-btn-quiet{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.65)}
+.wz-btn-quiet:hover{background:rgba(255,255,255,.09);color:#fff}
+.wz-btn-wide{width:100%}
+
+/* ── action bar: always within reach, even on the longest step ── */
+.wz-bar{position:sticky;bottom:var(--wz-mnav);z-index:110;margin-top:auto;border-top:1px solid var(--line);background:rgba(8,8,12,.96)}
+.wz-bar-in{max-width:1100px;margin:0 auto;padding:.7rem 2rem;display:flex;align-items:center;gap:.6rem}
+.wz-spacer{flex:1}
+
+/* ── step 1: upload ── */
+.wz-drop{display:block;border:2px dashed rgba(212,175,55,.28);border-radius:20px;padding:2.75rem 1.5rem;text-align:center;cursor:pointer;background:radial-gradient(120% 140% at 50% 0%,rgba(212,175,55,.07),transparent 60%),var(--card);transition:border-color .2s,background .2s,transform .2s}
+.wz-drop:hover,.wz-drop.drag-over,.wz-drop:focus-visible{border-color:var(--gold);outline:none}
+.wz-drop:focus-visible{box-shadow:0 0 0 3px rgba(212,175,55,.25)}
+.wz-drop.drag-over{background:radial-gradient(120% 140% at 50% 0%,rgba(212,175,55,.18),transparent 65%),var(--card);transform:scale(1.01)}
+.wz-drop-ico{width:64px;height:64px;border-radius:50%;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;background:rgba(212,175,55,.12);color:var(--gold);font-size:30px}
+.wz-drop-t{font-size:19px;font-weight:700;color:#fff;margin-bottom:.3rem}
+.wz-drop-s{font-size:13.5px;color:rgba(255,255,255,.45)}
+.wz-link{color:var(--gold);text-decoration:underline}
+.wz-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:.4rem;margin-top:1.1rem}
+.wz-chips span{font-size:11px;font-weight:700;letter-spacing:.4px;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.65)}
+.wz-chips .wz-chip-soft{background:transparent;border:1px dashed rgba(255,255,255,.15);color:rgba(255,255,255,.4)}
+.wz-d-touch,.wz-d-more{display:none}
+@media (hover:none) and (pointer:coarse){.wz-d-desk{display:none}.wz-d-touch{display:inline}}
+/* once there are tracks the drop zone folds into a slim "add more" strip so the list stays in view */
+.wz-drop.has-tracks{display:flex;align-items:center;gap:.9rem;text-align:left;padding:.85rem 1.1rem;border-radius:14px}
+.wz-drop.has-tracks .wz-drop-ico{width:38px;height:38px;margin:0;font-size:19px;flex-shrink:0}
+.wz-drop.has-tracks .wz-drop-t{font-size:14px;margin:0}
+.wz-drop.has-tracks .wz-d-first{display:none}
+.wz-drop.has-tracks .wz-d-more{display:inline}
+.wz-drop.has-tracks .wz-drop-s,.wz-drop.has-tracks .wz-chips{display:none}
+.wz-tracks{margin-top:1rem;display:flex;flex-direction:column;gap:.5rem}
+.wz-tracks:empty{display:none}
+.track-item{display:flex;align-items:center;gap:.7rem;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:.6rem .8rem;box-shadow:inset 0 1px 0 var(--rim)}
+.track-num{width:28px;height:28px;border-radius:8px;background:rgba(212,175,55,.14);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0}
+.track-name{flex:1;min-width:0;font-size:14px;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track-size{font-size:12px;color:rgba(255,255,255,.4);flex-shrink:0;font-variant-numeric:tabular-nums}
+.track-dur{min-width:34px;text-align:right}
+.track-remove{width:36px;height:36px;border-radius:10px;background:none;border:0;cursor:pointer;color:rgba(255,255,255,.35);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.track-remove:hover{color:#f87171;background:rgba(239,68,68,.1)}
+.wz-reorder{display:flex;flex-direction:column;flex-shrink:0}
+.wz-reorder button{width:30px;height:22px;background:none;border:0;cursor:pointer;color:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;border-radius:6px;padding:0}
+.wz-reorder button:hover:not(:disabled){background:rgba(255,255,255,.08);color:#fff}
+.wz-reorder button:disabled{cursor:default;color:rgba(255,255,255,.15)}
+.wz-reorder i{font-size:15px}
+.track-play-btn{width:36px;height:36px;border-radius:50%;border:0;cursor:pointer;background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.track-play-btn:hover{background:rgba(255,255,255,.15)}
+.track-play-btn.playing{background:var(--gold);color:#111}
+.track-play-btn i{font-size:14px}
+.wz-tstat{display:flex;align-items:center;flex-shrink:0;min-width:16px;font-size:15px}
+
+/* dragging over the drop zone: let the zone itself take the events, not the icon/text inside it */
+.wz-drop.drag-over *{pointer-events:none}
+.wz-note{display:flex;gap:.6rem;align-items:flex-start;border-radius:12px;padding:.7rem .9rem;font-size:12.5px;line-height:1.55}
+.wz-note i{margin-top:2px;flex-shrink:0}
+.wz-note-ok{background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);color:#34d399}
+.wz-note-warn{background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.2);color:var(--gold)}
+
+/* ── step 2: details ── */
+.wz-split{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:1.5rem;align-items:start}
+.wz-col-main,.wz-col-side{min-width:0}
+.wz-col-side{position:sticky;top:calc(var(--wz-nav-h) + var(--wz-head-h) + 14px)}
+.wz-art-card{padding:1.1rem}
+.wz-art{position:relative;width:100%;aspect-ratio:1;border:2px dashed rgba(255,255,255,.16);border-radius:16px;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.wz-art:hover,.wz-art:focus-visible{border-color:rgba(212,175,55,.6);outline:none}
+.wz-art:focus-visible{box-shadow:0 0 0 3px rgba(212,175,55,.25)}
+.wz-art.has-art{border-style:solid;border-color:rgba(255,255,255,.12)}
+.wz-art img{width:100%;height:100%;object-fit:cover;display:block}
+.wz-art-empty{text-align:center;padding:1rem;color:rgba(255,255,255,.35)}
+.wz-art-empty i{font-size:38px;display:block;margin-bottom:.4rem;color:rgba(255,255,255,.22)}
+.wz-art-t{font-size:13px;font-weight:600}
+.wz-art-info{margin-top:.9rem}
+.wz-reqs{list-style:none;font-size:12px;color:rgba(255,255,255,.45);display:flex;flex-direction:column;gap:3px;margin:0 0 .8rem;padding:0}
+.wz-reqs li::before{content:'✓';color:rgba(212,175,55,.85);margin-right:6px;font-weight:700}
+.wz-art-title{font-size:15px;font-weight:700;color:#fff;text-align:center;margin-top:1rem;overflow-wrap:anywhere}
+.wz-mini-h{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);margin:1rem 0 .5rem;padding-top:.8rem;border-top:1px solid var(--line)}
+#art-track-list{font-size:12px;color:rgba(255,255,255,.5);display:flex;flex-direction:column;gap:4px}
+.wz-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.wz-pill-warn{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.28)}
+.wz-pill-ok{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.28)}
+.wz .track-meta-card{border-radius:14px;background:var(--surface2)}
+.wz .track-meta-header{min-height:56px}
+.wz .track-meta-name-input{font-size:15px;width:100%;min-width:0;flex:1 1 0}
+.wz .track-meta-status{gap:6px}
+.wz-empty{margin:0;padding:.3rem 0;font-size:13px;color:rgba(255,255,255,.35)}
+.wz-chev{width:36px;height:36px;border:0;background:none;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.4);flex-shrink:0;padding:0}
+.wz-chev:hover{background:rgba(255,255,255,.07);color:#fff}
+.wz-chev:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.wz-check-tight{min-height:36px;margin-bottom:.5rem;font-size:12.5px;color:rgba(255,255,255,.6)}
+.wz .track-fg .wz-lrow{min-height:0;margin-bottom:0}
+.wz .track-fg .wz-lrow label{margin-bottom:0}
+.wz .track-fg .wz-mini{min-height:24px;padding:0 8px}
+.wz .track-inherit-btn{min-height:32px}
+.wz .track-remove-btn{min-height:36px}
+
+/* ── step 4: stores ── */
+.wz-store-bar{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:.9rem}
+.wz-store-count{font-size:14px;font-weight:700;color:#fff}
+.wz-store-count.wz-zero{color:#f87171}
+.wz-store-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.wz-filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.store-filter-btn{min-height:36px;padding:0 16px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);background:transparent;transition:all .15s;font-family:Inter,sans-serif}
+.store-filter-btn:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.store-filter-btn.active{background:rgba(212,175,55,.14);border-color:var(--gold);color:var(--gold)}
+.wz-stores{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.6rem}
+.store-chip{background:var(--surface2);border:1.5px solid rgba(255,255,255,.08);border-radius:12px;padding:.65rem .85rem;min-height:52px;display:flex;align-items:center;gap:.7rem;cursor:pointer;transition:border-color .15s,background .15s;user-select:none}
+.store-chip:hover{border-color:rgba(212,175,55,.4)}
+.store-chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.store-chip.selected{border-color:var(--gold);background:rgba(212,175,55,.08)}
+.store-chip-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.store-chip-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.8);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.store-chip-check{width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,border-color .15s}
+.store-chip.selected .store-chip-check{background:var(--gold);border-color:var(--gold)}
+.store-chip.selected .store-chip-check::after{content:'✓';font-size:11px;color:#111;font-weight:800}
+
+.wz-stores.wiz-error{border:1px solid #ef4444;border-radius:12px;padding:.5rem}
+
+/* ── step 5: review ── */
+.wz-rv-hero{display:flex;gap:1.1rem;align-items:center}
+.wz-rv-cover{width:96px;height:96px;border-radius:14px;background:#1a1a22;overflow:hidden;flex-shrink:0;border:1px solid var(--line)}
+.wz-rv-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.wz-rv-main{min-width:0}
+.wz-rv-title{font-size:21px;font-weight:800;color:#fff;overflow-wrap:anywhere;line-height:1.25}
+.wz-rv-sub{font-size:13.5px;color:rgba(255,255,255,.55);margin-top:3px;overflow-wrap:anywhere}
+.wz-rv-meta{font-size:12.5px;color:var(--gold);margin-top:6px}
+.wz-rv-h{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.35rem}
+.wz-rv-h h3{font-size:12px;letter-spacing:.7px;text-transform:uppercase;font-weight:700;color:rgba(255,255,255,.4)}
+.wz-edit{display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:0 10px;border:0;border-radius:8px;background:rgba(212,175,55,.1);color:var(--gold);font:600 12px Inter,sans-serif;cursor:pointer}
+.wz-edit:hover{background:rgba(212,175,55,.2)}
+.review-row{display:flex;justify-content:space-between;gap:1rem;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13.5px}
+.review-row:last-child{border-bottom:0}
+.review-label{color:rgba(255,255,255,.4);flex-shrink:0}
+.review-val{color:#fff;font-weight:500;text-align:right;max-width:68%;overflow-wrap:anywhere}
+.wz-rv-t{display:flex;gap:.6rem;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.wz-rv-t:last-child{border-bottom:0}
+.wz-rv-tn{font-size:12px;color:rgba(255,255,255,.35);width:22px;flex-shrink:0;padding-top:2px}
+.wz-rv-tb{min-width:0;flex:1}
+.wz-rv-tname{font-size:14px;font-weight:600;color:#fff;overflow-wrap:anywhere}
+.wz-rv-tcred{font-size:12px;color:rgba(255,255,255,.45);margin-top:2px;overflow-wrap:anywhere}
+.wz-rv-badge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);margin-left:6px;vertical-align:middle}
+.wz-rv-note{display:flex;gap:.6rem;align-items:flex-start;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:.75rem .95rem;font-size:12.5px;line-height:1.55;color:#fbbf24;margin-bottom:1rem}
+.wz-split-tools{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.wz-split-rows{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.9rem}
+.wz-split-rows:empty{display:none}
+.wz-srow{display:flex;align-items:center;gap:.6rem;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:.5rem .7rem}
+.wz-sav{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
+.wz-srow-primary .wz-sav{background:rgba(212,175,55,.15);color:var(--gold)}
+.wz-sname{flex:1;min-width:0;min-height:38px;background:transparent;border:0;outline:none;color:#fff;font:500 14px Inter,sans-serif}
+.wz-sname::placeholder{color:rgba(255,255,255,.3)}
+.wz-srow-primary .wz-sname{font-weight:700;color:var(--gold)}
+.wz-spct{display:flex;align-items:center;gap:6px;flex-shrink:0;font-size:12px;color:rgba(255,255,255,.35)}
+.wz-sbp{width:84px;min-height:38px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:4px 8px;font:700 13px Inter,sans-serif;color:#fff;text-align:right}
+.wz-sbp:focus,.wz-sname:focus{outline:none;border-color:rgba(212,175,55,.6)}
+.wz-sdel{width:36px;height:36px;border:0;border-radius:10px;background:none;color:rgba(255,255,255,.35);font-size:20px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.wz-sdel:hover{color:#f87171;background:rgba(239,68,68,.1)}
+.wz-flash{animation:wzFlash 1.4s ease}
+@keyframes wzFlash{0%,60%{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.25)}100%{border-color:var(--line);box-shadow:inset 0 1px 0 var(--rim)}}
+.wz-legal{background:rgba(212,175,55,.04);border-color:rgba(212,175,55,.15)}
+#split-legal-content{font-size:12px;color:rgba(255,255,255,.45);line-height:1.8;display:flex;flex-direction:column;gap:.625rem}
+.wz-fake{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:1.1rem 1.25rem;margin-bottom:1rem}
+.wz-fake-t{font-size:14px;font-weight:700;color:#f87171;margin-bottom:.5rem;display:flex;align-items:center;gap:8px}
+.wz-fake-p{font-size:12.5px;color:rgba(255,255,255,.55);line-height:1.7}
+.wz-fake-p strong{color:rgba(255,255,255,.75)}
+.wz-fake-p a{color:#f87171;text-decoration:underline}
+.wz-terms{margin-bottom:1rem;transition:border-color .2s,background .2s}
+.wz-terms.wz-terms-error{border-color:#ef4444;background:rgba(239,68,68,.06)}
+
+/* ── validation (shared with the old wizard: banner + red fields) ── */
+.wz .wiz-validation-banner{scroll-margin-top:calc(var(--wz-nav-h) + var(--wz-head-h) + 12px)}
+.wz .wiz-validation-list li{min-height:28px;line-height:1.4}
+.wz .wiz-validation-list li:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+
+/* ── things that float over the page get out of the way of the action bar while the wizard is open ── */
+body:has(#page-submit.active) .chat-widget-btn{bottom:calc(var(--wz-mnav) + var(--wz-bar-h) + 14px)}
+body:has(#page-submit.active) .chat-widget-popup{bottom:calc(var(--wz-mnav) + var(--wz-bar-h) + 82px);height:min(620px,calc(100vh - var(--wz-mnav) - var(--wz-bar-h) - 160px))}
+body:has(#page-submit.active) .toast{bottom:calc(var(--wz-mnav) + var(--wz-bar-h) + 14px);right:92px;max-width:min(300px,calc(100vw - 108px))}
+
+/* without :has() the page can't hand scrolling to the window, so don't pretend to stick */
+@supports not selector(:has(*)){.wz-head,.wz-bar,.wz-col-side{position:static}}
+
+@media (prefers-reduced-motion:reduce){
+  .wizard-panel.active{animation:none}
+  .wz-flash{animation:none;border-color:#ef4444}
+  .wz *,.wz *::before,.wz *::after{transition:none!important}
+}
+
+/* ── tablet and below ── */
+@media (max-width:900px){
+  .wizard-step:not(.active) .ws-label{display:none}
+  .wizard-step{padding-right:6px}
+  .wizard-step.active{padding-right:12px}
+  .wz-split{display:flex;flex-direction:column;align-items:stretch;gap:0}
+  .wz-col-side{position:static;order:-1}
+  .wz-art-card .wz-art-row{display:flex;gap:1rem;align-items:center}
+  .wz-art-card .wz-art{width:132px;flex:0 0 132px}
+  .wz-art-info{margin-top:0}
+  .wz-art-title,.wz-art-card .wz-ctr,#art-track-preview{display:none!important}
+}
+
+/* ── phone ── */
+@media (max-width:768px){
+  #page-submit{margin:-1rem -1rem -1rem}
+  .wz-head-in{padding:.4rem 1rem;gap:.6rem}
+  .wz-main{padding:1.1rem 1rem 1.4rem}
+  .wz-ph{margin-bottom:1.1rem}
+  .wz-ph h2{font-size:23px}
+  .wz-card{padding:1.05rem 1rem;border-radius:14px}
+  .wz-bar-in{padding:.6rem 1rem;gap:.5rem}
+  #wz-back span,#wz-savebtn span{display:none}
+  .wz-btn{padding:0 16px}
+  #wz-back,#wz-savebtn{width:44px;padding:0}
+  .wz-btn-primary{padding:0 18px}
+  .wz-save{padding:0 9px}
+  .wz-grid-2{grid-template-columns:1fr}
+  .wz-drop{padding:2rem 1rem}
+  .wz-drop-ico{width:56px;height:56px;font-size:26px}
+  .wz-drop-t{font-size:17px}
+  .wz-rv-cover{width:80px;height:80px}
+  .wz-rv-title{font-size:18px}
+  .review-val{max-width:62%}
+  .wz-stores{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .store-chip{padding:.55rem .65rem;gap:.5rem}
+  .store-chip-name{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.2;font-size:12.5px}
+  /* 16px inputs: iOS zooms the page in when a smaller field is focused */
+  .wz .fg input,.wz .fg select,.wz .fg textarea,.wz .track-fg input,.wz .track-fg select,.wz-sname,.wz-sbp,.wz .track-meta-name-input{font-size:16px}
+  .wz .track-fg input,.wz .track-fg select{min-height:44px}
+  .wz-srow{flex-wrap:wrap}
+  .wz-sname{flex:1 1 140px}
+  /* track rows: keep what matters (play, number, name, length) */
+  .track-mb{display:none}
+  .track-item{gap:.5rem;padding:.5rem .6rem}
+  .wz-tstat{min-width:14px}
+}
+@media (max-width:600px){
+  .wz-save span{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .wz-save{width:34px;padding:0;justify-content:center}
+  .wz-save i{font-size:17px}
+}
+@media (max-width:480px){
+  .wizard-step.active .ws-label{display:none}
+  .wizard-step.active{padding-right:4px}
+  .wizard-step{padding-right:4px}
+  /* track card header: title gets the full row, the status drops underneath it */
+  .wz .track-meta-header{display:grid;grid-template-columns:26px minmax(0,1fr) 36px;grid-template-areas:"num name chev" ". status .";column-gap:10px;row-gap:0;align-items:center;padding-top:.6rem;padding-bottom:.6rem}
+  .wz .track-meta-num{grid-area:num}
+  .wz .track-meta-name-input{grid-area:name}
+  .wz .track-meta-status{grid-area:status;min-height:24px}
+  .wz .wz-chev{grid-area:chev}
+}
+@media (min-width:769px){
+  .wz-bar-in{padding-bottom:calc(.7rem + env(safe-area-inset-bottom,0px))}
+}
+/* short desktop windows: keep the cover-art column small enough to stay fully in view */
+@media (max-height:760px) and (min-width:901px){
+  .wz-art-card .wz-art{max-width:210px;margin:0 auto}
 }
 
 /* ── ANALYTICS RANGE BUTTONS ── */
@@ -2311,312 +2609,342 @@ div.ob-step:hover{border-color:var(--o-line)}
         <button class="btn btn-outline" onclick="goPage('releases',null)">Back to Releases</button>
       </div>
       <div id="submit-wizard-body">
-      <!-- STEP PROGRESS BAR -->
-      <div style="background:var(--black);border-bottom:1px solid rgba(255,255,255,.07);padding:0 2.5rem;position:sticky;top:62px;z-index:100">
-        <div style="display:flex;align-items:stretch;max-width:960px;margin:0 auto">
-          <div class="wizard-step active" id="wstep-1" onclick="goWizard(1)"><span class="ws-num">1</span><span class="ws-label">Upload</span></div>
-          <div class="ws-line" id="wsline-1"></div>
-          <div class="wizard-step" id="wstep-2" onclick="goWizard(2)"><span class="ws-num">2</span><span class="ws-label">Details</span></div>
-          <div class="ws-line" id="wsline-2"></div>
-          <div class="wizard-step" id="wstep-3" onclick="goWizard(3)"><span class="ws-num">3</span><span class="ws-label">Schedule</span></div>
-          <div class="ws-line" id="wsline-3"></div>
-          <div class="wizard-step" id="wstep-4" onclick="goWizard(4)"><span class="ws-num">4</span><span class="ws-label">Stores</span></div>
-          <div class="ws-line" id="wsline-4"></div>
-          <div class="wizard-step" id="wstep-5" onclick="goWizard(5)"><span class="ws-num">5</span><span class="ws-label">Review</span></div>
-        </div>
-      </div>
+      <div class="wz">
+        <h1 class="wz-sr">Submit a new release</h1>
 
-      <div class="wiz-center">
+        <!-- HEADER — the five steps and the draft status; sticks just under the top bar -->
+        <header class="wz-head" id="wz-head">
+          <div class="wz-head-in">
+            <div class="wz-save" id="wz-save" data-state="idle" role="status" aria-live="polite" title="Your draft saves automatically as you work"><i class="ti ti-cloud" id="wz-save-ico" aria-hidden="true"></i><span id="wz-save-text">Autosave on</span></div>
+            <nav class="wz-nav" aria-label="Release steps">
+              <ol class="wz-steps">
+                <li class="wz-step-li"><button type="button" class="wizard-step active" id="wstep-1" onclick="goWizard(1)" aria-label="Step 1: Upload" aria-current="step"><span class="ws-num">1</span><span class="ws-label">Upload</span></button></li>
+                <li class="ws-line" id="wsline-1" aria-hidden="true"></li>
+                <li class="wz-step-li"><button type="button" class="wizard-step" id="wstep-2" onclick="goWizard(2)" aria-label="Step 2: Details"><span class="ws-num">2</span><span class="ws-label">Details</span></button></li>
+                <li class="ws-line" id="wsline-2" aria-hidden="true"></li>
+                <li class="wz-step-li"><button type="button" class="wizard-step" id="wstep-3" onclick="goWizard(3)" aria-label="Step 3: Schedule"><span class="ws-num">3</span><span class="ws-label">Schedule</span></button></li>
+                <li class="ws-line" id="wsline-3" aria-hidden="true"></li>
+                <li class="wz-step-li"><button type="button" class="wizard-step" id="wstep-4" onclick="goWizard(4)" aria-label="Step 4: Stores"><span class="ws-num">4</span><span class="ws-label">Stores</span></button></li>
+                <li class="ws-line" id="wsline-4" aria-hidden="true"></li>
+                <li class="wz-step-li"><button type="button" class="wizard-step" id="wstep-5" onclick="goWizard(5)" aria-label="Step 5: Review"><span class="ws-num">5</span><span class="ws-label">Review</span></button></li>
+              </ol>
+            </nav>
+          </div>
+        </header>
+
+        <div class="wz-main">
+
       <!-- STEP 1: UPLOAD -->
-      <div class="wizard-panel active" id="wpanel-1">
-        <div style="text-align:center;max-width:600px;margin:0 auto">
-          <h2 style="font-size:32px;font-weight:800;color:#fff;margin-bottom:.75rem">Upload Your Music</h2>
-          <div class="wiz-validation-banner" id="val-banner-1">
+      <section class="wizard-panel active" id="wpanel-1" aria-labelledby="wz-h-1">
+        <div class="wz-narrow">
+          <div class="wz-ph">
+            <h2 id="wz-h-1" tabindex="-1">Upload your music</h2>
+            <p>Add the audio for this release — one file for a single, several for an EP or album. Files save to the cloud as they upload, so you can leave and come back.</p>
+          </div>
+          <div class="wiz-validation-banner" id="val-banner-1" role="alert">
             <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fix before continuing</div>
             <ul class="wiz-validation-list" id="val-list-1"></ul>
           </div>
-          <p style="font-size:14px;color:rgba(255,255,255,.4);margin-bottom:2.5rem">For best quality, use a lossless master: 16-bit, 44.1kHz stereo WAV, FLAC, or AIFF. MP3 is accepted too, if that's what you have.</p>
-          <div class="wiz-drop-zone" id="audio-drop-zone" onclick="document.getElementById('audio-input-multi').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleAudioDrop(event)">
-            <i class="ti ti-file-music" style="font-size:56px;color:rgba(255,255,255,.2);display:block;margin-bottom:1rem"></i>
-            <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:.4rem">Drag & Drop Files</div>
-            <div style="font-size:14px;color:rgba(255,255,255,.35)">WAV, FLAC, or AIFF — lossless masters only, or <span style="color:var(--gold);text-decoration:underline;cursor:pointer">browse your files</span></div>
+          <div class="wz-drop" id="audio-drop-zone" role="button" tabindex="0" aria-label="Add audio files: drag and drop them here, or press Enter to choose files" onclick="document.getElementById('audio-input-multi').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('audio-input-multi').click()}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleAudioDrop(event)">
+            <span class="wz-drop-ico"><i class="ti ti-cloud-upload" aria-hidden="true"></i></span>
+            <div class="wz-drop-t"><span class="wz-d-first"><span class="wz-d-desk">Drag &amp; drop your audio files</span><span class="wz-d-touch">Tap to choose your audio files</span></span><span class="wz-d-more">Add more tracks</span></div>
+            <div class="wz-drop-s"><span class="wz-d-desk">or <span class="wz-link">browse your files</span></span></div>
+            <div class="wz-chips" aria-hidden="true"><span>WAV</span><span>FLAC</span><span>AIFF</span><span class="wz-chip-soft">MP3 accepted</span></div>
           </div>
           <input type="file" id="audio-input-multi" accept=".wav,.flac,.aiff,.mp3,audio/wav,audio/x-wav,audio/flac,audio/aiff,audio/mpeg,audio/mp3" multiple style="display:none" onchange="handleAudioSelect(this)">
           <audio id="wiz-audio-preview" style="display:none" onended="onWizAudioEnded()"></audio>
-          <div id="track-list" style="margin-top:1.5rem;text-align:left"></div>
-          <div id="fast-pass-nudge" style="display:none;align-items:center;gap:8px;background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.2);border-radius:9px;padding:.625rem 1rem;font-size:12px;color:rgba(255,255,255,.7);margin-top:1rem;max-width:600px;margin-left:auto;margin-right:auto"></div>
-          <div style="display:flex;justify-content:flex-end;margin-top:2rem">
-            <button class="btn btn-purple" onclick="goWizard(2)" id="wiz-next-1">Next: Details <i class="ti ti-arrow-right"></i></button>
-          </div>
+          <div id="track-list" class="wz-tracks"></div>
+          <div class="wz-tip"><i class="ti ti-info-circle" aria-hidden="true"></i><div>For best quality, use a lossless master: 16-bit, 44.1kHz stereo WAV, FLAC, or AIFF. MP3 is accepted too, if that's what you have.</div></div>
         </div>
-      </div>
+      </section>
 
       <!-- STEP 2: DETAILS -->
-      <div class="wizard-panel" id="wpanel-2">
-        <div class="wpanel-inner">
-          <div class="wpanel-form">
-            <h2 class="wiz-h1">Release Details</h2>
-            <div class="wiz-validation-banner" id="val-banner-2">
-              <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fill in the missing fields</div>
-              <ul class="wiz-validation-list" id="val-list-2"></ul>
-            </div>
-            <div class="fg" style="margin-bottom:1.5rem">
-  <label style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.4)">Release Title *</label>
-  <input id="r-title" type="text" placeholder="e.g. Midnight Stories" oninput="checkTitleFormat(this,'title-warn');updateArtPreviewTitle();checkDuplicateTitle(this)" style="font-size:18px;font-weight:600;border:none;border-bottom:2px solid rgba(255,255,255,.15);border-radius:0;background:transparent;padding:10px 0;color:#fff" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='rgba(255,255,255,.15)'">
-  <div id="title-warn" class="field-warn" style="display:none"></div>
-  <div id="title-duplicate-warn" style="display:none;margin-top:.5rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:.625rem .875rem;font-size:12px;color:#fbbf24;line-height:1.5"></div>
-</div>
-            <div class="frow">
-              <div class="fg"><label>© Copyright Holder *</label><input id="r-copyright" type="text" placeholder="Name"></div>
-              <div class="fg"><label>Copyright Year</label><input id="r-copyright-year" type="number" placeholder="2026" autocomplete="off"></div>
-            </div>
-            <div class="frow">
-              <div class="fg"><label>℗ Copyright Holder *</label><input id="r-pcopyright" type="text" placeholder="Name"></div>
-              <div class="fg"><label>Production Year</label><input id="r-prod-year" type="number" placeholder="2026" autocomplete="off"></div>
-            </div>
-            <div class="fg"><label>Record Label</label><input id="r-label" type="text" placeholder="Independent"></div>
-            <div class="frow">
-              <div class="fg"><label>Primary Genre *</label>
-                <select id="r-genre"><option value="">Select genre</option><option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option><option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option><option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option><option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option></select>
+      <section class="wizard-panel" id="wpanel-2" aria-labelledby="wz-h-2">
+        <div class="wz-ph">
+          <h2 id="wz-h-2" tabindex="-1">Release details</h2>
+          <p>Tell stores about this release. Fields marked * are required.</p>
+        </div>
+        <div class="wiz-validation-banner" id="val-banner-2" role="alert">
+          <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fill in the missing fields</div>
+          <ul class="wiz-validation-list" id="val-list-2"></ul>
+        </div>
+        <div class="wz-split">
+          <div class="wz-col-main">
+
+            <div class="wz-card">
+              <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-disc" aria-hidden="true"></i></span><h3>Release info</h3></div>
+              <div class="fg wz-title-fg">
+                <label for="r-title">Release Title *</label>
+                <input id="r-title" type="text" placeholder="e.g. Midnight Stories" autocomplete="off" oninput="checkTitleFormat(this,'title-warn');updateArtPreviewTitle();checkDuplicateTitle(this)">
+                <div id="title-warn" class="field-warn" style="display:none"></div>
+                <div id="title-duplicate-warn" class="wz-warn" style="display:none"></div>
               </div>
-              <div class="fg"><label>Secondary Genre</label>
-                <select id="r-genre2"><option value="">Optional</option><option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option><option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option><option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option><option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option></select>
+              <div class="fg">
+                <div class="wz-lrow">
+                  <label for="r-artist">Primary Artist *</label>
+                  <span id="artist-lock-badge" class="wz-badge"><i class="ti ti-lock" aria-hidden="true"></i> Profile Anchored</span>
+                </div>
+                <input id="r-artist" type="text" placeholder="Artist name" readonly>
+                <select id="r-artist-select" aria-label="Primary artist" style="display:none"></select>
+                <div class="wz-hint" id="artist-field-note">Auto-filled from your profile. Change your artist name in <a onclick="goPage('profile',null)" style="color:var(--gold);cursor:pointer">Profile Settings</a>.</div>
+              </div>
+              <div class="wz-grid-2">
+                <div class="fg"><label for="r-genre">Primary Genre *</label>
+                  <select id="r-genre"><option value="">Select genre</option><option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option><option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option><option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option><option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option></select>
+                </div>
+                <div class="fg"><label for="r-genre2">Secondary Genre</label>
+                  <select id="r-genre2"><option value="">Optional</option><option>Afrobeats</option><option>Highlife</option><option>Hip-Hop / Rap</option><option>R&B / Soul</option><option>Gospel</option><option>Lo-fi</option><option>Afro-Pop</option><option>Electronic</option><option>Reggae / Dancehall</option><option>Pop</option><option>Drill</option><option>Amapiano</option><option>Other</option></select>
+                </div>
+              </div>
+              <div class="fg"><label for="r-language">Language</label>
+                <select id="r-language"><option value="English">English</option><option value="French">French</option><option value="Twi">Twi</option><option value="Ga">Ga</option><option value="Hausa">Hausa</option><option value="Yoruba">Yoruba</option><option value="Pidgin">Pidgin</option><option value="Other">Other</option></select>
+              </div>
+              <fieldset class="wz-fs">
+                <legend>Artist Type</legend>
+                <div class="wz-radios">
+                  <label class="wz-radio"><input type="radio" name="artist-type" value="artist" checked><span>Artist / Band</span></label>
+                  <label class="wz-radio"><input type="radio" name="artist-type" value="various"><span>Compilation / Various Artists</span></label>
+                </div>
+              </fieldset>
+              <div class="wz-opt">
+                <label class="wz-check"><input type="checkbox" id="r-has-feat" onchange="document.getElementById('r-feat-wrap').style.display=this.checked?'block':'none'"><span>Add Featured artists</span></label>
+                <div id="r-feat-wrap" style="display:none"><div class="fg"><label for="r-feat">Featured Artists</label><input id="r-feat" type="text" placeholder="Separate with commas"></div></div>
+              </div>
+              <div class="wz-opt">
+                <label class="wz-check"><input type="checkbox" id="r-has-remix" onchange="document.getElementById('r-remix-wrap').style.display=this.checked?'block':'none'"><span>Add Remixer artists</span></label>
+                <div id="r-remix-wrap" style="display:none"><div class="fg"><label for="r-remixer">Remixer Artists</label><input id="r-remixer" type="text" placeholder="Separate with commas"></div></div>
               </div>
             </div>
-            <div class="fg"><label>Language</label>
-              <select id="r-language"><option value="English">English</option><option value="French">French</option><option value="Twi">Twi</option><option value="Ga">Ga</option><option value="Hausa">Hausa</option><option value="Yoruba">Yoruba</option><option value="Pidgin">Pidgin</option><option value="Other">Other</option></select>
-            </div>
-            <div class="fg"><label>Artist Type</label>
-              <div style="display:flex;gap:1rem;margin-top:.5rem">
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;text-transform:none;letter-spacing:0"><input type="radio" name="artist-type" value="artist" checked style="accent-color:var(--gold)"> Artist / Band</label>
-                <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.7);cursor:pointer;text-transform:none;letter-spacing:0"><input type="radio" name="artist-type" value="various" style="accent-color:var(--gold)"> Compilation / Various Artists</label>
+
+            <div class="wz-card">
+              <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-copyright" aria-hidden="true"></i></span><h3>Rights &amp; ownership</h3></div>
+              <div class="wz-grid-2">
+                <div class="fg">
+                  <div class="wz-lrow"><label for="r-copyright">© Copyright Holder *</label><button type="button" class="wz-mini" onclick="wzUseArtist('r-copyright')">Use artist name</button></div>
+                  <input id="r-copyright" type="text" placeholder="Name" autocomplete="off">
+                </div>
+                <div class="fg"><div class="wz-lrow"><label for="r-copyright-year">Copyright Year</label></div><input id="r-copyright-year" type="number" inputmode="numeric" placeholder="2026" autocomplete="off"></div>
+                <div class="fg">
+                  <div class="wz-lrow"><label for="r-pcopyright">℗ Copyright Holder *</label><button type="button" class="wz-mini" onclick="wzUseArtist('r-pcopyright')">Use artist name</button></div>
+                  <input id="r-pcopyright" type="text" placeholder="Name" autocomplete="off">
+                </div>
+                <div class="fg"><div class="wz-lrow"><label for="r-prod-year">Production Year</label></div><input id="r-prod-year" type="number" inputmode="numeric" placeholder="2026" autocomplete="off"></div>
               </div>
+              <div class="fg"><label for="r-label">Record Label</label><input id="r-label" type="text" placeholder="Independent"></div>
             </div>
-            <div class="fg" style="margin-top:1rem">
-  <label style="display:flex;align-items:center;justify-content:space-between">
-    Primary Artist *
-    <span id="artist-lock-badge" style="font-size:10px;font-weight:600;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 8px;border-radius:20px;letter-spacing:.5px;display:flex;align-items:center;gap:4px"><i class="ti ti-lock" style="font-size:10px"></i> Profile Anchored</span>
-  </label>
-  <input id="r-artist" type="text" placeholder="Artist name" readonly style="opacity:.75;cursor:not-allowed;border-color:rgba(212,175,55,.2)">
-  <select id="r-artist-select" style="display:none"></select>
-  <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px" id="artist-field-note">Auto-filled from your profile. Change your artist name in <a onclick="goPage('profile',null)" style="color:var(--gold);cursor:pointer">Profile Settings</a>.</div>
-</div>
-            <div style="margin-top:.5rem">
-              <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" id="r-has-feat" style="accent-color:var(--gold)" onchange="document.getElementById('r-feat-wrap').style.display=this.checked?'block':'none'"> Add Featured artists</label>
-              <div id="r-feat-wrap" style="display:none;margin-top:.75rem"><div class="fg"><label>Featured Artists</label><input id="r-feat" type="text" placeholder="Separate with commas"></div></div>
-            </div>
-            <div style="margin-top:.5rem">
-              <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;text-transform:none;letter-spacing:0"><input type="checkbox" id="r-has-remix" style="accent-color:var(--gold)" onchange="document.getElementById('r-remix-wrap').style.display=this.checked?'block':'none'"> Add Remixer artists</label>
-              <div id="r-remix-wrap" style="display:none;margin-top:.75rem"><div class="fg"><label>Remixer Artists</label><input id="r-remixer" type="text" placeholder="Separate with commas"></div></div>
-            </div>
-            <!-- TRACKLIST -->
-            <div style="margin-top:1.75rem;padding-top:1.75rem;border-top:1px solid rgba(255,255,255,.07)">
-              <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:1rem">Tracklist</div>
-              <p style="font-size:12px;color:rgba(255,255,255,.4);margin:-.5rem 0 1rem">Expand a track below to add production credits, ISRC, and more.</p>
+
+            <div class="wz-card">
+              <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-list-details" aria-hidden="true"></i></span><h3>Tracks &amp; credits</h3><span class="wz-count" id="wz-track-count"></span></div>
+              <p class="wz-hint wz-hint-top">Every track needs a producer and a songwriter (or mark it instrumental). Open a track to add its credits, ISRC, and more.</p>
               <div id="tracklist-details"></div>
             </div>
-            <div class="fg" style="margin-top:1.5rem"><label>Admin Notes (optional)</label><textarea id="r-notes" placeholder="Explicit content, special instructions..."></textarea></div>
+
+            <div class="wz-card">
+              <div class="fg" style="margin-bottom:0"><label for="r-notes">Admin Notes (optional)</label><textarea id="r-notes" placeholder="Explicit content, special instructions..."></textarea></div>
+            </div>
           </div>
-          <!-- ARTWORK PREVIEW -->
-          <div class="wpanel-sidebar">
-            <div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:1rem">Your Preview</div>
-            <div style="background:var(--card);border:2px dashed rgba(255,255,255,.12);border-radius:14px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;transition:border-color .15s;margin-bottom:.875rem" id="artwork-preview-wrap" onclick="document.getElementById('art-input').click()" onmouseover="this.style.borderColor='rgba(212,175,55,.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)'">
-              <div id="artwork-preview-inner" style="text-align:center;padding:1.5rem">
-                <i class="ti ti-photo-plus" style="font-size:44px;color:rgba(255,255,255,.15);display:block;margin-bottom:.75rem"></i>
-                <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.3)">Click to add artwork</div>
-                <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:4px">3000×3000px minimum · Square · JPG or PNG</div>
+
+          <!-- COVER ART -->
+          <aside class="wz-col-side">
+            <div class="wz-card wz-art-card">
+              <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-photo" aria-hidden="true"></i></span><h3>Cover art *</h3></div>
+              <div class="wz-art-row">
+                <div class="wz-art" id="artwork-preview-wrap" role="button" tabindex="0" aria-label="Choose cover art" onclick="document.getElementById('art-input').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('art-input').click()}">
+                  <div id="artwork-preview-inner" class="wz-art-empty"><i class="ti ti-photo-plus" aria-hidden="true"></i><div class="wz-art-t">Add cover art</div></div>
+                </div>
+                <div class="wz-art-info">
+                  <ul class="wz-reqs"><li>3000×3000px minimum</li><li>Square (1:1)</li><li>JPG or PNG</li></ul>
+                  <button type="button" class="wz-btn-sm" onclick="document.getElementById('art-input').click()"><i class="ti ti-upload" aria-hidden="true"></i> Choose image</button>
+                </div>
+              </div>
+              <input type="file" id="art-input" accept=".jpg,.jpeg,.png,image/*" style="display:none" onchange="previewArtwork(this)" data-err-target="artwork-preview-wrap">
+              <div class="wz-art-title" id="artwork-title-preview">—</div>
+              <div class="wz-hint wz-ctr">Your release title will appear here</div>
+              <div id="art-track-preview" style="display:none">
+                <div class="wz-mini-h">Tracks</div>
+                <div id="art-track-list"></div>
               </div>
             </div>
-            <input type="file" id="art-input" accept=".jpg,.jpeg,.png,image/*" style="display:none" onchange="previewArtwork(this)">
-            <div style="font-size:15px;font-weight:700;color:#fff;text-align:center;margin-bottom:2px" id="artwork-title-preview">—</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.3);text-align:center">Your release title will appear here</div>
-            <!-- Track list mini preview -->
-            <div id="art-track-preview" style="margin-top:1rem;display:none">
-              <div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:.75rem"></div>
-              <div style="font-size:11px;color:rgba(255,255,255,.35);margin-bottom:.5rem">Tracks</div>
-              <div id="art-track-list" style="font-size:12px;color:rgba(255,255,255,.5);display:flex;flex-direction:column;gap:4px"></div>
-            </div>
-          </div>
+          </aside>
         </div>
-        <div style="display:flex;gap:10px;margin-top:2rem;flex-wrap:wrap">
-          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(1)"><i class="ti ti-arrow-left"></i> Back</button>
-          <button class="btn btn-purple" onclick="goWizard(3)">Next: Schedule <i class="ti ti-arrow-right"></i></button>
-          <button class="btn btn-sm" style="margin-left:auto;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2)" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save draft</button>
-        </div>
-      </div>
+      </section>
 
       <!-- STEP 3: SCHEDULE -->
-      <div class="wizard-panel" id="wpanel-3">
-        <div style="max-width:640px">
-          <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Plan Your Release</h2>
-          <div class="wiz-validation-banner" id="val-banner-3">
+      <section class="wizard-panel" id="wpanel-3" aria-labelledby="wz-h-3">
+        <div class="wz-narrow">
+          <div class="wz-ph">
+            <h2 id="wz-h-3" tabindex="-1">Plan your release</h2>
+            <p>Pick a release date and tell stores how this release should be handled.</p>
+          </div>
+          <div class="wiz-validation-banner" id="val-banner-3" role="alert">
             <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fix before continuing</div>
             <ul class="wiz-validation-list" id="val-list-3"></ul>
           </div>
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
-            <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:1.1rem">Choose a <strong style="color:var(--gold)">release date</strong></div>
-            <div class="fg"><input id="r-date" type="date" style="font-size:15px" onchange="checkDistroTierMismatch();checkFridayHint()"></div>
-            <div id="friday-hint" style="display:none;margin-top:-.5rem;margin-bottom:1rem;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.25);border-radius:9px;padding:.75rem .9rem;font-size:12px;color:var(--gold);line-height:1.6;gap:8px;align-items:flex-start">
-              <i class="ti ti-bulb" style="flex-shrink:0;margin-top:1px"></i>
-              <span>Most releases go out on <strong>Fridays</strong> — that's when playlists across Spotify, Apple Music, and most other platforms update, giving new releases their best shot at playlist consideration. Worth considering if you don't have a specific reason for this date.</span>
+
+          <div class="wz-card">
+            <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-calendar-event" aria-hidden="true"></i></span><h3>Release date</h3></div>
+            <div class="fg"><label for="r-date">Choose a release date *</label><input id="r-date" type="date" onchange="checkDistroTierMismatch();checkFridayHint();wzSyncDatePicks()"></div>
+            <div class="wz-picks" id="wz-date-picks"></div>
+            <div id="friday-hint" class="wz-tip wz-tip-gold" style="display:none">
+              <i class="ti ti-bulb" aria-hidden="true"></i>
+              <div>Most releases go out on <strong>Fridays</strong> — that's when playlists across Spotify, Apple Music, and most other platforms update, giving new releases their best shot at playlist consideration. Worth considering if you don't have a specific reason for this date.</div>
             </div>
-            <div style="background:#2a2a45;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem 1.1rem;margin-top:1rem;display:flex;align-items:flex-start;gap:10px">
-              <i class="ti ti-info-circle" style="color:var(--gold);font-size:16px;flex-shrink:0;margin-top:1px"></i>
-              <div style="font-size:12.5px;color:rgba(255,255,255,.6);line-height:1.6">Release date must be at least <strong style="color:#fff">10 days</strong> from today, giving us time to process and send your music to stores.</div>
-            </div>
-            <div id="tier-mismatch-warning" style="display:none;margin-top:.875rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.75rem .9rem;font-size:12px;color:#fbbf24;line-height:1.6"></div>
+            <div class="wz-tip"><i class="ti ti-info-circle" aria-hidden="true"></i><div>Release date must be at least <strong>10 days</strong> from today, giving us time to process and send your music to stores.</div></div>
+            <div id="tier-mismatch-warning" class="wz-warn" style="display:none"></div>
           </div>
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
-            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:1rem">Would you like to add <strong style="color:#fff">country restrictions</strong> and limit the availability of your release?</div>
-            <div style="display:flex;gap:8px">
-              <button class="wiz-toggle active" id="cr-no" onclick="setToggle('country-restrict','no')">No</button>
-              <button class="wiz-toggle" id="cr-yes" onclick="setToggle('country-restrict','yes')">Yes</button>
+
+          <div class="wz-card">
+            <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-world" aria-hidden="true"></i></span><h3>Availability</h3></div>
+            <div class="wz-q">
+              <div class="wz-q-t" id="wz-q-cr">Would you like to add <strong>country restrictions</strong> and limit the availability of your release?</div>
+              <div class="wz-seg" role="group" aria-labelledby="wz-q-cr">
+                <button type="button" class="wiz-toggle active" id="cr-no" onclick="setToggle('country-restrict','no')" aria-pressed="true">No</button>
+                <button type="button" class="wiz-toggle" id="cr-yes" onclick="setToggle('country-restrict','yes')" aria-pressed="false">Yes</button>
+              </div>
+              <div id="country-restrict-fields" style="display:none"><div class="fg"><label for="r-countries">Excluded Countries</label><input id="r-countries" type="text" placeholder="e.g. US, UK, CA — separate with commas"></div></div>
             </div>
-            <div id="country-restrict-fields" style="display:none;margin-top:1rem">
-              <div class="fg"><label>Excluded Countries</label><input id="r-countries" type="text" placeholder="e.g. US, UK, CA — separate with commas"></div>
+            <div class="wz-q">
+              <div class="wz-q-t" id="wz-q-pr">Has this been <strong>released before</strong>?</div>
+              <div class="wz-seg" role="group" aria-labelledby="wz-q-pr">
+                <button type="button" class="wiz-toggle active" id="pr-no" onclick="setToggle('prev-released','no')" aria-pressed="true">No</button>
+                <button type="button" class="wiz-toggle" id="pr-yes" onclick="setToggle('prev-released','yes')" aria-pressed="false">Yes</button>
+              </div>
+              <div id="prev-released-fields" style="display:none"><div class="fg"><label for="r-orig-date">Original Release Date</label><input id="r-orig-date" type="date"></div></div>
             </div>
-          </div>
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem">
-            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:1rem">Has this been <strong style="color:#fff">released before</strong>?</div>
-            <div style="display:flex;gap:8px">
-              <button class="wiz-toggle active" id="pr-no" onclick="setToggle('prev-released','no')">No</button>
-              <button class="wiz-toggle" id="pr-yes" onclick="setToggle('prev-released','yes')">Yes</button>
-            </div>
-            <div id="prev-released-fields" style="display:none;margin-top:1rem">
-              <div class="fg"><label>Original Release Date</label><input id="r-orig-date" type="date"></div>
-            </div>
-          </div>
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem">
-            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:.5rem">Does this release contain <strong style="color:#fff">explicit content</strong>?</div>
-            <div style="display:flex;gap:8px;margin-top:.75rem">
-              <button class="wiz-toggle active" id="exp-no" onclick="setToggle('explicit','no')">No</button>
-              <button class="wiz-toggle" id="exp-yes" onclick="setToggle('explicit','yes')">Yes — Explicit</button>
-            </div>
-          </div>
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-top:1.5rem">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:.5rem">
-              <div style="font-size:14px;color:rgba(255,255,255,.8)">Enable <strong style="color:#fff">YouTube Content Protection</strong>?</div>
-              <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px">Coming soon</span>
-            </div>
-            <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:.75rem">We're building automatic detection of unlicensed use of your music on YouTube, with monetization on any matches found. Opt in now and we'll enable it on this release the moment it launches — no action needed from you later.</p>
-            <div style="display:flex;gap:8px">
-              <button class="wiz-toggle active" id="cid-no" onclick="setToggle('contentid','no')">Not now</button>
-              <button class="wiz-toggle" id="cid-yes" onclick="setToggle('contentid','yes')">Yes, opt in</button>
+            <div class="wz-q">
+              <div class="wz-q-t" id="wz-q-exp">Does this release contain <strong>explicit content</strong>?</div>
+              <div class="wz-seg" role="group" aria-labelledby="wz-q-exp">
+                <button type="button" class="wiz-toggle active" id="exp-no" onclick="setToggle('explicit','no')" aria-pressed="true">No</button>
+                <button type="button" class="wiz-toggle" id="exp-yes" onclick="setToggle('explicit','yes')" aria-pressed="false">Yes — Explicit</button>
+              </div>
             </div>
           </div>
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-top:1.5rem">
-            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:.5rem">Pitch this release for <strong style="color:#fff">playlist consideration</strong> (optional)</div>
-            <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:.875rem">Tell us the vibe and why it's worth featuring — we'll use this when submitting your release to Spotify and Apple Music's own editorial teams.</p>
-            <div class="fg" style="margin-bottom:.75rem"><label>Mood / Genre Tags</label><input id="r-pitch-mood" type="text" placeholder="e.g. Chill, Late-night, Afrobeats"></div>
-            <div class="fg"><label>Why should a curator feature this?</label><textarea id="r-pitch-note" placeholder="A sentence or two on what makes this release stand out"></textarea></div>
+
+          <div class="wz-card">
+            <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-brand-youtube" aria-hidden="true"></i></span><h3>YouTube Content Protection</h3><span class="wz-badge">Coming soon</span></div>
+            <div class="wz-q">
+              <div class="wz-q-t" id="wz-q-cid">Enable <strong>YouTube Content Protection</strong>?</div>
+              <p class="wz-hint wz-hint-top">We're building automatic detection of unlicensed use of your music on YouTube, with monetization on any matches found. Opt in now and we'll enable it on this release the moment it launches — no action needed from you later.</p>
+              <div class="wz-seg" role="group" aria-labelledby="wz-q-cid">
+                <button type="button" class="wiz-toggle active" id="cid-no" onclick="setToggle('contentid','no')" aria-pressed="true">Not now</button>
+                <button type="button" class="wiz-toggle" id="cid-yes" onclick="setToggle('contentid','yes')" aria-pressed="false">Yes, opt in</button>
+              </div>
+            </div>
           </div>
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-top:1.5rem">
-            <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:.5rem">Was AI used in creating this release?</div>
-            <p style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:.875rem">Stores are increasingly requiring this disclosure. Answer honestly for whichever parts of this release — lyrics, vocals, instrumentation, or production — involved AI tools.</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="wiz-toggle active" id="ai-none" onclick="setAiUse('none')">No AI used</button>
-              <button class="wiz-toggle" id="ai-some" onclick="setAiUse('some')">Partially AI</button>
-              <button class="wiz-toggle" id="ai-full" onclick="setAiUse('full')">Fully AI</button>
+
+          <div class="wz-card">
+            <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-playlist" aria-hidden="true"></i></span><h3>Playlist pitch <span class="wz-opt-tag">optional</span></h3></div>
+            <p class="wz-hint wz-hint-top">Pitch this release for <strong>playlist consideration</strong> (optional). Tell us the vibe and why it's worth featuring — we'll use this when submitting your release to Spotify and Apple Music's own editorial teams.</p>
+            <div class="fg"><label for="r-pitch-mood">Mood / Genre Tags</label><input id="r-pitch-mood" type="text" placeholder="e.g. Chill, Late-night, Afrobeats"></div>
+            <div class="fg" style="margin-bottom:0"><label for="r-pitch-note">Why should a curator feature this?</label><textarea id="r-pitch-note" placeholder="A sentence or two on what makes this release stand out"></textarea></div>
+          </div>
+
+          <div class="wz-card">
+            <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-sparkles" aria-hidden="true"></i></span><h3>AI disclosure</h3></div>
+            <div class="wz-q">
+              <div class="wz-q-t" id="wz-q-ai">Was AI used in creating this release?</div>
+              <p class="wz-hint wz-hint-top">Stores are increasingly requiring this disclosure. Answer honestly for whichever parts of this release — lyrics, vocals, instrumentation, or production — involved AI tools.</p>
+              <div class="wz-seg" role="group" aria-labelledby="wz-q-ai">
+                <button type="button" class="wiz-toggle active" id="ai-none" onclick="setAiUse('none')" aria-pressed="true">No AI used</button>
+                <button type="button" class="wiz-toggle" id="ai-some" onclick="setAiUse('some')" aria-pressed="false">Partially AI</button>
+                <button type="button" class="wiz-toggle" id="ai-full" onclick="setAiUse('full')" aria-pressed="false">Fully AI</button>
+              </div>
             </div>
           </div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:2rem">
-          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(2)"><i class="ti ti-arrow-left"></i> Back</button>
-          <button class="btn btn-purple" onclick="goWizard(4)">Next: Stores <i class="ti ti-arrow-right"></i></button>
-          <button class="btn btn-sm" style="margin-left:auto;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2)" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save draft</button>
-        </div>
-      </div>
+      </section>
 
       <!-- STEP 4: STORES -->
-      <div class="wizard-panel" id="wpanel-4">
-        <div style="max-width:860px">
-          <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:.5rem">Select Your Stores</h2>
-          <div class="wiz-validation-banner" id="val-banner-4">
-            <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fix before continuing</div>
-            <ul class="wiz-validation-list" id="val-list-4"></ul>
-          </div>
-          <p style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:1.5rem">Choose which platforms to distribute to. All are selected by default.</p>
-          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
-            <button class="btn btn-purple btn-sm" onclick="selectAllStores(true)"><i class="ti ti-checks"></i> Select All</button>
-            <button class="btn btn-sm" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="selectAllStores(false)">Deselect All</button>
-            <div style="display:flex;gap:6px;margin-left:auto">
-              <button class="store-filter-btn active" onclick="filterStores('all',this)">All</button>
-              <button class="store-filter-btn" onclick="filterStores('streaming',this)">Streaming</button>
-              <button class="store-filter-btn" onclick="filterStores('download',this)">Download</button>
+      <section class="wizard-panel" id="wpanel-4" aria-labelledby="wz-h-4">
+        <div class="wz-ph">
+          <h2 id="wz-h-4" tabindex="-1">Select your stores</h2>
+          <p>Choose which platforms to distribute to. All are selected by default.</p>
+        </div>
+        <div class="wiz-validation-banner" id="val-banner-4" role="alert">
+          <div class="wiz-validation-title"><i class="ti ti-alert-circle"></i> Please fix before continuing</div>
+          <ul class="wiz-validation-list" id="val-list-4"></ul>
+        </div>
+        <div class="wz-card">
+          <div class="wz-store-bar">
+            <div class="wz-store-count" id="wz-store-count" aria-live="polite"></div>
+            <div class="wz-store-actions">
+              <button type="button" class="wz-btn-sm" onclick="selectAllStores(true)"><i class="ti ti-checks" aria-hidden="true"></i> Select All</button>
+              <button type="button" class="wz-btn-sm wz-btn-quiet" onclick="selectAllStores(false)">Deselect All</button>
             </div>
           </div>
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem">
-            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);margin-bottom:1rem">Standard Stores</div>
-            <div id="stores-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;border:1.5px solid transparent;border-radius:10px;padding:2px"></div>
+          <div class="wz-filters" role="group" aria-label="Filter stores">
+            <button type="button" class="store-filter-btn active" aria-pressed="true" onclick="filterStores('all',this)">All</button>
+            <button type="button" class="store-filter-btn" aria-pressed="false" onclick="filterStores('streaming',this)">Streaming</button>
+            <button type="button" class="store-filter-btn" aria-pressed="false" onclick="filterStores('download',this)">Download</button>
           </div>
+          <div id="stores-grid" class="wz-stores"></div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:2rem">
-          <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(3)"><i class="ti ti-arrow-left"></i> Back</button>
-          <button class="btn btn-purple" onclick="goWizard(5)">Next: Review <i class="ti ti-arrow-right"></i></button>
-          <button class="btn btn-sm" style="margin-left:auto;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2)" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save draft</button>
-        </div>
-      </div>
+      </section>
 
       <!-- STEP 5: REVIEW -->
-      <div class="wizard-panel" id="wpanel-5">
-        <div style="max-width:680px">
-          <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:1.75rem">Review Your Release</h2>
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:1.5rem;margin-bottom:1rem">
-            <div id="review-content"></div>
+      <section class="wizard-panel" id="wpanel-5" aria-labelledby="wz-h-5">
+        <div class="wz-narrow">
+          <div class="wz-ph">
+            <h2 id="wz-h-5" tabindex="-1">Review your release</h2>
+            <p>Check everything below. You can edit any section before you submit.</p>
           </div>
-          <!-- SPLIT-SHEET MECHANICS -->
-          <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin-bottom:1rem;box-shadow:inset 0 1px 0 var(--rim)">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px">
-              <div>
-                <div style="font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px"><i class="ti ti-adjustments-horizontal" style="color:var(--gold)"></i> Royalty Split Sheet</div>
-                <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:3px">Define how earnings are distributed among contributors (basis points, out of 10,000)</div>
-              </div>
-              <div style="display:flex;gap:8px">
-                <button class="btn btn-sm" style="background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2);font-size:11px" onclick="splitDistributeRemaining()"><i class="ti ti-divide"></i> Distribute Remaining</button>
-                <button class="btn btn-sm" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);font-size:11px" onclick="splitClaimRemainder()"><i class="ti ti-arrow-back-up"></i> Claim Remainder</button>
-              </div>
-            </div>
+          <div id="review-content"></div>
 
+          <!-- SPLIT-SHEET MECHANICS -->
+          <div class="wz-card" id="wz-split-card">
+            <div class="wz-card-h"><span class="wz-ico"><i class="ti ti-adjustments-horizontal" aria-hidden="true"></i></span><h3>Royalty Split Sheet</h3><span class="wz-opt-tag">optional</span></div>
+            <p class="wz-hint wz-hint-top">Define how earnings are distributed among contributors (basis points, out of 10,000). Leave it as is if all earnings go to you.</p>
+            <div class="wz-split-tools">
+              <button type="button" class="wz-btn-sm" onclick="splitDistributeRemaining()"><i class="ti ti-divide" aria-hidden="true"></i> Distribute Remaining</button>
+              <button type="button" class="wz-btn-sm wz-btn-quiet" onclick="splitClaimRemainder()"><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Claim Remainder</button>
+            </div>
             <!-- BALANCE TRACKER -->
             <div class="split-ledger">
               <span id="split-ledger-label" class="split-ledger-warn">Allocated: 0%</span>
-              <span id="split-ledger-status" style="font-size:11px;color:rgba(255,255,255,.3)">0 of 10,000 bp</span>
+              <span id="split-ledger-status" class="wz-hint" style="margin:0">0 of 10,000 bp</span>
             </div>
             <div class="split-balance-bar">
               <div class="split-balance-fill" id="split-bar-fill" style="width:0%;background:#fbbf24"></div>
             </div>
-
             <!-- SPLIT ROWS -->
-            <div id="split-rows" style="display:flex;flex-direction:column;gap:8px;margin-top:1rem"></div>
-
-            <button class="btn btn-sm" style="margin-top:1rem;background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);font-size:12px;width:100%;justify-content:center" onclick="splitAddRow()"><i class="ti ti-plus"></i> Add Contributor</button>
+            <div id="split-rows" class="wz-split-rows"></div>
+            <button type="button" class="wz-btn-sm wz-btn-quiet wz-btn-wide" onclick="splitAddRow()"><i class="ti ti-plus" aria-hidden="true"></i> Add Contributor</button>
           </div>
 
-          <!-- LEGAL ACCORDION -->
-          <div id="split-legal-wrap" style="display:none;background:rgba(212,175,55,.04);border:1px solid rgba(212,175,55,.15);border-radius:14px;padding:1.25rem;margin-bottom:1rem">
-            <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.5px;text-transform:uppercase;margin-bottom:.875rem;display:flex;align-items:center;gap:6px"><i class="ti ti-file-certificate"></i> Split-Sheet Legal Disclosures</div>
-            <div id="split-legal-content" style="font-size:12px;color:rgba(255,255,255,.45);line-height:1.8;display:flex;flex-direction:column;gap:.625rem"></div>
+          <!-- LEGAL ACCORDION (shown only when it has content) -->
+          <div id="split-legal-wrap" class="wz-card wz-legal" style="display:none">
+            <div class="wz-card-h"><h3>Split-Sheet Legal Disclosures</h3></div>
+            <div id="split-legal-content"></div>
           </div>
 
           <!-- STREAM MANIPULATION WARNING -->
-          <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:14px;padding:1.25rem;margin-bottom:1rem">
-            <div style="font-size:14px;font-weight:700;color:#f87171;margin-bottom:.5rem;display:flex;align-items:center;gap:8px"><i class="ti ti-alert-triangle"></i> A Note on Fake Streams &amp; Stream Farming</div>
-            <p style="font-size:12.5px;color:rgba(255,255,255,.55);line-height:1.7;margin:0">Streams from bots, click farms, or paid "stream farming" services are actively detected by Spotify, Apple Music, and other stores. They earn <strong style="color:rgba(255,255,255,.75)">zero royalties</strong> and are stripped from your public counts the moment they're caught — regardless of how they were generated. Stores can also fine distributors per flagged track, and those fines get passed on to the artist responsible. Severe or repeated cases can mean tracks or entire releases being pulled, and accounts being suspended or permanently terminated. Please only promote your music through genuine listeners. Full details are in our <a href="?legal=terms" target="_blank" onclick="event.stopPropagation()" style="color:#f87171;text-decoration:underline">Terms of Service</a>.</p>
+          <div class="wz-fake">
+            <div class="wz-fake-t"><i class="ti ti-alert-triangle" aria-hidden="true"></i> A Note on Fake Streams &amp; Stream Farming</div>
+            <p class="wz-fake-p">Streams from bots, click farms, or paid "stream farming" services are actively detected by Spotify, Apple Music, and other stores. They earn <strong>zero royalties</strong> and are stripped from your public counts the moment they're caught — regardless of how they were generated. Stores can also fine distributors per flagged track, and those fines get passed on to the artist responsible. Severe or repeated cases can mean tracks or entire releases being pulled, and accounts being suspended or permanently terminated. Please only promote your music through genuine listeners. Full details are in our <a href="?legal=terms" target="_blank" onclick="event.stopPropagation()">Terms of Service</a>.</p>
           </div>
 
-          <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem">
-            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.6);text-transform:none;letter-spacing:0">
-              <input type="checkbox" id="r-terms" style="accent-color:var(--gold);margin-top:2px;flex-shrink:0">
-              I confirm I own or have the rights to distribute this music, agree to Blakkstone Distribution's <a href="?legal=terms" target="_blank" onclick="event.stopPropagation()" style="color:var(--gold);text-decoration:underline">terms</a>, and confirm the royalty split above is correct.
+          <div class="wz-card wz-terms" id="wz-terms-card">
+            <label class="wz-check wz-check-top">
+              <input type="checkbox" id="r-terms" onchange="this.closest('.wz-terms').classList.remove('wz-terms-error')">
+              <span>I confirm I own or have the rights to distribute this music, agree to Blakkstone Distribution's <a href="?legal=terms" target="_blank" onclick="event.stopPropagation()" style="color:var(--gold);text-decoration:underline">terms</a>, and confirm the royalty split above is correct.</span>
             </label>
           </div>
-          <div style="display:flex;gap:10px">
-            <button class="btn" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1)" onclick="goWizard(4)"><i class="ti ti-arrow-left"></i> Back</button>
-            <button class="btn btn-purple" id="submit-btn" onclick="submitRelease()" style="flex:1;justify-content:center"><i class="ti ti-send"></i> Submit Release</button>
+        </div>
+      </section>
+
+        </div><!-- /wz-main -->
+
+        <!-- ACTION BAR — always in reach, even on the longest step -->
+        <div class="wz-bar" id="wz-bar">
+          <div class="wz-bar-in">
+            <button type="button" class="wz-btn wz-btn-ghost" id="wz-back" onclick="wzBack()" aria-label="Back to the previous step" title="Back" hidden><i class="ti ti-arrow-left" aria-hidden="true"></i><span>Back</span></button>
+            <button type="button" class="wz-btn wz-btn-save" id="wz-savebtn" onclick="saveDraft()" aria-label="Save draft" title="Save draft"><i class="ti ti-device-floppy" aria-hidden="true"></i><span>Save draft</span></button>
+            <span class="wz-spacer"></span>
+            <button type="button" class="wz-btn wz-btn-primary" id="wz-next" onclick="wzNext()"><span id="wz-next-label">Next: Details</span><i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+            <button type="button" class="wz-btn wz-btn-primary" id="submit-btn" onclick="submitRelease()" hidden><i class="ti ti-send"></i> Submit Release</button>
           </div>
         </div>
-      </div>
-      </div><!-- /centering wrapper -->
+      </div><!-- /wz -->
       </div><!-- /submit-wizard-body -->
     </div>
 
@@ -4498,6 +4826,9 @@ function updateArtPreviewTitle(){
     if(list) list.innerHTML=wizTracks.map((t,i)=>
       '<div style="display:flex;align-items:center;gap:6px"><span style="color:rgba(255,255,255,.25);width:16px;text-align:right">'+(i+1)+'</span><span>'+esc(t.name)+'</span></div>'
     ).join('');
+  } else {
+    const preview=document.getElementById('art-track-preview');
+    if(preview) preview.style.display='none';
   }
 }
 
@@ -5239,6 +5570,15 @@ function enterDashboard(){
 
 let selectedPlan='artist_plus',billing='yearly',payoutMethod=null,momoNetwork=null;
 let _wizardAutosaveTimer=null;
+let _wzSubmitting=false;            // true while submitRelease() runs — autosave pauses so it can't re-create the draft being cleaned up
+let _wzFromReview=false;            // set by "Edit" on the Review step, so the action bar can offer "Back to review"
+let _wzInitGen=0;                   // numbers each initWizard() call, so an older, slower call can't wipe what a newer one set up
+let _wzDraftChain=Promise.resolve();// draft saves run one at a time (see saveDraftSilent)
+let _wzSilentQueued=false;
+let _wzRO=null;
+let _wzArtSeq=0;                    // numbers each accepted cover-art pick, so a slow upload of an older pick can't overwrite a newer one
+const WZ_LABELS=['Upload','Details','Schedule','Stores','Review'];
+const WZ_NEXT=['Next: Details','Next: Schedule','Next: Stores','Next: Review',''];
 let _analyticsTickTimer=null;
 let _supportRealtimeChannel=null;
 function findAdminTabEl(tab){
@@ -5297,6 +5637,10 @@ function finishPageProgress(){
   },150);
 }
 function goPage(id,el){
+  // Decided before the page switches: tapping "Add" again while already in the wizard keeps the work on screen,
+  // and leaving the wizard saves it as a draft.
+  const _wzKeep=(id==='submit')&&wzCanKeepState();
+  if(id!=='submit')wzOnLeave();
   startPageProgress();
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
@@ -5321,7 +5665,7 @@ function goPage(id,el){
   if(id==='overview'){loadReleases();loadOverviewActivity();}
   if(id==='releases')loadReleases();
   if(id==='analytics')loadAnalytics();
-  if(id==='submit')initWizard();
+  if(id==='submit'){if(_wzKeep){wzStartAutosave();wzMeasure();}else initWizard();}
   if(id==='royalties'){loadRoyalties();}
   if(id==='payout')loadPayout();
   if(id==='myartists'){closeMyArtistDetail();loadMyArtistsGrid();}
@@ -5349,6 +5693,8 @@ window.addEventListener('popstate',function(e){
   const sub=e.state?.sub||pathSub;
   const valid=['overview','releases','submit','myartists','analytics','royalties','payout','upgrade','profile','support','admin'];
   if(!valid.includes(page))return;
+  const _wzKeep=(page==='submit')&&wzCanKeepState();
+  if(page!=='submit')wzOnLeave();
   if(_wizardAutosaveTimer){clearInterval(_wizardAutosaveTimer);_wizardAutosaveTimer=null;}
   if(_analyticsTickTimer){clearInterval(_analyticsTickTimer);_analyticsTickTimer=null;}
   if(_supportRealtimeChannel){try{sb.removeChannel(_supportRealtimeChannel);}catch(e){}_supportRealtimeChannel=null;}
@@ -5372,7 +5718,7 @@ window.addEventListener('popstate',function(e){
     }
   }
   if(page==='myartists')loadMyArtistsGrid();
-  if(page==='submit')initWizard();
+  if(page==='submit'){if(_wzKeep){wzStartAutosave();wzMeasure();}else initWizard();}
   if(page==='upgrade')refreshProfileAndUpgradePage();
   if(page==='admin'){
     loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();
@@ -9728,13 +10074,217 @@ async function duplicateReleaseAsNew(releaseId){
   // everything else (including this) already carries over.
   if(r.artwork_url){
     wizData.artUrl=r.artwork_url;wizData.artPath=null;
-    const wrap=document.getElementById('artwork-preview-wrap');
-    if(wrap) wrap.innerHTML='<img src="'+esc(r.artwork_url)+'" alt="Cover artwork preview" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+    wzSetArtPreview(r.artwork_url);
   }
 
   toast('Started a new release using "'+(r.title||'this release')+'" as a template — add a title, upload new audio, and pick a release date to finish.','ok');
 }
+// ── WIZARD CHROME: header, action bar, layout measurements ──────────────────
+function wzLocalISO(d){const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function wzOnSubmitPage(){return !!document.getElementById('page-submit')?.classList.contains('active');}
+// The sticky header and action bar sit just under the top bar and just above the phone's bottom bar — measure those
+// instead of guessing, so they stay right when the top bar condenses or the phone's text size is changed.
+function wzMeasure(){
+  try{
+    if(!wzOnSubmitPage())return;
+    const root=document.documentElement;
+    const nav=document.querySelector('.dash-topnav');
+    root.style.setProperty('--wz-nav-h',(nav?Math.round(nav.getBoundingClientRect().height):0)+'px');
+    const mn=document.getElementById('mobile-nav');
+    root.style.setProperty('--wz-mnav',((mn&&getComputedStyle(mn).display!=='none')?Math.round(mn.getBoundingClientRect().height):0)+'px');
+    const head=document.getElementById('wz-head');if(head)root.style.setProperty('--wz-head-h',Math.round(head.getBoundingClientRect().height)+'px');
+    const bar=document.getElementById('wz-bar');if(bar)root.style.setProperty('--wz-bar-h',Math.round(bar.getBoundingClientRect().height)+'px');
+  }catch(e){}
+}
+function wzWatchLayout(){
+  if(_wzRO||typeof ResizeObserver==='undefined')return;
+  try{
+    _wzRO=new ResizeObserver(()=>wzMeasure());
+    ['wz-head','wz-bar','mobile-nav'].forEach(id=>{const el=document.getElementById(id);if(el)_wzRO.observe(el);});
+    const nav=document.querySelector('.dash-topnav');if(nav)_wzRO.observe(nav);
+  }catch(e){}
+}
+window.addEventListener('resize',wzMeasure);
+window.addEventListener('orientationchange',wzMeasure);
+function wzScrollTop(instant){
+  if(window.scrollY<=0)return;
+  const reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  window.scrollTo({top:0,behavior:(instant||reduce)?'auto':'smooth'});
+}
+function wzUpdateChrome(){
+  const step=wizStep;
+  const back=document.getElementById('wz-back');if(back)back.hidden=(step===1);
+  const next=document.getElementById('wz-next');if(next)next.hidden=(step===5);
+  const sub=document.getElementById('submit-btn');if(sub)sub.hidden=(step!==5);
+  const lbl=document.getElementById('wz-next-label');
+  if(lbl)lbl.textContent=(_wzFromReview&&step<5)?'Back to review':(WZ_NEXT[step-1]||'Next');
+  wzMeasure();
+}
+function wzShowStep(step,opts){
+  opts=opts||{};
+  wizStep=step;
+  document.querySelectorAll('.wizard-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('wpanel-'+step);
+  if(panel)panel.classList.add('active');
+  for(let i=1;i<=5;i++){
+    const s=document.getElementById('wstep-'+i);const l=document.getElementById('wsline-'+i);
+    if(s){
+      s.classList.toggle('active',i===step);s.classList.toggle('done',i<step);
+      if(i===step)s.setAttribute('aria-current','step');else s.removeAttribute('aria-current');
+      s.setAttribute('aria-label','Step '+i+': '+WZ_LABELS[i-1]+(i<step?' (completed)':''));
+    }
+    if(l)l.classList.toggle('done',i<step);
+  }
+  if(step===5){_wzFromReview=false;buildReview();}
+  wzUpdateChrome();
+  if(!opts.noScroll)wzScrollTop(opts.instant);
+  if(!opts.noFocus){const h=document.getElementById('wz-h-'+step);if(h){try{h.focus({preventScroll:true});}catch(e){}}}
+}
+function wzNext(){if(wizStep>=5)return;goWizard(_wzFromReview?5:wizStep+1);}
+function wzBack(){if(wizStep<=1)return;_wzFromReview=false;goWizard(wizStep-1);}
+function wzEdit(step){_wzFromReview=true;goWizard(step);}
+function wzSetSave(state){
+  const chip=document.getElementById('wz-save');if(!chip)return;
+  const ico=document.getElementById('wz-save-ico');const txt=document.getElementById('wz-save-text');
+  chip.setAttribute('data-state',state);
+  if(state==='saving'){if(ico)ico.className='ti ti-loader-2 wz-spin';if(txt)txt.textContent='Saving…';}
+  else if(state==='saved'){if(ico)ico.className='ti ti-cloud-check';if(txt)txt.textContent='Saved '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+  else if(state==='local'){if(ico)ico.className='ti ti-device-floppy';if(txt)txt.textContent='Saved on this device';}
+  else{if(ico)ico.className='ti ti-cloud';if(txt)txt.textContent='Autosave on';}
+}
+function wzStartAutosave(){
+  if(_wizardAutosaveTimer)clearInterval(_wizardAutosaveTimer);
+  _wizardAutosaveTimer=setInterval(()=>{if(user)saveDraftSilent();},20000);
+}
+function wzHasProgress(){
+  return !!(wizTracks.length||wizData.artFile||wizData.artUrl||(document.getElementById('r-title')?.value||'').trim());
+}
+// Called when the person leaves the wizard (another page, another tab, the phone's home button): save what's there,
+// so the draft picker offers it back next time instead of the work only living in the 20-second autosave.
+function wzOnLeave(){
+  try{
+    if(!wzOnSubmitPage())return;
+    if(_wzSubmitting||!user||isTeamViewerOnly())return;
+    if(document.getElementById('submit-wizard-body')?.style.display==='none')return;
+    if(wzHasProgress())saveDraftSilent();
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')wzOnLeave();});
+// Tapping "Add" / the Submit link while already inside the wizard with work in progress used to wipe the screen back
+// to a blank form (the work was still in the draft, but it looked lost). Now it just keeps the wizard as it is.
+function wzCanKeepState(){
+  return wzOnSubmitPage()&&!_wzSubmitting&&document.getElementById('submit-wizard-body')?.style.display!=='none'&&wzHasProgress();
+}
+// A saved split sheet (draft) goes back in, as long as it still has a primary row and at least one other contributor.
+function wzRestoreSplits(saved){
+  if(!Array.isArray(saved)||saved.length<2)return;
+  const rows=saved.filter(r=>r&&typeof r.id==='string'&&Number.isFinite(r.bp)).map(r=>({id:r.id,name:String(r.name==null?'':r.name),bp:Math.max(0,Math.min(10000,Math.round(r.bp))),locked:r.id==='primary'}));
+  if(rows.length<2||!rows.some(r=>r.id==='primary'))return;
+  rows.sort((a,b)=>(a.id==='primary'?-1:0)-(b.id==='primary'?-1:0));
+  splitRows=rows;
+  const pr=splitRows.find(r=>r.id==='primary');
+  const artist=getSelectedPrimaryArtist();if(pr&&artist)pr.name=artist;
+  renderSplitRows();splitRecalc();
+}
+
+// ── small form helpers ──────────────────────────────────────────────────
+function wzFeat(){return document.getElementById('r-has-feat')?.checked?(document.getElementById('r-feat')?.value||'').trim():'';}
+function wzRemixer(){return document.getElementById('r-has-remix')?.checked?(document.getElementById('r-remixer')?.value||'').trim():'';}
+function wzUseArtist(fieldId){
+  const el=document.getElementById(fieldId);if(!el)return;
+  const name=getSelectedPrimaryArtist();
+  if(!name){toast('Choose the primary artist first','err');return;}
+  el.value=name;
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  el.dispatchEvent(new Event('change',{bubbles:true}));
+}
+function wzSetArtPreview(src){
+  const wrap=document.getElementById('artwork-preview-wrap');if(!wrap)return;
+  wrap.classList.add('has-art');
+  wrap.innerHTML='<img src="'+esc(src)+'" alt="Cover artwork preview">';
+}
+function wzClearArtPreview(){
+  const wrap=document.getElementById('artwork-preview-wrap');if(!wrap)return;
+  wrap.classList.remove('has-art');
+  wrap.innerHTML='<div id="artwork-preview-inner" class="wz-art-empty"><i class="ti ti-photo-plus" aria-hidden="true"></i><div class="wz-art-t">Add cover art</div></div>';
+}
+// What the track card header shows: cloud state, and whether the credits that are required are in yet.
+function wzTrackStatusHtml(t){
+  const cloud=t.uploading?'<span class="loader" style="width:10px;height:10px;border-width:1.5px"></span>':(t.url?'<i class="ti ti-cloud-check" style="color:#34d399" title="Saved to cloud"></i>':'');
+  return cloud+(wzTrackReady(t)?'<span class="wz-pill wz-pill-ok"><i class="ti ti-check"></i> Ready</span>':'<span class="wz-pill wz-pill-warn">Credits needed</span>');
+}
+// Quick-pick Fridays: the first few Fridays on or after the earliest date allowed (10 days from today).
+function wzSyncDatePicks(){
+  const box=document.getElementById('wz-date-picks');if(!box)return;
+  const cur=document.getElementById('r-date')?.value||'';
+  const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+10);
+  while(d.getDay()!==5)d.setDate(d.getDate()+1);
+  let html='<span class="wz-picks-l">Popular Fridays</span>';
+  for(let i=0;i<4;i++){
+    const iso=wzLocalISO(d);
+    html+='<button type="button" class="wz-pick'+(iso===cur?' active':'')+'" aria-pressed="'+(iso===cur?'true':'false')+'" onclick="wzPickDate(\''+iso+'\')">'+d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+'</button>';
+    d.setDate(d.getDate()+7);
+  }
+  box.innerHTML=html;
+}
+function wzPickDate(iso){
+  const el=document.getElementById('r-date');if(!el)return;
+  el.value=iso;
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  el.dispatchEvent(new Event('change',{bubbles:true}));
+}
+function wzFlagTerms(){
+  const el=document.getElementById('wz-terms-card');if(!el)return;
+  el.classList.add('wz-terms-error');
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function wzFlagSplit(){
+  const el=document.getElementById('wz-split-card');if(!el)return;
+  el.classList.remove('wz-flash');void el.offsetWidth;el.classList.add('wz-flash');
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+// The primary row of the split sheet is the primary artist — keep its name in step with the artist chosen on step 2.
+function wzSyncSplitPrimary(){
+  const pr=splitRows.find(r=>r.id==='primary');if(!pr)return;
+  const name=getSelectedPrimaryArtist()||profile?.artist_name||pr.name||'Primary Artist';
+  if(pr.name!==name){pr.name=name;renderSplitRows();}
+}
+// Put the form back to a blank release. initWizard() used to reset the data but leave every typed value on screen,
+// so the next release started with the last one's title, credits, dates and answers still showing.
+function wzResetForm(){
+  ['r-title','r-copyright','r-copyright-year','r-pcopyright','r-prod-year','r-label','r-feat','r-remixer','r-notes','r-date','r-countries','r-orig-date','r-pitch-mood','r-pitch-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['r-genre','r-genre2'].forEach(id=>{const el=document.getElementById(id);if(el)el.selectedIndex=0;});
+  const lang=document.getElementById('r-language');if(lang)lang.value='English';
+  ['r-has-feat','r-has-remix','r-terms'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  const fw=document.getElementById('r-feat-wrap');if(fw)fw.style.display='none';
+  const rw=document.getElementById('r-remix-wrap');if(rw)rw.style.display='none';
+  const rad=document.querySelector('input[name="artist-type"][value="artist"]');if(rad)rad.checked=true;
+  setToggle('country-restrict','no');setToggle('prev-released','no');setToggle('explicit','no');setToggle('contentid','no');setAiUse('none');
+  wzClearArtPreview();
+  const ai=document.getElementById('art-input');if(ai)ai.value='';
+  const tp=document.getElementById('artwork-title-preview');if(tp)tp.textContent='—';
+  const atp=document.getElementById('art-track-preview');if(atp)atp.style.display='none';
+  const atl=document.getElementById('art-track-list');if(atl)atl.innerHTML='';
+  ['title-warn','title-duplicate-warn','tier-mismatch-warning'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.display='none';el.innerHTML='';}});
+  const fh=document.getElementById('friday-hint');if(fh)fh.style.display='none';
+  const audio=document.getElementById('wiz-audio-preview');if(audio){try{audio.pause();}catch(e){}audio.removeAttribute('src');}
+  _previewingTrackId=null;
+  renderTrackList();renderTracklistDetails();
+  for(let i=1;i<=5;i++)wizClearErrors(i);
+  const rc=document.getElementById('review-content');if(rc)rc.innerHTML='';
+  const tc=document.getElementById('wz-terms-card');if(tc)tc.classList.remove('wz-terms-error');
+  const sc=document.getElementById('wz-split-card');if(sc)sc.classList.remove('wz-flash');
+  const allBtn=document.querySelector('.store-filter-btn');if(allBtn)filterStores('all',allBtn);
+  _wzFromReview=false;
+  splitInit();
+  wzSetSave('idle');
+}
+
 async function initWizard(){
+  // Every call gets a number. initWizard() is sometimes started twice back to back (goPage() fires one, and the code
+  // that opens a draft or a duplicate awaits a second) — the older, slower one must not reset the form again after
+  // the newer one already finished, or it would wipe whatever was restored in between.
+  const gen=++_wzInitGen;
   const blockedEl=document.getElementById('submit-blocked-deletion');
   const paywallEl=document.getElementById('submit-blocked-paywall');
   const teamBlockEl=document.getElementById('submit-blocked-team');
@@ -9769,6 +10319,7 @@ async function initWizard(){
   if(user){
     try{
       const {data}=await sb.from('account_deletion_requests').select('id').eq('user_id',activeAccountId()).eq('status','pending').limit(1);
+      if(gen!==_wzInitGen)return;   // a newer initWizard() took over while this one was waiting
       if(data?.length){
         if(blockedEl)blockedEl.style.display='block';
         if(bodyEl)bodyEl.style.display='none';
@@ -9776,9 +10327,14 @@ async function initWizard(){
       }
     }catch(e){console.error('Deletion status check error (allowing submission):',e);}
   }
+  if(gen!==_wzInitGen)return;
   if(blockedEl)blockedEl.style.display='none';
   if(bodyEl)bodyEl.style.display='block';
+  try{if(wizData&&wizData.artObjUrl)URL.revokeObjectURL(wizData.artObjUrl);}catch(e){}
   wizStep=1;wizTracks=[];wizStores=ALL_STORES.map(s=>s.name);wizData={};wizToggleState={};currentDraftId=null;
+  // Start from a genuinely blank form. The data above was always reset, but the typed values used to stay on screen,
+  // so the next release opened with the last one's title, credits and dates still showing.
+  wzResetForm();
   // Default to the real current year, computed live — not a hardcoded
   // number that quietly goes stale every time the calendar turns over.
   const thisYear=new Date().getFullYear();
@@ -9786,18 +10342,19 @@ async function initWizard(){
   if(copyYearEl){copyYearEl.placeholder=String(thisYear);copyYearEl.value=thisYear;}
   const prodYearEl=document.getElementById('r-prod-year');
   if(prodYearEl){prodYearEl.placeholder=String(thisYear);prodYearEl.value=thisYear;}
-  const dupWarn=document.getElementById('title-duplicate-warn');if(dupWarn)dupWarn.style.display='none';
-  renderStoresGrid();goWizard(1);
+  renderStoresGrid();goWizard(1,{instant:true});
   // Check for saved drafts
   if(user) loadAllDrafts().then(drafts=>{
     const valid=drafts.filter(d=>d.title||d.tracks?.length);
     if(valid.length) updateDraftBanner(valid);
   });
   setupPrimaryArtistField();
+  wzSyncSplitPrimary();
   selectedDistroTier='standard';priorityPaymentRef=null;
   setMinReleaseDate();
-  if(_wizardAutosaveTimer)clearInterval(_wizardAutosaveTimer);
-  _wizardAutosaveTimer=setInterval(()=>{if(user)saveDraftSilent();},20000);
+  wzStartAutosave();
+  wzWatchLayout();
+  wzMeasure();
 }
 let selectedDistroTier='standard';
 let priorityPaymentRef=null;
@@ -9805,7 +10362,8 @@ function setMinReleaseDate(){
   const dateInput=document.getElementById('r-date');
   if(dateInput){
     const minDate=new Date();minDate.setHours(0,0,0,0);minDate.setDate(minDate.getDate()+10);
-    const minStr=minDate.toISOString().split('T')[0];
+    // Local calendar date — toISOString() converts to UTC first, which put the minimum a day early for anyone ahead of UTC.
+    const minStr=wzLocalISO(minDate);
     dateInput.min=minStr;
     if(dateInput.value&&dateInput.value<minStr){
       dateInput.value='';
@@ -9813,6 +10371,7 @@ function setMinReleaseDate(){
     }
   }
   checkDistroTierMismatch();
+  wzSyncDatePicks();
 }
 function checkFridayHint(){
   const dateEl=document.getElementById('r-date');
@@ -9898,50 +10457,89 @@ function wizClearErrors(step){
 }
 
 function ensureFieldVisible(fieldId){
-  const trackCard=document.querySelector(`.track-meta-body:has(#${CSS.escape(fieldId)})`);
+  const f=document.getElementById(fieldId);
+  const trackCard=f?f.closest('.track-meta-body'):null;
   if(trackCard&&!trackCard.classList.contains('open')){
     const id=trackCard.dataset.id;
     if(id) toggleTrackMeta(id);
   }
 }
-function wizShowErrors(step, errors){
+// The element that should light up red for a field: the hidden cover-art file input points at the picture box
+// (data-err-target), and accounts with an artist roster have a dropdown in place of the artist text box.
+function wzErrTarget(fieldId){
+  const el=document.getElementById(fieldId);
+  if(!el)return null;
+  if(el.dataset&&el.dataset.errTarget){const t=document.getElementById(el.dataset.errTarget);if(t)return t;}
+  if(fieldId==='r-artist'&&getRosterMax()>0){const s=document.getElementById('r-artist-select');if(s)return s;}
+  return el;
+}
+function wzGoToField(fieldId){
+  ensureFieldVisible(fieldId);
+  setTimeout(()=>{
+    const el=wzErrTarget(fieldId);if(!el)return;
+    try{el.focus({preventScroll:true});}catch(e){}
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+  },50);
+}
+// One item leaves the banner as soon as its field is being fixed; the banner goes when the last one does.
+function wzDropErrorItem(step,fieldId){
+  const banner=document.getElementById('val-banner-'+step);
+  const list=document.getElementById('val-list-'+step);
+  if(!list)return;
+  list.querySelectorAll('li').forEach(li=>{if(li.getAttribute('data-field')===fieldId)li.remove();});
+  if(banner&&!list.children.length)banner.classList.remove('show');
+}
+// Re-check a step whose banner is on screen (without scrolling anywhere), so it goes away by itself once the problem
+// is solved — e.g. the "upload at least one track" notice after a track is added.
+function wzRefreshErrors(step){
+  const banner=document.getElementById('val-banner-'+step);
+  if(!banner||!banner.classList.contains('show'))return;
+  const errs=validateStep(step);
+  if(errs.length)wizShowErrors(step,errs,{noScroll:true});
+}
+function wizShowErrors(step, errors, opts){
+  opts=opts||{};
   const banner=document.getElementById('val-banner-'+step);
   const list=document.getElementById('val-list-'+step);
   if(!banner||!list) return;
 
-  list.innerHTML = errors.map(e=>
-    `<li onclick="ensureFieldVisible('${e.fieldId}');setTimeout(()=>{document.getElementById('${e.fieldId}')?.focus();document.getElementById('${e.fieldId}')?.scrollIntoView({behavior:'smooth',block:'center'})},50)">${esc(e.label)}</li>`
-  ).join('');
+  list.innerHTML = errors.map(e=>{
+    const call='wzGoToField('+jsArg(e.fieldId)+')';
+    return '<li role="button" tabindex="0" data-field="'+esc(e.fieldId)+'" onclick="'+call+'" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();'+call+'}">'+esc(e.label)+'</li>';
+  }).join('');
   banner.classList.add('show');
-  banner.scrollIntoView({behavior:'smooth', block:'start'});
+  if(!opts.noScroll)banner.scrollIntoView({behavior:'smooth', block:'start'});
 
   // Highlight individual fields
   errors.forEach(e=>{
     ensureFieldVisible(e.fieldId);
     const el=document.getElementById(e.fieldId);
     if(!el) return;
-    el.classList.add('wiz-error');
+    // The thing that turns red can differ from the field itself: the hidden cover-art file input points at the
+    // picture box, and accounts with an artist roster have a dropdown standing in for the artist text box.
+    const tgt=wzErrTarget(e.fieldId)||el;
+    tgt.classList.add('wiz-error');
+    const anchor=(e.fieldId==='r-artist'&&tgt!==el)?tgt:el;
     // Add inline error message below the field
-    const existing=el.parentElement.querySelector('.wiz-error-msg');
+    const existing=anchor.parentElement.querySelector('.wiz-error-msg');
     if(!existing){
       const msg=document.createElement('div');
       msg.className='wiz-error-msg';
       msg.innerHTML='<i class="ti ti-alert-circle"></i>'+esc(e.label);
-      el.parentElement.insertBefore(msg, el.nextSibling);
+      anchor.parentElement.insertBefore(msg, anchor.nextSibling);
     }
     // Auto-clear highlight when user fixes it
-    el.addEventListener('input',function fix(){
-      el.classList.remove('wiz-error');
-      const m=el.parentElement.querySelector('.wiz-error-msg');
-      if(m) m.remove();
-      el.removeEventListener('input',fix);
-    },{once:true});
-    el.addEventListener('change',function fix(){
-      el.classList.remove('wiz-error');
-      const m=el.parentElement.querySelector('.wiz-error-msg');
-      if(m) m.remove();
-      el.removeEventListener('change',fix);
-    },{once:true});
+    (tgt===el?[el]:[el,tgt]).forEach(t=>{
+      ['input','change'].forEach(ev=>{
+        t.addEventListener(ev,function fix(){
+          tgt.classList.remove('wiz-error');
+          const m=anchor.parentElement.querySelector('.wiz-error-msg');
+          if(m) m.remove();
+          wzDropErrorItem(step,e.fieldId);
+          t.removeEventListener(ev,fix);
+        },{once:true});
+      });
+    });
   });
 }
 
@@ -9952,6 +10550,12 @@ function validateStep(step){
   if(step===1){
     if(!wizTracks.length)
       errors.push({fieldId:'audio-drop-zone', label:'Upload at least one audio track'});
+    // A track brought back from a draft whose audio never reached the cloud has no file left to send. Say so now,
+    // instead of letting the artist fill in four more steps and then fail on the very last click.
+    wizTracks.forEach((t,i)=>{
+      if(!t.uploading&&!t.file&&!t.storagePath)
+        errors.push({fieldId:'audio-drop-zone', label:'"'+(t.name||('Track '+(i+1)))+'" has no audio file — remove it and add the file again'});
+    });
   }
 
   if(step===2){
@@ -10014,65 +10618,89 @@ function validateStep(step){
   return errors;
 }
 
-function goWizard(step){
-  // Validate current step before moving forward
-  if(step > wizStep){
-    const errors = validateStep(wizStep);
-    if(errors.length){
-      wizShowErrors(wizStep, errors);
-      return;
+function goWizard(step,opts){
+  opts=opts||{};
+  step=parseInt(step,10);if(!(step>=1&&step<=5))step=1;
+  // Moving forward: every step being passed has to be complete, checked in order. (The old version only checked the
+  // step you were standing on, so clicking "Review" in the step bar could jump straight past missing details.)
+  if(step>wizStep&&!opts.skipValidate){
+    for(let s=wizStep;s<step;s++){
+      const errors=validateStep(s);
+      if(errors.length){
+        if(s!==wizStep)wzShowStep(s,{noFocus:true,noScroll:true});
+        wizShowErrors(s,errors);
+        return;
+      }
+      wizClearErrors(s);
     }
-    wizClearErrors(wizStep);
   }
-
-  wizStep=step;
-  document.querySelectorAll('.wizard-panel').forEach(p=>p.classList.remove('active'));
-  const panel=document.getElementById('wpanel-'+step);
-  if(panel){panel.classList.add('active');panel.scrollIntoView({behavior:'smooth',block:'start'});}
-  for(let i=1;i<=5;i++){
-    const s=document.getElementById('wstep-'+i);const l=document.getElementById('wsline-'+i);
-    if(s){s.classList.toggle('active',i===step);s.classList.toggle('done',i<step);}
-    if(l) l.classList.toggle('done',i<step);
-  }
-  if(step===5) buildReview();
+  wzShowStep(step,opts);
   if(step>1&&user) saveDraftSilent();
 }
-async function saveDraftSilent(){
+// The copy on THIS device is written immediately, every time — it never waits for the network or for an earlier save.
+// The cloud copy is written strictly one save at a time. Before, several could be in flight at once — e.g. three tracks
+// finishing their upload together each saw "no draft yet" and each created its own draft row. Requests that pile up
+// behind a running one are folded into a single follow-up save (which reads the newest state when it runs).
+function _wzEnqueueDraft(job){
+  const run=_wzDraftChain.then(job,job);
+  _wzDraftChain=run.catch(()=>{});
+  return run;
+}
+function wzSaveLocal(){
+  let state;
+  try{state=collectWizardState();}catch(e){return null;}
+  if(!state.title&&!state.tracks?.length)return null;
+  // Local drafts are stored as an array (one entry per draft) under a single key per user, keyed internally by
+  // draft id — saveLocalDraft() is defined further down.
+  saveLocalDraft(currentDraftId,state);
+  return state;
+}
+function saveDraftSilent(){
+  if(_wzSubmitting)return Promise.resolve();
+  if(!wzSaveLocal())return Promise.resolve();
+  if(_wzSilentQueued)return _wzDraftChain;
+  _wzSilentQueued=true;
+  return _wzEnqueueDraft(async()=>{_wzSilentQueued=false;if(_wzSubmitting)return;await wzCloudSave();});
+}
+async function wzCloudSave(){
+  let state;
+  try{state=collectWizardState();}catch(e){return {ok:false};}
+  if(!state.title&&!state.tracks?.length)return {ok:false,empty:true};
+  wzSetSave('saving');
+  let cloud=true,threw=false;
   try{
-    const state=collectWizardState();
-    if(!state.title&&!state.tracks?.length)return;
-    // Local drafts are stored as an array (one entry per draft) under a
-    // single key per user, keyed internally by draft id — this local
-    // helper is defined further down (saveLocalDraft).
     saveLocalDraft(currentDraftId,state);
-    // Also back up to the cloud, not just this browser's local storage —
-    // previously only the explicit "Save Draft" button did this, so anyone
-    // who never clicked it (relying on autosave alone, which most people
-    // reasonably do) had no real backup once they switched devices, used a
-    // different browser, or cleared local site data. Their actual uploaded
-    // tracks were always safe in storage — only the record of where to
-    // find them was at risk. Fire-and-forget: never let a backup hiccup
-    // interrupt someone actively drafting.
+    // Also back up to the cloud, not just this browser's local storage, so a draft survives switching device or
+    // clearing site data. Never let a backup hiccup interrupt someone actively drafting.
     if(!currentDraftId){
-      // First save of a brand new draft — INSERT and capture the real id,
-      // so every save after this one updates the same row instead of
-      // creating a new draft every 20 seconds.
+      // First save of a brand new draft — INSERT and capture the real id, so every save after this one updates the
+      // same row instead of creating a new draft every time.
       const {data,error}=await sb.from('release_drafts').insert({user_id:activeAccountId(),title:state.title||null,state}).select('id').single();
       if(error){
+        cloud=false;
         console.error('Draft cloud insert error (local save still succeeded, will retry next autosave):',error);
       } else if(data?.id){
-        currentDraftId=data.id;
-        // The local copy was saved above under a temporary null-keyed
-        // slot — move it to the real id now that we have one.
+        // Don't take over the "current draft" if one was resumed while this insert was in flight.
+        if(!currentDraftId)currentDraftId=data.id;
+        // The local copy was saved above under a temporary null-keyed slot — move it to the real id, using the
+        // newest state (more may have been typed while the insert was in flight).
+        let latest=state;try{latest=collectWizardState();}catch(e){}
         saveLocalDraft(null,null);
-        saveLocalDraft(currentDraftId,state);
+        saveLocalDraft(data.id,latest);
       }
     } else {
-      Promise.resolve(sb.from('release_drafts').update({title:state.title||null,state,updated_at:new Date().toISOString()}).eq('id',currentDraftId)).then(({error})=>{
-        if(error)console.error('Draft cloud backup error (local save still succeeded):',error);
-      }).catch(e=>console.error('Draft cloud backup error (local save still succeeded):',e));
+      const {error}=await sb.from('release_drafts').update({title:state.title||null,state,updated_at:new Date().toISOString()}).eq('id',currentDraftId);
+      if(error){
+        cloud=false;
+        console.error('Draft cloud backup error (local save still succeeded):',error);
+      }
     }
-  }catch(e){}
+  }catch(e){
+    cloud=false;threw=true;
+    console.error('Draft save error (local save may still have succeeded):',e);
+  }
+  wzSetSave(cloud?'saved':'local');
+  return {ok:true,cloud,threw};
 }
 // ── Local (per-browser) draft storage — an array of {id, state} entries
 // under one key per user, rather than one key per draft, since localStorage
@@ -10204,22 +10832,25 @@ function removeTrack(id){
 let _previewingTrackId=null;
 function renderTrackList(){
   const el=document.getElementById('track-list');if(!el)return;
+  const dz=document.getElementById('audio-drop-zone');if(dz)dz.classList.toggle('has-tracks',wizTracks.length>0);
   el.innerHTML=wizTracks.map((t,i)=>{
     const statusIcon=t.uploading
-      ?'<span class="loader" style="margin-right:4px"></span>'
-      :t.url?'<i class="ti ti-cloud-check" style="color:#34d399;font-size:14px;margin-right:4px" title="Saved to cloud"></i>'
-      :'<i class="ti ti-file-music" style="color:rgba(255,255,255,.3);font-size:14px;margin-right:4px"></i>';
+      ?'<span class="loader" title="Uploading…"></span>'
+      :t.url?'<i class="ti ti-cloud-check" style="color:#34d399" title="Saved to cloud"></i>'
+      :'<i class="ti ti-file-music" style="color:rgba(255,255,255,.3)" title="Not saved to the cloud yet"></i>';
     const isPlaying=_previewingTrackId===t.id;
-    const playBtn='<button class="track-play-btn" onclick="event.stopPropagation();previewTrack(\''+t.id+'\')" title="'+(isPlaying?'Pause preview':'Preview this track')+'" style="background:'+(isPlaying?'var(--gold)':'rgba(255,255,255,.08)')+';border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:'+(isPlaying?'var(--black)':'rgba(255,255,255,.6)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-'+(isPlaying?'player-pause-filled':'player-play-filled')+'" style="font-size:12px"></i></button>';
+    const a=jsArg(t.id);
+    const playTitle=isPlaying?'Pause preview':'Preview this track';
+    const playBtn='<button type="button" class="track-play-btn'+(isPlaying?' playing':'')+'" onclick="event.stopPropagation();previewTrack('+a+')" aria-label="'+playTitle+'" title="'+playTitle+'"><i class="ti ti-'+(isPlaying?'player-pause-filled':'player-play-filled')+'"></i></button>';
     const dur=t.duration?Math.floor(t.duration/60)+':'+String(t.duration%60).padStart(2,'0'):'';
     const isFirst=i===0,isLast=i===wizTracks.length-1;
-    const reorderBtns='<div style="display:flex;flex-direction:column;flex-shrink:0">'
-      +'<button onclick="event.stopPropagation();moveTrackUp(\''+t.id+'\')" '+(isFirst?'disabled':'')+' title="Move up" style="background:none;border:none;cursor:'+(isFirst?'default':'pointer')+';color:'+(isFirst?'rgba(255,255,255,.15)':'rgba(255,255,255,.45)')+';padding:0;line-height:.7"><i class="ti ti-chevron-up" style="font-size:14px"></i></button>'
-      +'<button onclick="event.stopPropagation();moveTrackDown(\''+t.id+'\')" '+(isLast?'disabled':'')+' title="Move down" style="background:none;border:none;cursor:'+(isLast?'default':'pointer')+';color:'+(isLast?'rgba(255,255,255,.15)':'rgba(255,255,255,.45)')+';padding:0;line-height:.7"><i class="ti ti-chevron-down" style="font-size:14px"></i></button>'
+    const reorder='<div class="wz-reorder">'
+      +'<button type="button" onclick="event.stopPropagation();moveTrackUp('+a+')" '+(isFirst?'disabled ':'')+'aria-label="Move up" title="Move up"><i class="ti ti-chevron-up"></i></button>'
+      +'<button type="button" onclick="event.stopPropagation();moveTrackDown('+a+')" '+(isLast?'disabled ':'')+'aria-label="Move down" title="Move down"><i class="ti ti-chevron-down"></i></button>'
     +'</div>';
-    const durEl=dur?'<div class="track-size" style="min-width:34px;text-align:right">'+dur+'</div>':'';
-    return '<div class="track-item">'+reorderBtns+playBtn+'<div class="track-num">'+(i+1)+'</div>'+statusIcon+'<div class="track-name">'+esc(t.name)+'</div>'+durEl+'<div class="track-size">'+(t.size/1024/1024).toFixed(1)+'MB</div><button class="track-remove" onclick="removeTrack(\''+t.id+'\')">×</button></div>';
+    return '<div class="track-item" id="trk-'+esc(t.id)+'">'+reorder+playBtn+'<div class="track-num">'+(i+1)+'</div><div class="track-name" title="'+esc(t.name)+'">'+esc(t.name)+'</div><div class="wz-tstat">'+statusIcon+'</div>'+(dur?'<div class="track-size track-dur">'+dur+'</div>':'')+'<div class="track-size track-mb">'+((t.size||0)/1024/1024).toFixed(1)+'MB</div><button type="button" class="track-remove" onclick="removeTrack('+a+')" aria-label="Remove track" title="Remove track">×</button></div>';
   }).join('');
+  wzRefreshErrors(1);
 }
 function moveTrackUp(id){
   const idx=wizTracks.findIndex(t=>t.id===id);
@@ -10260,156 +10891,99 @@ function onWizAudioEnded(){
   _previewingTrackId=null;
   renderTrackList();
 }
+// How many of the tracks already have their required credits (a producer, plus a songwriter unless instrumental).
+function wzTrackReady(t){
+  const m=t.meta||{};
+  return !!String(m.producer||'').trim()&&(!!m.instrumental||!!String(m.songwriter||'').trim());
+}
+function wzUpdateTrackCount(){
+  const el=document.getElementById('wz-track-count');if(!el)return;
+  const n=wizTracks.length;
+  if(!n){el.textContent='';return;}
+  if(n===1){el.textContent='1 track';return;}
+  el.textContent=wizTracks.filter(wzTrackReady).length+' of '+n+' tracks ready';
+}
+function wzTfield(tid,key,label,val,ph,opts){
+  opts=opts||{};
+  const fid='tmc-'+key+'-'+tid;
+  return '<div class="track-fg"><label for="'+esc(fid)+'">'+label+'</label><input type="text" id="'+esc(fid)+'" value="'+esc(val||'')+'" placeholder="'+esc(ph||'')+'"'+(opts.mono?' style="font-family:monospace"':'')+(opts.disabled?' disabled':'')+' onchange="updateTrackMeta('+jsArg(tid)+','+jsArg(key)+',this.value)"></div>';
+}
 function renderTracklistDetails(){
   const el=document.getElementById('tracklist-details');if(!el)return;
-  if(!wizTracks.length){el.innerHTML='<p style="font-size:13px;color:rgba(255,255,255,.3)">No tracks uploaded yet.</p>';return;}
+  wzUpdateTrackCount();
+  // The little track list under the cover art follows every add / remove / re-order (it used to go stale after a removal).
+  updateArtPreviewTitle();
+  if(!wizTracks.length){el.innerHTML='<p class="wz-hint wz-empty">No tracks uploaded yet.</p>';return;}
   // Preserve open state
   const openIds=new Set([...el.querySelectorAll('.track-meta-body.open')].map(b=>b.dataset.id));
+  const LANGS=['English','Twi','Ga','Hausa','Yoruba','Pidgin','French','Other'];
   el.innerHTML=wizTracks.map((t,i)=>{
     const isOpen=openIds.has(t.id)||wizTracks.length===1;
     const m=t.meta||{};
-    const hasExtra=!!(m.producer||m.songwriter||m.composer||m.mixing||m.mastering||m.isrc||m.explicit);
-    const cloudIcon=t.uploading?'<span class="loader" style="width:10px;height:10px;border-width:1.5px"></span>':t.url?'<i class="ti ti-cloud-check" style="color:#34d399"></i>':'';
-    return `<div class="track-meta-card" id="tmc-${t.id}">
-      <div class="track-meta-header" onclick="toggleTrackMeta('${t.id}')">
-        <div class="track-meta-num">${i+1}</div>
-        <input class="track-meta-name-input" type="text" value="${esc(t.name)}" placeholder="Track title"
-          onchange="updateTrackField('${t.id}','name',this.value)"
-          onclick="event.stopPropagation()">
-        <span class="track-meta-status">${cloudIcon}${hasExtra?'<i class="ti ti-check" style="color:var(--gold)"></i>':''}</span>
-        <i class="ti ti-chevron-down track-meta-chevron" style="transform:${isOpen?'rotate(180deg)':'rotate(0deg)'}"></i>
-      </div>
-      <div class="track-meta-body${isOpen?' open':''}" data-id="${t.id}">
-
-        <div class="track-meta-section">Basic Info</div>
-        <div class="track-meta-grid">
-          <div class="track-fg">
-            <label>ISRC Code</label>
-            <input type="text" value="${esc(m.isrc||t.isrc||'')}" placeholder="Auto-assigned if blank" style="font-family:monospace"
-              onchange="updateTrackMeta('${t.id}','isrc',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>Track Language</label>
-            <select onchange="updateTrackMeta('${t.id}','language',this.value)">
-              <option value="">Same as release</option>
-              <option${(m.language==='English')?' selected':''}>English</option>
-              <option${(m.language==='Twi')?' selected':''}>Twi</option>
-              <option${(m.language==='Ga')?' selected':''}>Ga</option>
-              <option${(m.language==='Hausa')?' selected':''}>Hausa</option>
-              <option${(m.language==='Yoruba')?' selected':''}>Yoruba</option>
-              <option${(m.language==='Pidgin')?' selected':''}>Pidgin</option>
-              <option${(m.language==='French')?' selected':''}>French</option>
-              <option${(m.language==='Other')?' selected':''}>Other</option>
-            </select>
-          </div>
-        </div>
-        <div class="track-meta-grid tmg-1" style="margin-top:6px">
-          <div class="track-fg">
-            <label>Featured Artist(s)</label>
-            <input type="text" value="${esc(m.feat||'')}" placeholder="Separate with commas"
-              onchange="updateTrackMeta('${t.id}','feat',this.value)">
-          </div>
-        </div>
-
-        <div class="track-meta-section">Credits</div>
-        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(255,255,255,.6);cursor:pointer;margin-bottom:.75rem">
-          <input type="checkbox" ${m.instrumental?'checked':''} style="accent-color:var(--gold)"
-            onchange="updateTrackMeta('${t.id}','instrumental',this.checked)">
-          This track is instrumental (no lyrics — Songwriter not required)
-        </label>
-        <div style="margin-bottom:6px">
-          <button class="track-inherit-btn" onclick="inheritReleaseCredits('${t.id}')">
-            <i class="ti ti-copy"></i> Copy from another track
-          </button>
-        </div>
-        <div class="track-meta-grid">
-          <div class="track-fg">
-            <label>Producer(s) *</label>
-            <input type="text" value="${esc(m.producer||'')}" placeholder="Beat maker" id="tmc-producer-${t.id}"
-              onchange="updateTrackMeta('${t.id}','producer',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>Songwriter(s) ${m.instrumental?'':'*'}</label>
-            <input type="text" value="${esc(m.songwriter||'')}" placeholder="${m.instrumental?'Not required — instrumental':'Lyric writer(s)'}" id="tmc-songwriter-${t.id}" ${m.instrumental?'disabled':''}
-              onchange="updateTrackMeta('${t.id}','songwriter',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>Composer(s)</label>
-            <input type="text" value="${esc(m.composer||'')}" placeholder="Melody / score"
-              onchange="updateTrackMeta('${t.id}','composer',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>Mixing Engineer</label>
-            <input type="text" value="${esc(m.mixing||'')}" placeholder="Mixed by"
-              onchange="updateTrackMeta('${t.id}','mixing',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>Mastering Engineer</label>
-            <input type="text" value="${esc(m.mastering||'')}" placeholder="Mastered by"
-              onchange="updateTrackMeta('${t.id}','mastering',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>Recording Engineer</label>
-            <input type="text" value="${esc(m.recording||'')}" placeholder="Recorded by"
-              onchange="updateTrackMeta('${t.id}','recording',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>Executive Producer</label>
-            <input type="text" value="${esc(m.exec||'')}" placeholder="EP name(s)"
-              onchange="updateTrackMeta('${t.id}','exec',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>Publisher</label>
-            <input type="text" value="${esc(m.publisher||'')}" placeholder="Publishing company"
-              onchange="updateTrackMeta('${t.id}','publisher',this.value)">
-          </div>
-        </div>
-
-        <div class="track-meta-section">Additional</div>
-        <div class="track-meta-grid">
-          <div class="track-fg">
-            <label>Explicit Content</label>
-            <select onchange="updateTrackMeta('${t.id}','explicit',this.value)">
-              <option value="no"${(m.explicit!=='yes')?' selected':''}>Clean</option>
-              <option value="yes"${(m.explicit==='yes')?' selected':''}>Explicit</option>
-            </select>
-          </div>
-          <div class="track-fg">
-            <label>Contains Sample</label>
-            <input type="text" value="${esc(m.sample||'')}" placeholder="Declare any samples"
-              onchange="updateTrackMeta('${t.id}','sample',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>ISWC Code</label>
-            <input type="text" value="${esc(m.iswc||'')}" placeholder="T-000.000.000-0" style="font-family:monospace"
-              onchange="updateTrackMeta('${t.id}','iswc',this.value)">
-          </div>
-          <div class="track-fg">
-            <label>© Copyright Holder</label>
-            <input type="text" value="${esc(m.copyright||'')}" placeholder="Defaults to release"
-              onchange="updateTrackMeta('${t.id}','copyright',this.value)">
-          </div>
-        </div>
-
-        <button class="track-remove-btn" onclick="removeTrack('${t.id}')">
-          <i class="ti ti-trash"></i> Remove track
-        </button>
-      </div>
-    </div>`;
+    const a=jsArg(t.id);const eid=esc(t.id);
+    const songwriterLabel='Songwriter(s) '+(m.instrumental?'':'*');
+    const songwriterId='tmc-songwriter-'+t.id;
+    return '<div class="track-meta-card" id="tmc-'+eid+'">'
+      +'<div class="track-meta-header" onclick="toggleTrackMeta('+a+')">'
+        +'<div class="track-meta-num">'+(i+1)+'</div>'
+        +'<input class="track-meta-name-input" id="tmc-name-'+eid+'" type="text" value="'+esc(t.name)+'" placeholder="Track title" aria-label="Title of track '+(i+1)+'" onchange="updateTrackField('+a+',\'name\',this.value)" onclick="event.stopPropagation()">'
+        +'<span class="track-meta-status">'+wzTrackStatusHtml(t)+'</span>'
+        +'<button type="button" class="wz-chev" aria-label="Show or hide the details for track '+(i+1)+'" aria-expanded="'+(isOpen?'true':'false')+'" onclick="event.stopPropagation();toggleTrackMeta('+a+')"><i class="ti ti-chevron-down track-meta-chevron" aria-hidden="true" style="transform:'+(isOpen?'rotate(180deg)':'rotate(0deg)')+'"></i></button>'
+      +'</div>'
+      +'<div class="track-meta-body'+(isOpen?' open':'')+'" data-id="'+eid+'">'
+        +'<div class="track-meta-section">Basic Info</div>'
+        +'<div class="track-meta-grid">'
+          +wzTfield(t.id,'isrc','ISRC Code',m.isrc||t.isrc||'','Auto-assigned if blank',{mono:true})
+          +'<div class="track-fg"><label for="tmc-language-'+eid+'">Track Language</label><select id="tmc-language-'+eid+'" onchange="updateTrackMeta('+a+',\'language\',this.value)"><option value="">Same as release</option>'+LANGS.map(l=>'<option'+(m.language===l?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'
+        +'</div>'
+        +'<div class="track-meta-grid tmg-1" style="margin-top:6px">'
+          +wzTfield(t.id,'feat','Featured Artist(s)',m.feat||'','Separate with commas')
+        +'</div>'
+        +'<div class="track-meta-section">Credits</div>'
+        +'<label class="wz-check wz-check-tight" for="tmc-instr-'+eid+'"><input type="checkbox" id="tmc-instr-'+eid+'"'+(m.instrumental?' checked':'')+' onchange="updateTrackMeta('+a+',\'instrumental\',this.checked)"><span>This track is instrumental (no lyrics — Songwriter not required)</span></label>'
+        +(wizTracks.length>1?'<div style="margin-bottom:6px"><button type="button" class="track-inherit-btn" onclick="inheritReleaseCredits('+a+')"><i class="ti ti-copy"></i> Copy from another track</button></div>':'')
+        +'<div class="track-meta-grid">'
+          +wzTfield(t.id,'producer','Producer(s) *',m.producer||'','Beat maker')
+          +'<div class="track-fg"><div class="wz-lrow"><label for="'+esc(songwriterId)+'">'+songwriterLabel+'</label>'+(m.instrumental?'':'<button type="button" class="wz-mini" onclick="wzUseArtist('+jsArg(songwriterId)+')">Use artist name</button>')+'</div>'
+            +'<input type="text" id="'+esc(songwriterId)+'" value="'+esc(m.songwriter||'')+'" placeholder="'+(m.instrumental?'Not required — instrumental':'Lyric writer(s)')+'"'+(m.instrumental?' disabled':'')+' onchange="updateTrackMeta('+a+',\'songwriter\',this.value)"></div>'
+          +wzTfield(t.id,'composer','Composer(s)',m.composer||'','Melody / score')
+          +wzTfield(t.id,'mixing','Mixing Engineer',m.mixing||'','Mixed by')
+          +wzTfield(t.id,'mastering','Mastering Engineer',m.mastering||'','Mastered by')
+          +wzTfield(t.id,'recording','Recording Engineer',m.recording||'','Recorded by')
+          +wzTfield(t.id,'exec','Executive Producer',m.exec||'','EP name(s)')
+          +wzTfield(t.id,'publisher','Publisher',m.publisher||'','Publishing company')
+        +'</div>'
+        +'<div class="track-meta-section">Additional</div>'
+        +'<div class="track-meta-grid">'
+          +'<div class="track-fg"><label for="tmc-explicit-'+eid+'">Explicit Content</label><select id="tmc-explicit-'+eid+'" onchange="updateTrackMeta('+a+',\'explicit\',this.value)"><option value="no"'+(m.explicit!=='yes'?' selected':'')+'>Clean</option><option value="yes"'+(m.explicit==='yes'?' selected':'')+'>Explicit</option></select></div>'
+          +wzTfield(t.id,'sample','Contains Sample',m.sample||'','Declare any samples')
+          +wzTfield(t.id,'iswc','ISWC Code',m.iswc||'','T-000.000.000-0',{mono:true})
+          +wzTfield(t.id,'copyright','© Copyright Holder',m.copyright||'','Defaults to release')
+        +'</div>'
+        +'<button type="button" class="track-remove-btn" onclick="removeTrack('+a+')"><i class="ti ti-trash"></i> Remove track</button>'
+      +'</div>'
+    +'</div>';
   }).join('');
 }
 // ── TRACK METADATA HELPERS ───────────────────────────
 function toggleTrackMeta(id){
-  const body=document.querySelector(`.track-meta-body[data-id="${id}"]`);
-  const chevron=document.querySelector(`#tmc-${id} .track-meta-chevron`);
+  const card=document.getElementById('tmc-'+id);if(!card)return;
+  const body=card.querySelector('.track-meta-body');
   if(!body)return;
   const open=body.classList.toggle('open');
+  const chevron=card.querySelector('.track-meta-chevron');
   if(chevron) chevron.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+  const btn=card.querySelector('.wz-chev');
+  if(btn) btn.setAttribute('aria-expanded',open?'true':'false');
 }
 
 function updateTrackField(id,field,val){
   const t=wizTracks.find(t=>t.id===id);
   if(t) t[field]=val;
+  if(field==='name'){
+    // The new name shows in the upload list (step 1) and the cover-art track list straight away.
+    renderTrackList();updateArtPreviewTitle();
+  }
   saveDraftSilent();
 }
 
@@ -10418,14 +10992,11 @@ function updateTrackMeta(id,field,val){
   if(!t)return;
   if(!t.meta) t.meta={};
   t.meta[field]=val;
-  // Update status indicator
-  const m=t.meta;
-  const hasExtra=!!(m.producer||m.songwriter||m.composer||m.mixing||m.mastering||m.isrc||m.explicit==='yes');
-  const statusEl=document.querySelector(`#tmc-${id} .track-meta-status`);
-  if(statusEl){
-    const cloudPart=t.url?'<i class="ti ti-cloud-check" style="color:#34d399"></i>':'';
-    statusEl.innerHTML=cloudPart+(hasExtra?'<i class="ti ti-check" style="color:var(--gold)"></i>':'');
-  }
+  // Update the card's status (cloud + "credits needed / ready") and the "n of m tracks ready" count
+  const card=document.getElementById('tmc-'+id);
+  const statusEl=card?card.querySelector('.track-meta-status'):null;
+  if(statusEl) statusEl.innerHTML=wzTrackStatusHtml(t);
+  wzUpdateTrackCount();
   saveDraftSilent();
   if(field==='instrumental') renderTracklistDetails();
 }
@@ -10483,14 +11054,27 @@ async function previewArtwork(input){
     input.value='';
     return;
   }
-  wizData.artFile=file;
-  const wrap=document.getElementById('artwork-preview-wrap');if(wrap) wrap.innerHTML='<img src="'+objUrl+'" alt="Cover artwork preview" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+  const seq=++_wzArtSeq;
+  if(wizData.artObjUrl&&wizData.artObjUrl!==objUrl){try{URL.revokeObjectURL(wizData.artObjUrl);}catch(e){}}
+  wizData.artFile=file;wizData.artObjUrl=objUrl;
+  // The cover being replaced loses its cloud address right away. Otherwise, if the upload of THIS file failed, the old
+  // address would stay behind and the release would be submitted with the previous picture under the new preview.
+  wizData.artUrl=null;wizData.artPath=null;
+  wzSetArtPreview(objUrl);
   const tp=document.getElementById('artwork-title-preview');const t=document.getElementById('r-title');if(tp&&t) tp.textContent=t.value||'Your Release';
   // Upload artwork immediately so draft can reference it
   try{
     const ext=file.name.split('.').pop();
-    const path=activeAccountId()+'/drafts/artwork_draft.'+ext;
+    // Every picked cover gets a file name of its own. It used to be ONE fixed name per artist (…/drafts/artwork_draft.png) —
+    // and a submitted release keeps pointing at the file it was drafted with, so the next release's cover replaced the
+    // picture of the release before it (and of a release being duplicated).
+    const path=activeAccountId()+'/drafts/artwork_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)+'.'+ext;
     const {error}=await sb.storage.from('artwork').upload(path,file,{upsert:true});
+    if(seq!==_wzArtSeq){
+      // A newer cover was chosen while this one was uploading. Nothing points at this file, so it can go.
+      if(!error){try{sb.storage.from('artwork').remove([path]).then(()=>{},()=>{});}catch(e){}}
+      return;
+    }
     if(!error){
       const {data:urlData}=sb.storage.from('artwork').getPublicUrl(path);
       wizData.artUrl=urlData.publicUrl;
@@ -10500,6 +11084,7 @@ async function previewArtwork(input){
       toast('Artwork preview looks fine, but it didn\'t save to the cloud ('+(error.message||'connection issue')+') — it\'ll need to be re-added if you leave this device before submitting.','err');
     }
   }catch(e){
+    if(seq!==_wzArtSeq)return;
     toast('Artwork preview looks fine, but it didn\'t save to the cloud — it\'ll need to be re-added if you leave this device before submitting.','err');
   }
 }
@@ -10507,28 +11092,54 @@ function setToggle(key,val){
   wizToggleState[key]=val;
   const prefix={'country-restrict':'cr','prev-released':'pr','explicit':'exp','contentid':'cid'}[key];
   if(prefix){
-    document.getElementById(prefix+'-no')?.classList.toggle('active',val==='no');
-    document.getElementById(prefix+'-yes')?.classList.toggle('active',val==='yes');
+    ['no','yes'].forEach(v=>{
+      const b=document.getElementById(prefix+'-'+v);
+      if(b){b.classList.toggle('active',val===v);b.setAttribute('aria-pressed',val===v?'true':'false');}
+    });
     const fieldsEl=document.getElementById(key+'-fields');if(fieldsEl) fieldsEl.style.display=val==='yes'?'block':'none';
   }
 }
 function setAiUse(val){
   wizToggleState.aiuse=val;
-  ['none','some','full'].forEach(v=>document.getElementById('ai-'+v)?.classList.toggle('active',v===val));
+  ['none','some','full'].forEach(v=>{
+    const b=document.getElementById('ai-'+v);
+    if(b){b.classList.toggle('active',v===val);b.setAttribute('aria-pressed',v===val?'true':'false');}
+  });
+}
+function wzStoreKey(name){return name.replace(/[^a-z]/gi,'');}
+function wzUpdateStoreCount(){
+  const el=document.getElementById('wz-store-count');if(!el)return;
+  const n=ALL_STORES.filter(s=>wizStores.includes(s.name)).length;
+  el.textContent=n+' of '+ALL_STORES.length+' stores selected';
+  el.classList.toggle('wz-zero',n===0);
 }
 function renderStoresGrid(){
   const grid=document.getElementById('stores-grid');if(!grid)return;
-  grid.innerHTML=ALL_STORES.map(s=>'<div class="store-chip'+(wizStores.includes(s.name)?' selected':'')+'" id="store-'+s.name.replace(/[^a-z]/gi,'')+'" onclick="toggleStore(\''+s.name.replace(/[^a-z]/gi,'')+'\',' +'\'' +s.name+'\')"><div class="store-chip-icon" style="background:rgba(255,255,255,.05);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:4px">'+(s.logo?'<span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:4px;padding:1px;vertical-align:middle"><img src="'+s.logo+'" alt="'+esc(s.name)+'" width="18" height="18" style="object-fit:contain;display:block"></span>':'<i class="ti ti-music" style="font-size:12px;color:rgba(255,255,255,.3)"></i>')+'</div><div class="store-chip-name">'+s.name+'</div><div class="store-chip-check"></div></div>').join('');
+  grid.innerHTML=ALL_STORES.map(s=>{
+    const key=wzStoreKey(s.name);const sel=wizStores.includes(s.name);
+    return '<div class="store-chip'+(sel?' selected':'')+'" id="store-'+key+'" role="checkbox" aria-checked="'+(sel?'true':'false')+'" tabindex="0" onclick="toggleStore(\''+key+'\',\''+s.name+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}"><div class="store-chip-icon" style="background:rgba(255,255,255,.05);width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:4px">'+(s.logo?'<span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border-radius:4px;padding:1px;vertical-align:middle"><img src="'+s.logo+'" alt="" width="18" height="18" style="object-fit:contain;display:block"></span>':'<i class="ti ti-music" style="font-size:12px;color:rgba(255,255,255,.3)"></i>')+'</div><div class="store-chip-name">'+s.name+'</div><div class="store-chip-check"></div></div>';
+  }).join('');
+  wzUpdateStoreCount();
 }
 function toggleStore(id,name){
   const el=document.getElementById('store-'+id);if(!el)return;
   el.classList.toggle('selected');
-  if(el.classList.contains('selected')){if(!wizStores.includes(name))wizStores.push(name);}
+  const on=el.classList.contains('selected');
+  el.setAttribute('aria-checked',on?'true':'false');
+  if(on){if(!wizStores.includes(name))wizStores.push(name);}
   else wizStores=wizStores.filter(s=>s!==name);
+  wzUpdateStoreCount();
+  if(wizStores.length)wizClearErrors(4);
 }
-function selectAllStores(sel){wizStores=sel?ALL_STORES.map(s=>s.name):[];document.querySelectorAll('.store-chip').forEach(el=>el.classList.toggle('selected',sel));}
+function selectAllStores(sel){
+  wizStores=sel?ALL_STORES.map(s=>s.name):[];
+  document.querySelectorAll('.store-chip').forEach(el=>{el.classList.toggle('selected',sel);el.setAttribute('aria-checked',sel?'true':'false');});
+  wzUpdateStoreCount();
+  if(wizStores.length)wizClearErrors(4);
+}
 function filterStores(type,btn){
-  document.querySelectorAll('.store-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.store-filter-btn').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});
+  btn.classList.add('active');btn.setAttribute('aria-pressed','true');
   document.querySelectorAll('.store-chip').forEach(el=>{const sn=el.querySelector('.store-chip-name')?.textContent;const store=ALL_STORES.find(s=>s.name===sn);if(!store)return;el.style.display=(type==='all'||store.type===type)?'flex':'none';});
 }
 // ── DRAFT SAVE / RESUME ──────────────────────────────
@@ -10579,42 +11190,22 @@ function collectWizardState(){
     distroTier: selectedDistroTier,
     priorityPaymentRef: priorityPaymentRef||null,
     notes: document.getElementById('r-notes')?.value||'',
+    splits: splitRows.length>1?splitRows.map(r=>({id:r.id,name:r.name,bp:r.bp})):null,
     savedAt: new Date().toISOString(),
   };
 }
 
 async function saveDraft(){
-  const state=collectWizardState();
-  if(!state.title&&!state.tracks.length){toast('Add a title or upload a track first','err');return;}
-  try{
-    saveLocalDraft(currentDraftId,state);
-    if(!currentDraftId){
-      const {data,error}=await sb.from('release_drafts').insert({user_id:activeAccountId(),title:state.title||null,state}).select('id').single();
-      if(error){
-        console.error('Draft cloud backup error (saved locally on this device only):',error);
-        toast('Saved on this device, but the cloud backup failed — it may not carry over if you switch devices or browsers.','err');
-      } else if(data?.id){
-        currentDraftId=data.id;
-        saveLocalDraft(null,null);
-        saveLocalDraft(currentDraftId,state);
-        toast('Draft saved — you can resume anytime','ok');
-      }
-    } else {
-      const {error}=await sb.from('release_drafts').update({title:state.title||null,state,updated_at:new Date().toISOString()}).eq('id',currentDraftId);
-      if(error){
-        console.error('Draft cloud backup error (saved locally on this device only):',error);
-        toast('Saved on this device, but the cloud backup failed — it may not carry over if you switch devices or browsers.','err');
-      } else {
-        toast('Draft saved — you can resume anytime','ok');
-      }
-    }
-    // Deliberately not calling updateDraftBanner here — that overlay
-    // blocks the whole wizard, and popping it up immediately after an
-    // explicit save, while the artist is actively working on exactly
-    // this draft, would be pointless and disruptive rather than helpful.
-  }catch(e){
-    toast('Draft saved locally','ok');
-  }
+  if(_wzSubmitting)return;
+  if(!wzSaveLocal()){toast('Add a title or upload a track first','err');return;}
+  const r=await _wzEnqueueDraft(()=>wzCloudSave());
+  if(!r||!r.ok)return;
+  if(r.threw)toast('Draft saved locally','ok');
+  else if(!r.cloud)toast('Saved on this device, but the cloud backup failed — it may not carry over if you switch devices or browsers.','err');
+  else toast('Draft saved — you can resume anytime','ok');
+  // Deliberately not calling updateDraftBanner here — that overlay blocks the whole wizard, and popping it up
+  // immediately after an explicit save, while the artist is actively working on exactly this draft, would be
+  // pointless and disruptive rather than helpful.
 }
 
 async function loadAllDrafts(){
@@ -10734,7 +11325,7 @@ async function restoreWizardState(state){
   setVal('r-genre2', state.genre2);
   setVal('r-language', state.language);
   setVal('r-date', state.releaseDate);
-  checkFridayHint();
+  checkFridayHint();checkDistroTierMismatch();wzSyncDatePicks();
   // Older drafts saved before Priority Distribution was removed may still
   // have state.distroTier==='priority' stored — deliberately not restored
   // here; falling back to the standard default already set in initWizard()
@@ -10755,10 +11346,7 @@ async function restoreWizardState(state){
   // Stores
   if(state.stores?.length){
     wizStores=state.stores;
-    document.querySelectorAll('.store-chip').forEach(el=>{
-      const name=el.querySelector('.store-chip-name')?.textContent;
-      el.classList.toggle('selected', wizStores.includes(name));
-    });
+    renderStoresGrid();
   }
   if(state.credits){
     Object.entries(state.credits).forEach(([k,v])=>{
@@ -10787,19 +11375,20 @@ async function restoreWizardState(state){
     const allSaved=wizTracks.every(t=>t.url);
     const note=document.getElementById('track-list');
     if(note&&allSaved){
-      note.innerHTML='<div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:.75rem 1rem;font-size:12px;color:#34d399;margin-bottom:.5rem"><i class="ti ti-cloud-check"></i> <strong>'+wizTracks.length+' track(s) restored from cloud.</strong> Ready to submit.</div>'+note.innerHTML;
+      note.innerHTML='<div class="wz-note wz-note-ok"><i class="ti ti-cloud-check"></i><div><strong>'+wizTracks.length+' track(s) restored from cloud.</strong> Ready to submit.</div></div>'+note.innerHTML;
     } else if(note){
-      note.innerHTML='<div style="background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:.75rem 1rem;font-size:12px;color:var(--gold);margin-bottom:.5rem"><i class="ti ti-info-circle"></i> <strong>'+state.tracks.length+' track(s) found.</strong> Tracks without cloud backup need to be re-uploaded.</div>'+note.innerHTML;
+      note.innerHTML='<div class="wz-note wz-note-warn"><i class="ti ti-info-circle"></i><div><strong>'+state.tracks.length+' track(s) found.</strong> Tracks without cloud backup need to be re-uploaded.</div></div>'+note.innerHTML;
     }
   }
   // Restore artwork URL
   if(state.artUrl){
     wizData.artUrl=state.artUrl;wizData.artPath=state.artPath||null;
-    const wrap=document.getElementById('artwork-preview-wrap');
-    if(wrap) wrap.innerHTML='<img src="'+esc(state.artUrl)+'" alt="Cover artwork preview" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+    wzSetArtPreview(state.artUrl);
     const tp=document.getElementById('artwork-title-preview');
     if(tp) tp.textContent=state.title||'Your Release';
   }
+  updateArtPreviewTitle();
+  wzRestoreSplits(state.splits);
   // Re-check step 1 now that tracks/fields have been restored.
   // validateStep() clears any existing error display for the step as its
   // very first action — without this call, a "Please fix before
@@ -10811,7 +11400,8 @@ async function restoreWizardState(state){
   if(step1Errors.length)wizShowErrors(1,step1Errors);
   // Navigate to saved step
   const targetStep=Math.min(state.step||1,4);
-  if(targetStep>1) setTimeout(()=>goWizard(targetStep),100);
+  // skipValidate: a draft is allowed to be incomplete — the forward checks would otherwise stop it at the first gap
+  if(targetStep>1) setTimeout(()=>goWizard(targetStep,{skipValidate:true}),100);
 }
 
 function buildTracksReview(){
@@ -10838,13 +11428,68 @@ function buildCreditsReview(){
   return '<div style="border-top:1px solid rgba(255,255,255,.07);margin-top:.5rem;padding-top:.5rem">'+rows+'</div>';
 }
 
+function wzFmtDate(iso){
+  if(!iso)return '—';
+  const d=new Date(iso+'T00:00:00');
+  if(isNaN(d.getTime()))return iso;
+  return d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function wzRvRow(label,text){return '<div class="review-row"><span class="review-label">'+esc(label)+'</span><span class="review-val">'+esc(text)+'</span></div>';}
+function wzRvSec(title,step,body){
+  return '<section class="wz-card"><div class="wz-rv-h"><h3>'+esc(title)+'</h3><button type="button" class="wz-edit" onclick="wzEdit('+step+')" aria-label="Edit '+esc(title.toLowerCase())+'"><i class="ti ti-pencil" aria-hidden="true"></i> Edit</button></div>'+body+'</section>';
+}
 function buildReview(){
-  const title=document.getElementById('r-title')?.value||'—';
-  const artist=getSelectedPrimaryArtist()||'—';
-  const genre=document.getElementById('r-genre')?.value||'—';const date=document.getElementById('r-date')?.value||'—';
-  const label=document.getElementById('r-label')?.value||'Independent';const lang=document.getElementById('r-language')?.value||'English';
   const el=document.getElementById('review-content');if(!el)return;
-  el.innerHTML='<div style="display:flex;gap:1.5rem;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,.07)"><div style="width:80px;height:80px;border-radius:10px;background:#1a1a22;overflow:hidden;flex-shrink:0">'+(wizData.artFile?'<img src="'+URL.createObjectURL(wizData.artFile)+'" alt="'+esc(title)+' cover art" style="width:100%;height:100%;object-fit:cover">':'')+'</div><div><div style="font-size:18px;font-weight:700;color:#fff">'+esc(title)+'</div><div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:4px">'+esc(artist)+'</div><div style="font-size:12px;color:var(--gold);margin-top:4px">'+wizTracks.length+' track'+(wizTracks.length!==1?'s':'')+'</div></div></div><div class="review-row"><span class="review-label">Genre</span><span class="review-val">'+esc(genre)+'</span></div><div class="review-row"><span class="review-label">Release Date</span><span class="review-val">'+date+'</span></div><div class="review-row"><span class="review-label">Label</span><span class="review-val">'+esc(label)+'</span></div><div class="review-row"><span class="review-label">Language</span><span class="review-val">'+lang+'</span></div><div class="review-row"><span class="review-label">Stores</span><span class="review-val">'+wizStores.length+' selected</span></div><div class="review-row"><span class="review-label">Tracks</span><span class="review-val">'+wizTracks.map(t=>esc(t.name)).join(', ')+'</span></div>';
+  wzSyncSplitPrimary();
+  const val=id=>(document.getElementById(id)?.value||'').trim();
+  const title=val('r-title')||'—';
+  const artist=getSelectedPrimaryArtist()||'—';
+  const feat=wzFeat(),remixer=wzRemixer();
+  const genre=val('r-genre')||'—',genre2=val('r-genre2');
+  const label=val('r-label')||'Independent';
+  const lang=val('r-language')||'English';
+  const various=document.querySelector('input[name="artist-type"]:checked')?.value==='various';
+  const tg=wizToggleState;
+  const aiLabel={none:'No AI used',some:'Partially AI',full:'Fully AI'}[tg.aiuse||'none']||'No AI used';
+  const art=(wizData.artFile&&wizData.artObjUrl)?wizData.artObjUrl:(wizData.artUrl||'');
+  const nStores=ALL_STORES.filter(s=>wizStores.includes(s.name)).length;
+
+  const hero='<div class="wz-card"><div class="wz-rv-hero"><div class="wz-rv-cover">'+(art?'<img src="'+esc(art)+'" alt="'+esc(title)+' cover art">':'')+'</div><div class="wz-rv-main"><div class="wz-rv-title">'+esc(title)+'</div><div class="wz-rv-sub">'+esc(artist)+(feat?' feat. '+esc(feat):'')+'</div><div class="wz-rv-meta">'+wizTracks.length+' track'+(wizTracks.length!==1?'s':'')+'</div></div></div></div>';
+
+  const rel=[
+    wzRvRow('Primary artist',artist),
+    feat?wzRvRow('Featured artists',feat):'',
+    remixer?wzRvRow('Remixers',remixer):'',
+    wzRvRow('Genre',genre2?genre+' · '+genre2:genre),
+    wzRvRow('Language',lang),
+    wzRvRow('Label',label),
+    various?wzRvRow('Release type','Compilation / Various Artists'):''
+  ].join('');
+  const cYear=val('r-copyright-year'),pYear=val('r-prod-year');
+  const rights=[
+    wzRvRow('© Copyright',((cYear?cYear+' ':'')+val('r-copyright'))||'—'),
+    wzRvRow('℗ Recording',((pYear?pYear+' ':'')+val('r-pcopyright'))||'—')
+  ].join('');
+  const tracks=wizTracks.map((tr,i)=>{
+    const m=tr.meta||{};
+    const cred=[m.producer?'Producer: '+m.producer:'',m.instrumental?'Instrumental':(m.songwriter?'Songwriter: '+m.songwriter:'')].filter(Boolean).join(' · ');
+    return '<div class="wz-rv-t"><span class="wz-rv-tn">'+(i+1)+'.</span><div class="wz-rv-tb"><div class="wz-rv-tname">'+esc(tr.name)+(m.explicit==='yes'?'<span class="wz-rv-badge">E</span>':'')+'</div>'+(cred?'<div class="wz-rv-tcred">'+esc(cred)+'</div>':'')+'</div></div>';
+  }).join('');
+  const pitch=[val('r-pitch-mood'),val('r-pitch-note')].filter(Boolean).join(' — ');
+  const origDate=val('r-orig-date');
+  const sched=[
+    wzRvRow('Release date',wzFmtDate(val('r-date'))),
+    wzRvRow('Released before',tg['prev-released']==='yes'?(origDate?wzFmtDate(origDate):'Yes'):'No'),
+    wzRvRow('Country restrictions',tg['country-restrict']==='yes'?(val('r-countries')||'Yes — none listed'):'Worldwide'),
+    wzRvRow('Explicit content',tg['explicit']==='yes'?'Yes':'No'),
+    wzRvRow('YouTube Content Protection',tg['contentid']==='yes'?'Opted in':'Not now'),
+    wzRvRow('AI disclosure',aiLabel),
+    pitch?wzRvRow('Playlist pitch',pitch):''
+  ].join('');
+  const stores=wzRvRow('Stores',nStores===ALL_STORES.length?'All '+nStores+' stores':nStores+' of '+ALL_STORES.length+' stores')
+    +(nStores&&nStores<ALL_STORES.length?wzRvRow('Selected',ALL_STORES.filter(s=>wizStores.includes(s.name)).map(s=>s.name).join(', ')):'');
+
+  el.innerHTML=hero+wzRvSec('Release',2,rel)+wzRvSec('Rights',2,rights)+wzRvSec('Tracks',2,tracks||'<div class="wz-hint">No tracks added.</div>')+wzRvSec('Schedule & options',3,sched)+wzRvSec('Stores',4,stores);
 }
 async function submitRelease(){
   if(isTeamViewerOnly()){toast('Team members can only view this account, not submit releases','err');return;}
@@ -10861,15 +11506,22 @@ async function submitRelease(){
     if(step3Errors.length){toast('Step 3: '+step3Errors.map(e=>e.label).join(', '),'err');goWizard(3);wizShowErrors(3,step3Errors);return;}
     if(step4Errors.length){toast('Step 4: '+step4Errors.map(e=>e.label).join(', '),'err');goWizard(4);wizShowErrors(4,step4Errors);return;}
   }
-  if(!document.getElementById('r-terms')?.checked){toast('Please agree to the terms and conditions','err');return;}
+  if(!document.getElementById('r-terms')?.checked){toast('Please agree to the terms and conditions','err');wzFlagTerms();return;}
+  wzSyncSplitPrimary();
   if(splitRows.length>1){
+    // A contributor with a share but no name used to be left out of the saved split without a word — ask for the name.
+    if(splitRows.some(r=>r.id!=='primary'&&r.bp>0&&!(r.name&&r.name.trim()))){
+      toast('Add a name for every contributor who has a share in the royalty split — or remove that row.','err');
+      wzFlagSplit();return;
+    }
     const totalBp=splitRows.reduce((a,r)=>a+r.bp,0);
     if(totalBp!==10000){
       toast('Royalty split must total exactly 100% before submitting — currently '+(totalBp/100).toFixed(2)+'%. Adjust it in the Split Sheet section.','err');
-      return;
+      wzFlagSplit();return;
     }
   }
   const btn=document.getElementById('submit-btn');btn.disabled=true;btn.innerHTML='<span class="loader"></span> Submitting...';
+  _wzSubmitting=true;
   try{
     const title=document.getElementById('r-title')?.value.trim();
     const artist=getSelectedPrimaryArtist();
@@ -10922,8 +11574,9 @@ async function submitRelease(){
       if(m.instrumental)parts.push('Instrumental');
       return parts.length?'Track '+(i+1)+' ('+t.name+'): '+parts.join(', '):'';
     }).filter(Boolean);
-    const featArtist=document.getElementById('r-feat')?.value?.trim();
-    const remixer=document.getElementById('r-remixer')?.value?.trim();
+    // Only what the artist can actually see: a name typed and then hidden by unticking the box is not submitted.
+    const featArtist=wzFeat();
+    const remixer=wzRemixer();
     const copyrightYear=document.getElementById('r-copyright-year')?.value?.trim();
     const prodYear=document.getElementById('r-prod-year')?.value?.trim();
     const pcopyright=document.getElementById('r-pcopyright')?.value?.trim();
@@ -11036,6 +11689,8 @@ async function submitRelease(){
     // saved. Previously this wiped the entire local storage key outright,
     // which would silently destroy any other unrelated, still-unfinished
     // drafts just because a different one happened to get submitted.
+    // Let a draft save that is still on its way finish first, so the row it creates is the one removed below.
+    try{await Promise.race([_wzDraftChain,new Promise(r=>setTimeout(r,4000))]);}catch(e){}
     if(currentDraftId){
       removeLocalDraft(currentDraftId);
       sb.from('release_drafts').delete().eq('id',currentDraftId).then(({error})=>{
@@ -11045,6 +11700,7 @@ async function submitRelease(){
     }
     initWizard();await loadReleases();updateOnboarding();goPage('releases',null);
   }catch(e){toast(e.message,'err');}
+  _wzSubmitting=false;
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> Submit Release';
 }
 function fileChosen(input,zoneId,labelId){
@@ -13877,10 +14533,14 @@ function splitInit(){
   renderSplitRows();splitRecalc();
 }
 function splitAddRow(){
-  splitRows.push({id:'s_'+Date.now(),name:'',bp:0,locked:false});
+  splitRows.push({id:'s_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),name:'',bp:0,locked:false});
   const used=splitRows.filter(r=>r.id!=='primary').reduce((a,r)=>a+r.bp,0);
   const pr=splitRows.find(r=>r.id==='primary');if(pr) pr.bp=Math.max(0,10000-used);
   renderSplitRows();splitRecalc();
+  // Put the cursor in the new row's name box, ready to type.
+  const names=document.querySelectorAll('#split-rows .wz-sname');
+  const last=names[names.length-1];
+  if(last&&!last.readOnly){try{last.focus({preventScroll:false});}catch(e){}}
 }
 function splitRemoveRow(id){
   const row=splitRows.find(r=>r.id===id);if(!row)return;
@@ -13888,7 +14548,9 @@ function splitRemoveRow(id){
   splitRows=splitRows.filter(r=>r.id!==id);renderSplitRows();splitRecalc();
 }
 function splitUpdateBp(id,val){
-  const bp=Math.max(0,Math.min(10000,Math.round(parseFloat(val)*100)));
+  // An empty or non-numeric box used to turn the whole split into NaN% — treat it as 0.
+  let n=parseFloat(val);if(!isFinite(n))n=0;
+  const bp=Math.max(0,Math.min(10000,Math.round(n*100)));
   const row=splitRows.find(r=>r.id===id);if(row) row.bp=bp;
   const used=splitRows.filter(r=>r.id!=='primary').reduce((a,r)=>a+r.bp,0);
   const pr=splitRows.find(r=>r.id==='primary');if(pr) pr.bp=Math.max(0,10000-used);
@@ -13923,13 +14585,21 @@ function splitRecalc(){
   // perfectly balancing it to 100% — nothing else in the app ever
   // re-enabled it. The 100% requirement is now enforced with a clear,
   // visible error at the actual submission point instead (submitRelease()).
-  const lw=document.getElementById('split-legal-wrap');if(lw) lw.style.display=splitRows.length>1?'block':'none';
+  const lw=document.getElementById('split-legal-wrap');const lc=document.getElementById('split-legal-content');
+  // Only show the legal box when there is something in it (it used to appear as an empty titled box).
+  if(lw) lw.style.display=(splitRows.length>1&&lc&&lc.textContent.trim())?'block':'none';
 }
 function renderSplitRows(){
   const el=document.getElementById('split-rows');if(!el)return;
   el.innerHTML=splitRows.map(r=>{
     const pct=(r.bp/100).toFixed(2);const isPrimary=r.id==='primary';
-    return '<div style="display:flex;align-items:center;gap:8px;background:var(--black);border:1px solid var(--line);border-radius:8px;padding:.625rem .875rem"><div style="width:24px;height:24px;border-radius:50%;background:'+(isPrimary?'rgba(212,175,55,.15)':'rgba(255,255,255,.07)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-'+(isPrimary?'crown':'user')+'" style="font-size:11px;color:'+(isPrimary?'var(--gold)':'rgba(255,255,255,.4)')+'"></i></div><input type="text" value="'+esc(r.name)+'" placeholder="Contributor name" '+(isPrimary?'readonly style="font-weight:600;color:var(--gold);background:transparent;border:none;outline:none;flex:1"':'style="flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:13px"')+' onchange="splitUpdateName(\''+r.id+'\',this.value)"><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><input type="number" value="'+pct+'" min="0" max="100" step="0.01" style="width:70px;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;color:#fff;text-align:right" onchange="splitUpdateBp(\''+r.id+'\',this.value)" '+(isPrimary?'readonly':'')+'>  <span style="font-size:11px;color:rgba(255,255,255,.3)">%</span></div>'+(isPrimary?'':'<button onclick="splitRemoveRow(\''+r.id+'\')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.25);font-size:16px;padding:0">×</button>')+'</div>';
+    const id=jsArg(r.id);
+    return '<div class="wz-srow'+(isPrimary?' wz-srow-primary':'')+'">'
+      +'<span class="wz-sav"><i class="ti ti-'+(isPrimary?'crown':'user')+'" aria-hidden="true"></i></span>'
+      +'<input type="text" class="wz-sname" value="'+esc(r.name)+'" placeholder="Contributor name" aria-label="Contributor name"'+(isPrimary?' readonly':'')+' onchange="splitUpdateName('+id+',this.value)">'
+      +'<span class="wz-spct"><input type="number" class="wz-sbp" value="'+pct+'" min="0" max="100" step="0.01" inputmode="decimal" aria-label="Share in percent"'+(isPrimary?' readonly':'')+' onchange="splitUpdateBp('+id+',this.value)"><span>%</span></span>'
+      +(isPrimary?'':'<button type="button" class="wz-sdel" onclick="splitRemoveRow('+id+')" aria-label="Remove contributor" title="Remove">×</button>')
+      +'</div>';
   }).join('');
 }
 
