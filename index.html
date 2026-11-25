@@ -223,15 +223,6 @@ html:has(#landing.active),body:has(#landing.active){background:#08080C}
 .lp-plan-btn{width:100%;margin-top:28px}
 .lp-price-note{max-width:70ch;margin-top:28px;font-size:14px;line-height:1.7;color:var(--lp-dim)}
 
-/* testimonials */
-.lp-quotes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(24px,3vw,48px);margin-top:56px}
-.lp-quote{display:flex;flex-direction:column;justify-content:space-between;gap:28px;padding-top:28px;border-top:1px solid var(--lp-line2)}
-.lp-quote blockquote{font-size:18px;line-height:1.6;letter-spacing:-.01em;color:var(--lp-text)}
-.lp-quote figcaption{display:flex;align-items:center;gap:12px}
-.lp-quote figcaption>span:last-child{display:flex;flex-direction:column;gap:3px}
-.lp-quote b{font-size:15px;font-weight:600;color:var(--lp-text)}
-.lp-quote small{font-size:13px;color:var(--lp-dim)}
-.lp-av{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.25);color:var(--lp-gold2);font-size:13px;font-weight:700}
 
 /* faq */
 .lp-faq{border-bottom:1px solid var(--lp-line)}
@@ -245,7 +236,7 @@ html:has(#landing.active),body:has(#landing.active){background:#08080C}
 .lp-a p{max-width:68ch;font-size:15.5px;line-height:1.75;color:var(--lp-body)}
 
 /* closing call to action */
-.lp-cta{padding:clamp(72px,9vw,128px) 0;border-top:1px solid var(--lp-line);background:var(--lp-bg2)}
+.lp-cta{padding:clamp(72px,9vw,128px) 0;background:var(--lp-bg)}   /* follows the tinted FAQ band, which already draws the dividing line */
 .lp-cta-in{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:40px;align-items:end}
 .lp-cta-h{font-family:var(--lp-display);font-weight:800;font-stretch:80%;font-size:clamp(40px,6vw,84px);line-height:.95;letter-spacing:-.035em;color:var(--lp-text)}
 .lp-cta .lp-cta-row{margin-top:0;justify-content:flex-end}
@@ -267,7 +258,6 @@ html:has(#landing.active),body:has(#landing.active){background:#08080C}
   .lp-split{grid-template-columns:minmax(0,1fr)}
   .lp-split-head{position:static}
   .lp-plans{grid-template-columns:minmax(0,1fr);max-width:560px}
-  .lp-quotes{grid-template-columns:minmax(0,1fr);max-width:640px}
   .lp-cta-in{grid-template-columns:minmax(0,1fr);align-items:start}
   .lp-cta .lp-cta-row{justify-content:flex-start}
 }
@@ -1915,30 +1905,8 @@ body:has(#page-submit.active) .toast{bottom:calc(var(--wz-mnav) + var(--wz-bar-h
     </div>
   </section>
 
-  <!-- TESTIMONIALS -->
-  <section class="lp-sec lp-sec-alt" id="testi-sec" aria-labelledby="lp-testi-h">
-    <div class="lp-wrap">
-      <h2 class="lp-h2" id="lp-testi-h">Trusted by artists worldwide</h2>
-      <p class="lp-lede">From Accra to Lagos to Nairobi — and everywhere your music travels.</p>
-      <div class="lp-quotes">
-        <figure class="lp-quote">
-          <blockquote>“Blakkstone made it so easy to get my music on Spotify and Boomplay. The dashboard is clean and I could see my streams the same day.”</blockquote>
-          <figcaption><span class="lp-av" aria-hidden="true">KA</span><span><b>Kwame A.</b><small>Afrobeats Artist · Accra, Ghana</small></span></figcaption>
-        </figure>
-        <figure class="lp-quote">
-          <blockquote>“No complicated tax forms, no gatekeeping — just upload and my music is everywhere within days. Exactly what independent artists here need.”</blockquote>
-          <figcaption><span class="lp-av" aria-hidden="true">CO</span><span><b>Chidinma O.</b><small>Afrobeats Artist · Lagos, Nigeria</small></span></figcaption>
-        </figure>
-        <figure class="lp-quote">
-          <blockquote>“The Label plan is perfect — I manage 4 artists and we keep 100% of all royalties. It pays for itself with the first month’s earnings.”</blockquote>
-          <figcaption><span class="lp-av" aria-hidden="true">WM</span><span><b>Wanjiru M.</b><small>Label Manager · Nairobi, Kenya</small></span></figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
   <!-- FAQ -->
-  <section class="lp-sec" id="faq-sec" aria-labelledby="lp-faq-h">
+  <section class="lp-sec lp-sec-alt" id="faq-sec" aria-labelledby="lp-faq-h">
     <div class="lp-wrap lp-split lp-faq-split">
       <div class="lp-split-head">
         <h2 class="lp-h2" id="lp-faq-h">Common questions</h2>
@@ -2029,7 +1997,7 @@ body:has(#page-submit.active) .toast{bottom:calc(var(--wz-mnav) + var(--wz-bar-h
       </div>
       <div class="lp-foot-base">
         <p>© 2026 Blakkstone Distribution. All rights reserved.</p>
-        <p>Powered by ONErpm. Payments by Paystack.</p>
+        <p>Payments by Paystack.</p>
       </div>
     </div>
   </footer>
