@@ -15259,7 +15259,11 @@ async function onPaystackSuccess(ref,planKey,billingCycle,usd,pesewas,autoRenew,
     closePaystack();
     const paywallEl=document.getElementById('paywall');
     if(paywallEl&&paywallEl.classList.contains('active')) enterDashboard();
-  }catch(e){toast('Plan activated! Refresh if needed.','ok');closePaystack();}
+  }catch(e){
+    console.error('[Payment] something failed after the payment went through:',e);
+    toast('Payment received (reference '+ref+'). If your plan does not show within a few minutes, refresh the page or message Support with this reference.','ok');
+    closePaystack();
+  }
 }
 async function toggleAutoRenewNote(){
   const cb=document.getElementById('pay-auto-renew');
@@ -15326,6 +15330,9 @@ async function doPaystack(){
     const popup=new PaystackPop();
     const txOptions={
       key:PK,email,currency:'GHS',ref,
+      // What was bought and by whom. If this browser never reports the payment back (the pop-up closes before a Mobile Money
+      // approval finishes, the tab is closed, the connection drops), the paystack-webhook function reads this to switch the plan on.
+      metadata:{user_id:user?.id||null,plan:_plan,billing:_billing,usd:_usd,upgrade_credit:!!_appliedUpgradeCredit,referral_percent:_appliedReferral?.percent||null,account_email:user?.email||null},
       channels:['card','mobile_money','apple_pay'],
       onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew,_appliedReferral,_appliedUpgradeCredit);},
       onCancel:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';},
