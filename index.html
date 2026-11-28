@@ -5627,12 +5627,14 @@ function refCleanCode(c){c=String(c||'').trim().toUpperCase();return /^[A-Z0-9]{
 function refStored(){try{return refCleanCode(localStorage.getItem(REF_STORE_KEY));}catch(e){return '';}}
 function refStore(c){try{if(c)localStorage.setItem(REF_STORE_KEY,c);else localStorage.removeItem(REF_STORE_KEY);}catch(e){}}
 function refLink(code){return REF_SITE+'/?ref='+encodeURIComponent(code);}
+let _refArrived=false; // true when this page load came in through a valid ?ref= link
 function captureReferralFromUrl(){
   try{
     const p=new URLSearchParams(window.location.search);
     if(!p.has('ref'))return;
     const c=refCleanCode(p.get('ref'));
     if(c)refStore(c);
+    _refArrived=!!c;
     p.delete('ref');
     const qs=p.toString();
     history.replaceState(history.state,'',window.location.pathname+(qs?'?'+qs:'')+window.location.hash);
@@ -15867,7 +15869,7 @@ function renderSplitRows(){
       // ad platforms need one specific address to send clicks to, not
       // "click Get Started once you land on the homepage."
       const path=window.location.pathname.replace(/^\/|\/$/g,'');
-      if(path==='signup'){
+      if(path==='signup'||(_refArrived&&path==='')){ // a referral link opens the sign-up form, where the 'code applied' note shows
         showAuth('signup');
       } else {
         showView('landing');
