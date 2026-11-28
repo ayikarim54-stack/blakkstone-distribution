@@ -3830,9 +3830,11 @@ body:has(#page-submit.active) .toast{bottom:calc(var(--wz-mnav) + var(--wz-bar-h
           <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
             <!-- LEFT: Balance + withdraw + history -->
             <div>
+              <div class="payout-balance-card" id="ref-card" style="display:none;margin-bottom:1rem"></div>
               <div class="payout-balance-card">
                 <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:.5rem">Your Current Balance</div>
                 <div style="font-size:44px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:.375rem" id="payout-balance">$0.00</div>
+                <div id="payout-ref-note" style="display:none;font-size:12px;font-weight:600;color:#34D399;margin-bottom:.375rem"></div>
                 <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:.875rem">A 2% fee applies when you withdraw</div>
                 <div class="payout-bar-wrap"><div class="payout-bar-fill" id="payout-bar" style="width:100%"></div></div>
                 <div style="display:flex;justify-content:space-between;margin-bottom:1.5rem">
@@ -4337,6 +4339,7 @@ body:has(#page-submit.active) .toast{bottom:calc(var(--wz-mnav) + var(--wz-bar-h
               <button type="button" class="atab" id="atab-payouts" onclick="switchAdminTab('payouts',this)"><i class="ti ti-wallet"></i> Payouts <span class="ax-count" id="payout-alert" data-tone="warn" style="display:none"></span></button>
               <button type="button" class="atab" id="atab-subs" onclick="switchAdminTab('subs',this)"><i class="ti ti-crown"></i> Subscriptions</button>
               <button type="button" class="atab" id="atab-royalties" onclick="switchAdminTab('royalties',this)"><i class="ti ti-coin"></i> Royalties</button>
+              <button type="button" class="atab" id="atab-referrals" onclick="switchAdminTab('referrals',this)"><i class="ti ti-gift"></i> Referrals</button>
             </div>
             <div class="ax-grp">
               <div class="ax-grp-t">Artists</div>
@@ -4636,6 +4639,42 @@ body:has(#page-submit.active) .toast{bottom:calc(var(--wz-mnav) + var(--wz-bar-h
               <thead><tr><th>Artist</th><th>Plan</th><th>Billing</th><th class="r">USD</th><th class="r">GHS</th><th>Paystack ref</th><th>Date</th></tr></thead>
               <tbody id="admin-subs-tbody"></tbody>
             </table></div>
+          </div>
+
+          <!-- ── REFERRALS ── -->
+          <div class="admin-section" id="admin-referrals">
+            <section class="ax-card" style="margin-bottom:18px">
+              <div class="ax-card-h"><h2 class="ax-card-t"><i class="ti ti-user-plus"></i> Add a referral partner</h2></div>
+              <div class="ax-bar">
+                <input id="ref-user-q" class="ax-in grow" type="text" placeholder="Find a user by email or name…" aria-label="Find a user" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();refFindUsers();}">
+                <button type="button" class="ax-btn" onclick="refFindUsers()"><i class="ti ti-search"></i> Find</button>
+              </div>
+              <div id="ref-user-results" style="margin-top:10px"></div>
+              <div id="ref-add-form" style="display:none;margin-top:14px">
+                <div id="ref-picked" style="font-size:14px;font-weight:600;margin-bottom:10px"></div>
+                <div class="ax-bar">
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px">Code <input id="ref-code" class="ax-in" type="text" maxlength="20" style="width:150px;text-transform:uppercase" aria-label="Referral code" autocomplete="off"></label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px">Share % <input id="ref-percent" class="ax-in ax-num" type="number" min="1" max="50" step="0.5" value="10" aria-label="Share in percent"></label>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px"><input id="ref-repeat" type="checkbox"> Also earn on renewals and upgrades</label>
+                  <button type="button" class="ax-btn" id="ref-add-btn" onclick="refAddPartner()"><i class="ti ti-check"></i> Make partner</button>
+                </div>
+                <div style="font-size:12px;opacity:.6;margin-top:8px">The code is 4 to 20 letters or numbers. The partner's link will be blakkstonemusic.com/?ref=CODE. By default only a referred person's first payment earns.</div>
+              </div>
+            </section>
+            <section class="ax-card" style="margin-bottom:18px">
+              <div class="ax-card-h"><h2 class="ax-card-t"><i class="ti ti-gift"></i> Partners</h2></div>
+              <div class="ax-tw"><table class="ax-tbl">
+                <thead><tr><th>Partner</th><th>Code</th><th class="r">Share %</th><th class="r">Signed up</th><th class="r">Paid</th><th class="r">Earned</th><th>Renewals earn</th><th>Status</th><th></th></tr></thead>
+                <tbody id="ref-partners-tbody"></tbody>
+              </table></div>
+            </section>
+            <section class="ax-card">
+              <div class="ax-card-h"><h2 class="ax-card-t"><i class="ti ti-receipt"></i> Recent credits</h2></div>
+              <div class="ax-tw"><table class="ax-tbl">
+                <thead><tr><th>Date</th><th>Partner</th><th>Referred person</th><th class="r">They paid</th><th class="r">Partner earned</th><th></th></tr></thead>
+                <tbody id="ref-credits-tbody"></tbody>
+              </table></div>
+            </section>
           </div>
 
           <!-- ── REPORTS ── -->
@@ -5506,6 +5545,7 @@ function showAuth(mode){
     :isSignup
       ?'Have an account? <button type="button" class="au-link" onclick="toggleAuth()">Log in</button>'
       :'No account? <button type="button" class="au-link" onclick="toggleAuth()">Sign up</button>';
+  refRenderAuthNote();
   showView('auth');
 }
 function toggleAuth(){showAuth(authMode==='signup'?'login':'signup');}
@@ -5534,7 +5574,7 @@ async function doAuth(){
       const artistName=document.getElementById('an').value.trim()||fullName;
       const {data,error}=await sb.auth.signUp({
         email,password:pass,
-        options:{emailRedirectTo:'https://blakkstonemusic.com',data:{full_name:fullName,artist_name:artistName}}
+        options:{emailRedirectTo:'https://blakkstonemusic.com',data:Object.assign({full_name:fullName,artist_name:artistName},refStored()?{referral_code:refStored()}:{})}
       });
       if(error)throw error;
       if(data.user&&!data.session){
@@ -5578,6 +5618,105 @@ async function doForgotPasswordRequest(){
   btn.disabled=false;btn.textContent='Send reset link';
 }
 
+// ── REFERRAL PARTNERS (site side) ──────────────────────
+// A partner shares blakkstonemusic.com/?ref=CODE. The code is remembered in this browser, attached to the account once the
+// visitor is signed in (claim_referral), and carried on the checkout so the paystack-webhook can credit the partner.
+const REF_STORE_KEY='blk_ref_code';
+const REF_SITE='https://blakkstonemusic.com';
+function refCleanCode(c){c=String(c||'').trim().toUpperCase();return /^[A-Z0-9]{4,20}$/.test(c)?c:'';}
+function refStored(){try{return refCleanCode(localStorage.getItem(REF_STORE_KEY));}catch(e){return '';}}
+function refStore(c){try{if(c)localStorage.setItem(REF_STORE_KEY,c);else localStorage.removeItem(REF_STORE_KEY);}catch(e){}}
+function refLink(code){return REF_SITE+'/?ref='+encodeURIComponent(code);}
+function captureReferralFromUrl(){
+  try{
+    const p=new URLSearchParams(window.location.search);
+    if(!p.has('ref'))return;
+    const c=refCleanCode(p.get('ref'));
+    if(c)refStore(c);
+    p.delete('ref');
+    const qs=p.toString();
+    history.replaceState(history.state,'',window.location.pathname+(qs?'?'+qs:'')+window.location.hash);
+  }catch(e){}
+}
+// Reads every row of a query, 1000 at a time (the server never returns more than that in one answer).
+async function refFetchAll(build){
+  const out=[];const size=1000;
+  for(let from=0;;from+=size){
+    const {data,error}=await build().range(from,from+size-1);
+    if(error)throw error;
+    out.push(...(data||[]));
+    if(!data||data.length<size)break;
+  }
+  return out;
+}
+// What a partner has earned from referrals (reversed credits do not count). Quietly 0 until the referral tables exist.
+async function fetchReferralEarnings(uid){
+  if(!uid)return 0;
+  try{
+    const rows=await refFetchAll(()=>sb.from('referral_credits').select('amount_usd').eq('referrer_user_id',uid).eq('status','credited').order('id'));
+    return Math.round(rows.reduce((a,c)=>a+parseFloat(c.amount_usd||0),0)*100)/100;
+  }catch(e){return 0;}
+}
+let _refClaimInFlight=null;
+async function claimReferralIfAny(){
+  const code=refStored()||refCleanCode(user?.user_metadata?.referral_code);
+  if(!code||!user)return;
+  if(_refClaimInFlight)return _refClaimInFlight;
+  _refClaimInFlight=(async()=>{
+    try{
+      const {data,error}=await sb.rpc('claim_referral',{p_code:code});
+      if(error)throw error;
+      if(data!=='not_signed_in')refStore('');   // any real answer settles it (ok, already attributed, not eligible, unknown code…)
+    }catch(e){console.warn('[referral] could not attach the referral code yet:',e?.message||e);}
+    finally{_refClaimInFlight=null;}
+  })();
+  return _refClaimInFlight;
+}
+function refRenderAuthNote(){
+  const sub=document.getElementById('auth-sub');if(!sub)return;
+  let n=document.getElementById('auth-ref-note');
+  const code=authMode==='signup'?refStored():'';
+  if(!code){if(n)n.style.display='none';return;}
+  if(!n){
+    n=document.createElement('div');n.id='auth-ref-note';
+    n.style.cssText='display:flex;align-items:center;gap:8px;margin:0 0 14px;padding:10px 12px;border-radius:10px;border:1px solid rgba(212,175,55,.3);background:rgba(212,175,55,.08);color:#E8D48A;font-size:13px;line-height:1.4';
+    sub.insertAdjacentElement('afterend',n);
+  }
+  n.innerHTML='<i class="ti ti-gift" style="font-size:16px;flex-shrink:0"></i><span>Referral code <strong></strong> applied.</span>';
+  n.querySelector('strong').textContent=code;
+  n.style.display='flex';
+}
+async function refCopy(text,what){
+  try{await navigator.clipboard.writeText(text);toast((what||'Copied')+' copied','ok');}
+  catch(e){toast('Could not copy — your browser may be blocking clipboard access','err');}
+}
+// "Refer & earn" card on the Payouts tab — only partners see it.
+async function loadReferralCard(){
+  const el=document.getElementById('ref-card');if(!el)return;
+  const hide=()=>{el.style.display='none';el.innerHTML='';};
+  try{
+    if(!user||activeAccountId()!==user.id){hide();return;}   // a team member looking at the owner's account is not the partner
+    const {data,error}=await sb.rpc('my_referral_summary');
+    if(error||!data||!data.is_partner){hide();return;}
+    const link=refLink(data.code);
+    const usd=n=>'$'+(Number(n)||0).toFixed(2);
+    const pct=Number(data.percent)||10;
+    const what=data.earns_on_repeat?'every payment':'their first payment';
+    const recent=(data.recent||[]).slice(0,8).map(r=>'<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06);font-size:12.5px"><span style="color:rgba(255,255,255,.7);min-width:0;overflow:hidden;text-overflow:ellipsis">'+esc(r.who||'Someone')+'</span><span style="flex-shrink:0;color:'+(r.paid?'#34D399':'rgba(255,255,255,.4)')+'">'+(r.paid?'Paid · '+usd(r.earned):'Signed up')+'</span></div>').join('');
+    el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:.75rem">'
+      +'<div style="font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px"><i class="ti ti-gift" style="color:var(--gold)"></i> Refer &amp; earn</div>'
+      +'<div style="font-size:12px;color:rgba(255,255,255,.5)">You earn '+esc(String(pct))+'% of '+what+'</div></div>'
+      +(data.active?'':'<div style="font-size:12px;color:#FBBF24;margin-bottom:.75rem">Your referral link is paused right now, so new payments are not earning.</div>')
+      +'<div style="display:flex;gap:8px;margin-bottom:.5rem"><input id="ref-link-input" readonly aria-label="Your referral link" style="flex:1;min-width:0;background:var(--input-bg,rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:9px 11px;color:#fff;font-size:13px" value="'+esc(link)+'">'
+      +'<button type="button" class="btn btn-sm" style="flex-shrink:0;background:rgba(212,175,55,.12);color:var(--gold);border:1px solid rgba(212,175,55,.25)" onclick="refCopy(document.getElementById(\'ref-link-input\').value,\'Link\')"><i class="ti ti-copy"></i> Copy link</button></div>'
+      +'<div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:1rem">Your code: <strong style="color:#fff;letter-spacing:.5px">'+esc(data.code)+'</strong></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:.5rem">'
+      +[['Signed up',data.signups||0],['Paid',data.paying||0],['Earned',usd(data.credited_total)]].map(x=>'<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:10px 12px"><div style="font-size:11px;color:rgba(255,255,255,.4)">'+x[0]+'</div><div style="font-size:18px;font-weight:800;color:#fff">'+esc(String(x[1]))+'</div></div>').join('')+'</div>'
+      +(recent?'<div style="margin-top:.75rem">'+recent+'</div>':'<div style="font-size:12.5px;color:rgba(255,255,255,.4);margin-top:.5rem">Nobody has signed up with your link yet. Share it and your earnings will show here and in your balance.</div>');
+    el.style.display='';
+  }catch(e){console.warn('[referral] card unavailable:',e?.message||e);hide();}
+}
+
 let user=null,profile=null;
 async function loadProfile(u){
   user=u;
@@ -5600,6 +5739,7 @@ async function loadProfile(u){
     data=created||newProfile;
   }
   profile=data;
+  claimReferralIfAny(); // attaches a referral link this person arrived with (never blocks sign-in)
   const adminNow=isAdmin();
   // Real enforcement: a genuinely lapsed paid plan reverts to Free before any access decision is made.
   // This never touches existing releases or roster artists — those stay exactly as they are, protected
@@ -6252,7 +6392,7 @@ function enterDashboard(){
       if(target)switchRoyTab(pathSub,target);
     }
     if(page==='admin'){
-      const adminTabs=['dashboard','releases','users','payouts','streams','royalties','subs','reports','messages','broadcast','notifications','activitylog'];
+      const adminTabs=['dashboard','releases','users','payouts','streams','royalties','subs','referrals','reports','messages','broadcast','notifications','activitylog'];
       if(adminTabs.includes(pathSub)){
         const target=findAdminTabEl(pathSub);
         if(target)switchAdminTab(pathSub,target);
@@ -6424,7 +6564,7 @@ window.addEventListener('popstate',function(e){
   if(page==='upgrade')refreshProfileAndUpgradePage();
   if(page==='admin'){
     loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();
-    const adminTabs=['dashboard','releases','users','payouts','streams','royalties','subs','reports','messages','broadcast','notifications','activitylog'];
+    const adminTabs=['dashboard','releases','users','payouts','streams','royalties','subs','referrals','reports','messages','broadcast','notifications','activitylog'];
     if(adminTabs.includes(sub)){
       const target=findAdminTabEl(sub);
       if(target)switchAdminTab(sub,target);
@@ -6916,8 +7056,9 @@ async function loadReleases(){
       banner.style.display='none';
     }
   }
-  const {data:payoutsData}=await sb.from('payouts').select('amount,status').eq('user_id',activeAccountId());
+  const [{data:payoutsData},refEarn]=await Promise.all([sb.from('payouts').select('amount,status').eq('user_id',activeAccountId()),fetchReferralEarnings(activeAccountId())]);
   _ovPayoutsCache=payoutsData||[];
+  _ovReferralCache=refEarn;
   renderOverviewStats();
   renderUpcomingReleaseBanner();
   renderOverviewPlan();
@@ -6928,6 +7069,7 @@ async function loadReleases(){
 }
 let ovViewingArtist='';
 let _ovPayoutsCache=[];
+let _ovReferralCache=0;
 function getOvArtistList(){
   const artists=new Set();
   (allRelData||[]).forEach(r=>{if(r.artist)artists.add(r.artist);});
@@ -7038,7 +7180,7 @@ function renderOverviewStats(){
   // Available Balance always reflects the whole account — payout withdrawals aren't
   // broken down per artist (Blakkstone pays the account holder, not individual roster
   // artists), so scoping this number per-artist would just be inaccurate.
-  const earnings=allReleases.reduce((a,r)=>a+(r.earnings||0),0);
+  const earnings=allReleases.reduce((a,r)=>a+(r.earnings||0),0)+(_ovReferralCache||0); // release earnings plus referral earnings
   const grossEarnings=earnings; // no commission on any plan
   const paidOut2=(_ovPayoutsCache||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingOut=(_ovPayoutsCache||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
@@ -8303,13 +8445,14 @@ function renderReleasesTable(){
 
 // ── ROYALTIES ──────────────────────────────────────────
 async function loadRoyalties(){
-  const [{data:relData},{data:payoutData}]=await Promise.all([
+  const [{data:relData},{data:payoutData},refEarnR]=await Promise.all([
     sb.from('releases').select('*').eq('user_id',activeAccountId()),
-    sb.from('payouts').select('amount,status').eq('user_id',activeAccountId())
+    sb.from('payouts').select('amount,status').eq('user_id',activeAccountId()),
+    fetchReferralEarnings(activeAccountId())
   ]);
   const rl=(relData||[]).filter(r=>(r.earnings||0)>0);const allRel=relData||[];
   const gross=rl.reduce((a,r)=>a+(r.earnings||0),0);
-  const totalPayout=gross; // no commission on any plan
+  const totalPayout=gross+refEarnR; // no commission on any plan; referral earnings count toward the balance
   const paidOut3=(payoutData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingP=(payoutData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const available=Math.max(0,totalPayout-paidOut3-pendingP);
@@ -8400,11 +8543,12 @@ async function loadPayout(){
   updatePayoutMethodVisibility();
   // Load saved methods first
   await loadSavedMethods();
-  const [{data:relData},{data:payoutData}]=await Promise.all([
+  const [{data:relData},{data:payoutData},refEarnP]=await Promise.all([
     sb.from('releases').select('earnings').eq('user_id',activeAccountId()),
-    sb.from('payouts').select('amount,status,id,method,network,account,created_at,failure_reason').eq('user_id',activeAccountId()).order('created_at',{ascending:false})
+    sb.from('payouts').select('amount,status,id,method,network,account,created_at,failure_reason').eq('user_id',activeAccountId()).order('created_at',{ascending:false}),
+    fetchReferralEarnings(activeAccountId())
   ]);
-  const totalEarned=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0); // no commission on any plan
+  const totalEarned=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0)+refEarnP; // no commission on any plan; includes referral earnings
   // Subtract ALL non-failed/cancelled payouts from balance
   const paidOut=(payoutData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingP=(payoutData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
@@ -8413,6 +8557,9 @@ async function loadPayout(){
   set('payout-balance','$'+bal.toFixed(2));set('payout-available-label','$'+bal.toFixed(2));set('payout-pending-label','$'+pendingP.toFixed(2));
   const barEl=document.getElementById('payout-bar');if(barEl) barEl.style.width=Math.min(100,(bal/(totalEarned||1))*100)+'%';
   const wi=document.getElementById('withdraw-amount');if(wi) wi.max=bal;
+  const refNote=document.getElementById('payout-ref-note');
+  if(refNote){refNote.textContent=refEarnP>0?'Includes $'+refEarnP.toFixed(2)+' from referrals':'';refNote.style.display=refEarnP>0?'block':'none';}
+  loadReferralCard();
   const h=document.getElementById('payout-history-tbody');if(!h)return;
   if(!payoutData||!payoutData.length){h.innerHTML='<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.3);padding:1.5rem">No payouts yet.</td></tr>';return;}
   h.innerHTML=payoutData.map(p=>{
@@ -8505,11 +8652,12 @@ async function submitPayout(){
   const sbtn=document.getElementById('payout-submit-final');
   if(sbtn){sbtn.disabled=true;sbtn.style.opacity='.5';}
   try{
-    const [{data:relData},{data:existing}]=await Promise.all([
+    const [{data:relData},{data:existing},refEarnW]=await Promise.all([
       sb.from('releases').select('earnings').eq('user_id',activeAccountId()),
-      sb.from('payouts').select('amount,status').eq('user_id',activeAccountId())
+      sb.from('payouts').select('amount,status').eq('user_id',activeAccountId()),
+      fetchReferralEarnings(activeAccountId())
     ]);
-    const totalEarned=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0); // no commission on any plan
+    const totalEarned=(relData||[]).reduce((a,r)=>a+(r.earnings||0),0)+refEarnW; // no commission on any plan; includes referral earnings
     const paidTotal=(existing||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
     const pendingTotal=(existing||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
     const available=Math.max(0,totalEarned-paidTotal-pendingTotal);
@@ -10372,24 +10520,25 @@ async function viewAsArtist(userId,name){
   const body=document.getElementById('vaa-body');if(!body)return;
   body.innerHTML='<div style="text-align:center;padding:3rem"><span class="loader"></span></div>';
   try{
-    const [{data:profileData},{data:releases},{data:payoutsData}]=await Promise.all([
+    const [{data:profileData},{data:releases},{data:payoutsData},refEarnV]=await Promise.all([
       sb.from('profiles').select('*').eq('id',userId).single(),
       sb.from('releases').select('*').eq('user_id',userId).order('submitted_at',{ascending:false}),
-      Promise.resolve(sb.from('payouts').select('amount,status').eq('user_id',userId)).catch(()=>({data:[]}))
+      Promise.resolve(sb.from('payouts').select('amount,status').eq('user_id',userId)).catch(()=>({data:[]})),
+      fetchReferralEarnings(userId)
     ]);
-    renderViewAsArtist(profileData,releases||[],payoutsData||[]);
+    renderViewAsArtist(profileData,releases||[],payoutsData||[],refEarnV);
   }catch(e){
     console.error('View as artist error:',e);
     body.innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i><p>Could not load this artist\'s data.</p></div>';
   }
 }
-function renderViewAsArtist(profileData,releases,payoutsData){
+function renderViewAsArtist(profileData,releases,payoutsData,referralEarnings){
   const body=document.getElementById('vaa-body');if(!body)return;
   const live=releases.filter(r=>r.status==='live').length;
   const pending=releases.filter(r=>r.status==='pending'||r.status==='review').length;
   const streams=releases.reduce((a,r)=>a+(r.streams||0),0);
   const earnings=releases.reduce((a,r)=>a+(r.earnings||0),0);
-  const grossEarnings=earnings; // no commission on any plan
+  const grossEarnings=earnings+(referralEarnings||0); // no commission on any plan; plus referral earnings
   const paidOut=(payoutsData||[]).filter(p=>p.status==='paid').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const pendingOut=(payoutsData||[]).filter(p=>p.status==='pending'||p.status==='processing').reduce((a,p)=>a+parseFloat(p.amount||0),0);
   const availableBalance=Math.max(0,grossEarnings-paidOut-pendingOut);
@@ -12424,6 +12573,7 @@ const AX_TABS={
   users:['Artists','Everyone with an account. Change a plan, open an account or log in as an artist.'],
   payouts:['Payouts','Payout requests from artists, ready to be paid.'],
   subs:['Subscriptions','Payments received, and plans that renew soon.'],
+  referrals:['Referrals','Give a user a referral link. They earn a share of what the people they bring in pay.'],
   royalties:['Royalties','Add earnings by hand, or import a distributor report.'],
   streams:['Streams','Add daily stream counts and see how each store is doing.'],
   reports:['Reports','Revenue, top artists and top releases.'],
@@ -12560,6 +12710,7 @@ function switchAdminTab(tab,el){
   if(tab==='users')loadAdminUsers();
   if(tab==='payouts')loadAdminPayouts();
   if(tab==='subs')loadAdminSubs();
+  if(tab==='referrals')loadAdminReferrals();
   if(tab==='messages')loadAdminMessages();
   if(tab==='notifications')loadNotifications();
   if(tab==='reports')loadAdminReports();
@@ -12568,6 +12719,167 @@ function switchAdminTab(tab,el){
   if(tab==='royalties'){initAdminRoyalties();}
   if(tab==='activitylog')loadAdminActivityLog();
   finishPageProgress();
+}
+// ── ADMIN: REFERRAL PARTNERS ──────────────────────────
+let _refPartners=[],_refFound=[],_refPick=null;
+function refAudit(targetUserId,oldV,newV){
+  sb.from('admin_audit_log').insert({target_user_id:targetUserId,field:'referral',old_value:oldV,new_value:newV,changed_by:user?.email||'Admin'})
+    .then(({error})=>{if(error)console.error('Audit log insert error (the change itself succeeded):',error);});
+}
+async function refProfiles(ids){
+  const out={};const uniq=Array.from(new Set((ids||[]).filter(Boolean)));
+  for(let i=0;i<uniq.length;i+=40){
+    const {data}=await sb.from('profiles').select('id,email,full_name,artist_name').in('id',uniq.slice(i,i+40));
+    (data||[]).forEach(p=>{out[p.id]=p;});
+  }
+  return out;
+}
+function refName(p){return p?(p.artist_name||p.full_name||p.email||'—'):'—';}
+async function loadAdminReferrals(){
+  const pt=document.getElementById('ref-partners-tbody'),ct=document.getElementById('ref-credits-tbody');
+  if(!pt||!ct)return;
+  pt.innerHTML=axMsgRow(9,'Loading…');ct.innerHTML=axMsgRow(6,'Loading…');
+  try{
+    const [partners,signups,credits]=await Promise.all([
+      refFetchAll(()=>sb.from('referral_partners').select('*').order('created_at',{ascending:false}).order('id')),
+      refFetchAll(()=>sb.from('referral_signups').select('user_id,partner_id,first_payment_ref').order('user_id')),
+      refFetchAll(()=>sb.from('referral_credits').select('*').order('created_at',{ascending:false}).order('id'))
+    ]);
+    const shown=credits.slice(0,60);
+    const profs=await refProfiles(partners.map(p=>p.user_id).concat(shown.map(c=>c.referred_user_id)));
+    const stat={};
+    partners.forEach(p=>{stat[p.id]={signed:0,paid:0,earned:0};});
+    signups.forEach(x=>{const t=stat[x.partner_id];if(t){t.signed++;if(x.first_payment_ref)t.paid++;}});
+    credits.forEach(c=>{const t=stat[c.partner_id];if(t&&c.status==='credited')t.earned+=parseFloat(c.amount_usd||0);});
+    _refPartners=partners;
+    pt.innerHTML=partners.length?partners.map((p,i)=>{
+      const st=stat[p.id],pr=profs[p.user_id];
+      return '<tr><td class="ax-c-main" data-l="Partner"><strong>'+esc(refName(pr))+'</strong><div style="font-size:12px;opacity:.6">'+esc(pr?.email||'')+'</div></td>'
+        +'<td data-l="Code"><strong style="letter-spacing:.5px">'+esc(p.code)+'</strong></td>'
+        +'<td class="r" data-l="Share %"><input class="ax-in ax-num" type="number" min="1" max="50" step="0.5" value="'+esc(String(Number(p.percent)))+'" aria-label="Share in percent for '+esc(refName(pr))+'" onchange="refSetPercent('+i+',this.value)"></td>'
+        +'<td class="r" data-l="Signed up">'+st.signed+'</td><td class="r" data-l="Paid">'+st.paid+'</td><td class="r" data-l="Earned">$'+st.earned.toFixed(2)+'</td>'
+        +'<td data-l="Renewals earn"><label style="display:inline-flex;align-items:center;gap:6px"><input type="checkbox"'+(p.earns_on_repeat?' checked':'')+' aria-label="Renewals earn for '+esc(refName(pr))+'" onchange="refSetRepeat('+i+',this.checked)"> '+(p.earns_on_repeat?'Yes':'No')+'</label></td>'
+        +'<td data-l="Status">'+axPill(p.active?'live':'cancelled',p.active?'Active':'Paused')+' <button type="button" class="ax-btn" style="min-height:32px;padding:0 10px;margin-left:6px" onclick="refToggleActive('+i+')">'+(p.active?'Pause':'Resume')+'</button></td>'
+        +'<td><button type="button" class="ax-btn" style="min-height:32px;padding:0 10px" onclick="refCopyPartnerLink('+i+')"><i class="ti ti-copy"></i> Copy link</button></td></tr>';
+    }).join(''):axMsgRow(9,'No referral partners yet. Find a user above to make the first one.');
+    const pById={};partners.forEach(p=>{pById[p.id]=p;});
+    ct.innerHTML=shown.length?shown.map(c=>{
+      const partner=pById[c.partner_id];
+      const when=c.created_at?new Date(c.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'';
+      const reversed=c.status==='reversed';
+      return '<tr><td data-l="Date">'+esc(when)+'</td><td class="ax-c-main" data-l="Partner">'+esc(partner?refName(profs[partner.user_id]):'—')+'</td>'
+        +'<td data-l="Referred person">'+esc(refName(profs[c.referred_user_id]))+'<div style="font-size:12px;opacity:.6">'+(c.kind==='first'?'First payment':'Renewal or upgrade')+'</div></td>'
+        +'<td class="r" data-l="They paid">$'+parseFloat(c.paid_usd||0).toFixed(2)+'</td>'
+        +'<td class="r" data-l="Partner earned"><strong>$'+parseFloat(c.amount_usd||0).toFixed(2)+'</strong><div style="font-size:12px;opacity:.6">'+esc(String(Number(c.percent)))+'%</div></td>'
+        +'<td>'+(reversed?axPill('cancelled','Reversed'):'<button type="button" class="ax-btn" style="min-height:32px;padding:0 10px" onclick="refReverse(\''+esc(c.id)+'\',this)">Reverse</button>')+'</td></tr>';
+    }).join(''):axMsgRow(6,'No credits yet. They appear here when someone a partner referred pays for a plan.');
+  }catch(e){
+    console.error('Referrals load error:',e);
+    const missing=['42P01','PGRST205'].includes(e?.code)||/referral_(partners|signups|credits)/.test(e?.message||'');
+    const msg=missing?'The referral tables are not set up yet. Run referral_partners.sql in the Supabase SQL editor, then reopen this tab.':'Could not load referrals: '+(e?.message||'please try again.');
+    pt.innerHTML=axMsgRow(9,msg,true);ct.innerHTML=axMsgRow(6,'',true);
+  }
+}
+async function refFindUsers(){
+  const q=(document.getElementById('ref-user-q')?.value||'').replace(/[,()*%\\]/g,' ').trim();
+  const box=document.getElementById('ref-user-results');if(!box)return;
+  if(q.length<2){toast('Type at least 2 letters of an email or name','err');return;}
+  box.innerHTML='<span class="loader"></span>';
+  try{
+    const {data,error}=await sb.from('profiles').select('id,email,full_name,artist_name').or('email.ilike.*'+q+'*,artist_name.ilike.*'+q+'*,full_name.ilike.*'+q+'*').limit(8);
+    if(error)throw error;
+    _refFound=data||[];
+    const taken=new Set(_refPartners.map(p=>p.user_id));
+    box.innerHTML=_refFound.length?_refFound.map((u,i)=>'<button type="button" class="ax-btn" style="margin:0 8px 8px 0" '+(taken.has(u.id)?'disabled title="Already a partner"':'onclick="refPickUser('+i+')"')+'>'+esc(refName(u))+' <span style="opacity:.6;font-weight:400">'+esc(u.email||'')+'</span>'+(taken.has(u.id)?' · partner':'')+'</button>').join(''):'<div style="font-size:13px;opacity:.6">Nobody matches “'+esc(q)+'”.</div>';
+  }catch(e){
+    console.error('Referral user search error:',e);
+    box.innerHTML='';toast('Search failed: '+(e.message||'please try again.'),'err');
+  }
+}
+function refSuggestCode(u){
+  let c=String(u.artist_name||u.full_name||(u.email||'').split('@')[0]||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+  while(c.length<4)c+=Math.floor(Math.random()*10);
+  return c;
+}
+function refPickUser(i){
+  const u=_refFound[i];if(!u)return;
+  _refPick=u;
+  document.getElementById('ref-picked').textContent=refName(u)+(u.email?' · '+u.email:'');
+  document.getElementById('ref-code').value=refSuggestCode(u);
+  document.getElementById('ref-percent').value='10';
+  document.getElementById('ref-repeat').checked=false;
+  document.getElementById('ref-add-form').style.display='block';
+  document.getElementById('ref-code').focus();
+}
+async function refAddPartner(){
+  const btn=document.getElementById('ref-add-btn');if(!btn||btn.disabled||!_refPick)return;
+  const code=refCleanCode(document.getElementById('ref-code').value);
+  const pct=parseFloat(document.getElementById('ref-percent').value);
+  if(!code){toast('The code must be 4 to 20 letters or numbers','err');return;}
+  if(!(pct>0&&pct<=50)){toast('The share must be more than 0 and at most 50','err');return;}
+  btn.disabled=true;
+  try{
+    const {error}=await sb.from('referral_partners').insert({user_id:_refPick.id,code,percent:pct,earns_on_repeat:!!document.getElementById('ref-repeat').checked,active:true});
+    if(error){
+      if(error.code==='23505')toast('That code or that user already has a referral setup. Pick another code.','err');
+      else throw error;
+      btn.disabled=false;return;
+    }
+    refAudit(_refPick.id,'','partner '+code+' '+pct+'%');
+    toast(refName(_refPick)+' is now a referral partner','ok');
+    _refPick=null;_refFound=[];
+    document.getElementById('ref-add-form').style.display='none';
+    document.getElementById('ref-user-results').innerHTML='';
+    document.getElementById('ref-user-q').value='';
+    await loadAdminReferrals();
+  }catch(e){
+    console.error('Add referral partner error:',e);
+    toast('Could not add the partner: '+(e.message||'please try again.'),'err');
+  }
+  btn.disabled=false;
+}
+async function refUpdatePartner(i,patch,oldV,newV){
+  const p=_refPartners[i];if(!p)return;
+  try{
+    const {error}=await sb.from('referral_partners').update(patch).eq('id',p.id);
+    if(error)throw error;
+    refAudit(p.user_id,oldV,newV);
+    toast('Saved','ok');
+  }catch(e){
+    console.error('Update referral partner error:',e);
+    toast('Could not save: '+(e.message||'please try again.'),'err');
+  }
+  await loadAdminReferrals();
+}
+function refSetPercent(i,val){
+  const p=_refPartners[i];if(!p)return;
+  const v=parseFloat(val);
+  if(!(v>0&&v<=50)){toast('The share must be more than 0 and at most 50','err');loadAdminReferrals();return;}
+  if(v===Number(p.percent))return;
+  refUpdatePartner(i,{percent:v},'share '+Number(p.percent)+'%','share '+v+'%');
+}
+function refSetRepeat(i,on){const p=_refPartners[i];if(p)refUpdatePartner(i,{earns_on_repeat:!!on},'renewals earn: '+(p.earns_on_repeat?'yes':'no'),'renewals earn: '+(on?'yes':'no'));}
+function refToggleActive(i){const p=_refPartners[i];if(p)refUpdatePartner(i,{active:!p.active},p.active?'active':'paused',p.active?'paused':'active');}
+function refCopyPartnerLink(i){const p=_refPartners[i];if(p)refCopy(refLink(p.code),'Link');}
+// Two clicks: the first turns the button into "Confirm", the second reverses the credit (the partner's balance drops by that amount).
+async function refReverse(id,btn){
+  if(!btn)return;
+  if(btn.dataset.armed!=='1'){
+    btn.dataset.armed='1';btn.textContent='Confirm';
+    setTimeout(()=>{if(btn.isConnected&&btn.dataset.armed==='1'){btn.dataset.armed='';btn.textContent='Reverse';}},4000);
+    return;
+  }
+  btn.disabled=true;
+  try{
+    const {data,error}=await sb.from('referral_credits').update({status:'reversed',reversed_at:new Date().toISOString(),reversed_reason:'Reversed by admin'}).eq('id',id).eq('status','credited').select('referrer_user_id,amount_usd');
+    if(error)throw error;
+    if(!data||!data.length){toast('That credit was already reversed or could not be changed','err');}
+    else{refAudit(data[0].referrer_user_id,'credit $'+parseFloat(data[0].amount_usd).toFixed(2),'reversed');toast('Credit reversed','ok');}
+  }catch(e){
+    console.error('Reverse referral credit error:',e);
+    toast('Could not reverse: '+(e.message||'please try again.'),'err');
+  }
+  await loadAdminReferrals();
 }
 async function loadAdminActivityLog(){
   const container=document.getElementById('activity-log-list');if(!container)return;
@@ -12605,7 +12917,7 @@ async function loadAdminActivityLog(){
     container.innerHTML=axEmpty('ti-alert-circle','Could not load: '+(e.message||'unknown error'),'err');
   }
 }
-function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();loadAdminActivityLog();loadAdminReports();loadAdminStreamsRecent();loadBroadcastHistory();toast('Refreshed','ok');}
+function refreshAdmin(){loadAdminReleases();loadAdminUsers();loadAdminPayouts();loadAdminSubs();loadAdminMessages();loadNotifications();loadAdminStats();loadAdminDashboard();loadAdminActionQueue();loadAdminActivityLog();loadAdminReports();loadAdminStreamsRecent();loadBroadcastHistory();if(document.getElementById('admin-referrals')?.classList.contains('active'))loadAdminReferrals();toast('Refreshed','ok');}
 async function loadAdminStats(){
   try{
     const [{data:profiles},{data:releases},{data:payouts},{data:subs}]=await Promise.all([
@@ -15332,7 +15644,7 @@ async function doPaystack(){
       key:PK,email,currency:'GHS',ref,
       // What was bought and by whom. If this browser never reports the payment back (the pop-up closes before a Mobile Money
       // approval finishes, the tab is closed, the connection drops), the paystack-webhook function reads this to switch the plan on.
-      metadata:{user_id:user?.id||null,plan:_plan,billing:_billing,usd:_usd,upgrade_credit:!!_appliedUpgradeCredit,referral_percent:_appliedReferral?.percent||null,account_email:user?.email||null},
+      metadata:{user_id:user?.id||null,plan:_plan,billing:_billing,usd:_usd,upgrade_credit:!!_appliedUpgradeCredit,referral_percent:_appliedReferral?.percent||null,referral_code:refStored()||null,account_email:user?.email||null},
       channels:['card','mobile_money','apple_pay'],
       onSuccess:function(response){onPaystackSuccess(response.reference||ref,_plan,_billing,_usd,_pesewas,_autoRenew,_appliedReferral,_appliedUpgradeCredit);},
       onCancel:function(){toast('Payment cancelled');btn.disabled=false;btn.innerHTML='<i class="ti ti-lock"></i> Pay with Paystack';},
@@ -15506,6 +15818,7 @@ function renderSplitRows(){
 
 // ── INIT ──────────────────────────────────────────────
 (async()=>{
+  captureReferralFromUrl();
   // Add slideIn animation
   const style=document.createElement('style');
   style.textContent='@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}';
